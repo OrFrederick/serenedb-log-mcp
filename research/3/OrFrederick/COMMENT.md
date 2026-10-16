@@ -63,7 +63,7 @@ Code and outputs: https://github.com/OrFrederick/serenedb-log-mcp/tree/research/
 7. **Golden SQL**: all 14 golden values re-measured, all matching, 1–36 ms each (`out_golden_check.txt`).
 
 **Draft question set** (`harness/questions.yaml`): 38 questions, 10 per Role plus 8 adversarial (Engineer 13, Team Lead 12, Manager 13). Grounding facts I measured:
-- KERNDTLB is 152,734 of 348,460 BGL alert Log Entries. 152,182 of them fall on 2005-06-11 across 541 nodes overall, but **152,185 alert Log Entries come from the single node `R30-M0-N9-C:J16-U01`**. This is the ideal "Log Entries ≠ incidents" and "concentration" test.
+- KERNDTLB is 152,734 of 348,460 BGL alert Log Entries, from 541 nodes. **152,182 of them come from the single node `R30-M0-N9-C:J16-U01`, all on 2005-06-11** (152,185 alert Log Entries in total from that node). This is the ideal "Log Entries ≠ incidents" and "concentration" test.
 - June 2005 holds 225,153 alerts.
 - FATAL is 855,195 in total, of which KERNEL has 626,450.
 - OpenStack has 2 HTTP 503s at 06:25 on 05-16 and 05-17. Both coincide with keystone CRITICAL "Unable to validate token" lines.

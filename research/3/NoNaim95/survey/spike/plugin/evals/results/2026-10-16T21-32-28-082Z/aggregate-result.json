@@ -1,0 +1,184 @@
+{
+  "schemaVersion": 1,
+  "claudeVersion": "2.1.293",
+  "startedAt": "2026-10-16T21:32:28.082Z",
+  "durationSeconds": 31,
+  "costUsd": 0.00824111,
+  "partial": false,
+  "suite": {
+    "root": "/Users/deni/hackathon/serenedb-log-mcp/.claude/worktrees/r3/research/3/NoNaim95/survey/spike/plugin",
+    "ablation": "none",
+    "threshold": 1,
+    "concurrency": 1,
+    "plugins": [
+      {
+        "name": "toylogs",
+        "version": "0.0.1",
+        "path": "/Users/deni/hackathon/serenedb-log-mcp/.claude/worktrees/r3/research/3/NoNaim95/survey/spike/plugin"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "eng-what-failed",
+      "dir": "evals/eng-what-failed",
+      "source": "prose",
+      "promptMarkdown": "As an Engineer: what failed on node R02-M1-N0-C:J12-U11 in BGL on 2005-06-03 and what happened just before it?",
+      "model": "haiku",
+      "runsPerCase": 2,
+      "timeoutSeconds": 300,
+      "maxTurns": 15,
+      "graders": [
+        {
+          "name": "cites-tlb",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": "last_message",
+            "pattern": "TLB",
+            "flags": "i",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "no-trend",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "mcp__plugin_toylogs_toylogs__trend",
+            "min": 0,
+            "max": 0
+          }
+        },
+        {
+          "name": "search-before-nearby",
+          "type": "tool_order",
+          "weight": 1,
+          "config": {
+            "before": {
+              "tool": "mcp__plugin_toylogs_toylogs__search_logs"
+            },
+            "after": {
+              "tool": "mcp__plugin_toylogs_toylogs__get_nearby_events"
+            }
+          }
+        },
+        {
+          "name": "used-search",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "mcp__plugin_toylogs_toylogs__search_logs",
+            "input_match": "R02-M1-N0-C:J12-U11"
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 6,
+            "costUsd": 0.00420127,
+            "judgeCostUsd": 0,
+            "durationSeconds": 13,
+            "startedAt": "2026-10-16T21:32:28.174Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-mBYFHu/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "cites-tlb",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched TLB",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "no-trend",
+                "passed": true,
+                "weight": 1,
+                "explanation": "mcp__plugin_toylogs_toylogs__trend called 0x (expected 0..0)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "search-before-nearby",
+                "passed": true,
+                "weight": 1,
+                "explanation": "mcp__plugin_toylogs_toylogs__search_logs@1 precedes mcp__plugin_toylogs_toylogs__get_nearby_events@2",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "used-search",
+                "passed": true,
+                "weight": 1,
+                "explanation": "mcp__plugin_toylogs_toylogs__search_logs called 2x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 9,
+            "costUsd": 0.00403984,
+            "judgeCostUsd": 0,
+            "durationSeconds": 17,
+            "startedAt": "2026-10-16T21:32:41.473Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-MgJq65/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "cites-tlb",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched TLB",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "no-trend",
+                "passed": true,
+                "weight": 1,
+                "explanation": "mcp__plugin_toylogs_toylogs__trend called 0x (expected 0..0)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "search-before-nearby",
+                "passed": true,
+                "weight": 1,
+                "explanation": "mcp__plugin_toylogs_toylogs__search_logs@1 precedes mcp__plugin_toylogs_toylogs__get_nearby_events@2",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "used-search",
+                "passed": true,
+                "weight": 1,
+                "explanation": "mcp__plugin_toylogs_toylogs__search_logs called 2x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    }
+  ],
+  "aggregates": {
+    "casesTotal": 1,
+    "casesPassed": 1,
+    "overallScore": 1,
+    "overallPassRate": 1
+  }
+}

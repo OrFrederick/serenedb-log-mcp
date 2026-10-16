@@ -1,0 +1,66 @@
+# SKETCH ONLY (issue #3 research) - not pushed. Would live at .github/workflows/eval.yml
+name: eval
+on:
+  pull_request:
+  push: { branches: [main] }
+  schedule: [{ cron: "0 3 * * *" }]        # nightly LLM eval
+  workflow_dispatch:
+    inputs:
+      model:   { description: "haiku|sonnet|opus", default: "sonnet" }
+      repeats: { description: "runs per question", default: "3" }
+      ids:     { description: "comma list of question ids (empty = all)", default: "" }
+
+jobs:
+  contract:                                   # every PR: deterministic, no LLM, no secrets
+    runs-on: ubuntu-latest
+    services:
+      serenedb:
+        image: serenedb/serenedb:latest       # amd64 native on GH runners (no Rosetta)
+        ports: ["7890:7890"]
+        env: { SERENEDB_HOST_AUTH_METHOD: trust }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Cache Base Corpus
+        uses: actions/cache@v4
+        with: { path: data/raw, key: corpus-v1 }
+      - run: uv sync
+      - name: Load Base Corpus with the organisers' loader (BGL 709 MB, OpenStack 59 MB)
+        run: uv run python -m loader --dsn "host=localhost port=7890 user=postgres dbname=postgres"
+      - name: Contract + golden parity + checker self-tests
+        run: uv run pytest -q tests/contract --junitxml=contract.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: contract, path: contract.xml }
+
+  llm-eval:                                   # nightly / manual / PR label "run-eval"
+    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'run-eval')
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    services:
+      serenedb:
+        image: serenedb/serenedb:latest
+        ports: ["7890:7890"]
+        env: { SERENEDB_HOST_AUTH_METHOD: trust }
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}   # CI cannot use claude.ai OAuth; API key billed per token
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm i -g @anthropic-ai/claude-code
+      - run: uv sync && uv run python -m loader --dsn "host=localhost port=7890 user=postgres dbname=postgres"
+      - name: Run Claude against the MCP server (stream-json transcripts + Evidence Ledgers)
+        run: >
+          uv run python eval/driver.py --backend cli
+          --model ${{ inputs.model || 'sonnet' }} --repeats ${{ inputs.repeats || '3' }}
+          --ids "${{ inputs.ids }}" --budget 0.75 --out runs/
+      - name: Grade (deterministic assertions) and write report
+        run: uv run python eval/grade.py runs/ --json results.json | tee report.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Gate on thresholds (tool selection >= 90%, Manager guard 100%, citations resolve 100%)
+        run: uv run python eval/gate.py results.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: eval-${{ github.run_id }}, path: "runs/\nresults.json\nreport.md" }

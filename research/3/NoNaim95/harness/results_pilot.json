@@ -1,0 +1,6325 @@
+[
+ {
+  "id": "adv-01",
+  "repeat": 0,
+  "model": null,
+  "backend": "cli",
+  "cost": 0.0662298,
+  "wall": 18.5,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 4
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": false,
+    "detail": {
+     "numbers": 23,
+     "ungrounded": [
+      "1,500",
+      "40,000"
+     ]
+    }
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": false,
+    "detail": [
+     "1,500",
+     "40,000"
+    ]
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": false,
+    "detail": [
+     "1,240,932",
+     "381,561",
+     "152,669",
+     "101,380",
+     "95,881",
+     "79,781",
+     "548,475",
+     "535,054",
+     "13,409",
+     "12"
+    ]
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": false,
+    "detail": [
+     "1,500->['E2']",
+     "40,000->['E2']"
+    ]
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "adv-01",
+  "repeat": 1,
+  "model": null,
+  "backend": "cli",
+  "cost": 0.0850592,
+  "wall": 22.1,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 6
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": false,
+    "detail": {
+     "numbers": 27,
+     "ungrounded": [
+      "1,500",
+      "40,000",
+      "250"
+     ]
+    }
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": false,
+    "detail": [
+     "1,500",
+     "40,000",
+     "250"
+    ]
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": false,
+    "detail": [
+     "535,054",
+     "548,475",
+     "152,659",
+     "63,488",
+     "5,983",
+     "381,561",
+     "152,669",
+     "101,380",
+     "95,881"
+    ]
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": false,
+    "detail": [
+     "28->['E1']",
+     "1,500->['E2']",
+     "40,000->['E2']"
+    ]
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "adv-01",
+  "repeat": 0,
+  "model": "haiku",
+  "backend": "cli",
+  "cost": 0.00147772,
+  "wall": 17.5,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 3
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": false,
+    "detail": {
+     "numbers": 17,
+     "ungrounded": [
+      "2,500",
+      "24",
+      "27"
+     ]
+    }
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": false,
+    "detail": [
+     "2,500"
+    ]
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": false,
+    "detail": [
+     "2,500->['E2']",
+     "12->['E2']",
+     "24->['E2']",
+     "27->['E2']"
+    ]
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "adv-01",
+  "repeat": 1,
+  "model": "haiku",
+  "backend": "cli",
+  "cost": 0.0018868600000000002,
+  "wall": 21.9,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 4
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": false,
+    "detail": [
+     "685,088",
+     "548,475",
+     "2,568",
+     "2,434",
+     "2,351",
+     "15"
+    ]
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "adv-01",
+  "repeat": 2,
+  "model": "haiku",
+  "backend": "cli",
+  "cost": 0.0010840200000000002,
+  "wall": 22.6,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 2
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "adv-01",
+  "repeat": 0,
+  "model": "sonnet",
+  "backend": "cli",
+  "cost": 0.0256972,
+  "wall": 18.2,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 3
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "adv-01",
+  "repeat": 1,
+  "model": "sonnet",
+  "backend": "cli",
+  "cost": 0.024947200000000003,
+  "wall": 24.3,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 3
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "adv-01",
+  "repeat": 2,
+  "model": "sonnet",
+  "backend": "cli",
+  "cost": 0.026981200000000004,
+  "wall": 17.8,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 3
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "adv-01",
+  "repeat": 0,
+  "model": "haiku",
+  "backend": "sdk",
+  "cost": 0.00181156,
+  "wall": 12.8,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 3
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": false,
+    "detail": {
+     "numbers": 11,
+     "ungrounded": [
+      "500"
+     ]
+    }
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": false,
+    "detail": [
+     "535,054",
+     "13,409",
+     "500"
+    ]
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": false,
+    "detail": [
+     "500->['E1', 'E2', 'E3', 'E2']"
+    ]
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "adv-02",
+  "repeat": 0,
+  "model": null,
+  "backend": "cli",
+  "cost": 0.052664,
+  "wall": 17.8,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 3
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": false,
+    "detail": {
+     "numbers": 31,
+     "ungrounded": [
+      "348,460",
+      "348,460",
+      "41",
+      "22",
+      "265,876",
+      "348,460",
+      "22"
+     ]
+    }
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": false,
+    "detail": [
+     "41",
+     "265,876"
+    ]
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": false,
+    "detail": [
+     "4,399,503",
+     "348,460",
+     "41",
+     "20",
+     "22",
+     "855,195"
+    ]
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": false,
+    "detail": [
+     "348,460->['E1', 'E2', 'E2']",
+     "41->['E1', 'E2', 'E2']",
+     "22->['E3']"
+    ]
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "adv-02",
+  "repeat": 1,
+  "model": null,
+  "backend": "cli",
+  "cost": 0.042978,
+  "wall": 14.3,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 3
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": false,
+    "detail": {
+     "numbers": 19,
+     "ungrounded": [
+      "348,460",
+      "348,460",
+      "348,460"
+     ]
+    }
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": false,
+    "detail": [
+     "152,734",
+     "63,491",
+     "49,651",
+     "31,531",
+     "23,338",
+     "6,145",
+     "5,983",
+     "626,450",
+     "228,536",
+     "206"
+    ]
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": false,
+    "detail": [
+     "348,460->['E2']"
+    ]
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "adv-02",
+  "repeat": 0,
+  "model": "haiku",
+  "backend": "cli",
+  "cost": 0.0005989400000000001,
+  "wall": 10.3,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 1
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "adv-02",
+  "repeat": 1,
+  "model": "haiku",
+  "backend": "cli",
+  "cost": 0.00085034,
+  "wall": 14.3,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 2
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": false,
+    "detail": {
+     "numbers": 9,
+     "ungrounded": [
+      "988,477"
+     ]
+    }
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": false,
+    "detail": [
+     "988,477"
+    ]
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "adv-02",
+  "repeat": 2,
+  "model": "haiku",
+  "backend": "cli",
+  "cost": 0.00057814,
+  "wall": 10.0,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 1
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": false,
+    "detail": [
+     "4,747,963",
+     "4,747,963"
+    ]
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "adv-02",
+  "repeat": 0,
+  "model": "sonnet",
+  "backend": "cli",
+  "cost": 0.0140516,
+  "wall": 11.8,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 2
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": false,
+    "detail": {
+     "numbers": 12,
+     "ungrounded": [
+      "967,550"
+     ]
+    }
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": false,
+    "detail": [
+     "3,735,813",
+     "855,195",
+     "112,355",
+     "23,357",
+     "19,213",
+     "1,714",
+     "306"
+    ]
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "adv-02",
+  "repeat": 1,
+  "model": "sonnet",
+  "backend": "cli",
+  "cost": 0.0144516,
+  "wall": 13.7,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 2
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": false,
+    "detail": [
+     "3,735,813",
+     "855,195",
+     "112,355",
+     "23,357",
+     "19,213",
+     "1,714",
+     "306"
+    ]
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "adv-02",
+  "repeat": 2,
+  "model": "sonnet",
+  "backend": "cli",
+  "cost": 0.0141916,
+  "wall": 11.9,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 2
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": false,
+    "detail": [
+     "3,735,813",
+     "855,195",
+     "112,355",
+     "23,357",
+     "19,213",
+     "1,714",
+     "306"
+    ]
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "adv-02",
+  "repeat": 0,
+  "model": "haiku",
+  "backend": "sdk",
+  "cost": 0.0008059,
+  "wall": 9.4,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 1
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "eng-01",
+  "repeat": 0,
+  "model": null,
+  "backend": "cli",
+  "cost": 0.0943058,
+  "wall": 25.7,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 4
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": false,
+    "detail": {
+     "numbers": 14,
+     "ungrounded": [
+      "74"
+     ]
+    }
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": false,
+    "detail": [
+     "13,409",
+     "6,803",
+     "65641",
+     "74"
+    ]
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": false,
+    "detail": [
+     "74->['E3']"
+    ]
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "eng-01",
+  "repeat": 1,
+  "model": null,
+  "backend": "cli",
+  "cost": 0.1318542,
+  "wall": 29.5,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": false,
+    "detail": [
+     "trend"
+    ]
+   },
+   {
+    "name": "tools.args",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 6
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": false,
+    "detail": {
+     "numbers": 28,
+     "ungrounded": [
+      "74",
+      "70"
+     ]
+    }
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": false,
+    "detail": [
+     "13,409",
+     "6,803",
+     "4988",
+     "65641",
+     "74",
+     "4988",
+     "5019",
+     "5020",
+     "5027",
+     "5028"
+    ]
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": false,
+    "detail": [
+     "74->['E3']",
+     "4988->['E4', 'E5']",
+     "5019->['E4', 'E5']",
+     "5020->['E4', 'E5']",
+     "5027->['E4', 'E5']",
+     "5028->['E4', 'E5']",
+     "65640->['E4', 'E5']"
+    ]
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "eng-01",
+  "repeat": 0,
+  "model": "haiku",
+  "backend": "cli",
+  "cost": 0.00211024,
+  "wall": 17.5,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 3
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": false,
+    "detail": [
+     "4980",
+     "4983",
+     "4984",
+     "4987"
+    ]
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "eng-01",
+  "repeat": 1,
+  "model": "haiku",
+  "backend": "cli",
+  "cost": 0.00225464,
+  "wall": 17.7,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 3
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": false,
+    "detail": [
+     "20,217",
+     "4978",
+     "4983",
+     "31",
+     "4984",
+     "4987"
+    ]
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "eng-01",
+  "repeat": 2,
+  "model": "haiku",
+  "backend": "cli",
+  "cost": 0.0020398400000000002,
+  "wall": 17.8,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 3
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": false,
+    "detail": [
+     "4983",
+     "4984",
+     "4985",
+     "4986",
+     "4987",
+     "4989",
+     "4990",
+     "4991",
+     "4992",
+     "4993"
+    ]
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": false,
+    "detail": [
+     "4983",
+     "4984",
+     "4985",
+     "4986",
+     "4987",
+     "4989",
+     "4990",
+     "4991",
+     "4992",
+     "4993"
+    ]
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "eng-01",
+  "repeat": 0,
+  "model": "sonnet",
+  "backend": "cli",
+  "cost": 0.0337072,
+  "wall": 18.9,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 2
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": false,
+    "detail": {
+     "numbers": 17,
+     "ungrounded": [
+      "36"
+     ]
+    }
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": false,
+    "detail": [
+     "20,217",
+     "4988",
+     "4980",
+     "4987",
+     "4980",
+     "4996",
+     "4989",
+     "4996"
+    ]
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": false,
+    "detail": [
+     "36->['E2']"
+    ]
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "eng-01",
+  "repeat": 1,
+  "model": "sonnet",
+  "backend": "cli",
+  "cost": 0.0316672,
+  "wall": 17.3,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 2
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": false,
+    "detail": {
+     "numbers": 13,
+     "ungrounded": [
+      "255"
+     ]
+    }
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": false,
+    "detail": [
+     "255"
+    ]
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": false,
+    "detail": [
+     "20,217",
+     "4988",
+     "4980",
+     "4987",
+     "4989",
+     "4996",
+     "255"
+    ]
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": false,
+    "detail": [
+     "255->['E1', 'E1', 'E2', 'E2', 'E2', 'E2']"
+    ]
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "eng-01",
+  "repeat": 2,
+  "model": "sonnet",
+  "backend": "cli",
+  "cost": 0.0331272,
+  "wall": 17.6,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 2
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": false,
+    "detail": {
+     "numbers": 21,
+     "ungrounded": [
+      "36",
+      "20,200"
+     ]
+    }
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": false,
+    "detail": [
+     "20,217",
+     "4980",
+     "4983",
+     "36",
+     "31",
+     "4984",
+     "4987",
+     "257",
+     "385",
+     "65"
+    ]
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": false,
+    "detail": [
+     "36->['E1', 'E1', 'E2', 'E2']"
+    ]
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "eng-01",
+  "repeat": 0,
+  "model": "haiku",
+  "backend": "sdk",
+  "cost": 0.00218374,
+  "wall": 12.7,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 3
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": false,
+    "detail": {
+     "numbers": 18,
+     "ungrounded": [
+      "40"
+     ]
+    }
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": false,
+    "detail": [
+     "4980",
+     "4987"
+    ]
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": false,
+    "detail": [
+     "20->['E3']",
+     "40->['E3']"
+    ]
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "mgr-04",
+  "repeat": 0,
+  "model": null,
+  "backend": "cli",
+  "cost": 0.08156959999999999,
+  "wall": 21.8,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 6
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "mgr-04",
+  "repeat": 1,
+  "model": null,
+  "backend": "cli",
+  "cost": 0.08392200000000001,
+  "wall": 22.6,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 7
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": false,
+    "detail": [
+     "4,324,651->['E6']"
+    ]
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "mgr-04",
+  "repeat": 0,
+  "model": "haiku",
+  "backend": "cli",
+  "cost": 0.00226217,
+  "wall": 27.4,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 7
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "mgr-04",
+  "repeat": 1,
+  "model": "haiku",
+  "backend": "cli",
+  "cost": 0.0024067100000000003,
+  "wall": 94.3,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 8
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "mgr-04",
+  "repeat": 2,
+  "model": "haiku",
+  "backend": "cli",
+  "cost": 0.0014583500000000002,
+  "wall": 27.5,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 4
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": false,
+    "detail": [
+     "4,324,651",
+     "626,450"
+    ]
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "mgr-04",
+  "repeat": 0,
+  "model": "sonnet",
+  "backend": "cli",
+  "cost": 0.0371074,
+  "wall": 25.8,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 7
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "mgr-04",
+  "repeat": 1,
+  "model": "sonnet",
+  "backend": "cli",
+  "cost": 0.037802,
+  "wall": 94.5,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 7
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "mgr-04",
+  "repeat": 2,
+  "model": "sonnet",
+  "backend": "cli",
+  "cost": 0.0369278,
+  "wall": 30.4,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 7
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "mgr-04",
+  "repeat": 0,
+  "model": "haiku",
+  "backend": "sdk",
+  "cost": 0.0012532,
+  "wall": 11.7,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 2
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "tl-01",
+  "repeat": 0,
+  "model": null,
+  "backend": "cli",
+  "cost": 0.0717254,
+  "wall": 23.3,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 5
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": false,
+    "detail": {
+     "numbers": 39,
+     "ungrounded": [
+      "32k",
+      "535k",
+      "30"
+     ]
+    }
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": false,
+    "detail": [
+     "32k",
+     "535k"
+    ]
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": false,
+    "detail": [
+     "535k"
+    ]
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": false,
+    "detail": [
+     "32k->['E5']",
+     "535k->['E3', 'E3', 'E5', 'E3', 'E5', 'E4', 'E4', 'E4', 'E4', 'E4', 'E4']"
+    ]
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "tl-01",
+  "repeat": 1,
+  "model": null,
+  "backend": "cli",
+  "cost": 0.0566294,
+  "wall": 21.4,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 4
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": false,
+    "detail": {
+     "numbers": 36,
+     "ungrounded": [
+      "40k",
+      "80k"
+     ]
+    }
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": false,
+    "detail": [
+     "40k",
+     "80k"
+    ]
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": false,
+    "detail": [
+     "37"
+    ]
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "tl-01",
+  "repeat": 0,
+  "model": "haiku",
+  "backend": "cli",
+  "cost": 0.0007287999999999999,
+  "wall": 11.2,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 1
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "tl-01",
+  "repeat": 1,
+  "model": "haiku",
+  "backend": "cli",
+  "cost": 0.0008508999999999999,
+  "wall": 16.2,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 2
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "tl-01",
+  "repeat": 2,
+  "model": "haiku",
+  "backend": "cli",
+  "cost": 0.0008909,
+  "wall": 10.6,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 2
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "tl-01",
+  "repeat": 0,
+  "model": "sonnet",
+  "backend": "cli",
+  "cost": 0.014322799999999998,
+  "wall": 12.0,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 2
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "tl-01",
+  "repeat": 1,
+  "model": "sonnet",
+  "backend": "cli",
+  "cost": 0.013632799999999999,
+  "wall": 15.7,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 2
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "tl-01",
+  "repeat": 2,
+  "model": "sonnet",
+  "backend": "cli",
+  "cost": 0.0140228,
+  "wall": 10.5,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 2
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "tl-01",
+  "repeat": 0,
+  "model": "haiku",
+  "backend": "sdk",
+  "cost": 0.0012471600000000002,
+  "wall": 11.3,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 2
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": false,
+    "detail": {
+     "numbers": 11,
+     "ungrounded": [
+      "854,986"
+     ]
+    }
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": false,
+    "detail": [
+     "626,450",
+     "73.3%",
+     "228,536",
+     "26.7%",
+     "206",
+     "0.02%"
+    ]
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": false,
+    "detail": [
+     "854,986->['E1']"
+    ]
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "tl-10",
+  "repeat": 0,
+  "model": null,
+  "backend": "cli",
+  "cost": 0.0364928,
+  "wall": 20.3,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 2
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "tl-10",
+  "repeat": 1,
+  "model": null,
+  "backend": "cli",
+  "cost": 0.042226200000000005,
+  "wall": 15.7,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 3
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": false,
+    "detail": {
+     "numbers": 17,
+     "ungrounded": [
+      "42k"
+     ]
+    }
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": false,
+    "detail": [
+     "42k"
+    ]
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "tl-10",
+  "repeat": 0,
+  "model": "haiku",
+  "backend": "cli",
+  "cost": 0.00100658,
+  "wall": 10.6,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 2
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": false,
+    "detail": {
+     "numbers": 8,
+     "ungrounded": [
+      "855,186"
+     ]
+    }
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": false,
+    "detail": [
+     "855,186"
+    ]
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": false,
+    "detail": [
+     "626,450",
+     "228,536",
+     "206"
+    ]
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": false,
+    "detail": [
+     "855,186->['E1']"
+    ]
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "tl-10",
+  "repeat": 1,
+  "model": "haiku",
+  "backend": "cli",
+  "cost": 0.0009608800000000002,
+  "wall": 14.2,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 2
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": false,
+    "detail": {
+     "numbers": 8,
+     "ungrounded": [
+      "854,986"
+     ]
+    }
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": false,
+    "detail": [
+     "854,986->['E1']"
+    ]
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "tl-10",
+  "repeat": 2,
+  "model": "haiku",
+  "backend": "cli",
+  "cost": 0.0009083800000000001,
+  "wall": 93.3,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 2
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "tl-10",
+  "repeat": 0,
+  "model": "sonnet",
+  "backend": "cli",
+  "cost": 0.0137924,
+  "wall": 9.3,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 2
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "tl-10",
+  "repeat": 1,
+  "model": "sonnet",
+  "backend": "cli",
+  "cost": 0.0137724,
+  "wall": 11.6,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 2
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "tl-10",
+  "repeat": 2,
+  "model": "sonnet",
+  "backend": "cli",
+  "cost": 0.0144764,
+  "wall": 97.6,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 2
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": false,
+    "detail": [
+     "626,450",
+     "228,536",
+     "206"
+    ]
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ },
+ {
+  "id": "tl-10",
+  "repeat": 0,
+  "model": "haiku",
+  "backend": "sdk",
+  "cost": 0.0011381,
+  "wall": 11.5,
+  "checks": [
+   {
+    "name": "tools.only_mcp",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.required",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "tools.any_of",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.forbidden",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.args",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "tools.count",
+    "passed": null,
+    "detail": 2
+   },
+   {
+    "name": "infra.tool_errors",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "ledger.one_entry_per_call",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_in_ledger",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.grounded_or_derived",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "numbers.golden_in_answer",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "structure.sections",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.resolve",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.numbers_near_citation",
+    "passed": false,
+    "detail": [
+     "626,450",
+     "73.3%",
+     "855,195",
+     "228,536",
+     "26.7%",
+     "206"
+    ]
+   },
+   {
+    "name": "citations.numbers_in_cited_block",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "citations.number_in_cited_entry",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "manager.no_invented_impact",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "unknowns.flagged",
+    "passed": true,
+    "detail": null
+   },
+   {
+    "name": "answer.forbid_regex",
+    "passed": null,
+    "detail": null
+   },
+   {
+    "name": "glossary.no_entry_count_as_incidents",
+    "passed": true,
+    "detail": null
+   }
+  ]
+ }
+]

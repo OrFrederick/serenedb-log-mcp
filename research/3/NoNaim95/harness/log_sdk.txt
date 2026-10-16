@@ -1,0 +1,7 @@
+Unknown child process pid 72274, will report returncode 255
+eng-01__sdk__haiku__r0: 3 calls, $0.00218374, 12.7s, err=False tools=['count_by', 'search_logs', 'get_context']
+tl-01__sdk__haiku__r0: 2 calls, $0.0012471600000000002, 11.3s, err=False tools=['count_by', 'describe_corpus']
+tl-10__sdk__haiku__r0: 2 calls, $0.0011381, 11.5s, err=False tools=['count_by', 'describe_corpus']
+mgr-04__sdk__haiku__r0: 2 calls, $0.0012532, 11.7s, err=False tools=['count_by', 'count_by']
+adv-01__sdk__haiku__r0: 3 calls, $0.00181156, 12.8s, err=False tools=['describe_corpus', 'trend', 'count_by']
+adv-02__sdk__haiku__r0: 1 calls, $0.0008059, 9.4s, err=False tools=['describe_corpus']

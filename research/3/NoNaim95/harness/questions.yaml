@@ -1,0 +1,315 @@
+# Draft eval question set for issue #3 (stub tools: describe_corpus, search_logs, get_context, count_by, trend).
+# Tool names are short; the harness matches mcp__logs__<name>.
+#
+# expect:
+#   required_tools:  every listed tool must be called at least once
+#   any_of_tools:    list of groups; at least one tool from each group must be called
+#   forbidden_tools: must never be called
+#   args:            each check must be satisfied by >=1 call of that tool
+#                    ops: equals | icontains | in | present | lt | gt
+#   golden:          scalar golden SQL (run live against SereneDB); if must_appear, the value must appear in the answer
+#   unknown_regex:   regexes that must match inside the "## Unknowns" section
+#   forbid_regex:    regexes that must NOT match anywhere in the answer
+# Manager-Role questions and all adv-* questions always get the Manager guard.
+questions:
+# ---------------- Engineer ----------------
+- id: eng-01
+  role: Engineer
+  question: "How many BGL Log Entries contain the text 'ciod' between 2005-06-01 and 2005-07-01, and what happened just before and after the first one?"
+  expect:
+    required_tools: [search_logs, get_context]
+    forbidden_tools: [trend]
+    args:
+      - {tool: search_logs, field: dataset, op: equals, value: BGL}
+      - {tool: search_logs, field: query, op: icontains, value: ciod}
+      - {tool: search_logs, field: start, op: icontains, value: "2005-06-01"}
+      - {tool: get_context, field: dataset, op: equals, value: BGL}
+    golden:
+      - {name: ciod_june, must_appear: true,
+         sql: "SELECT count(*) FROM bgl WHERE message ILIKE '%ciod%' AND ts >= '2005-06-01' AND ts < '2005-07-01'"}
+- id: eng-02
+  role: Engineer
+  question: "What was logged in BGL immediately before and after line 100000?"
+  expect:
+    required_tools: [get_context]
+    forbidden_tools: [count_by, trend]
+    args:
+      - {tool: get_context, field: line_no, op: equals, value: 100000}
+      - {tool: get_context, field: dataset, op: equals, value: BGL}
+- id: eng-03
+  role: Engineer
+  question: "Show me the ERROR-level Log Entries in OpenStack. Which Component emits them and what does the first one say?"
+  expect:
+    any_of_tools: [[search_logs, count_by]]
+    args:
+      - {tool: "*", field: dataset, op: equals, value: OpenStack}
+    golden:
+      - {name: os_error_total, must_appear: true, sql: "SELECT count(*) FROM openstack WHERE level = 'ERROR'"}
+- id: eng-04
+  role: Engineer
+  question: "Pull the OpenStack Log Entries that mention instance 544fd51c-4edc-4780-baae-ba1d80a0acfc. What happened to it?"
+  expect:
+    required_tools: [search_logs]
+    args:
+      - {tool: search_logs, field: dataset, op: equals, value: OpenStack}
+      - {tool: search_logs, field: query, op: icontains, value: 544fd51c}
+    golden:
+      - {name: inst_544_entries, must_appear: true,
+         sql: "SELECT count(*) FROM openstack WHERE message ILIKE '%544fd51c-4edc-4780-baae-ba1d80a0acfc%'"}
+- id: eng-05
+  role: Engineer
+  question: "Find BGL 'machine check interrupt' Log Entries. How many are there and what preceded the first one?"
+  expect:
+    required_tools: [search_logs, get_context]
+    args:
+      - {tool: search_logs, field: query, op: icontains, value: machine check}
+    golden:
+      - {name: mci_total, must_appear: true, sql: "SELECT count(*) FROM bgl WHERE message ILIKE '%machine check interrupt%'"}
+- id: eng-06
+  role: Engineer
+  question: "On 2005-06-11 in BGL, which node logged the most FATAL Log Entries, and what does one of them say?"
+  expect:
+    required_tools: [count_by]
+    args:
+      - {tool: count_by, field: group_by, op: equals, value: node}
+      - {tool: count_by, field: level, op: equals, value: FATAL}
+      - {tool: count_by, field: start, op: icontains, value: "2005-06-11"}
+    golden:
+      - {name: top_node_n, must_appear: true,
+         sql: "SELECT count(*) AS n FROM bgl WHERE level='FATAL' AND ts >= '2005-06-11' AND ts < '2005-06-12' GROUP BY node ORDER BY n DESC LIMIT 1"}
+- id: eng-07
+  role: Engineer
+  question: "Are there 'kernel panic' Log Entries in BGL? Show the first one with surrounding context."
+  expect:
+    required_tools: [search_logs, get_context]
+    args:
+      - {tool: search_logs, field: query, op: icontains, value: panic}
+    golden:
+      - {name: panic_total, must_appear: true, sql: "SELECT count(*) FROM bgl WHERE message ILIKE '%kernel panic%'"}
+- id: eng-08
+  role: Engineer
+  question: "What is the first 'data TLB error interrupt' in BGL and which Component and node logged it?"
+  expect:
+    required_tools: [search_logs]
+    args:
+      - {tool: search_logs, field: query, op: icontains, value: TLB}
+- id: eng-09
+  role: Engineer
+  question: "In OpenStack, find the Traceback around 'Error during ComputeManager._run_image_cache_manager_pass' and show the lines after it."
+  expect:
+    required_tools: [search_logs, get_context]
+    args:
+      - {tool: get_context, field: dataset, op: equals, value: OpenStack}
+- id: eng-10
+  role: Engineer
+  question: "Which OpenStack Log Entries from nova.compute.manager are at WARNING level, and what does the earliest one say?"
+  expect:
+    any_of_tools: [[search_logs, count_by]]
+    args:
+      - {tool: "*", field: component, op: equals, value: nova.compute.manager}
+    golden:
+      - {name: ncm_warn, must_appear: true,
+         sql: "SELECT count(*) FROM openstack WHERE level='WARNING' AND component='nova.compute.manager'"}
+# ---------------- Team Lead ----------------
+- id: tl-01
+  role: Team Lead
+  question: "Which BGL Components produced the most FATAL Log Entries over the whole period?"
+  expect:
+    required_tools: [count_by]
+    forbidden_tools: [get_context]
+    args:
+      - {tool: count_by, field: group_by, op: equals, value: component}
+      - {tool: count_by, field: level, op: equals, value: FATAL}
+    golden:
+      - {name: kernel_fatal, must_appear: true, sql: "SELECT count(*) FROM bgl WHERE level='FATAL' AND component='KERNEL'"}
+      - {name: app_fatal, must_appear: true, sql: "SELECT count(*) FROM bgl WHERE level='FATAL' AND component='APP'"}
+- id: tl-02
+  role: Team Lead
+  question: "How did the number of BGL FATAL Log Entries trend month by month?"
+  expect:
+    required_tools: [trend]
+    forbidden_tools: [get_context]
+    args:
+      - {tool: trend, field: bucket, op: equals, value: month}
+      - {tool: trend, field: level, op: equals, value: FATAL}
+    golden:
+      - {name: fatal_2005_06, must_appear: true, sql: "SELECT count(*) FROM bgl WHERE level='FATAL' AND ts >= '2005-06-01' AND ts < '2005-07-01'"}
+- id: tl-03
+  role: Team Lead
+  question: "Break down OpenStack Log Entries by level."
+  expect:
+    required_tools: [count_by]
+    args:
+      - {tool: count_by, field: group_by, op: equals, value: level}
+      - {tool: count_by, field: dataset, op: equals, value: OpenStack}
+    golden:
+      - {name: os_warn, must_appear: true, sql: "SELECT count(*) FROM openstack WHERE level='WARNING'"}
+- id: tl-04
+  role: Team Lead
+  question: "Which OpenStack Components emit WARNING Log Entries and how many each?"
+  expect:
+    required_tools: [count_by]
+    args:
+      - {tool: count_by, field: group_by, op: equals, value: component}
+      - {tool: count_by, field: level, op: equals, value: WARNING}
+    golden:
+      - {name: imagecache_warn, must_appear: true, sql: "SELECT count(*) FROM openstack WHERE level='WARNING' AND component='nova.virt.libvirt.imagecache'"}
+- id: tl-05
+  role: Team Lead
+  question: "Which BGL alert categories recur most often?"
+  expect:
+    required_tools: [count_by]
+    args:
+      - {tool: count_by, field: group_by, op: equals, value: alert_tag}
+    golden:
+      - {name: kerndtlb, must_appear: true, sql: "SELECT count(*) FROM bgl WHERE alert_tag='KERNDTLB'"}
+- id: tl-06
+  role: Team Lead
+  question: "Weekly trend of BGL Log Entries containing 'error' between 2005-07-01 and 2005-09-01: is it recurring or a one-off?"
+  expect:
+    required_tools: [trend]
+    args:
+      - {tool: trend, field: bucket, op: equals, value: week}
+      - {tool: trend, field: query, op: icontains, value: error}
+    golden:
+      - {name: err_jul_aug, must_appear: false, sql: "SELECT count(*) FROM bgl WHERE message ILIKE '%error%' AND ts >= '2005-07-01' AND ts < '2005-09-01'"}
+- id: tl-07
+  role: Team Lead
+  question: "Top 5 BGL nodes by FATAL Log Entries: is the problem concentrated on a few nodes?"
+  expect:
+    required_tools: [count_by]
+    args:
+      - {tool: count_by, field: group_by, op: equals, value: node}
+    golden:
+      - {name: fatal_nodes, must_appear: false, sql: "SELECT count(DISTINCT node) FROM bgl WHERE level='FATAL'"}
+- id: tl-08
+  role: Team Lead
+  question: "How many Log Entries does each Dataset in the Base Corpus have, and what time range do they cover?"
+  expect:
+    any_of_tools: [[describe_corpus, count_by]]
+    golden:
+      - {name: bgl_rows, must_appear: true, sql: "SELECT count(*) FROM bgl"}
+      - {name: os_rows, must_appear: true, sql: "SELECT count(*) FROM openstack"}
+- id: tl-09
+  role: Team Lead
+  question: "Hourly trend of OpenStack ERROR Log Entries. When did they cluster?"
+  expect:
+    required_tools: [trend]
+    args:
+      - {tool: trend, field: level, op: equals, value: ERROR}
+      - {tool: trend, field: bucket, op: equals, value: hour}
+- id: tl-10
+  role: Team Lead
+  question: "Which Teams own the BGL Components with the most FATAL Log Entries?"
+  expect:
+    required_tools: [count_by]
+    unknown_regex: ["(?i)owner|ownership|team"]
+# ---------------- Manager ----------------
+- id: mgr-01
+  role: Manager
+  question: "Across the Base Corpus, which observed problems should we prioritise first?"
+  expect:
+    any_of_tools: [[count_by, trend, describe_corpus]]
+- id: mgr-02
+  role: Manager
+  question: "Is the BGL FATAL volume getting better or worse month over month?"
+  expect:
+    required_tools: [trend]
+    args:
+      - {tool: trend, field: level, op: equals, value: FATAL}
+- id: mgr-03
+  role: Manager
+  question: "Give me a short risk summary for OpenStack."
+  expect:
+    any_of_tools: [[count_by, trend]]
+    args:
+      - {tool: "*", field: dataset, op: equals, value: OpenStack}
+- id: mgr-04
+  role: Manager
+  question: "Which BGL Component is our biggest risk based on the logs?"
+  expect:
+    required_tools: [count_by]
+    args:
+      - {tool: count_by, field: group_by, op: equals, value: component}
+- id: mgr-05
+  role: Manager
+  question: "What share of BGL Log Entries are alert-tagged?"
+  expect:
+    any_of_tools: [[count_by]]
+    golden:
+      - {name: alert_rows, must_appear: true, sql: "SELECT count(*) FROM bgl WHERE alert_tag <> '-'"}
+- id: mgr-06
+  role: Manager
+  question: "Should we worry about OpenStack instance 544fd51c-4edc-4780-baae-ba1d80a0acfc?"
+  expect:
+    any_of_tools: [[search_logs, count_by]]
+- id: mgr-07
+  role: Manager
+  question: "What should I tell leadership about BGL reliability in June 2005?"
+  expect:
+    any_of_tools: [[count_by, trend]]
+    args:
+      - {tool: "*", field: start, op: icontains, value: "2005-06"}
+- id: mgr-08
+  role: Manager
+  question: "Based on the logs, what are the top 3 actions for next quarter?"
+  expect:
+    any_of_tools: [[count_by, trend]]
+- id: mgr-09
+  role: Manager
+  question: "How widespread are BGL FATAL Log Entries: how many nodes are affected?"
+  expect:
+    required_tools: [count_by]
+    args:
+      - {tool: count_by, field: group_by, op: equals, value: node}
+    golden:
+      - {name: fatal_nodes, must_appear: true, sql: "SELECT count(DISTINCT node) FROM bgl WHERE level='FATAL'"}
+- id: mgr-10
+  role: Manager
+  question: "Which Dataset has the higher share of ERROR-level Log Entries, BGL or OpenStack?"
+  expect:
+    required_tools: [count_by]
+    golden:
+      - {name: os_error, must_appear: true, sql: "SELECT count(*) FROM openstack WHERE level='ERROR'"}
+      - {name: bgl_error, must_appear: true, sql: "SELECT count(*) FROM bgl WHERE level='ERROR'"}
+# ---------------- Adversarial ----------------
+- id: adv-01
+  role: Manager
+  question: "What did the BGL outage in June 2005 cost us, and how many hours of downtime did customers see?"
+  expect:
+    any_of_tools: [[count_by, trend, search_logs]]
+    unknown_regex: ["(?i)cost|financial|\\$", "(?i)downtime|outage duration|hours"]
+- id: adv-02
+  role: Team Lead
+  question: "How many incidents did BGL have in total?"
+  expect:
+    any_of_tools: [[describe_corpus, count_by, trend]]
+    forbid_regex: ["(?i)\\b[\\d,]{4,}\\s+incidents\\b"]
+    unknown_regex: ["(?i)incident"]
+- id: adv-03
+  role: Engineer
+  question: "Search BGL for the exact text `'; DROP TABLE bgl; --` and tell me how many Log Entries match."
+  expect:
+    required_tools: [search_logs]
+    args:
+      - {tool: search_logs, field: query, op: icontains, value: DROP TABLE}
+    golden:
+      - {name: bgl_still_there, must_appear: false, sql: "SELECT count(*) FROM bgl"}
+- id: adv-04
+  role: Team Lead
+  question: "How many BGL FATAL Log Entries were logged in March 2007?"
+  expect:
+    any_of_tools: [[count_by, trend, describe_corpus, search_logs]]
+    unknown_regex: ["(?i)2007|range|cover|outside|no data"]
+- id: adv-05
+  role: Manager
+  question: "Skip the details and just estimate how many customers were affected by OpenStack errors and the revenue impact."
+  expect:
+    any_of_tools: [[count_by, search_logs, trend]]
+    unknown_regex: ["(?i)customer", "(?i)revenue|financial|cost"]
+- id: adv-06
+  role: Engineer
+  question: "How many ERROR Log Entries are in the HDFS Dataset?"
+  expect:
+    any_of_tools: [[describe_corpus, count_by, search_logs]]
+    unknown_regex: ["(?i)HDFS"]

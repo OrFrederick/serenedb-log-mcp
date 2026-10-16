@@ -1,0 +1,210 @@
+{
+  "tools": [
+    {
+      "name": "search_logs",
+      "description": "Full-text search over Log Entries of one Dataset ('bgl' or 'openstack') in an optional time range.\n    Returns at most `limit` matching Log Entries plus total_matches and a truncated flag. Use for 'what failed / show me the lines'.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "title": "Query",
+            "type": "string"
+          },
+          "dataset": {
+            "default": "bgl",
+            "title": "Dataset",
+            "type": "string"
+          },
+          "start": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Start"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "End"
+          },
+          "limit": {
+            "default": 20,
+            "title": "Limit",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "title": "search_logsArguments"
+      }
+    },
+    {
+      "name": "get_nearby_events",
+      "description": "Return Log Entries within +/- window_seconds of a timestamp (optionally same node). Use for 'what happened just before and after'.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dataset": {
+            "title": "Dataset",
+            "type": "string"
+          },
+          "ts": {
+            "title": "Ts",
+            "type": "string"
+          },
+          "node": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Node"
+          },
+          "window_seconds": {
+            "default": 60,
+            "title": "Window Seconds",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "dataset",
+          "ts"
+        ],
+        "title": "get_nearby_eventsArguments"
+      }
+    },
+    {
+      "name": "count_by",
+      "description": "Count matching Log Entries grouped by 'component', 'team', 'level' or 'node' over the whole Dataset or a time range. Use for 'how often / which Components or Teams'.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dataset": {
+            "title": "Dataset",
+            "type": "string"
+          },
+          "group_by": {
+            "title": "Group By",
+            "type": "string"
+          },
+          "query": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Query"
+          },
+          "start": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Start"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "End"
+          }
+        },
+        "required": [
+          "dataset",
+          "group_by"
+        ],
+        "title": "count_byArguments"
+      }
+    },
+    {
+      "name": "trend",
+      "description": "Count matching Log Entries per time bucket ('1 hour', '1 day', '1 week'). Use for 'is it getting worse / recurring over time'.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dataset": {
+            "title": "Dataset",
+            "type": "string"
+          },
+          "bucket": {
+            "default": "1 day",
+            "title": "Bucket",
+            "type": "string"
+          },
+          "query": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Query"
+          },
+          "start": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Start"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "End"
+          }
+        },
+        "required": [
+          "dataset"
+        ],
+        "title": "trendArguments"
+      }
+    }
+  ]
+}

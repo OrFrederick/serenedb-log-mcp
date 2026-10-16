@@ -1,0 +1,15 @@
+38 Counter({'Engineer': 13, 'Manager': 13, 'Team Lead': 12}) 8 adversarial
+eng-01 152182 152182 OK 4ms
+eng-06 25 25 OK 1ms
+eng-08 3059 None OK 36ms
+tl-01 152734 152734 OK 2ms
+tl-02 225153 225153 OK 2ms
+tl-03 626450 626450 OK 3ms
+tl-04 3059 3059 OK 1ms
+tl-05 541 541 OK 4ms
+tl-06 154206 154206 OK 4ms
+tl-07 4955783 4955783 OK 1ms
+tl-09 3969 3969 OK 1ms
+mgr-08 152185 152185 OK 8ms
+adv-03 152183 152183 OK 1ms
+adv-07 855195 855195 OK 2ms

@@ -1,0 +1,145 @@
+{
+  "tools": [
+    {
+      "name": "count_by",
+      "description": "Count Log Entries grouped by one column, over a whole Dataset.\n\nPurpose: aggregation for Team Lead / Manager questions (how often, which Component).\nInputs: dataset ('bgl' or 'openstack'); group_by ('component', 'level', and for bgl also 'alert_label', 'rack');\nlevel: optional exact level filter (e.g. 'FATAL', 'ERROR'); alert_only: bgl only, keep alert lines;\nlimit: max groups returned (default 20).\nOutput: evidence_id (cite as [E<n>]), sql, data_scope, total_count (all matching Log Entries),\ngroups [[value, count], ...] sorted by count desc, truncated flag.\n",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dataset": {
+            "title": "Dataset",
+            "type": "string"
+          },
+          "group_by": {
+            "title": "Group By",
+            "type": "string"
+          },
+          "level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Level"
+          },
+          "alert_only": {
+            "default": false,
+            "title": "Alert Only",
+            "type": "boolean"
+          },
+          "limit": {
+            "default": 20,
+            "title": "Limit",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "dataset",
+          "group_by"
+        ],
+        "title": "count_byArguments"
+      }
+    },
+    {
+      "name": "search_logs",
+      "description": "Find Log Entries whose message contains a phrase, optionally inside a time window.\n\nPurpose: retrieval for Engineer questions (show me the failing lines).\nInputs: dataset ('bgl' or 'openstack'); text: case-insensitive substring of the message;\nstart/end: optional ISO timestamps; limit: max rows (default 10, max 50).\nOutput: evidence_id, sql, data_scope, total_count (all matches, not just returned), rows\n[line_no, ts, component/node, content], truncated flag (true when total_count > returned rows).\n",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dataset": {
+            "title": "Dataset",
+            "type": "string"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          },
+          "start": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Start"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "End"
+          },
+          "limit": {
+            "default": 10,
+            "title": "Limit",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "dataset",
+          "text"
+        ],
+        "title": "search_logsArguments"
+      }
+    },
+    {
+      "name": "trend",
+      "description": "Count Log Entries per time bucket (a trend over time).\n\nPurpose: Team Lead / Manager questions about recurrence and spikes.\nInputs: dataset ('bgl' or 'openstack'); bucket ('hour', 'day', 'month');\nalert_label: bgl only, exact alert category (e.g. 'KERNDTLB'); level: optional exact level.\nOutput: evidence_id, sql, data_scope, total_count, series [[bucket_start, count], ...] in time order.\n",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dataset": {
+            "title": "Dataset",
+            "type": "string"
+          },
+          "bucket": {
+            "default": "day",
+            "title": "Bucket",
+            "type": "string"
+          },
+          "alert_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Alert Label"
+          },
+          "level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Level"
+          }
+        },
+        "required": [
+          "dataset"
+        ],
+        "title": "trendArguments"
+      }
+    }
+  ]
+}

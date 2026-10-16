@@ -1,0 +1,1 @@
+{"mcpServers":{"logs":{"type":"stdio","command":"/Users/frederick/Development/LogSearcher-wt/3/research/3/OrFrederick/.venv/bin/python","args":["/Users/frederick/Development/LogSearcher-wt/3/research/3/OrFrederick/stub_server.py"],"env":{"LEDGER_PATH":"/Users/frederick/Development/LogSearcher-wt/3/research/3/OrFrederick/out_claude_p_ledger.jsonl"}}}}

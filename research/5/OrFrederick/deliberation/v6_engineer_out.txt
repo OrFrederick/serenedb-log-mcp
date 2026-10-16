@@ -1,0 +1,45 @@
+-- select alert_label, component, level, left(regexp_replace(content,'[0-9]+','N','g'),70) pat, count(*), min(ts), max(ts), count(distinct node) from bgl where ts between '2005-09-02 11:39' and '2005-09-
+-- 30 rows, 1.48s
+alert_label | component | level | pat | count | min | max | count
+- | MMCS | INFO | mmcs_db_server has been started: ./mmcs_db_server --useDatabase BGL -- | 1 | 2005-09-02 11:41:38.936416 | 2005-09-02 11:41:38.936416 | 1
+- | KERNEL | INFO | critical input interrupt (unit=NxNb bit=NxN): warning for tree BN wire | 3 | 2005-09-02 11:51:14.622723 | 2005-09-02 13:37:06.970659 | 2
+- | KERNEL | INFO | suppressing further interrupts of same type | 20 | 2005-09-02 11:51:14.732088 | 2005-09-02 13:38:35.305764 | 18
+- | KERNEL | INFO | critical input interrupt (unit=NxNb bit=NxN): warning for torus y+ wir | 4 | 2005-09-02 11:52:39.359549 | 2005-09-02 13:33:46.688887 | 3
+- | KERNEL | INFO | critical input interrupt (unit=NxNb bit=NxNb): warning for torus z- wi | 3 | 2005-09-02 11:53:30.394310 | 2005-09-02 13:38:35.182549 | 3
+- | KERNEL | INFO | critical input interrupt (unit=NxNb bit=NxN): warning for tree CN wire | 1 | 2005-09-02 11:54:03.391439 | 2005-09-02 11:54:03.391439 | 1
+- | KERNEL | INFO | critical input interrupt (unit=NxNb bit=NxN): warning for torus x- wir | 3 | 2005-09-02 11:54:04.503863 | 2005-09-02 13:07:08.180067 | 3
+- | KERNEL | INFO | N ddr errors(s) detected and corrected on rank N, symbol N, bit N | 64 | 2005-09-02 12:10:30.829142 | 2005-09-02 13:16:36.238900 | 48
+- | KERNEL | INFO | CE sym N, at NxN, mask NxN | 5 | 2005-09-02 12:10:30.929331 | 2005-09-02 13:10:06.264835 | 2
+- | KERNEL | INFO | total of N ddr error(s) detected and corrected | 64 | 2005-09-02 12:10:30.964933 | 2005-09-02 13:16:36.580188 | 48
+- | KERNEL | INFO | CE sym N, at NxNbfbNeN, mask NxN | 4 | 2005-09-02 12:10:35.126880 | 2005-09-02 13:08:42.623036 | 1
+- | KERNEL | INFO | CE sym N, at NxNccN, mask NxN | 1 | 2005-09-02 12:10:35.408500 | 2005-09-02 12:10:35.408500 | 1
+- | KERNEL | INFO | CE sym N, at NxNeNeN, mask NxN | 9 | 2005-09-02 12:10:35.793685 | 2005-09-02 13:11:25.552980 | 2
+- | KERNEL | INFO | CE sym N, at NxNeN, mask NxN | 24 | 2005-09-02 12:10:35.867358 | 2005-09-02 13:14:07.023890 | 4
+- | KERNEL | INFO | CE sym N, at NxNbNdN, mask NxN | 1 | 2005-09-02 12:10:36.452476 | 2005-09-02 12:10:36.452476 | 1
+- | KERNEL | INFO | CE sym N, at NxNceeN, mask NxN | 35 | 2005-09-02 12:10:36.513833 | 2005-09-02 13:08:43.161715 | 1
+- | KERNEL | INFO | CE sym N, at NxNccNfNeN, mask NxN | 1 | 2005-09-02 12:10:36.715991 | 2005-09-02 12:10:36.715991 | 1
+- | KERNEL | INFO | CE sym N, at NxNfaNdN, mask NxN | 2 | 2005-09-02 12:10:36.732072 | 2005-09-02 13:08:38.942007 | 1
+- | KERNEL | INFO | N torus receiver x+ input pipe error(s) (dcr NxNec) detected and corre | 3 | 2005-09-02 12:11:50.604629 | 2005-09-02 12:18:57.800755 | 3
+- | KERNEL | INFO | N torus receiver z- input pipe error(s) (dcr NxNfN) detected and corre | 2 | 2005-09-02 12:11:50.662419 | 2005-09-02 12:14:48.728530 | 2
+- | KERNEL | INFO | N tree receiver N in re-synch state event(s) (dcr NxN) detected | 3 | 2005-09-02 12:11:50.678810 | 2005-09-02 13:11:25.138854 | 2
+- | KERNEL | INFO | N tree receiver N in re-synch state event(s) (dcr NxNa) detected | 6 | 2005-09-02 12:11:50.696004 | 2005-09-02 13:14:06.356018 | 4
+- | KERNEL | INFO | CE sym N, at NxNdN, mask NxN | 2 | 2005-09-02 12:11:52.748545 | 2005-09-02 13:14:06.819272 | 2
+- | KERNEL | INFO | CE sym N, at NxNecN, mask NxN | 1 | 2005-09-02 12:11:55.037253 | 2005-09-02 12:11:55.037253 | 1
+- | KERNEL | INFO | CE sym N, at NxNfdN, mask NxN | 1 | 2005-09-02 12:11:55.053413 | 2005-09-02 12:11:55.053413 | 1
+- | KERNEL | INFO | critical input interrupt (unit=NxNb bit=NxN): warning for torus x+ wir | 2 | 2005-09-02 12:12:01.888792 | 2005-09-02 12:56:09.314136 | 2
+- | KERNEL | INFO | critical input interrupt (unit=NxNb bit=NxNf): warning for tree AN wir | 1 | 2005-09-02 12:12:47.961668 | 2005-09-02 12:12:47.961668 | 1
+- | KERNEL | INFO | CE sym N, at NxNfeafN, mask NxN | 1 | 2005-09-02 12:13:08.006512 | 2005-09-02 12:13:08.006512 | 1
+- | KERNEL | INFO | CE sym N, at NxNbN, mask NxN | 2 | 2005-09-02 12:13:08.020198 | 2005-09-02 13:12:38.581686 | 1
+- | KERNEL | INFO | CE sym N, at NxNaaN, mask NxN | 6 | 2005-09-02 12:13:08.301259 | 2005-09-02 13:11:25.227375 | 1
+-- select alert_label, component, level, left(regexp_replace(content,'[0-9]+','N','g'),60) pat, count(*), min(ts), max(ts), count(distinct node) from bgl where ts between '2005-09-02 12:20' and '2005-09-
+-- 2 rows, 0.68s
+alert_label | component | level | pat | count | min | max | count
+KERNMNTF | KERNEL | FATAL | Lustre mount FAILED : bglioN : point /p/gbN | 1024 | 2005-09-02 12:39:01.763282 | 2005-09-02 12:41:27.158967 | 1024
+LINKIAP | LINKCARD | FATAL | MidplaneSwitchController::receiveTrain() iap failed: RN-MN-L | 6 | 2005-09-02 12:55:52.121692 | 2005-09-02 13:00:51.886795 | 1
+-- select count(*) from bgl where ts between '2005-09-02 12:20' and '2005-09-02 13:10'
+-- 1 rows, 0.11s
+count
+1089
+-- select ts, node, alert_label, left(content,90) from bgl where ts between '2005-09-02 12:30' and '2005-09-02 12:39:01.5' order by ts desc limit 8
+-- 0 rows, 3.67s
+ts | node | alert_label | left

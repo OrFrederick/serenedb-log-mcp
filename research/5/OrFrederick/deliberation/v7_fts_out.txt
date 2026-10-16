@@ -1,0 +1,3 @@
+psycopg.errors.SyntaxError: syntax error at or near "AS"
+LINE 1: CREATE TEXT SEARCH DICTIONARY r5d_dict AS split_text(case :=...
+                                               ^

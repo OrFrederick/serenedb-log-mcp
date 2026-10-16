@@ -1,0 +1,48 @@
+-- select date_trunc('month', ts) m, count(distinct node) io_nodes, count(distinct rack) racks, count(*) lines from bgl where node like '%-I:%' group by 1 order by 1
+-- 8 rows, 0.72s
+m | io_nodes | racks | lines
+2005-06-01 00:00:00 | 512 | 32 | 20220
+2005-07-01 00:00:00 | 512 | 32 | 16356
+2005-08-01 00:00:00 | 1024 | 64 | 81876
+2005-09-01 00:00:00 | 1024 | 64 | 82854
+2005-10-01 00:00:00 | 1024 | 64 | 52011
+2005-11-01 00:00:00 | 1024 | 64 | 98666
+2005-12-01 00:00:00 | 1024 | 64 | 47529
+2006-01-01 00:00:00 | 658 | 64 | 1411
+-- select date_trunc('month', ts) m, count(distinct rack) racks_any, count(distinct midplane) mps, count(distinct node) nodes from bgl where node ~ '^R[0-9A-F]{2}-M' group by 1 order by 1
+-- 8 rows, 3.25s
+m | racks_any | mps | nodes
+2005-06-01 00:00:00 | 32 | 64 | 33386
+2005-07-01 00:00:00 | 32 | 64 | 34089
+2005-08-01 00:00:00 | 64 | 128 | 37596
+2005-09-01 00:00:00 | 64 | 128 | 5810
+2005-10-01 00:00:00 | 64 | 128 | 6230
+2005-11-01 00:00:00 | 64 | 128 | 36159
+2005-12-01 00:00:00 | 64 | 128 | 67109
+2006-01-01 00:00:00 | 64 | 128 | 868
+-- select first_d, count(*) racks from (select rack, min(ts)::date first_d from bgl where rack is not null and node ~ '^R' group by rack) x group by 1 order by 1
+-- 4 rows, 7.77s
+first_d | racks
+2005-06-03 | 23
+2005-06-04 | 9
+2005-08-03 | 7
+2005-08-04 | 25
+-- select ts::date d, count(distinct node) io from bgl where node like '%-I:%' and ts between '2005-08-20' and '2005-09-05' group by 1 order by 1
+-- 16 rows, 0.31s
+d | io
+2005-08-20 | 1024
+2005-08-21 | 7
+2005-08-22 | 1024
+2005-08-23 | 1024
+2005-08-24 | 25
+2005-08-25 | 700
+2005-08-26 | 576
+2005-08-27 | 7
+2005-08-28 | 412
+2005-08-29 | 1024
+2005-08-30 | 806
+2005-08-31 | 1024
+2005-09-01 | 1024
+2005-09-02 | 1024
+2005-09-03 | 1016
+2005-09-04 | 1024

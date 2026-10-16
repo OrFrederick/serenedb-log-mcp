@@ -1,0 +1,20 @@
+-- with t as (select instance_id, regexp_extract(content, 'Took ([0-9.]+) seconds to spawn', 1)::double s, source_file from openstack where content like '%seconds to spawn the instance%') select left(ins
+-- 7 rows, 10.96s
+left | s | source_file | lab
+a445709b | 50.72 | openstack_abnormal.log | True
+544fd51c | 41.81 | openstack_abnormal.log | True
+1643649d | 31.27 | openstack_abnormal.log | True
+ae651dff | 29.46 | openstack_abnormal.log | True
+d7d68893 | 26.69 | openstack_abnormal.log | False
+f0ff0b46 | 22.56 | openstack_normal2.log | False
+35ef7d14 | 22.17 | openstack_normal2.log | False
+-- with t as (select instance_id, max(case when content like '%Creating image%' then ts end) ci, min(case when content like '%VM Started%' then ts end) vs from openstack where instance_id is not null gro
+-- 7 rows, 0.85s
+left | img | lab
+a445709b | 44.4539999961853 | True
+544fd51c | 34.6470000743866 | True
+1643649d | 25.217000007629395 | True
+ae651dff | 22.444000005722046 | True
+d7d68893 | 19.807999849319458 | False
+02efdf3e | 15.29800009727478 | False
+69771f65 | 15.183000087738037 | False

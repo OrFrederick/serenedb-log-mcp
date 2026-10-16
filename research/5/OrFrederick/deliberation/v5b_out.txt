@@ -1,0 +1,22 @@
+-- create table r5d_appsev_inc as
+with a as (select ts, epoch, node, midplane from bgl where alert_label='APPSEV'),
+g as (select *, case when epoch - lag(epoch) over (order by epoch, node) <= 300 then 0 
+-- 0 rows, 18.31s
+-- select count(*), sum(lines) from r5d_appsev_inc
+-- 1 rows, 0.13s
+count | sum
+136 | 49651
+-- select sum(case when t0 > timestamp '2006-01-04 08:00:05' - interval '28 days' then 1 else 0 end) inc_last28, sum(case when t0 <= timestamp '2006-01-04 08:00:05' - interval '28 days' then 1 else 0 end
+-- 1 rows, 0.10s
+inc_last28 | inc_earlier
+37 | 99
+-- select date_trunc('month', t0) m, count(*) inc, sum(lines) lines, sum(case when mps>=64 then 1 else 0 end) mw from r5d_appsev_inc group by 1 order by 1
+-- 7 rows, 0.05s
+m | inc | lines | mw
+2005-07-01 00:00:00 | 1 | 6 | 0
+2005-08-01 00:00:00 | 18 | 7808 | 8
+2005-09-01 00:00:00 | 17 | 9248 | 8
+2005-10-01 00:00:00 | 10 | 4511 | 3
+2005-11-01 00:00:00 | 35 | 12996 | 16
+2005-12-01 00:00:00 | 53 | 14952 | 16
+2006-01-01 00:00:00 | 2 | 130 | 0

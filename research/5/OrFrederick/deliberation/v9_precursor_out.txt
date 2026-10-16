@@ -1,0 +1,13 @@
+-- select count(*) gb1_inc, sum(case when exists (select 1 from r5d_appsev_inc a where a.t0 between m.t0 - interval '10 minutes' and m.t0) then 1 else 0 end) appsev_within10m_before from r5d_mntf_inc m w
+-- 1 rows, 1.67s
+gb1_inc | appsev_within10m_before
+83 | 1
+-- select count(*) probes, sum(case when exists (select 1 from r5d_appsev_inc a where a.t0 between p.t - interval '10 minutes' and p.t) then 1 else 0 end) hit from (select t0 + interval '3 hours' t from 
+-- 1 rows, 0.12s
+probes | hit
+83 | 0
+-- with a as (select node, epoch, alert_label, content, lag(alert_label) over (partition by node order by epoch) pl, epoch - lag(epoch) over (partition by node order by epoch) dt from bgl where alert_lab
+-- 2 rows, 18.31s
+v | mntf_lines | appsev_prev_60s
+gb1 | 26426 | 100
+block_id | 5105 | 0

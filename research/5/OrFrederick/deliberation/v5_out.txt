@@ -1,0 +1,24 @@
+-- select regexp_replace(regexp_replace(content, '[0-9]+', 'N', 'g'), 'bglio[N]+', 'bglioN', 'g') pat, count(*), min(ts), max(ts) from bgl where alert_label='KERNMNTF' group by 1 order by 2 desc limit 10
+-- 2 rows, 1.32s
+pat | count | min | max
+Lustre mount FAILED : bglioN : point /p/gbN | 26426 | 2005-08-31 18:41:43.225714 | 2005-09-16 20:35:26.876154
+Lustre mount FAILED : bglioN : block_id : location | 5105 | 2005-08-03 15:35:34.555500 | 2006-01-03 13:11:16.422700
+-- select min(ts), max(ts) from bgl
+-- 1 rows, 0.29s
+min | max
+2005-06-03 15:42:50.363779 | 2006-01-04 08:00:05.233639
+-- with d as (select max(ts) e from bgl) select sum(case when ts > e - interval '28 days' then 1 else 0 end) last28, sum(case when ts <= e - interval '28 days' then 1 else 0 end) earlier, min(ts) first f
+-- 1 rows, 0.60s
+last28 | earlier | first
+10960 | 38691 | 2005-07-20 11:54:27.005995
+-- select date_trunc('week', ts) w, count(*) from bgl where alert_label='APPSEV' and ts >= '2005-10-24' group by 1 order by 1
+-- 8 rows, 7.48s
+w | count
+2005-11-14 00:00:00 | 1211
+2005-11-21 00:00:00 | 9881
+2005-11-28 00:00:00 | 5624
+2005-12-05 00:00:00 | 1127
+2005-12-12 00:00:00 | 6849
+2005-12-19 00:00:00 | 1162
+2005-12-26 00:00:00 | 2094
+2006-01-02 00:00:00 | 130

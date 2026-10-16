@@ -1,0 +1,168 @@
+=== corpus_by_dataset  rows=2  median_wall=96ms  runs=[146, 70, 96]
+dataset | entries | error_or_worse | components | first_ts | last_ts
+BGL | 4747963 | 988477 | 14 | 2005-06-03 15:42:50.363779 | 2006-01-04 08:00:05.233639
+OpenStack | 207820 | 188 | 12 | 2017-05-14 19:39:01.445000 | 2017-05-17 12:02:35.320000
+=== A_share_of_alerts  rows=5  median_wall=99ms  runs=[99, 98, 272]
+node | alerts | pct_of_all_alerts
+R30-M0-N9-C:J16-U01 | 152185 | 43.67
+NULL | 271 | 0.08
+R00-M0-NC-I:J18-U11 | 169 | 0.05
+R63-M0-L2-U21-A | 160 | 0.05
+R50-M1-NC-I:J18-U11 | 148 | 0.04
+=== A_search_dtlb  rows=5  median_wall=145ms  runs=[210, 145, 54]
+node | n | first_ts | last_ts | active_minutes
+R30-M0-N9-C:J16-U01 | 152182 | 2005-06-11 17:17:44.898186 | 2005-06-11 23:39:32.877740 | 383
+R22-M0-N7-C:J09-U01 | 3 | 2005-06-05 04:22:46.682254 | 2005-06-05 07:07:58.855068 | 3
+R22-M0-N7-C:J04-U01 | 3 | 2005-06-05 04:22:46.993259 | 2005-06-05 07:07:58.954255 | 3
+R25-M0-NA-C:J14-U01 | 3 | 2005-06-05 00:09:36.962962 | 2005-06-05 01:19:15.351360 | 3
+R36-M0-N0-C:J08-U01 | 2 | 2005-06-05 07:43:34.705175 | 2005-06-05 08:31:42.427433 | 2
+=== A_before  rows=2  median_wall=6ms  runs=[12, 5, 6]
+ts | alert_tag | level | message
+2005-06-11 17:17:44.605961 | KERNMC | FATAL | machine check interrupt (bit=0x10): L2 DCU read error
+2005-06-11 17:17:44.898186 | KERNDTLB | FATAL | data TLB error interrupt
+=== A_after  rows=3  median_wall=5ms  runs=[5, 6, 5]
+ts | node | component | message
+2005-06-11 23:39:55.755393 | NULL | MMCS | idoproxydb has been started: $Name: DRV142_2005 $ Input parameters: -enableflush -loguserinfo db.properties BlueGene1
+2005-06-11 23:39:56.159912 | NULL | MMCS | mmcs_db_server has been started: ./mmcs_db_server --useDatabase BGL --dbproperties serverdb.properties --iolog /bgl/BlueLight/logs/BGL --rec
+2005-06-11 23:39:56.165228 | NULL | MMCS | ciodb has been restarted.
+=== A_recur_l2dcu  rows=4  median_wall=75ms  runs=[75, 66, 79]
+ts | node | alert_tag | message
+2005-06-11 17:17:44.605961 | R30-M0-N9-C:J16-U01 | KERNMC | machine check interrupt (bit=0x10): L2 DCU read error
+2005-06-13 04:47:27.880778 | R30-M0-N9-C:J16-U01 | KERNMC | machine check interrupt (bit=0x10): L2 DCU read error
+2005-06-13 04:47:31.679821 | R30-M0-N9-C:J16-U01 | KERNRTSP | rts panic! - stopping execution
+2005-08-06 15:42:17.648520 | R53-M1-NC-C:J06-U01 | KERNMC | machine check interrupt (bit=0x10): L2 DCU read error
+=== A_hourly  rows=16  median_wall=10ms  runs=[10, 5, 10]
+h | all_entries | dtlb
+2005-06-11 04:00:00 | 2 | 0
+2005-06-11 08:00:00 | 6 | 0
+2005-06-11 09:00:00 | 1 | 0
+2005-06-11 10:00:00 | 37 | 0
+2005-06-11 12:00:00 | 8 | 0
+2005-06-11 14:00:00 | 6 | 0
+2005-06-11 15:00:00 | 1 | 0
+2005-06-11 17:00:00 | 17628 | 17626
+2005-06-11 18:00:00 | 24322 | 24321
+2005-06-11 19:00:00 | 23309 | 22891
+2005-06-11 20:00:00 | 23848 | 23848
+2005-06-11 21:00:00 | 23847 | 23847
+2005-06-11 22:00:00 | 23675 | 23675
+2005-06-11 23:00:00 | 15979 | 15974
+2005-06-12 00:00:00 | 245 | 0
+2005-06-12 01:00:00 | 33 | 0
+=== TL_episodes  rows=10  median_wall=262ms  runs=[276, 262, 212]
+alert_tag | entries | episodes_30m_gap | nodes | days_active | midplanes
+KERNDTLB | 152734 | 22 | 541 | 11 | 44
+KERNSTOR | 63491 | 5 | 22529 | 5 | 45
+APPSEV | 49651 | 130 | 1024 | 67 | 128
+KERNMNTF | 31531 | 57 | 1024 | 25 | 128
+KERNTERM | 23338 | 44 | 9524 | 28 | 128
+KERNREC | 6145 | 9 | 4609 | 7 | 10
+APPREAD | 5983 | 7 | 512 | 5 | 64
+KERNRTSP | 3983 | 236 | 3394 | 124 | 103
+APPRES | 2370 | 13 | 1014 | 10 | 128
+APPUNAV | 2048 | 2 | 1024 | 2 | 128
+=== TL_weekly_top  rows=62  median_wall=24ms  runs=[64, 20, 24]
+week | alert_tag | n
+2005-05-30 00:00:00 | KERNDTLB | 477
+2005-06-06 00:00:00 | KERNDTLB | 152182
+2005-06-13 00:00:00 | KERNSTOR | 63488
+2005-06-27 00:00:00 | KERNTERM | 512
+2005-07-04 00:00:00 | KERNTERM | 649
+2005-07-11 00:00:00 | KERNDTLB | 1
+2005-07-11 00:00:00 | KERNTERM | 1709
+2005-07-18 00:00:00 | APPSEV | 6
+2005-07-18 00:00:00 | KERNDTLB | 30
+2005-07-18 00:00:00 | KERNTERM | 1788
+2005-07-25 00:00:00 | KERNTERM | 93
+2005-08-01 00:00:00 | APPSEV | 523
+2005-08-01 00:00:00 | KERNMNTF | 8
+2005-08-08 00:00:00 | APPSEV | 3072
+2005-08-08 00:00:00 | KERNTERM | 783
+2005-08-15 00:00:00 | APPSEV | 1060
+2005-08-15 00:00:00 | KERNDTLB | 29
+2005-08-15 00:00:00 | KERNMNTF | 24
+2005-08-15 00:00:00 | KERNTERM | 7670
+2005-08-22 00:00:00 | APPSEV | 2556
+2005-08-22 00:00:00 | KERNDTLB | 4
+2005-08-22 00:00:00 | KERNMNTF | 670
+2005-08-22 00:00:00 | KERNTERM | 2896
+2005-08-29 00:00:00 | APPSEV | 697
+2005-08-29 00:00:00 | KERNMNTF | 14689
+2005-09-05 00:00:00 | APPSEV | 1972
+2005-09-05 00:00:00 | KERNMNTF | 8402
+2005-09-05 00:00:00 | KERNTERM | 575
+2005-09-12 00:00:00 | APPSEV | 2803
+2005-09-12 00:00:00 | KERNMNTF | 3631
+2005-09-19 00:00:00 | APPSEV | 16
+2005-09-19 00:00:00 | KERNTERM | 512
+2005-09-26 00:00:00 | APPSEV | 5044
+2005-10-03 00:00:00 | APPSEV | 1910
+2005-10-03 00:00:00 | KERNMNTF | 128
+2005-10-10 00:00:00 | APPSEV | 1861
+2005-10-10 00:00:00 | KERNMNTF | 866
+2005-10-10 00:00:00 | KERNTERM | 7
+2005-10-17 00:00:00 | APPSEV | 53
+2005-10-24 00:00:00 | KERNMNTF | 673
+=== B_spawn_dist  rows=4  median_wall=42ms  runs=[51, 42, 24]
+source_file | grp | n | mn | p50 | p95 | mx
+openstack_abnormal.log | labelled_anomaly | 4 | 29.46 | 36.54 | 49.38 | 50.72
+openstack_abnormal.log | other | 193 | 18.09 | 19.76 | 21.01 | 26.69
+openstack_normal1.log | other | 556 | 10.12 | 19.73 | 21.02 | 22.15
+openstack_normal2.log | other | 1313 | 18.29 | 19.74 | 20.96 | 22.56
+=== B_top_spawns  rows=6  median_wall=14ms  runs=[32, 14, 12]
+source_file | instance_id | ts | s
+openstack_abnormal.log | a445709b-6ad0-40ec-8860-bec60b6ca0c2 | 2017-05-14 21:43:33.762000 | 50.72
+openstack_abnormal.log | 544fd51c-4edc-4780-baae-ba1d80a0acfc | 2017-05-14 21:08:19.736000 | 41.81
+openstack_abnormal.log | 1643649d-2f42-4303-bfcd-7798baec19f9 | 2017-05-14 21:47:20.593000 | 31.27
+openstack_abnormal.log | ae651dff-c7ad-43d6-ac96-bbcd820ccca8 | 2017-05-14 21:09:11.081000 | 29.46
+openstack_abnormal.log | d7d68893-c44f-4e7c-8d4b-0e7801d62776 | 2017-05-14 21:45:04.509000 | 26.69
+openstack_normal2.log | f0ff0b46-b3cd-43e6-97eb-839fd1cdaa87 | 2017-05-16 16:49:11.697000 | 22.56
+=== B_phase  rows=4  median_wall=18ms  runs=[26, 15, 18]
+source_file | g | n | img_to_started_p50 | img_to_started_max | started_to_resumed_p50
+openstack_abnormal.log | labelled_anomaly | 4 | 29.93 | 44.45 | 6.63
+openstack_abnormal.log | other | 193 | 13.07 | 19.81 | 6.68
+openstack_normal1.log | other | 556 | 13.07 | 15.3 | 6.65
+openstack_normal2.log | other | 1313 | 13.08 | 15.02 | 6.63
+=== B_errors_by_file  rows=3  median_wall=5ms  runs=[5, 5, 4]
+source_file | n | err | warn
+openstack_abnormal.log | 18434 | 0 | 275
+openstack_normal1.log | 52312 | 25 | 855
+openstack_normal2.log | 137074 | 163 | 1988
+=== B_api_latency  rows=6  median_wall=222ms  runs=[222, 252, 208]
+endpoint | source_file | n | p50 | p99 | mx
+GET /v2/{tenant}/servers/detail | openstack_abnormal.log | 6519 | 0.264 | 0.437 | 0.547
+GET /v2/{tenant}/servers/detail | openstack_normal1.log | 18210 | 0.264 | 0.439 | 0.675
+GET /v2/{tenant}/servers/detail | openstack_normal2.log | 42987 | 0.265 | 0.435 | 4.164
+POST /v2/{tenant}/servers | openstack_abnormal.log | 196 | 0.507 | 0.784 | 0.944
+POST /v2/{tenant}/servers | openstack_normal1.log | 556 | 0.504 | 0.732 | 0.879
+POST /v2/{tenant}/servers | openstack_normal2.log | 1313 | 0.503 | 0.774 | 1.793
+=== B_timeline_search  rows=28  median_wall=20ms  runs=[21, 20, 19]
+ts | f | component | message
+2017-05-14 21:42:42.319000 | nova-compute | nova.compute.claims | [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] Attempting claim: memory 2048 MB, disk 20 GB, vcpus 1 CPU
+2017-05-14 21:42:42.320000 | nova-compute | nova.compute.claims | [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] Total memory: 64172 MB, used: 512.00 MB
+2017-05-14 21:42:42.321000 | nova-compute | nova.compute.claims | [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] memory limit: 96258.00 MB, free: 95746.00 MB
+2017-05-14 21:42:42.322000 | nova-compute | nova.compute.claims | [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] Total disk: 15 GB, used: 0.00 GB
+2017-05-14 21:42:42.324000 | nova-compute | nova.compute.claims | [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] disk limit not specified, defaulting to unlimited
+2017-05-14 21:42:42.324000 | nova-compute | nova.compute.claims | [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] Total vcpu: 16 VCPU, used: 0.00 VCPU
+2017-05-14 21:42:42.325000 | nova-compute | nova.compute.claims | [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] vcpu limit not specified, defaulting to unlimited
+2017-05-14 21:42:42.360000 | nova-compute | nova.compute.claims | [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] Claim successful
+2017-05-14 21:42:42.378000 | nova-api | nova.osapi_compute.wsgi.server | 10.11.10.1 "GET /v2/54fadb412c4e40cdbaed9335e4c35a9e/servers/a445709b-6ad0-40ec-8860-bec60b6ca0c2 HTTP/1.1" status: 200 len: 1580 time: 0.18
+2017-05-14 21:42:43.044000 | nova-compute | nova.virt.libvirt.driver | [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] Creating image
+2017-05-14 21:43:27.498000 | nova-compute | nova.compute.manager | [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] VM Started (Lifecycle Event)
+2017-05-14 21:43:27.561000 | nova-compute | nova.compute.manager | [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] VM Paused (Lifecycle Event)
+2017-05-14 21:43:27.679000 | nova-compute | nova.compute.manager | [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] During sync_power_state the instance has a pending task (spawning). Skip.
+2017-05-14 21:43:33.736000 | nova-api | nova.api.openstack.compute.server_external_events | Creating event network-vif-plugged:bf282979-a02f-4623-b074-9e29131ca97a for instance a445709b-6ad0-40ec-8860-bec60b6ca0c2
+2017-05-14 21:43:33.752000 | nova-compute | nova.compute.manager | [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] VM Resumed (Lifecycle Event)
+2017-05-14 21:43:33.761000 | nova-compute | nova.virt.libvirt.driver | [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] Instance spawned successfully.
+2017-05-14 21:43:33.762000 | nova-compute | nova.compute.manager | [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] Took 50.72 seconds to spawn the instance on the hypervisor.
+2017-05-14 21:43:33.869000 | nova-compute | nova.compute.manager | [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] During sync_power_state the instance has a pending task (spawning). Skip.
+2017-05-14 21:43:33.870000 | nova-compute | nova.compute.manager | [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] VM Resumed (Lifecycle Event)
+2017-05-14 21:43:33.901000 | nova-compute | nova.compute.manager | [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] Took 51.59 seconds to build instance.
+2017-05-14 21:43:41.514000 | nova-api | nova.osapi_compute.wsgi.server | 10.11.10.1 "DELETE /v2/54fadb412c4e40cdbaed9335e4c35a9e/servers/a445709b-6ad0-40ec-8860-bec60b6ca0c2 HTTP/1.1" status: 204 len: 203 time: 0.
+2017-05-14 21:43:41.553000 | nova-compute | nova.compute.manager | [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] Terminating instance
+2017-05-14 21:43:41.771000 | nova-compute | nova.virt.libvirt.driver | [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] Instance destroyed successfully.
+2017-05-14 21:43:42.454000 | nova-compute | nova.virt.libvirt.driver | [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] Deleting instance files /var/lib/nova/instances/a445709b-6ad0-40ec-8860-bec60b6ca0c2_del
+2017-05-14 21:43:42.456000 | nova-compute | nova.virt.libvirt.driver | [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] Deletion of /var/lib/nova/instances/a445709b-6ad0-40ec-8860-bec60b6ca0c2_del complete
+2017-05-14 21:43:42.575000 | nova-compute | nova.compute.manager | [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] Took 1.02 seconds to destroy the instance on the hypervisor.
+2017-05-14 21:43:43.198000 | nova-compute | nova.compute.manager | [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] Took 0.62 seconds to deallocate network for instance.
+2017-05-14 21:43:56.880000 | nova-compute | nova.compute.manager | [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] VM Stopped (Lifecycle Event)

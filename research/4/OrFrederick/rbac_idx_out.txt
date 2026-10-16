@@ -1,0 +1,12 @@
+OK    DROP INDEX IF EXISTS r4_bgl_idx -> 
+OK    CREATE INDEX r4_bgl_idx ON r4_bgl USING inverted (line_no, content r4_dict) INCLUDE (ts, node) -> 
+OK    VACUUM (REFRESH_TABLE) r4_bgl -> 
+OK    SELECT count(*) FROM r4_bgl_idx WHERE content @@ 'panic' -> [(3,)]
+[engineer, before grant on index]
+ERR   SELECT count(*) FROM r4_bgl_idx WHERE content @@ 'panic' -> permission denied for table r4_bgl
+ERR   GRANT SELECT ON r4_bgl_idx TO r4_engineer -> relation "r4_bgl_idx" does not exist
+[engineer, after grant on index]
+ERR   SELECT line_no, ts, node FROM r4_bgl_idx WHERE content @@ 'panic' LIMIT 2 -> permission denied for table r4_bgl
+ERR   SELECT count(*) FROM r4_bgl -> permission denied for table r4_bgl
+[manager]
+ERR   SELECT count(*) FROM r4_bgl_idx WHERE content @@ 'panic' -> permission denied for table r4_bgl

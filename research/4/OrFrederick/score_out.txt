@@ -1,0 +1,38 @@
+           rank  score  rank_by_lines   lines  line_share_%  cum_line_share_%  nc_hours  midplanes  active_weeks  recent_ratio  days_since_last
+cat                                                                                                                                            
+APPSEV        1  0.961              3   49651          14.2              76.2     24528        128            20         1.837                0
+KERNMNTF      2  0.939              4   31531           9.0              85.2     13864        128            15         0.481                0
+KERNMC        3  0.863             16     342           0.1              99.4       295        109            31         0.468                1
+KERNRTSP      3  0.863              8    3983           1.1              96.5       544        103            31         0.296                1
+KERNSOCK      5  0.832             18     209           0.1              99.6       205         91            15         0.337                0
+APPOUT        6  0.732             13     816           0.2              99.0       491        128             1         7.668               23
+KERNTERM      7  0.715              5   23338           6.7              91.9      7042        128            12         0.000               48
+APPRES        8  0.705              9    2370           0.7              97.2      1652        128             6         0.000               43
+KERNREC       9  0.668              6    6145           1.8              93.7       193         10             4         0.040               17
+KERNDTLB     10  0.632              1  152734          43.8              43.8       366         44             7         0.000               36
+KERNSTOR     11  0.624              2   63491          18.2              62.0      1347         45             4         0.000               42
+MASABNORM    12  0.617             23      37           0.0              99.7        31          0             8         0.495               27
+
+Kendall tau(score rank, raw line rank) over all cats: 0.60
+
+Default top5: ['APPSEV', 'KERNMNTF', 'KERNMC', 'KERNRTSP', 'KERNSOCK']
+without frequency    top5: ['APPSEV', 'KERNMNTF', 'KERNMC', 'KERNSOCK', 'KERNRTSP']  tau vs default 0.87
+without spread       top5: ['APPSEV', 'KERNMNTF', 'KERNRTSP', 'KERNMC', 'KERNSOCK']  tau vs default 0.86
+without persistence  top5: ['APPSEV', 'KERNMNTF', 'APPOUT', 'KERNRTSP', 'KERNMC']  tau vs default 0.87
+without trend        top5: ['APPSEV', 'KERNMNTF', 'KERNRTSP', 'KERNMC', 'KERNSOCK']  tau vs default 0.94
+without recency      top5: ['APPSEV', 'KERNMNTF', 'KERNMC', 'KERNRTSP', 'KERNSOCK']  tau vs default 0.83
+
+Random weights (n=2000): share of weightings where category is in top 5 / is #1
+          in_top5_%  is_top1_%
+cat                           
+APPSEV        100.0       99.4
+KERNMNTF      100.0        0.0
+KERNMC         91.0        0.4
+KERNRTSP       89.5        0.0
+KERNSOCK       64.6        0.0
+APPOUT         26.2        0.2
+KERNTERM       17.8        0.0
+APPRES          9.5        0.0
+KERNRTSA        0.6        0.0
+APPTO           0.4        0.0
+Kendall tau vs default: median 0.81, 5th pct 0.66

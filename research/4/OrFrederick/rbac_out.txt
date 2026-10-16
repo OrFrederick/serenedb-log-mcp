@@ -1,0 +1,45 @@
+OK    DROP INDEX IF EXISTS r4_bgl_idx -> 
+OK    DROP VIEW IF EXISTS r4_v_engineer -> 
+OK    DROP VIEW IF EXISTS r4_v_teamlead -> 
+OK    DROP VIEW IF EXISTS r4_v_manager -> 
+OK    DROP TABLE IF EXISTS r4_bgl -> 
+OK    DROP ROLE IF EXISTS r4_engineer -> 
+OK    DROP ROLE IF EXISTS r4_teamlead -> 
+OK    DROP ROLE IF EXISTS r4_manager -> 
+OK    CREATE TABLE r4_bgl (line_no BIGINT PRIMARY KEY, alert_label TEXT, ts TIMESTAMP, node TEXT, rack TEX -> 
+OK    INSERT INTO r4_bgl SELECT line_no, alert_label, ts, node, rack, midplane, component, level, content  -> 
+OK    SELECT count(*) FROM r4_bgl -> [(17547,)]
+OK    CREATE VIEW r4_v_engineer AS SELECT line_no, ts, node, midplane, component, level, alert_label, cont -> 
+OK    CREATE VIEW r4_v_teamlead AS SELECT date_trunc('hour', ts) AS hour, component, level, alert_label, m -> 
+OK    CREATE VIEW r4_v_manager AS SELECT date_trunc('day', ts) AS day, component, alert_label, count(*) AS -> 
+OK    CREATE ROLE r4_engineer LOGIN PASSWORD 'r4_engineer_pw' -> 
+OK    GRANT SELECT ON r4_v_engineer TO r4_engineer -> 
+OK    CREATE ROLE r4_teamlead LOGIN PASSWORD 'r4_teamlead_pw' -> 
+OK    GRANT SELECT ON r4_v_teamlead TO r4_teamlead -> 
+OK    CREATE ROLE r4_manager LOGIN PASSWORD 'r4_manager_pw' -> 
+OK    GRANT SELECT ON r4_v_manager TO r4_manager -> 
+ERR   CREATE TEXT SEARCH DICTIONARY r4_dict AS split_text(case := 'lower') WITH (frequency, position) -> syntax error at or near "AS"
+OK    CREATE INDEX r4_bgl_idx ON r4_bgl USING inverted (line_no, content r4_dict) INCLUDE (ts, node) -> 
+OK    VACUUM (REFRESH_TABLE) r4_bgl -> 
+OK    SELECT count(*) FROM r4_bgl_idx WHERE content @@ 'panic' -> [(3,)]
+ERR   GRANT SELECT ON r4_bgl_idx TO r4_engineer -> relation "r4_bgl_idx" does not exist
+OK    SELECT relname, relacl FROM pg_class WHERE relname LIKE 'r4_%' -> [('r4_bgl', None), ('r4_v_engineer', ['r4_engineer=r/postgres']), ('r4_v_manager', ['r4_manager=r/postgres'])]
+
+--- acting as each Role (password login over TCP) ---
+[engineer] connected as r4_engineer
+OK    SELECT count(*) FROM r4_v_engineer -> [(17547,)]
+ERR   SELECT count(*) FROM r4_bgl -> permission denied for table r4_bgl
+ERR   SELECT count(*) FROM bgl -> permission denied for table bgl
+ERR   SELECT count(*) FROM r4_bgl_idx WHERE content @@ 'panic' -> permission denied for table r4_bgl
+ERR   SELECT count(*) FROM r4_v_manager -> permission denied for view r4_v_manager
+[teamlead] connected as r4_teamlead
+OK    SELECT alert_label, sum(log_entries) FROM r4_v_teamlead WHERE alert_label <> '-' GROUP BY 1 ORDER BY -> [('APPSEV', Decimal('827')), ('KERNMNTF', Decimal('333')), ('KERNSOCK', Decimal('8'))]
+ERR   SELECT content FROM r4_v_engineer LIMIT 1 -> permission denied for view r4_v_engineer
+ERR   SELECT count(*) FROM r4_bgl -> permission denied for table r4_bgl
+ERR   SELECT count(*) FROM r4_bgl_idx WHERE content @@ 'panic' -> permission denied for table r4_bgl
+[manager] connected as r4_manager
+OK    SELECT alert_label, sum(log_entries), max(midplanes) FROM r4_v_manager GROUP BY 1 ORDER BY 2 DESC LI -> [('APPSEV', Decimal('827'), 64), ('KERNMNTF', Decimal('333'), 120), ('KERNSOCK', Decimal('8'), 8)]
+ERR   SELECT * FROM r4_v_teamlead LIMIT 1 -> permission denied for view r4_v_teamlead
+ERR   SELECT content FROM r4_bgl LIMIT 1 -> permission denied for table r4_bgl
+ERR   SELECT count(*) FROM bgl -> permission denied for table bgl
+ERR   CREATE VIEW r4_hack AS SELECT 1 -> permission denied for schema public

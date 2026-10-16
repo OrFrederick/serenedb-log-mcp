@@ -1,0 +1,15 @@
+BGL alert tags raw=41 lh2=31
+tags absent from lh2: {'APPREAD': 5983, 'APPALLOC': 144, 'APPUNAV': 2048, 'KERNCON': 16, 'MONNULL': 2, 'KERNFLOAT': 3, 'KERNBIT': 1, 'KERNRTSA': 3, 'MONILL': 1, 'KERNTLBE': 1}
+tags partially removed: {'-': (4399503, 4299039), 'KERNMC': (342, 278), 'MASNORM': (10, 1), 'APPSEV': (49651, 41819), 'MASABNORM': (37, 23), 'MONPOW': (12, 10), 'KERNREC': (6145, 6144), 'APPRES': (2370, 2256)}
+openstack_normal1.log lines 52312 present in lh2 52287 first raw line in lh2 at idx 18434
+openstack_normal2.log lines 137074 present in lh2 136911 first raw line in lh2 at idx 70721
+openstack_abnormal.log lines 18434 present in lh2 18434 first raw line in lh2 at idx 0
+lh2 lines not in raw: 0 raw lines not in lh2: 188
+  RAW-ONLY: nova-compute.log.1.2017-05-16_13:55:31 2017-05-16 01:41:15.541 2931 INFO nova.compute.manager [-] [instance: 1dbcdff4-2bc2-431f-9444-b2e855d74da5] During sync_power_state the instance has a pending ta
+  RAW-ONLY: nova-compute.log.1.2017-05-16_13:55:31 2017-05-16 03:19:45.356 2931 ERROR oslo_service.periodic_task Traceback (most recent call last):
+  RAW-ONLY: nova-compute.log.1.2017-05-16_13:55:31 2017-05-16 03:19:45.356 2931 ERROR oslo_service.periodic_task   File "/usr/lib/python2.7/dist-packages/oslo_service/periodic_task.py", line 220, in run_periodic_
+  RAW-ONLY: nova-compute.log.1.2017-05-16_13:55:31 2017-05-16 03:19:45.356 2931 ERROR oslo_service.periodic_task     task(self, context)
+  RAW-ONLY: nova-compute.log.1.2017-05-16_13:55:31 2017-05-16 03:19:45.356 2931 ERROR oslo_service.periodic_task   File "/usr/lib/python2.7/dist-packages/nova/compute/manager.py", line 6743, in _run_image_cache_m
+OpenStack removed 188 by level: {'INFO': 4, 'ERROR': 184}
+by component: {'nova.compute.manager': 4, 'oslo_service.periodic_task': 184}
+raw OpenStack ERROR lines total: 194  in lh2: 10

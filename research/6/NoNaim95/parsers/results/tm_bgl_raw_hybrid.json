@@ -1,0 +1,143 @@
+{
+ "templates": "/Users/deni/hackathon/data/lh2/BGL/BGL_full.log_templates.csv",
+ "msgs": "/Users/deni/.claude/jobs/f51b810a/tmp/r6p/data/bgl_raw_msg.txt",
+ "mode": "hybrid",
+ "n_lines": 4747963,
+ "n_distinct_msgs": 358357,
+ "n_templates": 320,
+ "t_match_s": 1.64,
+ "lines_per_s": 2892316,
+ "distinct_msgs_per_s_nocache": 917673,
+ "matched": 4631261,
+ "coverage": 0.975421,
+ "unmatched": 116702,
+ "ambiguous_lines": 8,
+ "match_count_hist": {
+  "0": 116702,
+  "1": 4631253,
+  "2": 8
+ },
+ "templates_used": 320,
+ "distinct_msgs_matched_per_tier": [
+  325754,
+  12979
+ ],
+ "top_ambiguous_template_sets": [
+  [
+   [
+    "rts: kernel terminated for reason <*>",
+    "<*>, max=<*>"
+   ],
+   6
+  ],
+  [
+   [
+    "Target=<*> Message=<*> JtagId = <*>",
+    "Target=<*> Message=<*>"
+   ],
+   2
+  ]
+ ],
+ "top_unmatched_shapes": [
+  [
+   "",
+   34470
+  ],
+  [
+   "Node card status: no ALERTs are active. Clock Mode is Low. Clock Select is Midplane. Phy JTAG Reset is asserted. ASIC JT",
+   17338
+  ],
+  [
+   "data address: #x#",
+   14345
+  ],
+  [
+   "ciod: failed to read message prefix on control stream (CioStream socket to #.#.#.#:#",
+   5983
+  ],
+  [
+   "ciod: Error reading message prefix after LOGIN_MESSAGE on CioStream socket to #.#.#.#:#: Link has been severed",
+   5683
+  ],
+  [
+   "icache prefetch threshold................#",
+   2388
+  ],
+  [
+   "#:#feaa#a# #:# #:# #:#",
+   2051
+  ],
+  [
+   "#:#ce #:# #:#eeeeeee #:#feaa#",
+   2048
+  ],
+  [
+   "#:#ce #:ffffffff #:# #:#",
+   2048
+  ],
+  [
+   "#:# #:#feaa#b# #:# #:#",
+   2048
+  ],
+  [
+   "#:#feaa#b# #:# #:#ce #:#feaa#",
+   2048
+  ],
+  [
+   "ciod: Error reading message prefix after VERSION_MESSAGE on CioStream socket to #.#.#.#:#: Link has been severed",
+   2048
+  ],
+  [
+   "#:# #:#e# #:#ed#bd# #:#b#bf#",
+   2047
+  ],
+  [
+   "#:# #:# #:# #:#",
+   1649
+  ],
+  [
+   "ciod: Error opening node map file /p/gb#/welcome#/#k_#x#x#_#x#x#.map, No such file or directory",
+   1024
+  ],
+  [
+   "ciod: Error creating node map from file /home/auselton/bgl/#mps.sequential.mapfile: Resource temporarily unavailable",
+   1024
+  ],
+  [
+   "ciod: Error creating node map from file /home/auselton/bgl/mapfiles/bgl.#mps.f#.map: Resource temporarily unavailable",
+   1024
+  ],
+  [
+   "ciod: Error loading /p/gb#/light#/sppm_chkpt/sppm: not a CNK program image",
+   1024
+  ],
+  [
+   "#",
+   856
+  ],
+  [
+   "fpr#=#xffffffff ffffffff ffffffff ffffffff",
+   835
+  ],
+  [
+   "CHECK_INITIAL_GLOBAL_INTERRUPT_VALUES",
+   544
+  ],
+  [
+   "#:#c# #:# #:# #:#",
+   513
+  ],
+  [
+   "ciod: Error creating node map from file /p/gb#/pakin#/contention-#cpes-torus/xyzt-#x#x#x#.map: Bad address",
+   512
+  ],
+  [
+   "ciod: Error creating node map from file /home/pakin#/comms-conc/xyzt-#x#x#x#.map: Bad address",
+   512
+  ],
+  [
+   "ciod: Error opening node map file /home/williams/miranda/src/vx_#k_#x#x#_#x#x#.map, No such file or directory",
+   512
+  ]
+ ]
+}

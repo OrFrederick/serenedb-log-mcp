@@ -1,0 +1,21 @@
+{
+ "method": "Brain",
+ "dataset": "bgl",
+ "input": "/Users/deni/.claude/jobs/f51b810a/tmp/r6p/data/bgl_lh2_content.txt",
+ "n_in": 4631261,
+ "n_out": 4631261,
+ "t_parse_s": 677.4,
+ "lines_per_s": 6837,
+ "n_templates": 1264,
+ "n_eventids": 1264,
+ "metrics": {
+  "GA": 0.9244728379592513,
+  "FGA": 0.31186868686868685,
+  "PGA": 0.19541139240506328,
+  "RGA": 0.771875,
+  "n_parsed": 1264,
+  "n_gt": 320,
+  "PA": 0.41026450463491476,
+  "FTA": 0.10353535353535352
+ }
+}

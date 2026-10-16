@@ -1,0 +1,32 @@
+{
+ "input": "/Users/deni/.claude/jobs/f51b810a/tmp/r6p/data/bgl_lh2_content.txt",
+ "n": 4631261,
+ "config": "tuned",
+ "sim_th": 0.7,
+ "depth": 4,
+ "shuffle": null,
+ "t_parse_s": 98.25,
+ "lines_per_s": 47138,
+ "n_clusters": 335,
+ "n_distinct_template_strings": 335,
+ "cid_sha1": "b4adce7abaa41c2730324825f775c4bc3184968e",
+ "templates_sha1": "f8f34315d26a9a243c9af4682a2c5c347d6017ca",
+ "metrics_by_template_string": {
+  "GA": 0.9463560788303661,
+  "FGA": 0.851908396946565,
+  "PGA": 0.8328358208955224,
+  "RGA": 0.871875,
+  "n_parsed": 335,
+  "n_gt": 320,
+  "PA": 0.9047712923111005,
+  "FTA": 0.6870229007633589
+ },
+ "metrics_by_cluster_id": {
+  "GA": 0.9463560788303661,
+  "FGA": 0.851908396946565,
+  "PGA": 0.8328358208955224,
+  "RGA": 0.871875,
+  "n_parsed": 335,
+  "n_gt": 320
+ }
+}

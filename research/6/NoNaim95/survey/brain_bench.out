@@ -1,0 +1,4 @@
+Time taken   =   [38;2;255;192;203m0:00:44.822038[0m
+OpenStack Brain(logparser3) lines=207632 time=48.5s rate=4,284 lines/s clusters=48 GA=1.000 FGA=1.000
+BGL-first-1M-lines Brain(logparser3) lines=1000000 time=250.7s rate=3,989 lines/s clusters=167 GA=0.998 FGA=0.957
+          1846378496  maximum resident set size

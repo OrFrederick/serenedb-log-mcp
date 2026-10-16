@@ -1,0 +1,23 @@
+[   1.361s ] -- A: dictionary of distinct messages -> template key (mask runs once per distinct message). NULL message -> '
+[   0.007s ] select count(*) msgs, count(distinct template_key) keys from r6d_bgl_dict
+       358357 | 476
+[   1.934s ] -- B: CTAS narrow fact table with template_id via dict join
+[   0.020s ] select count(*), count(distinct template_id) from r6d_bgl_ft
+       4747963 | 476
+[   0.288s ] -- templates table: stable id = first 16 hex of md5(key); n, first_seen, last_seen, #nodes
+[   0.003s ] select count(*), sum(n) from r6d_bgl_tpl
+       476 | 4747963
+   !! server error, reconnecting: consuming input failed: server closed the connection unexpectedly
+[  17.503s ] -- C: CTAS full-width copy + template_id computed per row directly (no dict)
+[  12.237s ] -- C2: CTAS full-width copy + template_id via dict join
+[   7.160s ] -- D: ALTER + UPDATE on a copy
+[   0.175s ] alter table r6d_bgl_upd add column template_id varchar
+[   2.822s ] update r6d_bgl_upd set template_id = substr(md5(d.template_key),1,16) from r6d_bgl_dict d where coalesce(r6d_b
+[   0.066s ] select count(*), count(template_id) from r6d_bgl_upd
+       4747963 | 4747963
+[   0.045s ] -- E: generated column using the macro (does it work?)
+[   0.610s ] insert into r6d_gen(message) select message from bgl limit 1000
+[   0.010s ] select template_key, count(*) from r6d_gen group by 1 order by 2 desc limit 3
+       instruction cache parity error corrected | 1000
+   !! SQL error: Table with name r6d_upd_dummy_if_any_noop does not exist!
+[     nans ] drop table r6d_upd_dummy_if_any_noop

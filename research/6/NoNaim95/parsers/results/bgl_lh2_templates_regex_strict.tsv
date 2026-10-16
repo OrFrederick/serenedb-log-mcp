@@ -1,0 +1,321 @@
+rank	EventId	specificity_literal_chars	n_wild	regex	EventTemplate
+0	E1	283	14	^Problem\s+reading\s+the\s+ethernet\s+arl\s+entries\s+fro\s+the\s+service\s+card\:\s+\S+\:\s+while\s+executing\s+I2C\s+Operation\s+caught\s+\S+\:\s+Communication\s+error\:\s+\(\S+\s+is\s+in\s+state\s+\=\s+\S+\,\s+sequenceNumberIsOk\s+\=\s+\S+\,\s+ExpectedSequenceNumber\s+\=\s+\S+\,\s+Reply\s+Sequence\s+Number\s+\=\s+\S+\,\s+timedOut\s+\=\s+\S+\,\s+retries\s+\=\s+\S+\,\s+timeout\s+\=\s+\S+\,\s+Expected\s+Op\s+Command\s+\=\s+\S+\,\s+Actual\s+Op\s+Reply\s+\=\s+\S+\,\s+Expected\s+Sync\s+Command\s+\=\s+\S+\,\s+Actual\s+Sync\s+Reply\s+\=\s+\S+\)$	Problem reading the ethernet arl entries fro the service card: <*>: while executing I2C Operation caught <*>: Communication error: (<*> is in state = <*>, sequenceNumberIsOk = <*>, ExpectedSequenceNumber = <*>, Reply Sequence Number = <*>, timedOut = <*>, retries = <*>, timeout = <*>, Expected Op Command = <*>, Actual Op Reply = <*>, Expected Sync Command = <*>, Actual Sync Reply = <*>)
+1	E2	258	11	^Node\s+card\s+status\:\s+\S+\s+is\s+\(are\)\s+active\.\s+Clock\s+Mode\s+is\s+\S+\.\s+Clock\s+Select\s+is\s+\S+\.\s+Phy\s+JTAG\s+Reset\s+is\s+\S+\.\s+ASIC\s+JTAG\s+Reset\s+is\s+\S+\.\s+Temperature\s+Mask\s+is\s+not\s+active\.\s+No\s+temperature\s+error\.\s+Temperature\s+Limit\s+Error\s+Latch\s+is\s+clear\.\s+PGOOD\s+is\s+\S+\.\s+PGOOD\s+error\s+latch\s+is\s+clear\.\s+MPGOOD\s+is\s+\S+\.\s+MPGOOD\s+error\s+latch\s+is\s+clear\.\s+The\s+\S+\s+volt\s+rail\s+is\s+\S+\.\s+The\s+\S+\s+volt\s+rail\s+is\s+\S+\.$	Node card status: <*> is (are) active. Clock Mode is <*>. Clock Select is <*>. Phy JTAG Reset is <*>. ASIC JTAG Reset is <*>. Temperature Mask is not active. No temperature error. Temperature Limit Error Latch is clear. PGOOD is <*>. PGOOD error latch is clear. MPGOOD is <*>. MPGOOD error latch is clear. The <*> volt rail is <*>. The <*> volt rail is <*>.
+2	E3	255	11	^Node\s+card\s+status\:\s+\S+\s+is\s+\(are\)\s+active\.\s+Clock\s+Mode\s+is\s+\S+\.\s+Clock\s+Select\s+is\s+\S+\.\s+Phy\s+JTAG\s+Reset\s+is\s+\S+\.\s+ASIC\s+JTAG\s+Reset\s+is\s+\S+\.\s+TEMPERATURE\s+MASK\s+IS\s+ACTIVE\.\s+No\s+temperature\s+error\.\s+Temperature\s+Limit\s+Error\s+Latch\s+is\s+clear\.\s+PGOOD\s+is\s+\S+\.\s+PGOOD\s+error\s+latch\s+is\s+clear\.\s+MPGOOD\s+is\s+\S+\.\s+MPGOOD\s+error\s+latch\s+is\s+clear\.\s+The\s+\S+\s+volt\s+rail\s+is\s+\S+\.\s+The\s+\S+\s+volt\s+rail\s+is\s+\S+\.$	Node card status: <*> is (are) active. Clock Mode is <*>. Clock Select is <*>. Phy JTAG Reset is <*>. ASIC JTAG Reset is <*>. TEMPERATURE MASK IS ACTIVE. No temperature error. Temperature Limit Error Latch is clear. PGOOD is <*>. PGOOD error latch is clear. MPGOOD is <*>. MPGOOD error latch is clear. The <*> volt rail is <*>. The <*> volt rail is <*>.
+3	E4	243	13	^Node\s+card\s+status\:\s+no\s+ALERTs\s+are\s+active\.\s+Clock\s+Mode\s+is\s+\S+\.\s+Clock\s+Select\s+is\s+\S+\.\s+Phy\s+JTAG\s+Reset\s+is\s+\S+\.\s+ASIC\s+JTAG\s+Reset\s+is\s+\S+\.\s+Temperature\s+Mask\s+is\s+\S+\.\s+No\s+temperature\s+error\.\s+Temperature\s+Limit\s+Error\s+Latch\s+is\s+clear\.\s+PGOOD\s+IS\s+\S+\.\s+PGOOD\s+ERROR\s+LATCH\s+IS\s+\S+\.\s+MPGOOD\s+IS\s+\S+\.\s+MPGOOD\s+ERROR\s+LATCH\s+IS\s+\S+\.\s+The\s+\S+\s+volt\s+rail\s+is\s+\S+\.\s+THE\s+\S+\s+VOLT\s+RAIL\s+IS\s+\S+\.$	Node card status: no ALERTs are active. Clock Mode is <*>. Clock Select is <*>. Phy JTAG Reset is <*>. ASIC JTAG Reset is <*>. Temperature Mask is <*>. No temperature error. Temperature Limit Error Latch is clear. PGOOD IS <*>. PGOOD ERROR LATCH IS <*>. MPGOOD IS <*>. MPGOOD ERROR LATCH IS <*>. The <*> volt rail is <*>. THE <*> VOLT RAIL IS <*>.
+4	E5	158	4	^max\s+time\s+in\s+a\s+cr\s+RAS\s+KERNEL\s+INFO\s+\S+\s+total\s+interrupts\.\s+\S+\s+critical\s+input\s+interrupts\.\s+\S+\s+microseconds\s+total\s+spent\s+on\s+critical\s+input\s+interrupts\,\s+\S+\s+microseconds\s+max\s+time\s+in\s+a\s+critical\s+input\s+interrupt\.$	max time in a cr RAS KERNEL INFO <*> total interrupts. <*> critical input interrupts. <*> microseconds total spent on critical input interrupts, <*> microseconds max time in a critical input interrupt.
+5	E6	154	3	^instance\s+of\s+a\s+correctable\s+ddr\.\s+RAS\s+KERNEL\s+INFO\s+\S+\s+microseconds\s+spent\s+in\s+the\s+rbs\s+signal\s+handler\s+during\s+\S+\s+calls\.\s+\S+\s+microseconds\s+was\s+the\s+maximum\s+time\s+for\s+a\s+single\s+instance\s+of\s+a\s+correctable\s+ddr\.$	instance of a correctable ddr. RAS KERNEL INFO <*> microseconds spent in the rbs signal handler during <*> calls. <*> microseconds was the maximum time for a single instance of a correctable ddr.
+6	E7	153	9	^\S+\s+with\s+VPD\s+of\s+\S+\:\s+IBM\s+Part\s+Number\:\s+\S+\,\s+Vendor\:\s+\S+\,\s+Vendor\s+Serial\s+Number\:\s+\S+\,\s+Assembly\s+Revision\:\s+\S+\,\s+Code\s+Revision\:\s+\S+\,\s+Manufacture\s+Date\:\s+\S+\,\s+Manufacture\s+Location\:\s+\S+\s+is\s+usable\s+but\s+not\s+a\s+supported\s+version$	<*> with VPD of <*>: IBM Part Number: <*>, Vendor: <*>, Vendor Serial Number: <*>, Assembly Revision: <*>, Code Revision: <*>, Manufacture Date: <*>, Manufacture Location: <*> is usable but not a supported version
+7	E8	141	3	^ddr\:\s+Unable\s+to\s+steer\s+rank\=\S+\,\s+symbol\=\S+\s+\-\s+rank\s+is\s+already\s+steering\s+symbol\s+\S+\.\s+Due\s+to\s+multiple\s+symbols\s+being\s+over\s+the\s+correctable\s+error\s+threshold\,\s+consider\s+replacing\s+the\s+card$	ddr: Unable to steer rank=<*>, symbol=<*> - rank is already steering symbol <*>. Due to multiple symbols being over the correctable error threshold, consider replacing the card
+8	E9	138	27	^dear\s+\S+\s+\(\S+\s+RAS\s+KERNEL\s+INFO\s+Kernel\s+detected\s+\S+\s+integer\s+alignment\s+exceptions\s+\(\S+\)\s+iar\s+\S+\,\s+dear\s+\S+\s+\(\S+\)\s+iar\s+\S+\,\s+dear\s+\S+\s+\(\S+\)\s+iar\s+\S+\,\s+dear\s+\S+\s+\(\S+\)\s+iar\s+\S+\,\s+dear\s+\S+\s+\(\S+\)\s+iar\s+\S+\,\s+dear\s+\S+\s+\(\S+\)\s+iar\s+\S+\,\s+dear\s+\S+\s+\(\S+\)\s+iar\s+\S+\,\s+dear\s+\S+\s+\(\S+\)\s+iar\s+\S+\,\s+dear\s+\S+$	dear <*> (<*> RAS KERNEL INFO Kernel detected <*> integer alignment exceptions (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*>
+9	E10	133	4	^\S+\s+total\s+interrupts\.\s+\S+\s+critical\s+input\s+interrupts\.\s+\S+\s+microseconds\s+total\s+spent\s+on\s+critical\s+input\s+interrupts\,\s+\S+\s+microseconds\s+max\s+time\s+in\s+a\s+critical\s+input\s+interrupt\.$	<*> total interrupts. <*> critical input interrupts. <*> microseconds total spent on critical input interrupts, <*> microseconds max time in a critical input interrupt.
+10	E11	120	2	^external\s+input\s+interrupt\s+\(unit\=\S+\s+bit\=\S+\)\:\s+number\s+of\s+corrected\s+SRAM\s+errors\s+has\s+exceeded\s+threshold\,\s+suppressing\s+further\s+interrupts\s+of\s+same\s+type$	external input interrupt (unit=<*> bit=<*>): number of corrected SRAM errors has exceeded threshold, suppressing further interrupts of same type
+11	E12	120	25	^Kernel\s+detected\s+\S+\s+integer\s+alignment\s+exceptions\s+\(\S+\)\s+iar\s+\S+\,\s+dear\s+\S+\s+\(\S+\)\s+iar\s+\S+\,\s+dear\s+\S+\s+\(\S+\)\s+iar\s+\S+\,\s+dear\s+\S+\s+\(\S+\)\s+iar\s+\S+\,\s+dear\s+\S+\s+\(\S+\)\s+iar\s+\S+\,\s+dear\s+\S+\s+\(\S+\)\s+iar\s+\S+\,\s+dear\s+\S+\s+\(\S+\)\s+iar\s+\S+\,\s+dear\s+\S+\s+\(\S+\)\s+iar\s+\S+\,\s+dear\s+\S+$	Kernel detected <*> integer alignment exceptions (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*>
+12	E13	115	3	^\S+\s+microseconds\s+spent\s+in\s+the\s+rbs\s+signal\s+handler\s+during\s+\S+\s+calls\.\s+\S+\s+microseconds\s+was\s+the\s+maximum\s+time\s+for\s+a\s+single\s+instance\s+of\s+a\s+correctable\s+ddr\.$	<*> microseconds spent in the rbs signal handler during <*> calls. <*> microseconds was the maximum time for a single instance of a correctable ddr.
+13	E14	115	5	^mmcs_db_server\s+has\s+been\s+started\:\s+\.\/mmcs_db_server\s+\-\-useDatabase\s+\S+\s+\-\-dbproperties\s+\S+\s+\-\-iolog\s+\S+\s+\-\-reconnect\-blocks\s+\S+\s+\-\-shutdown\-timeout\s+\S+$	mmcs_db_server has been started: ./mmcs_db_server --useDatabase <*> --dbproperties <*> --iolog <*> --reconnect-blocks <*> --shutdown-timeout <*>
+14	E15	110	6	^BGLMaster\s+has\s+been\s+started\:\s+\.\/BGLMaster\s+\-\-consoleip\s+\S+\s+\-\-consoleport\s+\S+\s+\-\-configfile\s+\S+\s+\-\-autorestart\s+\S+\s+\-\-db2profile\s+\S+\s+\-\-dbproperties\s+\S+$	BGLMaster has been started: ./BGLMaster --consoleip <*> --consoleport <*> --configfile <*> --autorestart <*> --db2profile <*> --dbproperties <*>
+15	E16	105	2	^Problem\s+communicating\s+with\s+service\s+card\,\s+ido\s+chip\:\s+\S+\.\s+java\.io\.IOException\:\s+Could\s+not\s+find\s+EthernetSwitch\s+on\s+port\:address\s+\S+$	Problem communicating with service card, ido chip: <*>. java.io.IOException: Could not find EthernetSwitch on port:address <*>
+16	E17	102	3	^ddr\:\s+Unable\s+to\s+steer\s+rank\=\S+\,\s+symbol\=\S+\s+\-\s+rank\s+is\s+already\s+steering\s+symbol\s+\S+\.\s+Due\s+to\s+multiple\s+symbols\s+being\s+over\s+the\s+correctable$	ddr: Unable to steer rank=<*>, symbol=<*> - rank is already steering symbol <*>. Due to multiple symbols being over the correctable
+17	E18	93	10	^Error\s+receiving\s+packet\s+on\s+tree\s+network\,\s+expecting\s+type\s+\S+\s+instead\s+of\s+type\s+\S+\s+\(softheader\=\S+\s+\S+\s+\S+\s+\S+\)\s+PSR0\=\S+\s+PSR1\=\S+\s+PRXF\=\S+\s+PIXF\=\S+$	Error receiving packet on tree network, expecting type <*> instead of type <*> (softheader=<*> <*> <*> <*>) PSR0=<*> PSR1=<*> PRXF=<*> PIXF=<*>
+18	E19	92	3	^critical\s+input\s+interrupt\s+\(unit\=\S+\s+bit\=\S+\)\:\s+warning\s+for\s+torus\s+\S+\s+wire\,\s+suppressing\s+further\s+interrupts\s+of\s+same\s+type$	critical input interrupt (unit=<*> bit=<*>): warning for torus <*> wire, suppressing further interrupts of same type
+19	E20	91	3	^critical\s+input\s+interrupt\s+\(unit\=\S+\s+bit\=\S+\)\:\s+warning\s+for\s+tree\s+\S+\s+wire\,\s+suppressing\s+further\s+interrupts\s+of\s+same\s+type$	critical input interrupt (unit=<*> bit=<*>): warning for tree <*> wire, suppressing further interrupts of same type
+20	E21	85	1	^ciod\:\s+Error\s+reading\s+message\s+prefix\s+after\s+LOAD_MESSAGE\s+on\s+CioStream\s+socket\s+to\s+\S+\:\s+Link\s+has\s+been\s+severed$	ciod: Error reading message prefix after LOAD_MESSAGE on CioStream socket to <*>: Link has been severed
+21	E22	84	4	^BGLMaster\s+has\s+been\s+started\:\s+\.\/BGLMaster\s+\-\-consoleip\s+\S+\s+\-\-consoleport\s+\S+\s+\-\-configfile\s+\S+\s+\-\-autorestart\s+\S+$	BGLMaster has been started: ./BGLMaster --consoleip <*> --consoleport <*> --configfile <*> --autorestart <*>
+22	E23	82	0	^DeclareServiceNetworkCharacteristics\s+has\s+been\s+run\s+with\s+the\s+force\s+option\s+but\s+the\s+DB\s+is\s+not\s+empty$	DeclareServiceNetworkCharacteristics has been run with the force option but the DB is not empty
+23	E24	81	2	^external\s+input\s+interrupt\s+\(unit\=\S+\s+bit\=\S+\)\:\s+number\s+of\s+corrected\s+SRAM\s+errors\s+has\s+exceeded\s+threshold$	external input interrupt (unit=<*> bit=<*>): number of corrected SRAM errors has exceeded threshold
+24	E25	80	7	^rts\:\s+bad\s+message\s+header\:\s+expecting\s+type\s+\S+\s+instead\s+of\s+type\s+\S+\s+\(softheader\=\S+\)\s+PSR0\=\S+\s+PSR1\=\S+\s+PRXF\=\S+\s+PIXF\=\S+$	rts: bad message header: expecting type <*> instead of type <*> (softheader=<*>) PSR0=<*> PSR1=<*> PRXF=<*> PIXF=<*>
+25	E26	77	4	^idoproxydb\s+hit\s+ASSERT\s+condition\:\s+ASSERT\s+expression\=\S+\s+Source\s+file\=\S+\s+Source\s+line\=\S+\s+Function\=\S+$	idoproxydb hit ASSERT condition: ASSERT expression=<*> Source file=<*> Source line=<*> Function=<*>
+26	E27	76	3	^external\s+input\s+interrupt\s+\(unit\=\S+\s+bit\=\S+\)\:\s+torus\s+sender\s+\S+\s+retransmission\s+error\s+was\s+corrected$	external input interrupt (unit=<*> bit=<*>): torus sender <*> retransmission error was corrected
+27	E28	75	7	^rts\:\s+bad\s+message\s+header\:\s+index\s+\S+\s+greater\s+than\s+total\s+\S+\s+\(softheader\=\S+\)\s+PSR0\=\S+\s+PSR1\=\S+\s+PRXF\=\S+\s+PIXF\=\S+$	rts: bad message header: index <*> greater than total <*> (softheader=<*>) PSR0=<*> PSR1=<*> PRXF=<*> PIXF=<*>
+28	E29	71	1	^ciod\:\s+Error\s+reading\s+message\s+prefix\s+on\s+CioStream\s+socket\s+to\s+\S+\,\s+Connection\s+reset\s+by\s+peer$	ciod: Error reading message prefix on CioStream socket to <*>, Connection reset by peer
+29	E30	71	2	^EndServiceAction\s+is\s+restarting\s+the\s+NodeCards\s+in\s+midplane\s+\S+\s+as\s+part\s+of\s+Service\s+Action\s+\S+$	EndServiceAction is restarting the NodeCards in midplane <*> as part of Service Action <*>
+30	E31	71	2	^EndServiceAction\s+is\s+restarting\s+the\s+LinkCards\s+in\s+midplane\s+\S+\s+as\s+part\s+of\s+Service\s+Action\s+\S+$	EndServiceAction is restarting the LinkCards in midplane <*> as part of Service Action <*>
+31	E32	71	3	^BGLMaster\s+has\s+been\s+started\:\s+\.\/BGLMaster\s+\-\-consoleip\s+\S+\s+\-\-consoleport\s+\S+\s+\-\-configfile\s+\S+$	BGLMaster has been started: ./BGLMaster --consoleip <*> --consoleport <*> --configfile <*>
+32	E33	71	3	^\S+\s+torus\s+processor\s+sram\s+injection\s+error\(s\)\s+\(dcr\s+\S+\)\s+detected\s+and\s+corrected\s+over\s+\S+\s+seconds$	<*> torus processor sram injection error(s) (dcr <*>) detected and corrected over <*> seconds
+33	E34	69	4	^\S+\s+torus\s+sender\s+\S+\s+retransmission\s+error\(s\)\s+\(dcr\s+\S+\)\s+detected\s+and\s+corrected\s+over\s+\S+\s+seconds$	<*> torus sender <*> retransmission error(s) (dcr <*>) detected and corrected over <*> seconds
+34	E35	68	1	^ciod\:\s+Error\s+loading\s+\S+\:\s+invalid\s+or\s+missing\s+program\s+image\,\s+No\s+such\s+file\s+or\s+directory$	ciod: Error loading <*>: invalid or missing program image, No such file or directory
+35	E36	68	1	^ciod\:\s+Error\s+reading\s+message\s+prefix\s+on\s+CioStream\s+socket\s+to\s+\S+\,\s+Link\s+has\s+been\s+severed$	ciod: Error reading message prefix on CioStream socket to <*>, Link has been severed
+36	E37	68	1	^ciod\:\s+Error\s+reading\s+message\s+prefix\s+on\s+CioStream\s+socket\s+to\s+\S+\,\s+Connection\s+timed\s+out$	ciod: Error reading message prefix on CioStream socket to <*>, Connection timed out
+37	E38	68	4	^ciod\:\s+duplicate\s+canonical\-rank\s+\S+\s+to\s+logical\-rank\s+\S+\s+mapping\s+at\s+line\s+\S+\s+of\s+node\s+map\s+file\s+\S+$	ciod: duplicate canonical-rank <*> to logical-rank <*> mapping at line <*> of node map file <*>
+38	E39	67	3	^EndServiceAction\s+is\s+restarting\s+the\s+\S+\s+cards\s+in\s+Midplane\s+\S+\s+as\s+part\s+of\s+Service\s+Action\s+\S+$	EndServiceAction is restarting the <*> cards in Midplane <*> as part of Service Action <*>
+39	E40	66	4	^\S+\s+torus\s+receiver\s+\S+\s+input\s+pipe\s+error\(s\)\s+\(dcr\s+\S+\)\s+detected\s+and\s+corrected\s+over\s+\S+\s+seconds$	<*> torus receiver <*> input pipe error(s) (dcr <*>) detected and corrected over <*> seconds
+40	E41	64	0	^DeclareServiceNetworkCharacteristics\s+has\s+been\s+run\s+but\s+the\s+DB\s+is\s+not\s+empty$	DeclareServiceNetworkCharacteristics has been run but the DB is not empty
+41	E42	64	2	^ddr\:\s+activating\s+redundant\s+bit\s+steering\s+for\s+next\s+allocation\:\s+rank\=\S+\s+symbol\=\S+$	ddr: activating redundant bit steering for next allocation: rank=<*> symbol=<*>
+42	E43	64	3	^\S+\s+torus\s+receiver\s+sram\s+ecc\s+error\(s\)\s+\(dcr\s+\S+\)\s+detected\s+and\s+corrected\s+over\s+\S+\s+seconds$	<*> torus receiver sram ecc error(s) (dcr <*>) detected and corrected over <*> seconds
+43	E44	64	4	^L1\s+DCACHE\s+summary\s+averages\:\s+\#ofDirtyLines\:\s+\S+\s+out\s+of\s+\S+\s+\#ofDirtyDblWord\:\s+\S+\s+out\s+of\s+\S+$	L1 DCACHE summary averages: #ofDirtyLines: <*> out of <*> #ofDirtyDblWord: <*> out of <*>
+44	E45	64	4	^Node\s+card\s+VPD\s+check\:\s+\S+\s+node\s+in\s+processor\s+card\s+slot\s+\S+\s+do\s+not\s+match\.\s+VPD\s+ecid\s+\S+\,\s+found\s+\S+$	Node card VPD check: <*> node in processor card slot <*> do not match. VPD ecid <*>, found <*>
+45	E46	64	6	^PrepareForService\s+shutting\s+down\s+NodeCard\(\S+\,\s+\S+\,\s+\S+\,\s+\S+\,\s+\S+\)\s+as\s+part\s+of\s+Service\s+Action\s+\S+$	PrepareForService shutting down NodeCard(<*>, <*>, <*>, <*>, <*>) as part of Service Action <*>
+46	E47	64	6	^rts\:\s+bad\s+message\s+header\:\s+cpu\s+\S+\s+invalid\s+\(softheader\=\S+\)\s+PSR0\=\S+\s+PSR1\=\S+\s+PRXF\=\S+\s+PIXF\=\S+$	rts: bad message header: cpu <*> invalid (softheader=<*>) PSR0=<*> PSR1=<*> PRXF=<*> PIXF=<*>
+47	E48	63	1	^ciod\:\s+Error\s+loading\s+\S+\:\s+invalid\s+or\s+missing\s+program\s+image\,\s+Permission\s+denied$	ciod: Error loading <*>: invalid or missing program image, Permission denied
+48	E49	63	2	^external\s+input\s+interrupt\s+\(unit\=\S+\s+bit\=\S+\)\:\s+tree\s+header\s+with\s+no\s+target\s+waiting$	external input interrupt (unit=<*> bit=<*>): tree header with no target waiting
+49	E50	62	1	^ciod\:\s+Error\s+loading\s+\S+\:\s+invalid\s+or\s+missing\s+program\s+image\,\s+Exec\s+format\s+error$	ciod: Error loading <*>: invalid or missing program image, Exec format error
+50	E51	61	1	^machine\s+check\s+interrupt\s+\(bit\=\S+\)\:\s+L2\s+dcache\s+unit\s+read\s+return\s+parity\s+error$	machine check interrupt (bit=<*>): L2 dcache unit read return parity error
+51	E52	61	2	^Missing\s+reverse\s+cable\:\s+Cable\s+\S+\s+is\s+present\s+BUT\s+the\s+reverse\s+cable\s+\S+\s+is\s+missing$	Missing reverse cable: Cable <*> is present BUT the reverse cable <*> is missing
+52	E53	61	3	^external\s+input\s+interrupt\s+\(unit\=\S+\s+bit\=\S+\)\:\s+1M\s+tree\s+receiver\s+\S+\s+in\s+resynch\s+mode$	external input interrupt (unit=<*> bit=<*>): 1M tree receiver <*> in resynch mode
+53	E54	60	1	^power\s+module\s+status\s+fault\s+detected\s+on\s+node\s+card\.\s+status\s+registers\s+are\:\s+\S+$	power module status fault detected on node card. status registers are: <*>
+54	E55	60	1	^MailboxMonitor\:\:serviceMailboxes\(\)\s+lib_ido_error\:\s+\S+\s+socket\s+closed$	MailboxMonitor::serviceMailboxes() lib_ido_error: <*> socket closed
+55	E56	60	2	^\S+\s+torus\s+processor\s+sram\s+reception\s+error\(s\)\s+\(dcr\s+\S+\)\s+detected\s+and\s+corrected$	<*> torus processor sram reception error(s) (dcr <*>) detected and corrected
+56	E57	60	2	^MidplaneSwitchController\:\:parityAlignment\(\)\s+pap\s+failed\:\s+\S+\s+status\=\S+$	MidplaneSwitchController::parityAlignment() pap failed: <*> status=<*>
+57	E58	59	1	^Error\s+sending\s+packet\s+on\s+tree\s+network\,\s+packet\s+at\s+address\s+\S+\s+is\s+not\s+aligned$	Error sending packet on tree network, packet at address <*> is not aligned
+58	E59	59	4	^\S+\s+tree\s+receiver\s+\S+\s+in\s+re\-synch\s+state\s+event\(s\)\s+\(dcr\s+\S+\)\s+detected\s+over\s+\S+\s+seconds$	<*> tree receiver <*> in re-synch state event(s) (dcr <*>) detected over <*> seconds
+59	E60	58	1	^MidplaneSwitchController\:\:clearPort\(\)\s+bll_clear_port\s+failed\:\s+\S+$	MidplaneSwitchController::clearPort() bll_clear_port failed: <*>
+60	E61	58	2	^MidplaneSwitchController\:\:receiveTrain\(\)\s+iap\s+failed\:\s+\S+\,\s+status\=\S+$	MidplaneSwitchController::receiveTrain() iap failed: <*>, status=<*>
+61	E62	58	3	^monitor\s+caught\s+\S+\:\s+while\s+executing\s+\S+\s+caught\s+\S+\:\s+Broken\s+pipe\s+and\s+is\s+stopping$	monitor caught <*>: while executing <*> caught <*>: Broken pipe and is stopping
+62	E63	58	3	^\S+\s+torus\s+sender\s+\S+\s+retransmission\s+error\(s\)\s+\(dcr\s+\S+\)\s+detected\s+and\s+corrected$	<*> torus sender <*> retransmission error(s) (dcr <*>) detected and corrected
+63	E64	58	5	^ciod\:\s+\S+\s+coordinate\s+\S+\s+exceeds\s+physical\s+dimension\s+\S+\s+at\s+line\s+\S+\s+of\s+node\s+map\s+file\s+\S+$	ciod: <*> coordinate <*> exceeds physical dimension <*> at line <*> of node map file <*>
+64	E65	57	2	^external\s+input\s+interrupt\s+\(unit\=\S+\s+bit\=\S+\)\:\s+uncorrectable\s+torus\s+error$	external input interrupt (unit=<*> bit=<*>): uncorrectable torus error
+65	E66	56	1	^Power\s+Good\s+signal\s+deactivated\:\s+\S+\.\s+A\s+service\s+action\s+may\s+be\s+required\.$	Power Good signal deactivated: <*>. A service action may be required.
+66	E67	56	3	^\S+\s+torus\s+non\-crc\s+error\(s\)\s+\(dcr\s+\S+\)\s+detected\s+and\s+corrected\s+over\s+\S+\s+seconds$	<*> torus non-crc error(s) (dcr <*>) detected and corrected over <*> seconds
+67	E69	55	1	^ciod\:\s+Error\s+creating\s+node\s+map\s+from\s+file\s+\S+\:\s+No\s+such\s+file\s+or\s+directory$	ciod: Error creating node map from file <*>: No such file or directory
+68	E70	55	3	^\S+\s+torus\s+receiver\s+\S+\s+input\s+pipe\s+error\(s\)\s+\(dcr\s+\S+\)\s+detected\s+and\s+corrected$	<*> torus receiver <*> input pipe error(s) (dcr <*>) detected and corrected
+69	E68	55	4	^\S+\s+ddr\s+error\(s\)\s+detected\s+and\s+corrected\s+on\s+rank\s+\S+\,\s+symbol\s+\S+\s+over\s+\S+\s+seconds$	<*> ddr error(s) detected and corrected on rank <*>, symbol <*> over <*> seconds
+70	E71	55	6	^ciod\:\s+In\s+packet\s+from\s+node\s+\S+\s+\(\S+\)\,\s+message\s+code\s+\S+\s+is\s+not\s+\S+\s+or\s+\S+\s+\(softheader\=\S+\)$	ciod: In packet from node <*> (<*>), message code <*> is not <*> or <*> (softheader=<*>)
+71	E72	54	0	^data\s+cache\s+search\s+parity\s+error\s+detected\.\s+attempting\s+to\s+correct$	data cache search parity error detected. attempting to correct
+72	E73	54	1	^MidplaneSwitchController\:\:sendTrain\(\)\s+port\s+disconnected\:\s+\S+$	MidplaneSwitchController::sendTrain() port disconnected: <*>
+73	E74	54	1	^ciod\:\s+Error\s+creating\s+node\s+map\s+from\s+file\s+\S+\:\s+Device\s+or\s+resource\s+busy$	ciod: Error creating node map from file <*>: Device or resource busy
+74	E75	53	0	^data\s+cache\s+flush\s+parity\s+error\s+detected\.\s+attempting\s+to\s+correct$	data cache flush parity error detected. attempting to correct
+75	E76	53	1	^ciod\:\s+Error\s+creating\s+node\s+map\s+from\s+file\s+\S+\:\s+Argument\s+list\s+too\s+long$	ciod: Error creating node map from file <*>: Argument list too long
+76	E77	53	1	^ciod\:\s+Error\s+creating\s+node\s+map\s+from\s+file\s+\S+\:\s+Block\s+device\s+required$	ciod: Error creating node map from file <*>: Block device required
+77	E78	53	2	^\S+\s+torus\s+receiver\s+sram\s+ecc\s+error\(s\)\s+\(dcr\s+\S+\)\s+detected\s+and\s+corrected$	<*> torus receiver sram ecc error(s) (dcr <*>) detected and corrected
+78	E79	53	3	^critical\s+input\s+interrupt\s+\(unit\=\S+\s+bit\=\S+\)\:\s+warning\s+for\s+torus\s+\S+\s+wire$	critical input interrupt (unit=<*> bit=<*>): warning for torus <*> wire
+79	E80	52	0	^ciod\:\s+pollControlDescriptors\:\s+Detected\s+the\s+debugger\s+died\.$	ciod: pollControlDescriptors: Detected the debugger died.
+80	E81	52	3	^critical\s+input\s+interrupt\s+\(unit\=\S+\s+bit\=\S+\)\:\s+warning\s+for\s+tree\s+\S+\s+wire$	critical input interrupt (unit=<*> bit=<*>): warning for tree <*> wire
+81	E82	51	1	^number\s+of\s+correctable\s+errors\s+detected\s+in\s+L3\s+EDRAMs\.\.\.\.\.\.\.\.\S+$	number of correctable errors detected in L3 EDRAMs........<*>
+82	E83	51	1	^number\s+of\s+correctable\s+errors\s+detected\s+in\s+L3\s+directories\.\.\.\S+$	number of correctable errors detected in L3 directories...<*>
+83	E84	51	1	^ciod\:\s+Error\s+creating\s+node\s+map\s+from\s+file\s+\S+\:\s+Bad\s+file\s+descriptor$	ciod: Error creating node map from file <*>: Bad file descriptor
+84	E85	51	3	^Node\s+card\s+VPD\s+check\:\s+missing\s+\S+\,\s+VPD\s+ecid\s+\S+\s+in\s+processor\s+card\s+slot\s+\S+$	Node card VPD check: missing <*>, VPD ecid <*> in processor card slot <*>
+85	E86	50	0	^ddr\:\s+excessive\s+soft\s+failures\,\s+consider\s+replacing\s+the\s+card$	ddr: excessive soft failures, consider replacing the card
+86	E87	50	1	^ciod\:\s+Error\s+creating\s+node\s+map\s+from\s+file\s+\S+\:\s+No\s+child\s+processes$	ciod: Error creating node map from file <*>: No child processes
+87	E88	50	1	^ciod\:\s+Error\s+creating\s+node\s+map\s+from\s+file\s+\S+\:\s+Permission\s+denied$	ciod: Error creating node map from file <*>: Permission denied
+88	E89	50	2	^machine\s+check\s+interrupt\s+\(bit\=\S+\)\:\s+Torus\/Tree\/GI\s+read\s+error\s+\S+$	machine check interrupt (bit=<*>): Torus/Tree/GI read error <*>
+89	E90	49	1	^number\s+of\s+lines\s+with\s+parity\s+errors\s+written\s+to\s+L3\s+EDRAMs\.\.\.\S+$	number of lines with parity errors written to L3 EDRAMs...<*>
+90	E91	49	2	^ciod\:\s+for\s+node\s+\S+\,\s+incomplete\s+data\s+written\s+to\s+core\s+file\s+core\.\S+$	ciod: for node <*>, incomplete data written to core file core.<*>
+91	E92	49	2	^total\s+of\s+\S+\s+ddr\s+error\(s\)\s+detected\s+and\s+corrected\s+over\s+\S+\s+seconds$	total of <*> ddr error(s) detected and corrected over <*> seconds
+92	E93	49	2	^MidplaneSwitchController\s+performing\s+bit\s+sparing\s+on\s+\S+\s+bit\s+\S+$	MidplaneSwitchController performing bit sparing on <*> bit <*>
+93	E96	48	1	^state\s+machine\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	state machine....................................<*>
+94	E97	48	1	^machine\s+check\s+interrupt\s+\(bit\=\S+\)\:\s+L3\s+major\s+internal\s+error$	machine check interrupt (bit=<*>): L3 major internal error
+95	E98	48	2	^idoproxydb\s+has\s+been\s+started\:\s+\$Name\:\s+\S+\s+\$\s+Input\s+parameters\:\s+\S+$	idoproxydb has been started: $Name: <*> $ Input parameters: <*>
+96	E99	48	3	^\S+\s+tree\s+receiver\s+\S+\s+in\s+re\-synch\s+state\s+event\(s\)\s+\(dcr\s+\S+\)\s+detected$	<*> tree receiver <*> in re-synch state event(s) (dcr <*>) detected
+97	E100	48	4	^Bad\s+cable\s+going\s+into\s+LinkCard\s+\(\S+\)\s+Jtag\s+\(\S+\)\s+Port\s+\(\S+\)\s+\-\s+\S+\s+bad\s+wires$	Bad cable going into LinkCard (<*>) Jtag (<*>) Port (<*>) - <*> bad wires
+98	E101	48	4	^PrepareForService\s+is\s+being\s+done\s+on\s+this\s+Midplane\s+\(\S+\,\s+\S+\,\s+\S+\)\s+by\s+\S+$	PrepareForService is being done on this Midplane (<*>, <*>, <*>) by <*>
+99	E94	48	4	^\S+\s+ddr\s+errors\(s\)\s+detected\s+and\s+corrected\s+on\s+rank\s+\S+\,\s+symbol\s+\S+\s+bit\s+\S+$	<*> ddr errors(s) detected and corrected on rank <*>, symbol <*> bit <*>
+100	E102	47	1	^memory\s+manager\s+miscompare\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	memory manager miscompare........................<*>
+101	E103	47	1	^regctl\s+scancom\s+interface\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	regctl scancom interface.........................<*>
+102	E104	47	2	^ciod\:\s+for\s+node\s+\S+\s+read\s+continuation\s+request\s+but\s+ioState\s+is\s+\S+$	ciod: for node <*> read continuation request but ioState is <*>
+103	E95	47	2	^ddr\:\s+activating\s+redundant\s+bit\s+steering\:\s+rank\=\S+\s+symbol\=\S+$	ddr: activating redundant bit steering: rank=<*> symbol=<*>
+104	E105	46	1	^command\s+manager\s+unit\s+summary\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	command manager unit summary.....................<*>
+105	E106	46	1	^memory\s+manager\s+uncorrectable\s+error\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	memory manager uncorrectable error...............<*>
+106	E107	46	1	^memory\s+manager\s+strobe\s+gate\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	memory manager strobe gate.......................<*>
+107	E108	46	1	^memory\s+manager\s+refresh\s+contention\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	memory manager refresh contention................<*>
+108	E109	46	1	^memory\s+and\s+bus\s+summary\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	memory and bus summary...........................<*>
+109	E110	46	1	^memory\s+manager\s+address\s+error\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	memory manager address error.....................<*>
+110	E111	46	2	^ciod\:\s+Missing\s+or\s+invalid\s+fields\s+on\s+line\s+\S+\s+of\s+node\s+map\s+file\s+\S+$	ciod: Missing or invalid fields on line <*> of node map file <*>
+111	E112	46	4	^\S+\s+L3\s+\S+\s+error\(s\)\s+\(dcr\s+\S+\)\s+detected\s+and\s+corrected\s+over\s+\S+\s+seconds$	<*> L3 <*> error(s) (dcr <*>) detected and corrected over <*> seconds
+112	E113	45	1	^memory\s+manager\s+refresh\s+counter\s+timeout\.\.\.\.\.\.\.\.\.\.\.\S+$	memory manager refresh counter timeout...........<*>
+113	E114	45	1	^disable\s+flagging\s+of\s+DDR\s+UE\'s\s+as\s+major\s+internal\s+error\.\S+$	disable flagging of DDR UE's as major internal error.<*>
+114	E115	45	1	^memory\s+manager\s+store\s+buffer\s+parity\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	memory manager store buffer parity...............<*>
+115	E116	45	1	^memory\s+manager\s+RMW\s+buffer\s+parity\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	memory manager RMW buffer parity.................<*>
+116	E117	45	1	^memory\s+manager\s+address\s+parity\s+error\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	memory manager address parity error..............<*>
+117	E118	45	1	^ciod\:\s+LOGIN\s+chdir\(\S+\)\s+failed\:\s+No\s+such\s+file\s+or\s+directory$	ciod: LOGIN chdir(<*>) failed: No such file or directory
+118	E119	45	2	^\S+\s+torus\s+non\-crc\s+error\(s\)\s+\(dcr\s+\S+\)\s+detected\s+and\s+corrected$	<*> torus non-crc error(s) (dcr <*>) detected and corrected
+119	E120	44	1	^NodeCard\s+temperature\s+sensor\s+chip\s+\S+\s+is\s+not\s+accessible$	NodeCard temperature sensor chip <*> is not accessible
+120	E121	44	2	^Found\s+invalid\s+node\s+ecid\s+in\s+processor\s+card\s+slot\s+\S+\,\s+ecid\s+\S+$	Found invalid node ecid in processor card slot <*>, ecid <*>
+121	E122	43	1	^memory\s+manager\s+\/\s+command\s+manager\s+address\s+parity\.\.\S+$	memory manager / command manager address parity..<*>
+122	E123	43	1	^store\s+operation\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	store operation.............................<*>
+123	E124	43	1	^auxiliary\s+processor\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	auxiliary processor.........................<*>
+124	E125	43	2	^rts\s+tree\/torus\s+link\s+training\s+failed\:\s+wanted\:\s+\S+\s+got\:\s+\S+$	rts tree/torus link training failed: wanted: <*> got: <*>
+125	E126	42	1	^uncorrectable\s+error\s+detected\s+in\s+external\s+DDR\.\.\.\S+$	uncorrectable error detected in external DDR...<*>
+126	E127	42	1	^byte\s+ordering\s+exception\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	byte ordering exception.....................<*>
+127	E128	42	1	^floating\s+point\s+operation\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	floating point operation....................<*>
+128	E129	42	1	^machine\s+check\s+interrupt\s+\(bit\=\S+\)\:\s+L2\s+DCU\s+read\s+error$	machine check interrupt (bit=<*>): L2 DCU read error
+129	E130	42	1	^machine\s+check\:\s+i\-fetch\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	machine check: i-fetch......................<*>
+130	E131	42	2	^L3\s+correctable\s+errors\s+exceeds\s+threshold\s+\(iar\s+\S+\s+lr\s+\S+\)$	L3 correctable errors exceeds threshold (iar <*> lr <*>)
+131	E132	42	2	^parity\s+error\s+in\s+bank\s+\S+\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	parity error in bank <*>.........................<*>
+132	E133	42	2	^BglIdoChip\s+table\s+has\s+\S+\s+IDOs\s+with\s+the\s+same\s+IP\s+address\s+\S+$	BglIdoChip table has <*> IDOs with the same IP address <*>
+133	E134	41	0	^idoproxy\s+communication\s+failure\:\s+socket\s+closed$	idoproxy communication failure: socket closed
+134	E135	41	1	^program\s+interrupt\:\s+privileged\s+instruction\.\.\.\S+$	program interrupt: privileged instruction...<*>
+135	E136	41	1	^ciod\:\s+LOGIN\s+chdir\(\S+\)\s+failed\:\s+Input\/output\s+error$	ciod: LOGIN chdir(<*>) failed: Input/output error
+136	E137	41	1	^program\s+interrupt\:\s+fp\s+compare\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	program interrupt: fp compare...............<*>
+137	E138	41	1	^program\s+interrupt\:\s+trap\s+instruction\.\.\.\.\.\.\.\.\.\S+$	program interrupt: trap instruction.........<*>
+138	E139	41	1	^program\s+interrupt\:\s+imprecise\s+exception\.\.\.\.\.\.\S+$	program interrupt: imprecise exception......<*>
+139	E140	41	1	^program\s+interrupt\:\s+illegal\s+instruction\.\.\.\.\.\.\S+$	program interrupt: illegal instruction......<*>
+140	E141	41	1	^reserved\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	reserved.................................<*>
+141	E142	41	1	^program\s+interrupt\:\s+unimplemented\s+operation\.\.\S+$	program interrupt: unimplemented operation..<*>
+142	E143	41	2	^uncorrectable\s+error\s+detected\s+in\s+directory\s+\S+\.\.\.\.\S+$	uncorrectable error detected in directory <*>....<*>
+143	E144	41	2	^parity\s+error\s+in\s+read\s+queue\s+\S+\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	parity error in read queue <*>...................<*>
+144	E145	41	3	^ciod\:\s+cpu\s+\S+\s+at\s+treeaddr\s+\S+\s+sent\s+unrecognized\s+message\s+\S+$	ciod: cpu <*> at treeaddr <*> sent unrecognized message <*>
+145	E146	41	4	^New\s+ido\s+chip\s+inserted\s+into\s+the\s+database\:\s+\S+\s+ip\=\S+\s+v\=\S+\s+t\=\S+$	New ido chip inserted into the database: <*> ip=<*> v=<*> t=<*>
+146	E147	41	4	^ciod\:\s+Received\s+signal\s+\S+\,\s+code\=\S+\,\s+errno\=\S+\,\s+address\=\S+$	ciod: Received signal <*>, code=<*>, errno=<*>, address=<*>
+147	E148	40	1	^plus\s+zero\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	plus zero................................<*>
+148	E149	40	1	^minus\s+inf\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	minus inf................................<*>
+149	E150	40	1	^underflow\s+exception\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	underflow exception......................<*>
+150	E151	40	1	^plus\s+infinity\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	plus infinity............................<*>
+151	E152	40	1	^round\s+nearest\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	round nearest............................<*>
+152	E153	40	1	^divide\-by\-zero\s+exception\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	divide-by-zero exception.................<*>
+153	E154	40	1	^start\s+flushing\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	start flushing...........................<*>
+154	E155	40	1	^exception\s+summary\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	exception summary........................<*>
+155	E156	40	1	^program\s+interrupt\:\s+fp\s+cr\s+update\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	program interrupt: fp cr update.............<*>
+156	E157	40	1	^fraction\s+rounded\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	fraction rounded.........................<*>
+157	E158	40	1	^start\s+initialization\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	start initialization.....................<*>
+158	E159	40	1	^ciod\:\s+LOGIN\s+chdir\(\S+\)\s+failed\:\s+Permission\s+denied$	ciod: LOGIN chdir(<*>) failed: Permission denied
+159	E160	40	1	^start\s+prefetching\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	start prefetching........................<*>
+160	E161	40	1	^start\s+retagging\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	start retagging..........................<*>
+161	E162	40	1	^fraction\s+inexact\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	fraction inexact.........................<*>
+162	E163	40	1	^inexact\s+exception\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	inexact exception........................<*>
+163	E164	40	2	^uncorrectable\s+error\s+detected\s+in\s+EDRAM\s+bank\s+\S+\.\.\.\S+$	uncorrectable error detected in EDRAM bank <*>...<*>
+164	E165	40	3	^NFS\s+Mount\s+failed\s+on\s+\S+\,\s+slept\s+\S+\s+seconds\,\s+retrying\s+\(\S+\)$	NFS Mount failed on <*>, slept <*> seconds, retrying (<*>)
+165	E166	39	0	^error\s+threshold\,\s+consider\s+replacing\s+the\s+card$	error threshold, consider replacing the card
+166	E167	39	0	^Can\s+not\s+get\s+assembly\s+information\s+for\s+node\s+card$	Can not get assembly information for node card
+167	E168	39	1	^round\s+toward\s+\-infinity\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	round toward -infinity...................<*>
+168	E169	39	1	^icache\s+prefetch\s+depth\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	icache prefetch depth....................<*>
+169	E170	39	1	^program\s+interrupt\:\s+fp\s+cr\s+field\s+\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	program interrupt: fp cr field .............<*>
+170	E171	39	1	^disable\s+trace\s+broadcast\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	disable trace broadcast..................<*>
+171	E172	39	1	^enable\s+divide\-by\-zero\s+exceptions\.\.\.\.\.\.\.\.\.\S+$	enable divide-by-zero exceptions.........<*>
+172	E173	39	1	^enable\s+overflow\s+exceptions\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	enable overflow exceptions...............<*>
+173	E174	39	1	^disable\s+store\s+gathering\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	disable store gathering..................<*>
+174	E175	39	1	^enable\s+underflow\s+exceptions\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	enable underflow exceptions..............<*>
+175	E176	39	1	^data\s+store\s+interrupt\s+caused\s+by\s+dcbf\.\.\.\.\.\.\.\.\.\S+$	data store interrupt caused by dcbf.........<*>
+176	E177	39	1	^disable\s+speculative\s+access\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	disable speculative access...............<*>
+177	E178	39	1	^data\s+store\s+interrupt\s+caused\s+by\s+icbi\.\.\.\.\.\.\.\.\.\S+$	data store interrupt caused by icbi.........<*>
+178	E179	39	1	^plus\s+normalized\s+number\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	plus normalized number...................<*>
+179	E180	39	1	^plus\s+denormalized\s+number\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	plus denormalized number.................<*>
+180	E181	39	1	^enable\s+non\-IEEE\s+mode\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	enable non-IEEE mode.....................<*>
+181	E182	39	1	^minus\s+normalized\s+number\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	minus normalized number..................<*>
+182	E183	39	1	^force\s+load\/store\s+alignment\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	force load/store alignment...............<*>
+183	E184	39	1	^round\s+toward\s+\+infinity\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	round toward +infinity...................<*>
+184	E185	39	1	^enabled\s+exception\s+summary\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	enabled exception summary................<*>
+185	E186	39	1	^minus\s+denormalized\s+number\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	minus denormalized number................<*>
+186	E187	39	1	^enable\s+inexact\s+exceptions\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	enable inexact exceptions................<*>
+187	E188	38	0	^suppressing\s+further\s+interrupts\s+of\s+same\s+type$	suppressing further interrupts of same type
+188	E189	38	0	^rror\s+threshold\,\s+consider\s+replacing\s+the\s+card$	rror threshold, consider replacing the card
+189	E190	38	1	^invalid\s+operation\s+exception\s+summary\.\.\.\.\.\.\S+$	invalid operation exception summary......<*>
+190	E191	38	1	^total\s+of\s+\S+\s+ddr\s+error\(s\)\s+detected\s+and\s+corrected$	total of <*> ddr error(s) detected and corrected
+191	E192	38	1	^enable\s+invalid\s+operation\s+exceptions\.\.\.\.\.\.\S+$	enable invalid operation exceptions......<*>
+192	E193	38	1	^turn\s+on\s+hidden\s+refreshes\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	turn on hidden refreshes.................<*>
+193	E194	38	1	^invalid\s+operation\s+exception\s+\(software\)\.\.\.\S+$	invalid operation exception (software)...<*>
+194	E195	38	1	^invalid\s+operation\s+exception\s+\(sqrt\)\.\.\.\.\.\.\.\S+$	invalid operation exception (sqrt).......<*>
+195	E196	38	1	^Floating\s+Point\s+Status\s+and\s+Control\s+Register\:\s+\S+$	Floating Point Status and Control Register: <*>
+196	E197	38	1	^disable\s+apu\s+instruction\s+broadcast\.\.\.\.\.\.\.\.\S+$	disable apu instruction broadcast........<*>
+197	E198	38	1	^write\s+buffer\s+commit\s+threshold\.\.\.\.\.\.\.\.\.\.\.\.\S+$	write buffer commit threshold............<*>
+198	E199	38	2	^size\s+of\s+DDR\s+we\s+are\s+caching\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+\s+\(\S+\)$	size of DDR we are caching...............<*> (<*>)
+199	E200	38	2	^size\s+of\s+scratchpad\s+portion\s+of\s+L3\.\.\.\.\.\.\.\.\.\S+\s+\(\S+\)$	size of scratchpad portion of L3.........<*> (<*>)
+200	E201	38	3	^ciod\:\s+Error\s+loading\s+\S+\:\s+program\s+image\s+too\s+big\,\s+\S+\s+\>\s+\S+$	ciod: Error loading <*>: program image too big, <*> > <*>
+201	E202	37	1	^max\s+number\s+of\s+outstanding\s+prefetches\.\.\.\.\.\S+$	max number of outstanding prefetches.....<*>
+202	E203	37	1	^guaranteed\s+instruction\s+cache\s+block\s+touch\.\S+$	guaranteed instruction cache block touch.<*>
+203	E204	37	1	^invalid\s+operation\s+exception\s+\(int\s+cnvt\)\.\.\.\S+$	invalid operation exception (int cnvt)...<*>
+204	E205	37	1	^guaranteed\s+data\s+cache\s+block\s+touch\.\.\.\.\.\.\.\.\S+$	guaranteed data cache block touch........<*>
+205	E206	37	2	^quiet\s+\S+\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	quiet <*>................................<*>
+206	E207	37	2	^ciod\:\s+Unexpected\s+eof\s+at\s+line\s+\S+\s+of\s+node\s+map\s+file\s+\S+$	ciod: Unexpected eof at line <*> of node map file <*>
+207	E208	36	0	^instruction\s+cache\s+parity\s+error\s+corrected$	instruction cache parity error corrected
+208	E209	36	0	^Torus\s+non\-recoverable\s+error\s+DCRs\s+follow\.$	Torus non-recoverable error DCRs follow.
+209	E210	36	1	^disable\s+all\s+access\s+to\s+cache\s+directory\.\.\.\.\S+$	disable all access to cache directory....<*>
+210	E211	36	1	^Lustre\s+mount\s+FAILED\s+\:\s+\S+\s+\:\s+block_id\s+\:\s+location$	Lustre mount FAILED : <*> : block_id : location
+211	E212	36	2	^prefetch\s+depth\s+for\s+core\s+\S+\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	prefetch depth for core <*>................<*>
+212	E213	36	3	^MACHINE\s+CHECK\s+DCR\s+read\s+timeout\s+\(mc\=\S+\s+iar\s+\S+\s+lr\s+\S+\)$	MACHINE CHECK DCR read timeout (mc=<*> iar <*> lr <*>)
+213	E214	35	1	^correctable\s+error\s+detected\s+in\s+directory\s+\S+$	correctable error detected in directory <*>
+214	E215	35	1	^close\s+EDRAM\s+pages\s+as\s+soon\s+as\s+possible\.\.\.\.\S+$	close EDRAM pages as soon as possible....<*>
+215	E216	35	1	^correctable\s+error\s+detected\s+in\s+EDRAM\s+bank\s+\S+$	correctable error detected in EDRAM bank <*>
+216	E217	35	2	^disable\s+write\s+lines\s+\S+\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	disable write lines <*>..................<*>
+217	E218	35	3	^\S+\s+L3\s+\S+\s+error\(s\)\s+\(dcr\s+\S+\)\s+detected\s+and\s+corrected$	<*> L3 <*> error(s) (dcr <*>) detected and corrected
+218	E219	35	6	^Ido\s+chip\s+status\s+changed\:\s+\S+\s+ip\=\S+\s+v\=\S+\s+t\=\S+\s+status\=\S+\s+\S+$	Ido chip status changed: <*> ip=<*> v=<*> t=<*> status=<*> <*>
+219	E220	34	1	^summary\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	summary...........................<*>
+220	E221	34	1	^NodeCard\s+power\s+module\s+\S+\s+is\s+not\s+accessible$	NodeCard power module <*> is not accessible
+221	E222	34	1	^round\s+toward\s+zero\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	round toward zero...................<*>
+222	E223	34	1	^LinkCard\s+power\s+module\s+\S+\s+is\s+not\s+accessible$	LinkCard power module <*> is not accessible
+223	E224	34	1	^idoproxy\s+exited\s+normally\s+with\s+exit\s+code\s+\S+$	idoproxy exited normally with exit code <*>
+224	E225	33	1	^No\s+power\s+module\s+\S+\s+found\s+found\s+on\s+link\s+card$	No power module <*> found found on link card
+225	E226	33	1	^ciodb\s+exited\s+abnormally\s+due\s+to\s+signal\:\s+\S+$	ciodb exited abnormally due to signal: <*>
+226	E227	33	1	^tlb\s+error\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	tlb error.........................<*>
+227	E228	33	2	^ciod\:\s+generated\s+\S+\s+core\s+files\s+for\s+program\s+\S+$	ciod: generated <*> core files for program <*>
+228	E229	33	2	^invalid\s+\(\S+\)\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	invalid (<*>)........................<*>
+229	E230	33	3	^SerialNumber\(\S+\)\s+IpAddress\(\S+\)\s+Status\(\S+\)$	SerialNumber(<*>) IpAddress(<*>) Status(<*>)
+230	E231	33	3	^MACHINE\s+CHECK\s+PLB\s+write\s+IRQ\s+\(mc\=\S+\s+iar\s+\S+\s+lr\s+\S+\)$	MACHINE CHECK PLB write IRQ (mc=<*> iar <*> lr <*>)
+231	E232	32	0	^this\s+link\s+card\s+is\s+not\s+fully\s+functional$	this link card is not fully functional
+232	E233	32	1	^instruction\s+address\s+space\.\.\.\.\.\.\.\.\.\S+$	instruction address space.........<*>
+233	E234	32	1	^instruction\s+plb\s+error\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	instruction plb error.............<*>
+234	E235	32	1	^wait\s+state\s+enable\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	wait state enable.................<*>
+235	E236	32	1	^debug\s+interrupt\s+enable\.\.\.\.\.\.\.\.\.\.\.\.\S+$	debug interrupt enable............<*>
+236	E237	32	1	^\S+\s+double\-hummer\s+alignment\s+exceptions$	<*> double-hummer alignment exceptions
+237	E238	32	1	^i\-cache\s+parity\s+error\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	i-cache parity error..............<*>
+238	E239	32	1	^machine\s+check\s+enable\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	machine check enable..............<*>
+239	E240	32	1	^\S+\s+floating\s+point\s+alignment\s+exceptions$	<*> floating point alignment exceptions
+240	E241	32	1	^debug\s+wait\s+enable\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	debug wait enable.................<*>
+241	E242	32	1	^data\s+address\s+space\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	data address space................<*>
+242	E243	32	1	^imprecise\s+machine\s+check\.\.\.\.\.\.\.\.\.\.\.\S+$	imprecise machine check...........<*>
+243	E244	31	0	^Link\s+PGOOD\s+error\s+latched\s+on\s+link\s+card$	Link PGOOD error latched on link card
+244	E245	31	1	^ciodb\s+exited\s+normally\s+with\s+exit\s+code\s+\S+$	ciodb exited normally with exit code <*>
+245	E246	31	1	^data\s+write\s+plb\s+error\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	data write plb error..............<*>
+246	E247	31	1	^floating\s+point\s+instr\.\s+enabled\.\.\.\.\.\S+$	floating point instr. enabled.....<*>
+247	E248	31	1	^data\s+read\s+plb\s+error\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	data read plb error...............<*>
+248	E249	31	1	^d\-cache\s+search\s+parity\s+error\.\.\.\.\.\.\.\S+$	d-cache search parity error.......<*>
+249	E250	31	1	^external\s+input\s+interrupt\s+enable\.\.\.\S+$	external input interrupt enable...<*>
+250	E251	31	1	^critical\s+input\s+interrupt\s+enable\.\.\.\S+$	critical input interrupt enable...<*>
+251	E252	31	3	^EndServiceAction\s+\S+\s+performed\s+upon\s+\S+\s+by\s+\S+$	EndServiceAction <*> performed upon <*> by <*>
+252	E253	30	0	^NodeCard\s+VPD\s+chip\s+is\s+not\s+accessible$	NodeCard VPD chip is not accessible
+253	E254	30	0	^Temperature\s+Over\s+Limit\s+on\s+link\s+card$	Temperature Over Limit on link card
+254	E255	30	1	^d\-cache\s+flush\s+parity\s+error\.\.\.\.\.\.\.\S+$	d-cache flush parity error.......<*>
+255	E256	30	3	^problem\s+state\s+\(\S+\=sup\,\S+\=usr\)\.\.\.\.\.\.\.\S+$	problem state (<*>=sup,<*>=usr).......<*>
+256	E257	29	0	^Error\:\s+unable\s+to\s+mount\s+filesystem$	Error: unable to mount filesystem
+257	E258	29	1	^rts\:\s+kernel\s+terminated\s+for\s+reason\s+\S+$	rts: kernel terminated for reason <*>
+258	E259	28	0	^Node\s+card\s+is\s+not\s+fully\s+functional$	Node card is not fully functional
+259	E260	28	0	^LinkCard\s+is\s+not\s+fully\s+functional$	LinkCard is not fully functional
+260	E261	28	0	^NodeCard\s+is\s+not\s+fully\s+functional$	NodeCard is not fully functional
+261	E262	28	2	^floating\s+pt\s+ex\s+mode\s+\S+\s+enable\.\.\.\.\.\.\S+$	floating pt ex mode <*> enable......<*>
+262	E263	28	2	^Added\s+\S+\s+subnets\s+and\s+\S+\s+addresses\s+to\s+DB$	Added <*> subnets and <*> addresses to DB
+263	E264	27	0	^rts\s+panic\!\s+\-\s+stopping\s+execution$	rts panic! - stopping execution
+264	E265	27	1	^machine\s+check\s+status\s+register\:\s+\S+$	machine check status register: <*>
+265	E266	26	0	^Running\s+as\s+background\s+command$	Running as background command
+266	E267	26	1	^core\s+configuration\s+register\:\s+\S+$	core configuration register: <*>
+267	E268	26	1	^exception\s+syndrome\s+register\:\s+\S+$	exception syndrome register: <*>
+268	E269	24	0	^general\s+purpose\s+registers\:$	general purpose registers:
+269	E270	24	0	^General\s+Purpose\s+Registers\:$	General Purpose Registers:
+270	E271	24	0	^Special\s+Purpose\s+Registers\:$	Special Purpose Registers:
+271	E272	24	0	^Starting\s+SystemController$	Starting SystemController
+272	E273	24	0	^special\s+purpose\s+registers\:$	special purpose registers:
+273	E274	24	1	^L3\s+global\s+control\s+register\:\s+\S+$	L3 global control register: <*>
+274	E275	24	2	^DDR\s+machine\s+check\s+register\:\s+\S+\s+\S+$	DDR machine check register: <*> <*>
+275	E276	24	2	^Lustre\s+mount\s+FAILED\s+\:\s+\S+\s+\:\s+point\s+\S+$	Lustre mount FAILED : <*> : point <*>
+276	E277	23	0	^Floating\s+Point\s+Registers\:$	Floating Point Registers:
+277	E278	23	1	^job\s+\S+\s+timed\s+out\.\s+Block\s+freed\.$	job <*> timed out. Block freed.
+278	E279	23	3	^ciod\:\s+Message\s+code\s+\S+\s+is\s+not\s+\S+\s+or\s+\S+$	ciod: Message code <*> is not <*> or <*>
+279	E280	22	0	^ciodb\s+has\s+been\s+restarted\.$	ciodb has been restarted.
+280	E281	22	1	^mask\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	mask..................<*>
+281	E282	22	1	^symbol\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\S+$	symbol................<*>
+282	E283	22	1	^miscompare\.\.\.\.\.\.\.\.\.\.\.\.\S+$	miscompare............<*>
+283	E284	22	3	^Target\=\S+\s+Message\=\S+\s+JtagId\s+\=\s+\S+$	Target=<*> Message=<*> JtagId = <*>
+284	E285	21	0	^data\s+TLB\s+error\s+interrupt$	data TLB error interrupt
+285	E286	21	0	^machine\s+check\s+interrupt$	machine check interrupt
+286	E287	21	1	^capture\s+valid\.\.\.\.\.\.\.\.\.\S+$	capture valid.........<*>
+287	E288	21	1	^chip\s+select\.\.\.\.\.\.\.\.\.\.\.\S+$	chip select...........<*>
+288	E289	21	1	^qw\s+trapped\.\.\.\.\.\.\.\.\.\.\.\.\S+$	qw trapped............<*>
+289	E290	21	1	^correctable\s+error\.\.\.\.\.\S+$	correctable error.....<*>
+290	E291	21	1	^Controlling\s+BG\/L\s+rows\s+\[\s+\S+\s+\]$	Controlling BG/L rows [ <*> ]
+291	E292	21	1	^interrupt\s+threshold\.\.\.\S+$	interrupt threshold...<*>
+292	E293	21	1	^L3\s+ecc\s+control\s+register\:\s+\S+$	L3 ecc control register: <*>
+293	E294	21	1	^machine\s+state\s+register\:\s+\S+$	machine state register: <*>
+294	E295	20	0	^L3\s+major\s+internal\s+error$	L3 major internal error
+295	E296	20	0	^data\s+storage\s+interrupt$	data storage interrupt
+296	E297	20	0	^NodeCard\s+VPD\s+is\s+corrupt$	NodeCard VPD is corrupt
+297	E298	20	0	^Microloader\s+Assertion$	Microloader Assertion
+298	E299	20	1	^address\s+parity\s+error\.\.\S+$	address parity error..<*>
+299	E300	20	1	^L3\s+ecc\s+status\s+register\:\s+\S+$	L3 ecc status register: <*>
+300	E301	19	1	^instruction\s+address\:\s+\S+$	instruction address: <*>
+301	E302	19	4	^msr\=\S+\s+dear\=\S+\s+esr\=\S+\s+fpscr\=\S+$	msr=<*> dear=<*> esr=<*> fpscr=<*>
+302	E303	18	1	^parity\s+error\.\.\.\.\.\.\.\S+$	parity error.......<*>
+303	E304	17	1	^Power\s+deactivated\:\s+\S+$	Power deactivated: <*>
+304	E305	16	0	^shutdown\s+complete$	shutdown complete
+305	E306	16	0	^rts\s+internal\s+error$	rts internal error
+306	E307	16	0	^Ido\s+packet\s+timeout$	Ido packet timeout
+307	E308	16	0	^program\s+interrupt$	program interrupt
+308	E309	16	3	^dbcr0\=\S+\s+dbsr\=\S+\s+ccr0\=\S+$	dbcr0=<*> dbsr=<*> ccr0=<*>
+309	E310	15	1	^generating\s+core\.\S+$	generating core.<*>
+310	E311	15	2	^Target\=\S+\s+Message\=\S+$	Target=<*> Message=<*>
+311	E312	14	0	^no\s+ethernet\s+link$	no ethernet link
+312	E313	14	4	^lr\:\S+\s+cr\:\S+\s+xer\:\S+\s+ctr\:\S+$	lr:<*> cr:<*> xer:<*> ctr:<*>
+313	E314	13	3	^CE\s+sym\s+\S+\,\s+at\s+\S+\,\s+mask\s+\S+$	CE sym <*>, at <*>, mask <*>
+314	E315	11	0	^kernel\s+panic$	kernel panic
+315	E316	7	0	^program$	program
+316	E317	7	2	^iar\s+\S+\s+dear\s+\S+$	iar <*> dear <*>
+317	E318	5	2	^\S+\,\s+max\=\S+$	<*>, max=<*>
+318	E319	3	1	^ax\=\S+$	ax=<*>
+319	E320	2	1	^x\=\S+$	x=<*>

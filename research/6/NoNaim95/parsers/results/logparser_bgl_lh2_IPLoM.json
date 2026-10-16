@@ -1,0 +1,21 @@
+{
+ "method": "IPLoM",
+ "dataset": "bgl",
+ "input": "/Users/deni/.claude/jobs/f51b810a/tmp/r6p/data/bgl_lh2_content.txt",
+ "n_in": 4631261,
+ "n_out": 4631261,
+ "t_parse_s": 224.4,
+ "lines_per_s": 20638,
+ "n_templates": 310,
+ "n_eventids": 310,
+ "metrics": {
+  "GA": 0.8958711245166273,
+  "FGA": 0.6920634920634922,
+  "PGA": 0.7032258064516129,
+  "RGA": 0.68125,
+  "n_parsed": 310,
+  "n_gt": 320,
+  "PA": 0.3377073760256656,
+  "FTA": 0.12698412698412698
+ }
+}

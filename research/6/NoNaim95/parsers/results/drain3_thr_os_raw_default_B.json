@@ -1,0 +1,14 @@
+{
+ "input": "/Users/deni/.claude/jobs/f51b810a/tmp/r6p/data/os_raw_msg.txt",
+ "n": 207820,
+ "config": "default",
+ "sim_th": 0.4,
+ "depth": 4,
+ "shuffle": null,
+ "t_parse_s": 19.17,
+ "lines_per_s": 10841,
+ "n_clusters": 3987,
+ "n_distinct_template_strings": 3987,
+ "cid_sha1": "622c1f5579eb1dcc95c45f6f7420c4716cc395b1",
+ "templates_sha1": "9ee08fba508cc4dfc8d2dc64d0c08925f050c025"
+}

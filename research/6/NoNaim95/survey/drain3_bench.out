@@ -1,0 +1,26 @@
+OpenStack drain3 st=0.5 depth=4 lines=207632 time=4.5s rate=45,687 lines/s clusters=37 gt_templates=48 GA=0.345 FGA=0.659
+BGL drain3 st=0.5 depth=4 lines=4631261 time=43.9s rate=105,424 lines/s clusters=308 gt_templates=320 GA=0.925 FGA=0.736
+OpenStack+PATHMASK drain3 st=0.5 depth=5 lines=207632 time=8.5s rate=24,305 lines/s clusters=39 gt_templates=48 GA=0.385 FGA=0.690
+  WRONG E42 n=90475 -> 2 pred clusters; <*> "GET <*> <*>" status: <*> len: <*> time: <*> | pred tpl: <IP> "GET <PATH> HTTP/<NUM>" status: <NUM> len: <NUM> time: <NUM>
+  WRONG E22 n=4132 -> 1 pred clusters; [instance: <*>] VM Resumed (Lifecycle Event) | pred tpl: [instance: <UUID>] VM <*> (Lifecycle Event)
+  WRONG E25 n=2067 -> 1 pred clusters; [instance: <*>] VM Stopped (Lifecycle Event) | pred tpl: [instance: <UUID>] VM <*> (Lifecycle Event)
+OpenStack+PATHMASK drain3 st=0.7 depth=5 lines=207632 time=8.5s rate=24,392 lines/s clusters=43 gt_templates=48 GA=0.455 FGA=0.813
+  WRONG E42 n=90475 -> 2 pred clusters; <*> "GET <*> <*>" status: <*> len: <*> time: <*> | pred tpl: <IP> "GET <PATH> HTTP/<NUM>" status: <NUM> len: <NUM> time: <NUM>
+  WRONG E22 n=4132 -> 1 pred clusters; [instance: <*>] VM Resumed (Lifecycle Event) | pred tpl: [instance: <UUID>] VM <*> (Lifecycle Event)
+  WRONG E25 n=2067 -> 1 pred clusters; [instance: <*>] VM Stopped (Lifecycle Event) | pred tpl: [instance: <UUID>] VM <*> (Lifecycle Event)
+OpenStack+PATHMASK drain3 st=0.9 depth=5 lines=207632 time=11.6s rate=17,952 lines/s clusters=49 gt_templates=48 GA=0.536 FGA=0.907
+  WRONG E42 n=90475 -> 2 pred clusters; <*> "GET <*> <*>" status: <*> len: <*> time: <*> | pred tpl: <IP> "GET <PATH> HTTP/<NUM>" status: <NUM> len: <NUM> time: <NUM>
+  WRONG E9 n=2066 -> 1 pred clusters; [instance: <*>] Took <*> seconds to spawn the instance on the hypervis | pred tpl: [instance: <UUID>] Took <NUM> seconds to <*> the instance on the hypervisor.
+  WRONG E8 n=2064 -> 1 pred clusters; [instance: <*>] Took <*> seconds to destroy the instance on the hyperv | pred tpl: [instance: <UUID>] Took <NUM> seconds to <*> the instance on the hypervisor.
+OpenStack+PATHMASK+IPLIST drain3 st=0.5 depth=5 lines=207632 time=5.8s rate=35,568 lines/s clusters=38 gt_templates=48 GA=0.821 FGA=0.721
+  WRONG E22 n=4132 -> 1 pred clusters; [instance: <*>] VM Resumed (Lifecycle Event) | pred tpl: [instance: <UUID>] VM <*> (Lifecycle Event)
+  WRONG E25 n=2067 -> 1 pred clusters; [instance: <*>] VM Stopped (Lifecycle Event) | pred tpl: [instance: <UUID>] VM <*> (Lifecycle Event)
+  WRONG E37 n=2066 -> 1 pred clusters; [instance: <*>] Creating image | pred tpl: [instance: <UUID>] <*> <*>
+  WRONG E23 n=2066 -> 1 pred clusters; [instance: <*>] VM Started (Lifecycle Event) | pred tpl: [instance: <UUID>] VM <*> (Lifecycle Event)
+OpenStack+PATHMASK+IPLIST drain3 st=0.9 depth=5 lines=207632 time=4.1s rate=50,309 lines/s clusters=48 gt_templates=48 GA=0.972 FGA=0.938
+  WRONG E9 n=2066 -> 1 pred clusters; [instance: <*>] Took <*> seconds to spawn the instance on the hypervis | pred tpl: [instance: <UUID>] Took <NUM> seconds to <*> the instance on the hypervisor.
+  WRONG E8 n=2064 -> 1 pred clusters; [instance: <*>] Took <*> seconds to destroy the instance on the hyperv | pred tpl: [instance: <UUID>] Took <NUM> seconds to <*> the instance on the hypervisor.
+  WRONG E2 n=1739 -> 2 pred clusters; Final resource view: name=<*> phys_ram=<*> used_ram=<*> phys_disk=<*>  | pred tpl: Final resource view: name=cp-<NUM>.slowvm1.tcloud-pg0.utah.cloudlab.us phys_ram=
+BGL drain3 st=0.5 depth=4 lines=4631261 time=52.5s rate=88,294 lines/s clusters=308 gt_templates=320 GA=0.925 FGA=0.736
+BGL+PATHMASK drain3 st=0.7 depth=4 lines=4631261 time=152.7s rate=30,331 lines/s clusters=646 gt_templates=320 GA=0.849 FGA=0.555
+BGL+PATHMASK drain3 st=0.9 depth=5: killed after >25 min wall (not finished); throughput collapse at high sim_th on BGL

@@ -1,0 +1,32 @@
+{
+ "input": "/Users/deni/.claude/jobs/f51b810a/tmp/r6p/data/os_lh2_content.txt",
+ "n": 207632,
+ "config": "tuned",
+ "sim_th": 0.9,
+ "depth": 5,
+ "shuffle": null,
+ "t_parse_s": 5.35,
+ "lines_per_s": 38784,
+ "n_clusters": 48,
+ "n_distinct_template_strings": 48,
+ "cid_sha1": "2d44c2e69e8cb43d5edbab27a41603393db38fd1",
+ "templates_sha1": "2b6e8594124c39a3231da52beb408741d5af67fb",
+ "metrics_by_template_string": {
+  "GA": 0.9717336441396317,
+  "FGA": 0.9375,
+  "PGA": 0.9375,
+  "RGA": 0.9375,
+  "n_parsed": 48,
+  "n_gt": 48,
+  "PA": 0.22705074362333358,
+  "FTA": 0.5
+ },
+ "metrics_by_cluster_id": {
+  "GA": 0.9717336441396317,
+  "FGA": 0.9375,
+  "PGA": 0.9375,
+  "RGA": 0.9375,
+  "n_parsed": 48,
+  "n_gt": 48
+ }
+}

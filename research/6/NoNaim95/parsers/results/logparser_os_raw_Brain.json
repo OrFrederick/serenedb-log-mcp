@@ -1,0 +1,11 @@
+{
+ "method": "Brain",
+ "dataset": "os",
+ "input": "/Users/deni/.claude/jobs/f51b810a/tmp/r6p/data/os_raw_msg.txt",
+ "n_in": 207820,
+ "n_out": 207820,
+ "t_parse_s": 10.98,
+ "lines_per_s": 18935,
+ "n_templates": 66,
+ "n_eventids": 66
+}

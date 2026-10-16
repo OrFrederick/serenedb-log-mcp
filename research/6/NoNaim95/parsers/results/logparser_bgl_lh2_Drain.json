@@ -1,0 +1,21 @@
+{
+ "method": "Drain",
+ "dataset": "bgl",
+ "input": "/Users/deni/.claude/jobs/f51b810a/tmp/r6p/data/bgl_lh2_content.txt",
+ "n_in": 4631261,
+ "n_out": 4631261,
+ "t_parse_s": 232.2,
+ "lines_per_s": 19945,
+ "n_templates": 414,
+ "n_eventids": 414,
+ "metrics": {
+  "GA": 0.9187245115315246,
+  "FGA": 0.6239782016348774,
+  "PGA": 0.5531400966183575,
+  "RGA": 0.715625,
+  "n_parsed": 414,
+  "n_gt": 320,
+  "PA": 0.40735428212748104,
+  "FTA": 0.19346049046321526
+ }
+}

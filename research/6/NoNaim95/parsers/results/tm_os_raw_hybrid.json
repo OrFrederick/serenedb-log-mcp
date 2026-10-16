@@ -1,0 +1,127 @@
+{
+ "templates": "/Users/deni/hackathon/data/lh2/OpenStack/OpenStack_full.log_templates.csv",
+ "msgs": "/Users/deni/.claude/jobs/f51b810a/tmp/r6p/data/os_raw_msg.txt",
+ "mode": "hybrid",
+ "n_lines": 207820,
+ "n_distinct_msgs": 139782,
+ "n_templates": 48,
+ "t_match_s": 0.27,
+ "lines_per_s": 759293,
+ "distinct_msgs_per_s_nocache": 835858,
+ "matched": 207632,
+ "coverage": 0.999095,
+ "unmatched": 188,
+ "ambiguous_lines": 0,
+ "match_count_hist": {
+  "0": 188,
+  "1": 207632
+ },
+ "templates_used": 48,
+ "distinct_msgs_matched_per_tier": [
+  139703,
+  31
+ ],
+ "top_ambiguous_template_sets": [],
+ "top_unmatched_shapes": [
+  [
+   "Traceback (most recent call last):",
+   8
+  ],
+  [
+   "  File \"/usr/lib/python#.#/dist-packages/oslo_service/periodic_task.py\", line #, in run_periodic_tasks",
+   8
+  ],
+  [
+   "    task(self, context)",
+   8
+  ],
+  [
+   "  File \"/usr/lib/python#.#/dist-packages/nova/compute/manager.py\", line #, in _run_image_cache_manager_pass",
+   8
+  ],
+  [
+   "    self.driver.manage_image_cache(context, filtered_instances)",
+   8
+  ],
+  [
+   "  File \"/usr/lib/python#.#/dist-packages/nova/virt/libvirt/driver.py\", line #, in manage_image_cache",
+   8
+  ],
+  [
+   "    self.image_cache_manager.update(context, all_instances)",
+   8
+  ],
+  [
+   "  File \"/usr/lib/python#.#/dist-packages/nova/virt/libvirt/imagecache.py\", line #, in update",
+   8
+  ],
+  [
+   "    self._age_and_verify_cached_images(context, all_instances, base_dir)",
+   8
+  ],
+  [
+   "  File \"/usr/lib/python#.#/dist-packages/nova/virt/libvirt/imagecache.py\", line #, in _age_and_verify_cached_images",
+   8
+  ],
+  [
+   "    inuse_backing_images = self._list_backing_images()",
+   8
+  ],
+  [
+   "  File \"/usr/lib/python#.#/dist-packages/nova/virt/libvirt/imagecache.py\", line #, in _list_backing_images",
+   8
+  ],
+  [
+   "    disk_path)",
+   8
+  ],
+  [
+   "  File \"/usr/lib/python#.#/dist-packages/nova/virt/libvirt/utils.py\", line #, in get_disk_backing_file",
+   8
+  ],
+  [
+   "    backing_file = images.qemu_img_info(path, format).backing_file",
+   8
+  ],
+  [
+   "  File \"/usr/lib/python#.#/dist-packages/nova/virt/images.py\", line #, in qemu_img_info",
+   8
+  ],
+  [
+   "    raise exception.InvalidDiskInfo(reason=msg)",
+   8
+  ],
+  [
+   "Command: /usr/bin/python -m oslo_concurrency.prlimit --as=# --cpu=# -- env LC_ALL=C LANG=C qemu-img info /var/lib/nova/i",
+   8
+  ],
+  [
+   "Exit code: #",
+   8
+  ],
+  [
+   "Stdout: u''",
+   8
+  ],
+  [
+   "",
+   8
+  ],
+  [
+   "[instance: #dbcdff#-#bc#-#f-#-b#e#d#da#] During sync_power_state the instance has a pending task (deleting). Skip.",
+   1
+  ],
+  [
+   "InvalidDiskInfo: Disk info file is invalid: qemu-img failed to execute on /var/lib/nova/instances/#a#f-#fb-#c-#f#-#c#d/d",
+   1
+  ],
+  [
+   "Stderr: u\"qemu-img: Could not open '/var/lib/nova/instances/#a#f-#fb-#c-#f#-#c#d/disk': Could not open '/var/lib/nova/in",
+   1
+  ],
+  [
+   "[instance: ed#ee#-#d#-#f-aed#-#f#c#ab#] During sync_power_state the instance has a pending task (deleting). Skip.",
+   1
+  ]
+ ]
+}

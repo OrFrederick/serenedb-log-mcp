@@ -1,0 +1,68 @@
+{
+ "templates": "/Users/deni/hackathon/data/lh2/BGL/BGL_full.log_templates.csv",
+ "msgs": "/Users/deni/.claude/jobs/f51b810a/tmp/r6p/data/bgl_lh2_content.txt",
+ "mode": "hybrid",
+ "n_lines": 4631261,
+ "n_distinct_msgs": 338733,
+ "n_templates": 320,
+ "t_match_s": 3.22,
+ "lines_per_s": 1439834,
+ "distinct_msgs_per_s_nocache": 515884,
+ "matched": 4631257,
+ "coverage": 0.999999,
+ "unmatched": 4,
+ "ambiguous_lines": 8,
+ "match_count_hist": {
+  "0": 4,
+  "1": 4631249,
+  "2": 8
+ },
+ "templates_used": 319,
+ "distinct_msgs_matched_per_tier": [
+  325754,
+  12978
+ ],
+ "top_ambiguous_template_sets": [
+  [
+   [
+    "rts: kernel terminated for reason <*>",
+    "<*>, max=<*>"
+   ],
+   6
+  ],
+  [
+   [
+    "Target=<*> Message=<*> JtagId = <*>",
+    "Target=<*> Message=<*>"
+   ],
+   2
+  ]
+ ],
+ "top_unmatched_shapes": [
+  [
+   "com.ibm.bgldevices.BulkPowerModule with VPD of com.ibm.bgldevices.BulkPowerModule$VpdReply: IBM Part Number: #P#, Vendor",
+   4
+  ]
+ ],
+ "metrics_vs_gt": {
+  "GA": 1.0,
+  "FGA": 1.0,
+  "PGA": 1.0,
+  "RGA": 1.0,
+  "n_parsed": 320,
+  "n_gt": 320,
+  "PA": 0.9999991363043457,
+  "FTA": 0.996875
+ },
+ "gt_template_regex_matches_its_line": 0.999999,
+ "chosen_equals_gt": 0.999999,
+ "top_wrong(gt,chosen)": [
+  [
+   [
+    "<*> with VPD of <*>: IBM Part Number: <*>, Vendor: <*>, Vendor Serial Number: <*>, Assembl",
+    "__UNMATCHED__"
+   ],
+   4
+  ]
+ ]
+}

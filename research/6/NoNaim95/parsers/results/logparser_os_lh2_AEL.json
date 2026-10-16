@@ -1,0 +1,21 @@
+{
+ "method": "AEL",
+ "dataset": "os",
+ "input": "/Users/deni/.claude/jobs/f51b810a/tmp/r6p/data/os_lh2_content.txt",
+ "n_in": 207632,
+ "n_out": 207632,
+ "t_parse_s": 70.62,
+ "lines_per_s": 2940,
+ "n_templates": 37,
+ "n_eventids": 37,
+ "metrics": {
+  "GA": 0.7434692147645835,
+  "FGA": 0.6823529411764706,
+  "PGA": 0.7837837837837838,
+  "RGA": 0.6041666666666666,
+  "n_parsed": 37,
+  "n_gt": 48,
+  "PA": 0.028555328658395624,
+  "FTA": 0.1647058823529412
+ }
+}

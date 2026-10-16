@@ -1,0 +1,47 @@
+[   0.051s ] create text search dictionary r6d_tx as split_text(case := 'lower') | normalize_tokens('en_US.UTF-8', accent :
+[  10.011s ] -- build: keyword template_id + tokenized message, on full-width table with template_id
+[   1.946s ] vacuum (refresh_table) r6d_bgl_full2
+[   1.421s ] select count(*) from r6d_bgl_idx
+       4747963
+[   0.294s med5 min=0.032 ['0.29', '5.53', '0.03', '0.13', '4.10']] --x5 I1 facet: count per template from the index (term-dictionary rewrite?)
+       248be8324df61d9e | 1706751
+       1b700d029be2062b | 442966
+       6265c7394fe834d8 | 295764
+[   0.155s ] explain select template_id, count(*) n from r6d_bgl_idx group by template_id
+       ╭─ PROJECTION ───────────────────────────────╮
+       │ Projections:                               │
+       │ sdb_inverted_index_term$template_id,       │
+       │ CAST(#1 AS BIGINT)                         │
+       │ ~1,163 rows                                │
+       ╰──────────────────────┬─────────────────────╯
+       ╭─ HASH_GROUP_BY ──────┴─────────────────────╮
+       │ Groups: #0                                 │
+       │ Aggregates: sum(#1)                        │
+       │ ~1,163 rows                                │
+       ╰──────────────────────┬─────────────────────╯
+       ╭─ IRESEARCH_SCAN ─────┴─────────────────────╮
+[   0.077s med5 min=0.060 ['0.06', '0.18', '0.14', '0.08', '0.07']] --x5 I2 search + group by template (index): message @@ 'failed'
+       4a6807479cf3d4e5 | 43647
+       d55367b1226f856e | 26426
+       150b1306e0541e10 | 5983
+[   0.167s med5 min=0.129 ['0.15', '0.22', '0.21', '0.17', '0.13']] --x5 I2b same on base table with ILIKE
+       4a6807479cf3d4e5 | 43647
+       d55367b1226f856e | 26426
+       150b1306e0541e10 | 5983
+[   0.022s med5 min=0.018 ['0.02', '0.02', '0.02', '0.06', '0.05']] --x5 I3 ts_dict facet over search hits
+       78a50cdd88e67ccd | 166
+       7c3c502f2fef3670 | 2
+       488bee65860ffcd2 | 14
+       a98681435513b813 | 440
+       6a96ee5767fdb06f | 2670
+       d55367b1226f856e | 26426
+       f86dec57cf086fdb | 2
+       4a6807479cf3d4e5 | 43647
+       77e0761403d6b039 | 816
+       e60185c553508dd6 | 1
+       53bff0498f075a8e | 605
+       969415ab59eabdcd | 3
+[   0.013s med5 min=0.004 ['0.01', '0.03', '0.02', '0.00', '0.01']] --x5 I4 count lines of one template via index keyword match
+       295764
+[   0.020s med5 min=0.016 ['0.02', '0.03', '0.02', '0.02', '0.02']] --x5 I4b same on base table
+       295764

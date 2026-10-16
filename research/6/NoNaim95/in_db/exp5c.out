@@ -1,0 +1,46 @@
+[   0.032s med3 min=0.017 ['0.80', '0.02', '0.03']] --x3 N1 templates first seen in the last 7 days of the corpus (relative to max ts), with counts and node sprea
+       <*> torus non-crc error(s) (dcr <*>) detected and corrected over <*> seconds | 2006-01-03 09:59:52.667556 | 1 | 1
+[   0.132s med3 min=0.064 ['0.06', '0.13', '9.41']] --x3 N2 new templates per week (how many patterns appear for the first time each week)
+       2005-05-30 00:00:00 | 62 | 2861816
+       2005-06-06 00:00:00 | 86 | 96022
+       2005-06-13 00:00:00 | 25 | 250652
+       2005-06-20 00:00:00 | 20 | 280546
+       2005-06-27 00:00:00 | 34 | 35515
+       2005-07-04 00:00:00 | 20 | 45938
+       2005-07-11 00:00:00 | 6 | 23126
+       2005-07-18 00:00:00 | 6 | 9978
+       2005-07-25 00:00:00 | 3 | 198
+       2005-08-01 00:00:00 | 26 | 114823
+[   0.172s med3 min=0.167 ['12.62', '0.17', '0.17']] --x3 N3 "unseen vs baseline" fully on the fly: templates in a window absent from a baseline window
+       <*> microseconds spent in the rbs signal handler during <*> calls. <*> microseconds was the maximum time for a single in | 135092 | 2005-12-01 06:34:45.094935
+       <*> total interrupts. <*> critical input interrupts. <*> microseconds total spent on critical input interrupts, <*> micr | 135092 | 2005-12-01 06:34:45.163891
+       instance of a correctable ddr. RAS KERNEL INFO <*> microseconds spent in the rbs signal handler during <*> calls. <*> mi | 4 | 2005-12-01 06:37:41.417709
+       max time in a cr RAS KERNEL INFO <*> total interrupts. <*> critical input interrupts. <*> microseconds total spent on cr | 4 | 2005-12-01 06:37:41.737383
+       <*>=<*> fffffffe fffffffc | 1 | 2005-12-02 01:50:15.035111
+       external input interrupt (unit=<*> bit=<*>): number of corrected SRAM errors has exceeded threshold, suppressing further | 57 | 2005-12-02 21:44:55.502348
+       ddr: Suppressing further CE interrupts | 302 | 2005-12-03 06:12:55.997337
+       instruction TLB error interrupt | 1 | 2005-12-03 07:57:10.801718
+       Kernel detected <*> integer alignment exceptions (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> | 22175 | 2005-12-03 11:31:07.540872
+       dear <*> (<*> RAS KERNEL INFO Kernel detected <*> integer alignment exceptions (<*>) iar <*>, dear <*> (<*>) iar <*>, de | 2 | 2005-12-06 20:15:21.720577
+[  37.021s ] --x1 C re-time: CTAS full-width + per-row mask
+[  41.422s ] --x1 C2 re-time: CTAS full-width + dict join
+[   9.558s ] --x1 OpenStack: dictionary + fact table
+[   0.924s ] create or replace table r6d_os_ft as select o.line_no, o.ts, o.component, o.level, o.instance_id, substr(md5(d
+[   0.020s med3 min=0.007 ['0.09', '0.02', '0.01']] --x3 OS top templates by component on ERROR/WARNING
+       nova.virt.libvirt.imagecache | Unknown base file: <*> | 3059
+       nova.compute.manager | While synchronizing instance power states, found <*> instances in the database and <*> instances on the hypervisor. | 45
+       nova.virt.libvirt.driver | couldn't obtain the vcpu count from domain id: <*>, exception: Requested operation is not valid: cpu affinity is not sup | 12
+       oslo_service.periodic_task | Stderr: u"qemu-img: Could not open '<*>': Could not open '<*>': No such file or directory\n" | 8
+       oslo_service.periodic_task |    inuse_backing_images = self._list_backing_images() | 8
+       oslo_service.periodic_task |    task(self, context) | 8
+       oslo_service.periodic_task | Stdout: u'' | 8
+       oslo_service.periodic_task | InvalidDiskInfo: Disk info file is invalid: qemu-img failed to execute on <*> : Unexpected error while running command. | 8
+[   0.010s med3 min=0.009 ['0.19', '0.01', '0.01']] --x3 OS templates touching the 4 anomaly instances vs others
+       [instance: <*>] During sync_power_state the instance has a pending task (spawning). Skip. | 8 | 4049
+       [instance: <*>] VM Resumed (Lifecycle Event) | 8 | 4132
+       [instance: <*>] Took <*> seconds to build instance. | 4 | 2066
+       [instance: <*>] Deleting instance files <*> | 4 | 2064
+       [instance: <*>] VM Started (Lifecycle Event) | 4 | 2066
+       [instance: <*>] Took <*> seconds to deallocate network for instance. | 4 | 2065
+       [instance: <*>] disk limit not specified, defaulting to unlimited | 4 | 2065
+       [instance: <*>] Terminating instance | 4 | 2064

@@ -1,0 +1,11 @@
+{
+ "method": "Brain",
+ "dataset": "bgl",
+ "input": "/Users/deni/.claude/jobs/f51b810a/tmp/r6p/data/bgl_raw_msg.txt",
+ "n_in": 4747963,
+ "n_out": 4747963,
+ "t_parse_s": 351.58,
+ "lines_per_s": 13505,
+ "n_templates": 2191,
+ "n_eventids": 2191
+}

@@ -1,0 +1,52 @@
+lh2 lines=4631261 templates=320 tags=32 t=11.2s
+alert lines 332222 distinct alert tags 31
+
+TAG | lines | #templates | top template share | top template
+KERNDTLB | 152734 | 1 | 1.000 | E285 data TLB error interrupt
+KERNSTOR | 63491 | 1 | 1.000 | E296 data storage interrupt
+APPSEV | 41819 | 2 | 0.635 | E36 ciod: Error reading message prefix on CioStream socket to <*>, Link ha
+KERNMNTF | 31531 | 2 | 0.838 | E276 Lustre mount FAILED : <*> : point <*>
+KERNTERM | 23338 | 1 | 1.000 | E258 rts: kernel terminated for reason <*>
+KERNREC | 6144 | 1 | 1.000 | E18 Error receiving packet on tree network, expecting type <*> instead of 
+KERNRTSP | 3983 | 1 | 1.000 | E264 rts panic! - stopping execution
+APPRES | 2256 | 1 | 1.000 | E29 ciod: Error reading message prefix on CioStream socket to <*>, Connect
+APPTO | 1991 | 1 | 1.000 | E37 ciod: Error reading message prefix on CioStream socket to <*>, Connect
+KERNMICRO | 1503 | 1 | 1.000 | E298 Microloader Assertion
+APPOUT | 816 | 1 | 1.000 | E136 ciod: LOGIN chdir(<*>) failed: Input/output error
+KERNMNT | 720 | 1 | 1.000 | E257 Error: unable to mount filesystem
+APPBUSY | 512 | 1 | 1.000 | E74 ciod: Error creating node map from file <*>: Device or resource busy
+APPCHILD | 320 | 1 | 1.000 | E87 ciod: Error creating node map from file <*>: No child processes
+KERNMC | 278 | 6 | 0.579 | E286 machine check interrupt
+KERNSOCK | 209 | 2 | 0.804 | E55 MailboxMonitor::serviceMailboxes() lib_ido_error: <*> socket closed
+KERNPOW | 192 | 1 | 1.000 | E304 Power deactivated: <*>
+LINKIAP | 166 | 1 | 1.000 | E61 MidplaneSwitchController::receiveTrain() iap failed: <*>, status=<*>
+KERNSERV | 94 | 1 | 1.000 | E66 Power Good signal deactivated: <*>. A service action may be required.
+LINKDISC | 24 | 1 | 1.000 | E73 MidplaneSwitchController::sendTrain() port disconnected: <*>
+MASABNORM | 23 | 1 | 1.000 | E226 ciodb exited abnormally due to signal: <*>
+KERNPAN | 18 | 1 | 1.000 | E315 kernel panic
+KERNNOETH | 14 | 1 | 1.000 | E312 no ethernet link
+LINKPAP | 14 | 1 | 1.000 | E57 MidplaneSwitchController::parityAlignment() pap failed: <*> status=<*>
+APPTORUS | 10 | 1 | 1.000 | E65 external input interrupt (unit=<*> bit=<*>): uncorrectable torus error
+MONPOW | 10 | 2 | 0.600 | E225 No power module <*> found found on link card
+KERNPROG | 5 | 1 | 1.000 | E308 program interrupt
+MMCS | 3 | 1 | 1.000 | E295 L3 major internal error
+LINKBLL | 2 | 1 | 1.000 | E60 MidplaneSwitchController::clearPort() bll_clear_port failed: <*>
+MASNORM | 1 | 1 | 1.000 | E245 ciodb exited normally with exit code <*>
+KERNEXT | 1 | 1 | 1.000 | E49 external input interrupt (unit=<*> bit=<*>): tree header with no targe
+
+templates with >1 tag value (incl '-'): 4 of 320
+E296 data storage interrupt {'KERNSTOR': 63491, '-': 2}
+E308 program interrupt {'-': 3662, 'KERNPROG': 5}
+E298 Microloader Assertion {'KERNMICRO': 1503, '-': 1}
+E245 ciodb exited normally with exit code <*> {'-': 1, 'MASNORM': 1}
+templates whose lines are all alert-tagged: 36
+
+raw lines=4747963 raw lines found in lh2 (multiset)=4631261 raw-only=116702 lh2-only=0 t=5.9s
+  RAW-ONLY: - 1117867322 2005.06.03 NULL 2005-06-03-23.42.02.002399 NULL RAS MMCS INFO mmcs_db_server has been started: ./mmcs_db_server --useDatabase BGL --dbproperties se
+  RAW-ONLY: APPREAD 1117869872 2005.06.04 R23-M1-N8-I:J18-U11 2005-06-04-00.24.32.398284 R23-M1-N8-I:J18-U11 RAS APP FATAL ciod: failed to read message prefix on control st
+  RAW-ONLY: APPREAD 1117869872 2005.06.04 R04-M1-N4-I:J18-U11 2005-06-04-00.24.32.432192 R04-M1-N4-I:J18-U11 RAS APP FATAL ciod: failed to read message prefix on control st
+  RAW-ONLY: APPREAD 1117869872 2005.06.04 R04-M1-N4-I:J18-U01 2005-06-04-00.24.32.481570 R04-M1-N4-I:J18-U01 RAS APP FATAL ciod: failed to read message prefix on control st
+  RAW-ONLY: APPREAD 1117869873 2005.06.04 R35-M1-N0-I:J18-U11 2005-06-04-00.24.33.168659 R35-M1-N0-I:J18-U11 RAS APP FATAL ciod: failed to read message prefix on control st
+  RAW-ONLY: APPREAD 1117869873 2005.06.04 R35-M1-N0-I:J18-U01 2005-06-04-00.24.33.203068 R35-M1-N0-I:J18-U01 RAS APP FATAL ciod: failed to read message prefix on control st
+  RAW-ONLY: APPREAD 1117869873 2005.06.04 R36-M0-N8-I:J18-U11 2005-06-04-00.24.33.236793 R36-M0-N8-I:J18-U11 RAS APP FATAL ciod: failed to read message prefix on control st
+  RAW-ONLY: APPREAD 1117869873 2005.06.04 R36-M0-N8-I:J18-U01 2005-06-04-00.24.33.270584 R36-M0-N8-I:J18-U01 RAS APP FATAL ciod: failed to read message prefix on control st

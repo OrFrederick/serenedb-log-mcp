@@ -1,0 +1,21 @@
+{
+ "method": "IPLoM",
+ "dataset": "os",
+ "input": "/Users/deni/.claude/jobs/f51b810a/tmp/r6p/data/os_lh2_content.txt",
+ "n_in": 207632,
+ "n_out": 207632,
+ "t_parse_s": 58.86,
+ "lines_per_s": 3527,
+ "n_templates": 2102,
+ "n_eventids": 2102,
+ "metrics": {
+  "GA": 0.37526970794482545,
+  "FGA": 0.02883720930232558,
+  "PGA": 0.014747859181731684,
+  "RGA": 0.6458333333333334,
+  "n_parsed": 2102,
+  "n_gt": 48,
+  "PA": 0.0,
+  "FTA": 0.0
+ }
+}

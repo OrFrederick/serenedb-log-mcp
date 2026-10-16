@@ -1,0 +1,21 @@
+{
+ "method": "Brain",
+ "dataset": "os",
+ "input": "/Users/deni/.claude/jobs/f51b810a/tmp/r6p/data/os_lh2_content.txt",
+ "n_in": 207632,
+ "n_out": 207632,
+ "t_parse_s": 54.33,
+ "lines_per_s": 3821,
+ "n_templates": 48,
+ "n_eventids": 48,
+ "metrics": {
+  "GA": 1.0,
+  "FGA": 1.0,
+  "PGA": 1.0,
+  "RGA": 1.0,
+  "n_parsed": 48,
+  "n_gt": 48,
+  "PA": 0.1408453417584958,
+  "FTA": 0.2916666666666667
+ }
+}

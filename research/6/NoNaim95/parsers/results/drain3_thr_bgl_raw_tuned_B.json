@@ -1,0 +1,14 @@
+{
+ "input": "/Users/deni/.claude/jobs/f51b810a/tmp/r6p/data/bgl_raw_msg.txt",
+ "n": 4747963,
+ "config": "tuned",
+ "sim_th": 0.7,
+ "depth": 4,
+ "shuffle": null,
+ "t_parse_s": 119.58,
+ "lines_per_s": 39706,
+ "n_clusters": 444,
+ "n_distinct_template_strings": 444,
+ "cid_sha1": "dbded7b3ce525f44defe0a4d1808e93e586eb708",
+ "templates_sha1": "d79bf8f81de17a182e82e9982e18e93138ba87a2"
+}

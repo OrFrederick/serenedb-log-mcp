@@ -1,0 +1,21 @@
+{
+ "method": "Drain",
+ "dataset": "os",
+ "input": "/Users/deni/.claude/jobs/f51b810a/tmp/r6p/data/os_lh2_content.txt",
+ "n_in": 207632,
+ "n_out": 207632,
+ "t_parse_s": 94.19,
+ "lines_per_s": 2204,
+ "n_templates": 7221,
+ "n_eventids": 7221,
+ "metrics": {
+  "GA": 0.7517290205748632,
+  "FGA": 0.006878525244187647,
+  "PGA": 0.0034621243595069936,
+  "RGA": 0.5208333333333334,
+  "n_parsed": 7221,
+  "n_gt": 48,
+  "PA": 0.028555328658395624,
+  "FTA": 0.0019259870683725408
+ }
+}

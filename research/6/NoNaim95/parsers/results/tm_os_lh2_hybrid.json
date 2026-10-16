@@ -1,0 +1,38 @@
+{
+ "templates": "/Users/deni/hackathon/data/lh2/OpenStack/OpenStack_full.log_templates.csv",
+ "msgs": "/Users/deni/.claude/jobs/f51b810a/tmp/r6p/data/os_lh2_content.txt",
+ "mode": "hybrid",
+ "n_lines": 207632,
+ "n_distinct_msgs": 139734,
+ "n_templates": 48,
+ "t_match_s": 1.4,
+ "lines_per_s": 148825,
+ "distinct_msgs_per_s_nocache": 179107,
+ "matched": 207632,
+ "coverage": 1.0,
+ "unmatched": 0,
+ "ambiguous_lines": 0,
+ "match_count_hist": {
+  "1": 207632
+ },
+ "templates_used": 48,
+ "distinct_msgs_matched_per_tier": [
+  279406,
+  62
+ ],
+ "top_ambiguous_template_sets": [],
+ "top_unmatched_shapes": [],
+ "metrics_vs_gt": {
+  "GA": 1.0,
+  "FGA": 1.0,
+  "PGA": 1.0,
+  "RGA": 1.0,
+  "n_parsed": 48,
+  "n_gt": 48,
+  "PA": 1.0,
+  "FTA": 1.0
+ },
+ "gt_template_regex_matches_its_line": 1.0,
+ "chosen_equals_gt": 1.0,
+ "top_wrong(gt,chosen)": []
+}

@@ -1,0 +1,49 @@
+rank	EventId	specificity_literal_chars	n_wild	regex	EventTemplate
+0	E1	103	1	^couldn\'t\s+obtain\s+the\s+vcpu\s+count\s+from\s+domain\s+id\:\s+\S+\s+exception\:\s+Requested\s+operation\s+is\s+not\s+valid\:\s+cpu\s+affinity\s+is\s+not\s+supported$	couldn't obtain the vcpu count from domain id: <*> exception: Requested operation is not valid: cpu affinity is not supported
+1	E2	94	8	^Final\s+resource\s+view\:\s+name\=\S+\s+phys_ram\=\S+\s+used_ram\=\S+\s+phys_disk\=\S+\s+used_disk\=\S+\s+total_vcpus\=\S+\s+used_vcpus\=\S+\s+pci_stats\=\S+$	Final resource view: name=<*> phys_ram=<*> used_ram=<*> phys_disk=<*> used_disk=<*> total_vcpus=<*> used_vcpus=<*> pci_stats=<*>
+2	E3	93	2	^While\s+synchronizing\s+instance\s+power\s+states\,\s+found\s+\S+\s+instances\s+in\s+the\s+database\s+and\s+\S+\s+instances\s+on\s+the\s+hypervisor\.$	While synchronizing instance power states, found <*> instances in the database and <*> instances on the hypervisor.
+3	E4	75	1	^\[instance\:\s+\S+\]\s+During\s+sync_power_state\s+the\s+instance\s+has\s+a\s+pending\s+task\s+\(spawning\)\.\s+Skip\.$	[instance: <*>] During sync_power_state the instance has a pending task (spawning). Skip.
+4	E5	70	4	^image\s+\S+\s+at\s+\(\S+\)\:\s+in\s+use\:\s+on\s+this\s+node\s+\S+\s+local\,\s+\S+\s+on\s+other\s+nodes\s+sharing\s+this\s+instance\s+storage$	image <*> at (<*>): in use: on this node <*> local, <*> on other nodes sharing this instance storage
+5	E6	62	0	^Unable\s+to\s+validate\s+token\:\s+Failed\s+to\s+fetch\s+token\s+data\s+from\s+identity\s+server$	Unable to validate token: Failed to fetch token data from identity server
+6	E7	60	1	^The\s+instance\s+sync\s+for\s+host\s+\S+\s+did\s+not\s+match\.\s+Re\-created\s+its\s+InstanceList\.$	The instance sync for host <*> did not match. Re-created its InstanceList.
+7	E8	58	2	^\[instance\:\s+\S+\]\s+Took\s+\S+\s+seconds\s+to\s+destroy\s+the\s+instance\s+on\s+the\s+hypervisor\.$	[instance: <*>] Took <*> seconds to destroy the instance on the hypervisor.
+8	E9	56	2	^\[instance\:\s+\S+\]\s+Took\s+\S+\s+seconds\s+to\s+spawn\s+the\s+instance\s+on\s+the\s+hypervisor\.$	[instance: <*>] Took <*> seconds to spawn the instance on the hypervisor.
+9	E10	54	1	^\[instance\:\s+\S+\]\s+vcpu\s+limit\s+not\s+specified\,\s+defaulting\s+to\s+unlimited$	[instance: <*>] vcpu limit not specified, defaulting to unlimited
+10	E11	54	1	^\[instance\:\s+\S+\]\s+disk\s+limit\s+not\s+specified\,\s+defaulting\s+to\s+unlimited$	[instance: <*>] disk limit not specified, defaulting to unlimited
+11	E12	53	2	^\[instance\:\s+\S+\]\s+Took\s+\S+\s+seconds\s+to\s+deallocate\s+network\s+for\s+instance\.$	[instance: <*>] Took <*> seconds to deallocate network for instance.
+12	E13	51	4	^\[instance\:\s+\S+\]\s+Attempting\s+claim\:\s+memory\s+\S+\s+MB\,\s+disk\s+\S+\s+GB\,\s+vcpus\s+\S+\s+CPU$	[instance: <*>] Attempting claim: memory <*> MB, disk <*> GB, vcpus <*> CPU
+13	E14	49	4	^Running\s+instance\s+usage\s+audit\s+for\s+host\s+\S+\s+from\s+\S+\s+to\s+\S+\.\s+\S+\s+instances\.$	Running instance usage audit for host <*> from <*> to <*>. <*> instances.
+14	E15	47	0	^HTTP\s+exception\s+thrown\:\s+No\s+instances\s+found\s+for\s+any\s+event$	HTTP exception thrown: No instances found for any event
+15	E16	47	1	^Auditing\s+locally\s+available\s+compute\s+resources\s+for\s+node\s+\S+$	Auditing locally available compute resources for node <*>
+16	E17	41	1	^\[instance\:\s+\S+\]\s+Instance\s+destroyed\s+successfully\.$	[instance: <*>] Instance destroyed successfully.
+17	E18	39	1	^\[instance\:\s+\S+\]\s+Instance\s+spawned\s+successfully\.$	[instance: <*>] Instance spawned successfully.
+18	E19	38	1	^Successfully\s+synced\s+instances\s+from\s+host\s+\'\S+\'\.$	Successfully synced instances from host '<*>'.
+19	E20	38	2	^Total\s+usable\s+vcpus\:\s+\S+\,\s+total\s+allocated\s+vcpus\:\s+\S+$	Total usable vcpus: <*>, total allocated vcpus: <*>
+20	E21	38	2	^\[instance\:\s+\S+\]\s+Took\s+\S+\s+seconds\s+to\s+build\s+instance\.$	[instance: <*>] Took <*> seconds to build instance.
+21	E22	36	1	^\[instance\:\s+\S+\]\s+VM\s+Resumed\s+\(Lifecycle\s+Event\)$	[instance: <*>] VM Resumed (Lifecycle Event)
+22	E23	36	1	^\[instance\:\s+\S+\]\s+VM\s+Started\s+\(Lifecycle\s+Event\)$	[instance: <*>] VM Started (Lifecycle Event)
+23	E24	36	1	^Bad\s+response\s+code\s+while\s+validating\s+token\:\s+\S+$	Bad response code while validating token: <*>
+24	E25	36	1	^\[instance\:\s+\S+\]\s+VM\s+Stopped\s+\(Lifecycle\s+Event\)$	[instance: <*>] VM Stopped (Lifecycle Event)
+25	E26	35	1	^\[instance\:\s+\S+\]\s+VM\s+Paused\s+\(Lifecycle\s+Event\)$	[instance: <*>] VM Paused (Lifecycle Event)
+26	E27	35	3	^\[instance\:\s+\S+\]\s+Total\s+vcpu\:\s+\S+\s+VCPU\,\s+used\:\s+\S+\s+VCPU$	[instance: <*>] Total vcpu: <*> VCPU, used: <*> VCPU
+27	E28	33	3	^\[instance\:\s+\S+\]\s+Total\s+memory\:\s+\S+\s+MB\,\s+used\:\s+\S+\s+MB$	[instance: <*>] Total memory: <*> MB, used: <*> MB
+28	E29	33	3	^\[instance\:\s+\S+\]\s+memory\s+limit\:\s+\S+\s+MB\,\s+free\:\s+\S+\s+MB$	[instance: <*>] memory limit: <*> MB, free: <*> MB
+29	E30	32	2	^\[instance\:\s+\S+\]\s+Deleting\s+instance\s+files\s+\S+$	[instance: <*>] Deleting instance files <*>
+30	E31	31	1	^Base\s+or\s+swap\s+file\s+too\s+young\s+to\s+remove\:\s+\S+$	Base or swap file too young to remove: <*>
+31	E32	31	1	^Compute_service\s+record\s+updated\s+for\s+\S+$	Compute_service record updated for <*>
+32	E33	31	3	^\[instance\:\s+\S+\]\s+Total\s+disk\:\s+\S+\s+GB\,\s+used\:\s+\S+\s+GB$	[instance: <*>] Total disk: <*> GB, used: <*> GB
+33	E34	30	1	^\[instance\:\s+\S+\]\s+Terminating\s+instance$	[instance: <*>] Terminating instance
+34	E35	29	2	^\[instance\:\s+\S+\]\s+Deletion\s+of\s+\S+\s+complete$	[instance: <*>] Deletion of <*> complete
+35	E36	26	1	^\[instance\:\s+\S+\]\s+Claim\s+successful$	[instance: <*>] Claim successful
+36	E37	24	1	^\[instance\:\s+\S+\]\s+Creating\s+image$	[instance: <*>] Creating image
+37	E38	24	2	^Creating\s+event\s+\S+\s+for\s+instance\s+\S+$	Creating event <*> for instance <*>
+38	E39	24	6	^\S+\s+\"DELETE\s+\S+\s+\S+\"\s+status\:\s+\S+\s+len\:\s+\S+\s+time\:\s+\S+$	<*> "DELETE <*> <*>" status: <*> len: <*> time: <*>
+39	E40	23	1	^Removing\s+base\s+or\s+swap\s+file\:\s+\S+$	Removing base or swap file: <*>
+40	E41	22	6	^\S+\s+\"POST\s+\S+\s+\S+\"\s+status\:\s+\S+\s+len\:\s+\S+\s+time\:\s+\S+$	<*> "POST <*> <*>" status: <*> len: <*> time: <*>
+41	E42	21	6	^\S+\s+\"GET\s+\S+\s+\S+\"\s+status\:\s+\S+\s+len\:\s+\S+\s+time\:\s+\S+$	<*> "GET <*> <*>" status: <*> len: <*> time: <*>
+42	E43	19	1	^Removable\s+base\s+files\:\s+\S+$	Removable base files: <*>
+43	E44	18	2	^image\s+\S+\s+at\s+\(\S+\)\:\s+checking$	image <*> at (<*>): checking
+44	E45	17	1	^Identity\s+response\:\s+\S+$	Identity response: <*>
+45	E46	16	1	^Unknown\s+base\s+file\:\s+\S+$	Unknown base file: <*>
+46	E47	16	1	^Active\s+base\s+files\:\s+\S+$	Active base files: <*>
+47	E48	11	1	^Error\s+during\s+\S+$	Error during <*>

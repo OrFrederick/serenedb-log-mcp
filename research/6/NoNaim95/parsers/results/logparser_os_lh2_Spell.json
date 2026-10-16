@@ -1,0 +1,21 @@
+{
+ "method": "Spell",
+ "dataset": "os",
+ "input": "/Users/deni/.claude/jobs/f51b810a/tmp/r6p/data/os_lh2_content.txt",
+ "n_in": 207632,
+ "n_out": 207632,
+ "t_parse_s": 3602.37,
+ "lines_per_s": 58,
+ "n_templates": 39464,
+ "n_eventids": 39464,
+ "metrics": {
+  "GA": 0.781175348693843,
+  "FGA": 0.0013666734156711883,
+  "PGA": 0.0006841678491789986,
+  "RGA": 0.5625,
+  "n_parsed": 39464,
+  "n_gt": 48,
+  "PA": 0.0,
+  "FTA": 0.0
+ }
+}

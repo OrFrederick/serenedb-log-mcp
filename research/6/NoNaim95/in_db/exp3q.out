@@ -1,0 +1,34 @@
+[   0.043s med5 min=0.028 ['0.04', '0.03', '0.10', '0.05', '0.04']] --x5 Q1 group by template_id (narrow fact, 4.7M)
+       248be8324df61d9e | 1706751
+       1b700d029be2062b | 442966
+       6265c7394fe834d8 | 295764
+[   0.030s med5 min=0.018 ['0.06', '0.14', '0.02', '0.03', '0.02']] --x5 Q2 group by template_id (full-width table)
+       248be8324df61d9e | 1706751
+       1b700d029be2062b | 442966
+       6265c7394fe834d8 | 295764
+[   0.461s med5 min=0.306 ['0.46', '0.31', '0.31', '3.35', '1.05']] --x5 Q3 on the fly: join raw bgl to dict at query time
+       generating core<*> | 1706751
+       iar <*> dear <*> | 442966
+       <*> double-hummer alignment exceptions | 295764
+[   6.796s med3 min=5.783 ['6.80', '5.78', '7.11']] --x3 Q4 on the fly: mask per row at query time (no stored artefact)
+       generating core<*> | 1706751
+       iar <*> dear <*> | 442966
+       <*> double-hummer alignment exceptions | 295764
+[   0.095s med5 min=0.081 ['0.40', '0.33', '0.08', '0.08', '0.09']] --x5 Q5 daily trend for top-5 templates
+       2005-06-03 00:00:00 | 248be8324df61d9e | 4287
+       2005-06-03 00:00:00 | 6265c7394fe834d8 | 4737
+       2005-06-03 00:00:00 | 65f23e3e7fe0e9e1 | 649
+[   0.081s med5 min=0.080 ['0.08', '0.08', '0.08', '0.10', '0.08']] --x5 Q6 daily trend for all templates (12.5k cells)
+       12541
+[   0.052s med5 min=0.047 ['0.12', '0.05', '0.05', '0.05', '0.05']] --x5 Q7 top 3 templates per component (window)
+       0 | 3f7f233d0480bfbc | 4
+       APP | 6f3620a4ce1c0b7d | 47504
+       APP | 4a6807479cf3d4e5 | 43647
+[   0.051s med5 min=0.037 ['0.06', '0.05', '0.04', '0.05', '0.05']] --x5 Q8 alert-tagged rows by template with node spread
+       data TLB error interrupt | 152734 | 541
+       data storage interrupt | 63491 | 22529
+       ciod: Error reading message prefix on CioStream socket to <*>, Link has been severed | 26546 | 1024
+[   0.020s med5 min=0.015 ['0.02', '0.02', '0.03', '0.02', '0.02']] --x5 Q9 one template's daily trend (point filter)
+       2005-06-03 00:00:00 | 4737
+       2005-06-22 00:00:00 | 18944
+       2005-06-23 00:00:00 | 17472

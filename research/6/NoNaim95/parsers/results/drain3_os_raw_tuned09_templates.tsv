@@ -1,0 +1,71 @@
+1	<IP> "GET <*> HTTP/<NUM>" status: <NUM> len: <NUM> time: <NUM>
+2	[instance: <UUID>] VM Started (Lifecycle Event)
+3	[instance: <UUID>] VM Paused (Lifecycle Event)
+4	[instance: <UUID>] During sync_power_state the instance has a pending task <*> Skip.
+5	image <UUID> at (/var/lib/nova/instances/_base/<NUM>): checking
+6	image <UUID> at (/var/lib/nova/instances/_base/<NUM>): in use: on this node <NUM> local, <NUM> on other nodes sharing this instance storage
+7	Active base files: /var/lib/nova/instances/_base/<NUM>
+8	Creating event network-vif-plugged:<UUID> for instance <UUID>
+9	<IP> "POST <*> HTTP/<NUM>" status: <NUM> len: <NUM> time: <NUM>
+10	[instance: <UUID>] VM Resumed (Lifecycle Event)
+11	[instance: <UUID>] Instance spawned successfully.
+12	[instance: <UUID>] Took <NUM> seconds to <*> the instance on the hypervisor.
+13	[instance: <UUID>] Took <NUM> seconds to build instance.
+14	Auditing locally available compute resources for node cp-<NUM>.slowvm1.tcloud-pg0.utah.cloudlab.us
+15	Total usable vcpus: <NUM>, total allocated vcpus: <NUM>
+16	Final resource view: name=cp-<NUM>.slowvm1.tcloud-pg0.utah.cloudlab.us phys_ram=64172MB used_ram=2560MB phys_disk=15GB used_disk=20GB total_vcpus=<NUM> used_vcpus=<NUM> pci_stats=[]
+17	Compute_service record updated for cp-<NUM>.slowvm1.tcloud-pg0.utah.cloudlab.us:cp-<NUM>.slowvm1.tcloud-pg0.utah.cloudlab.us
+18	<IP> "DELETE /v2/<NUM>/servers/<UUID> HTTP/<NUM>" status: <NUM> len: <NUM> time: <NUM>
+19	[instance: <UUID>] Terminating instance
+20	[instance: <UUID>] Instance destroyed successfully.
+21	[instance: <UUID>] Deleting instance files /var/lib/nova/instances/<UUID>_del
+22	[instance: <UUID>] Deletion of /var/lib/nova/instances/<UUID>_del complete
+23	[instance: <UUID>] Took <NUM> seconds to deallocate network for instance.
+24	Unknown base file: /var/lib/nova/instances/_base/<NUM>
+25	Removable base files: /var/lib/nova/instances/_base/<NUM>
+26	Removing base or swap file: /var/lib/nova/instances/_base/<NUM>
+27	HTTP exception thrown: No instances found for any event
+28	[instance: <UUID>] Attempting claim: memory <NUM> MB, disk <NUM> GB, vcpus <NUM> CPU
+29	[instance: <UUID>] Total memory: <NUM> MB, used: <NUM> MB
+30	[instance: <UUID>] memory limit: <NUM> MB, free: <NUM> MB
+31	[instance: <UUID>] Total disk: <NUM> GB, used: <NUM> GB
+32	[instance: <UUID>] disk limit not specified, defaulting to unlimited
+33	[instance: <UUID>] Total vcpu: <NUM> VCPU, used: <NUM> VCPU
+34	[instance: <UUID>] vcpu limit not specified, defaulting to unlimited
+35	[instance: <UUID>] Claim successful
+36	[instance: <UUID>] Creating image
+37	[instance: <UUID>] VM Stopped (Lifecycle Event)
+38	Successfully synced instances from host 'cp-<NUM>.slowvm1.tcloud-pg0.utah.cloudlab.us'.
+39	Running instance usage audit for host cp-<NUM>.slowvm1.tcloud-pg0.utah.cloudlab.us from <NUM>-<NUM>-<NUM> <NUM>:<NUM>:<NUM> to <NUM>-<NUM>-<NUM> <NUM>:<NUM>:<NUM>. <NUM> instances.
+40	Base or swap file too young to remove: /var/lib/nova/instances/_base/<NUM>
+41	Final resource view: name=cp-<NUM>.slowvm1.tcloud-pg0.utah.cloudlab.us phys_ram=64172MB used_ram=512MB phys_disk=15GB used_disk=0GB total_vcpus=<NUM> used_vcpus=<NUM> pci_stats=[]
+42	The instance sync for host 'cp-<NUM>.slowvm1.tcloud-pg0.utah.cloudlab.us' did not match. Re-created its InstanceList.
+43	While synchronizing instance power states, found <NUM> instances in the database and <NUM> instances on the hypervisor.
+44	couldn't obtain the vcpu count from domain id: <UUID>, exception: Requested operation is not valid: cpu affinity is not supported
+45	Error during ComputeManager._run_image_cache_manager_pass
+46	Traceback (most recent call last):
+47	File "/usr/lib/python2.<NUM>/dist-packages/oslo_service/periodic_task.py", line <NUM>, in run_periodic_tasks
+48	task(self, context)
+49	File "/usr/lib/python2.<NUM>/dist-packages/nova/compute/manager.py", line <NUM>, in _run_image_cache_manager_pass
+50	self.driver.manage_image_cache(context, filtered_instances)
+51	File "/usr/lib/python2.<NUM>/dist-packages/nova/virt/libvirt/driver.py", line <NUM>, in manage_image_cache
+52	self.image_cache_manager.update(context, all_instances)
+53	File "/usr/lib/python2.<NUM>/dist-packages/nova/virt/libvirt/imagecache.py", line <NUM>, in update
+54	self._age_and_verify_cached_images(context, all_instances, base_dir)
+55	File "/usr/lib/python2.<NUM>/dist-packages/nova/virt/libvirt/imagecache.py", line <NUM>, in _age_and_verify_cached_images
+56	inuse_backing_images = self._list_backing_images()
+57	File "/usr/lib/python2.<NUM>/dist-packages/nova/virt/libvirt/imagecache.py", line <NUM>, in _list_backing_images
+58	disk_path)
+59	File "/usr/lib/python2.<NUM>/dist-packages/nova/virt/libvirt/utils.py", line <NUM>, in get_disk_backing_file
+60	backing_file = images.qemu_img_info(path, format).backing_file
+61	File "/usr/lib/python2.<NUM>/dist-packages/nova/virt/images.py", line <NUM>, in qemu_img_info
+62	raise exception.InvalidDiskInfo(reason=msg)
+63	InvalidDiskInfo: Disk info file is invalid: qemu-img failed to execute on /var/lib/nova/instances/<UUID>/disk : Unexpected error while running command.
+64	Command: /usr/bin/python -m oslo_concurrency.prlimit --as=<NUM> --cpu=<NUM> -- env LC_ALL=C LANG=C qemu-img info /var/lib/nova/instances/<UUID>/disk
+65	Exit code: <NUM>
+66	Stdout: u''
+67	Stderr: u"qemu-img: Could not open '/var/lib/nova/instances/<UUID>/disk': Could not open '/var/lib/nova/instances/<UUID>/disk': No such file or directory\n"
+68	
+69	Bad response code while validating token: <NUM>
+70	Identity response: <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML <NUM>//EN">
+71	Unable to validate token: Failed to fetch token data from identity server

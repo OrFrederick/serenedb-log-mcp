@@ -1,0 +1,138 @@
+{
+ "tfidf (lexical)": {
+  "component(k=14)": {
+   "ARI": -0.09,
+   "NMI": 0.072,
+   "purity": 0.747
+  },
+  "alert_cat(k=30,n=39)": {
+   "ARI": 0.362,
+   "NMI": 0.938,
+   "purity": 0.897
+  },
+  "alert_family(k=6)": {
+   "ARI": 0.1,
+   "NMI": 0.397,
+   "purity": 0.641
+  }
+ },
+ "random": {
+  "component(k=14)": {
+   "ARI": -0.001,
+   "NMI": 0.126,
+   "purity": 0.741
+  },
+  "alert_cat(k=30,n=39)": {
+   "ARI": -0.018,
+   "NMI": 0.886,
+   "purity": 0.769
+  },
+  "alert_family(k=6)": {
+   "ARI": 0.029,
+   "NMI": 0.297,
+   "purity": 0.615
+  }
+ },
+ "minilm-l6": {
+  "component(k=14)": {
+   "ARI": 0.194,
+   "NMI": 0.373,
+   "purity": 0.784
+  },
+  "alert_cat(k=30,n=39)": {
+   "ARI": 0.17,
+   "NMI": 0.912,
+   "purity": 0.846
+  },
+  "alert_family(k=6)": {
+   "ARI": 0.233,
+   "NMI": 0.487,
+   "purity": 0.744
+  }
+ },
+ "bge-small": {
+  "component(k=14)": {
+   "ARI": 0.242,
+   "NMI": 0.388,
+   "purity": 0.787
+  },
+  "alert_cat(k=30,n=39)": {
+   "ARI": 0.298,
+   "NMI": 0.927,
+   "purity": 0.872
+  },
+  "alert_family(k=6)": {
+   "ARI": 0.225,
+   "NMI": 0.467,
+   "purity": 0.718
+  }
+ },
+ "granite-small-r2": {
+  "component(k=14)": {
+   "ARI": 0.222,
+   "NMI": 0.396,
+   "purity": 0.784
+  },
+  "alert_cat(k=30,n=39)": {
+   "ARI": 0.177,
+   "NMI": 0.915,
+   "purity": 0.846
+  },
+  "alert_family(k=6)": {
+   "ARI": 0.217,
+   "NMI": 0.492,
+   "purity": 0.769
+  }
+ },
+ "nomic-v1.5": {
+  "component(k=14)": {
+   "ARI": 0.224,
+   "NMI": 0.346,
+   "purity": 0.766
+  },
+  "alert_cat(k=30,n=39)": {
+   "ARI": 0.298,
+   "NMI": 0.927,
+   "purity": 0.872
+  },
+  "alert_family(k=6)": {
+   "ARI": -0.118,
+   "NMI": 0.252,
+   "purity": 0.564
+  }
+ },
+ "jina-v2-code": {
+  "component(k=14)": {
+   "ARI": 0.377,
+   "NMI": 0.411,
+   "purity": 0.791
+  },
+  "alert_cat(k=30,n=39)": {
+   "ARI": 0.362,
+   "NMI": 0.938,
+   "purity": 0.897
+  },
+  "alert_family(k=6)": {
+   "ARI": 0.209,
+   "NMI": 0.45,
+   "purity": 0.615
+  }
+ },
+ "qwen3-emb-8b@rwth": {
+  "component(k=14)": {
+   "ARI": -0.046,
+   "NMI": 0.256,
+   "purity": 0.778
+  },
+  "alert_cat(k=30,n=39)": {
+   "ARI": 0.362,
+   "NMI": 0.938,
+   "purity": 0.897
+  },
+  "alert_family(k=6)": {
+   "ARI": 0.083,
+   "NMI": 0.356,
+   "purity": 0.615
+  }
+ }
+}

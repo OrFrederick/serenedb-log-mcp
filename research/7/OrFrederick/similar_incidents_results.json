@@ -1,0 +1,294 @@
+{
+ "n_incidents": 1202,
+ "results": [
+  {
+   "method": "jaccard(template set)",
+   "hit_at_1": 0.984,
+   "n_with_prior_repeat": 1161,
+   "n_first_of_category": 40,
+   "first_of_cat_median_top_score": 0.0,
+   "first_of_cat_share_with_score_gt0": 0.0
+  },
+  {
+   "method": "spread only",
+   "hit_at_1": 0.421,
+   "n_with_prior_repeat": 1161,
+   "n_first_of_category": 40,
+   "first_of_cat_median_top_score": -0.006,
+   "first_of_cat_share_with_score_gt0": 0.0
+  },
+  {
+   "method": "random",
+   "hit_at_1": 0.146,
+   "n_with_prior_repeat": 1161,
+   "n_first_of_category": 40,
+   "first_of_cat_median_top_score": 0.995,
+   "first_of_cat_share_with_score_gt0": 1.0
+  },
+  {
+   "method": "embedding:granite-small-r2",
+   "hit_at_1": 0.993,
+   "n_with_prior_repeat": 1161,
+   "n_first_of_category": 40,
+   "first_of_cat_median_top_score": 0.936,
+   "first_of_cat_share_with_score_gt0": 1.0
+  },
+  {
+   "method": "embedding:minilm-l6",
+   "hit_at_1": 0.991,
+   "n_with_prior_repeat": 1161,
+   "n_first_of_category": 40,
+   "first_of_cat_median_top_score": 0.788,
+   "first_of_cat_share_with_score_gt0": 1.0
+  }
+ ],
+ "cross_category_lookalikes": [
+  {
+   "category": "APPALLOC",
+   "nearest_other": "APPCHILD",
+   "cosine": 0.956,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "APPBUSY",
+   "nearest_other": "APPUNAV",
+   "cosine": 0.945,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "APPCHILD",
+   "nearest_other": "APPALLOC",
+   "cosine": 0.956,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "APPOUT",
+   "nearest_other": "APPUNAV",
+   "cosine": 0.886,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "APPREAD",
+   "nearest_other": "APPRES",
+   "cosine": 0.976,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "APPRES",
+   "nearest_other": "APPREAD",
+   "cosine": 0.976,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "APPSEV",
+   "nearest_other": "APPRES",
+   "cosine": 0.97,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "APPTO",
+   "nearest_other": "APPSEV",
+   "cosine": 0.955,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "APPTORUS",
+   "nearest_other": "KERNEXT",
+   "cosine": 0.911,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "APPUNAV",
+   "nearest_other": "APPALLOC",
+   "cosine": 0.952,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "KERNBIT",
+   "nearest_other": "KERNMC",
+   "cosine": 0.915,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "KERNCON",
+   "nearest_other": "KERNSOCK",
+   "cosine": 0.95,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "KERNDTLB",
+   "nearest_other": "KERNTLBE",
+   "cosine": 0.975,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "KERNEXT",
+   "nearest_other": "KERNPROG",
+   "cosine": 0.952,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "KERNFLOAT",
+   "nearest_other": "KERNPROG",
+   "cosine": 0.952,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "KERNMC",
+   "nearest_other": "KERNPROG",
+   "cosine": 0.964,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "KERNMICRO",
+   "nearest_other": "KERNRTSA",
+   "cosine": 0.908,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "KERNMNT",
+   "nearest_other": "KERNMNTF",
+   "cosine": 0.947,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "KERNMNTF",
+   "nearest_other": "KERNMNT",
+   "cosine": 0.947,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "KERNNOETH",
+   "nearest_other": "KERNPOW",
+   "cosine": 0.93,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "KERNPAN",
+   "nearest_other": "KERNRTSP",
+   "cosine": 0.957,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "KERNPOW",
+   "nearest_other": "KERNSERV",
+   "cosine": 0.979,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "KERNPROG",
+   "nearest_other": "KERNMC",
+   "cosine": 0.964,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "KERNREC",
+   "nearest_other": "KERNTERM",
+   "cosine": 0.905,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "KERNRTSA",
+   "nearest_other": "KERNRTSP",
+   "cosine": 0.929,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "KERNRTSP",
+   "nearest_other": "KERNPAN",
+   "cosine": 0.957,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "KERNSERV",
+   "nearest_other": "KERNPOW",
+   "cosine": 0.979,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "KERNSOCK",
+   "nearest_other": "KERNCON",
+   "cosine": 0.95,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "KERNSTOR",
+   "nearest_other": "KERNPROG",
+   "cosine": 0.963,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "KERNTERM",
+   "nearest_other": "KERNRTSP",
+   "cosine": 0.941,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "KERNTLBE",
+   "nearest_other": "KERNDTLB",
+   "cosine": 0.975,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "LINKBLL",
+   "nearest_other": "LINKDISC",
+   "cosine": 0.963,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "LINKDISC",
+   "nearest_other": "LINKIAP",
+   "cosine": 0.968,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "LINKIAP",
+   "nearest_other": "LINKDISC",
+   "cosine": 0.968,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "LINKPAP",
+   "nearest_other": "LINKIAP",
+   "cosine": 0.961,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "MASABNORM",
+   "nearest_other": "MASNORM",
+   "cosine": 0.962,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "MASNORM",
+   "nearest_other": "MASABNORM",
+   "cosine": 0.962,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "MMCS",
+   "nearest_other": "MASNORM",
+   "cosine": 0.921,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "MONILL",
+   "nearest_other": "MONNULL",
+   "cosine": 0.929,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "MONNULL",
+   "nearest_other": "MONILL",
+   "cosine": 0.929,
+   "jaccard_templates": 0.0
+  },
+  {
+   "category": "MONPOW",
+   "nearest_other": "KERNPOW",
+   "cosine": 0.925,
+   "jaccard_templates": 0.0
+  }
+ ],
+ "example_signature": "component APP. spread machine-wide. messages: ciod: failed to read message prefix on control stream (CioSt"
+}

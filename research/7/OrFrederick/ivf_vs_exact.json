@@ -1,0 +1,35 @@
+{
+ "ivf_build_ms": 164.9,
+ "hnsw_build_ms": 108.4,
+ "exact_ms": 13.77,
+ "ivf_ms": 3.07,
+ "hnsw_ms": 2.77,
+ "ivf_recall10_vs_exact": 1.0,
+ "hnsw_recall10_vs_exact": 0.958,
+ "sql_exact_vs_numpy_overlap10": 1.0,
+ "ivf_plan": [
+  "TOP_N",
+  "Top: 10",
+  "Order By: #1 ASC",
+  "~10 rows",
+  "IRESEARCH_SCAN",
+  "Index: r7_vec_ivf",
+  "Lookup: table",
+  "Index Filter:",
+  "Term",
+  "Field: datasetstring",
+  "Value: bgl"
+ ],
+ "exact_plan": [
+  "PROJECTION",
+  "Projections: #0",
+  "~10 rows",
+  "PROJECTION",
+  "Projections:",
+  "__internal_decompress_string#0 #1",
+  "~368 rows",
+  "ORDER_BY",
+  "Order By: #1 ASC",
+  "~368 rows"
+ ]
+}

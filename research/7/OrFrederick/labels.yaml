@@ -1,0 +1,234 @@
+# Labelled query set for issue #7 (template retrieval).
+# Unit: Loghub-2.0 templates (BGL 320, OpenStack 48), ids as in *_templates.csv.
+# Judged by OrFrederick's Claude from the template text alone (component/level shown only as a tie-breaker).
+#
+# Relevance rule (apply this to audit):
+#   A template is relevant if a Log Entry matching it is DIRECT evidence of the phenomenon the
+#   question asks about (an Engineer would want to see and count it). Generic register/dump
+#   continuation lines (e.g. BGL "general purpose registers:", "msr=... dear=...") are NOT relevant
+#   even when they follow a relevant line, because their text alone does not show the phenomenon.
+#   Startup/heartbeat lines are relevant only when the question asks about that activity.
+# kind:
+#   keyword    = the question uses the vocabulary of the templates.
+#   paraphrase = the question is phrased the way a human would ask, with little or no shared vocabulary.
+#   (the script also computes measured lexical overlap per query; reported separately)
+# no_relevant: true = no template in the Dataset is relevant (e.g. "disk full"); excluded from averages,
+#               used to show what each method returns when the honest answer is "nothing".
+
+bgl:
+  - q: memory problems
+    kind: paraphrase
+    why: DDR / memory-manager / L3 EDRAM error and steering templates, and the replace-card advice lines.
+    rel: [E8, E17, E42, E68, E82, E83, E86, E90, E92, E94, E95, E102, E106, E107, E108, E109, E110, E112, E113, E114, E115, E116, E117, E122, E126, E131, E164, E166, E189, E191, E216, E218, E275, E314]
+  - q: network issues
+    kind: paraphrase
+    why: torus / tree / ethernet network errors and warnings, and socket links severed or reset.
+    rel: [E16, E18, E19, E20, E21, E27, E29, E33, E34, E36, E37, E40, E43, E53, E56, E58, E59, E63, E65, E67, E70, E78, E79, E81, E89, E99, E119, E125, E209, E312]
+  - q: file system or storage unavailable
+    kind: paraphrase
+    why: Lustre / NFS / filesystem mount failures and I/O errors on the file system.
+    rel: [E211, E276, E257, E165, E136]
+  - q: lustre mount failed
+    kind: keyword
+    why: literal Lustre mount failures plus the generic mount failure.
+    rel: [E211, E276, E257]
+  - q: nodes overheating
+    kind: paraphrase
+    why: temperature templates.
+    rel: [E254, E120]
+  - q: power supply failure
+    kind: paraphrase
+    why: power module faults, power good lost, power deactivated.
+    rel: [E54, E66, E221, E223, E225, E244, E304]
+  - q: application crashed and dumped core
+    kind: paraphrase
+    why: core file generation and signals received by the job.
+    rel: [E310, E228, E91, E147]
+  - q: job failed to start because the program binary is missing or invalid
+    kind: keyword
+    why: ciod Error loading program image.
+    rel: [E35, E48, E50, E201]
+  - q: cache parity errors
+    kind: keyword
+    why: instruction / data / L2 cache parity error templates.
+    rel: [E208, E72, E75, E238, E249, E255, E51]
+  - q: kernel panic
+    kind: keyword
+    why: kernel panic, rts panic, kernel terminated.
+    rel: [E315, E264, E258]
+  - q: hardware that needs to be replaced
+    kind: paraphrase
+    why: templates advising replacement or a service action.
+    rel: [E86, E166, E189, E66]
+  - q: machine check interrupt
+    kind: keyword
+    why: machine check templates (interrupts, DCR read timeout, status register).
+    rel: [E51, E89, E97, E129, E213, E231, E243, E265, E275, E286, E130]
+  - q: TLB errors
+    kind: keyword
+    why: TLB error templates.
+    rel: [E285, E227]
+  - q: link card failures
+    kind: keyword
+    why: link card faults, not-functional, power, temperature, port/training failures on the midplane switch.
+    rel: [E57, E60, E61, E73, E232, E244, E254, E260, E223, E225]
+  - q: node card not working
+    kind: keyword
+    why: node card status/functional/VPD/assembly/power problems.
+    rel: [E259, E261, E167, E2, E3, E221, E253, E297, E120, E45, E85, E121]
+  - q: scheduled hardware maintenance
+    kind: paraphrase
+    why: PrepareForService / EndServiceAction templates.
+    rel: [E30, E31, E39, E46, E101, E252]
+  - q: control system daemons restarted
+    kind: paraphrase
+    why: BGLMaster / mmcs_db_server / idoproxy / ciodb started, restarted or exited.
+    rel: [E14, E15, E22, E32, E98, E280, E224, E226, E245]
+  - q: lost connection to compute node
+    kind: paraphrase
+    why: CioStream socket severed/reset/timed out, mailbox/idoproxy socket closed, Ido packet timeout.
+    rel: [E21, E29, E36, E37, E55, E134, E307]
+  - q: floating point exceptions
+    kind: keyword
+    why: FP exception and FP program-interrupt templates (not the FP register dump lines).
+    rel: [E240, E153, E150, E163, E190, E194, E195, E204, E137, E156, E170]
+  - q: alignment exceptions
+    kind: keyword
+    why: alignment exception templates.
+    rel: [E12, E237, E240, E9, E58]
+  - q: illegal instruction
+    kind: keyword
+    why: literal.
+    rel: [E140]
+  - q: bad or missing cables
+    kind: keyword
+    why: cable templates.
+    rel: [E52, E100]
+  - q: something timed out
+    kind: paraphrase
+    why: timeouts.
+    rel: [E37, E278, E307, E213]
+  - q: debugger died
+    kind: keyword
+    why: literal.
+    rel: [E80]
+  - q: jobs were killed
+    kind: paraphrase
+    why: job timed out and block freed; kernel terminated the job.
+    rel: [E278, E258]
+  - q: bit errors on memory chips that were fixed automatically
+    kind: paraphrase
+    why: corrected DDR / CE symbol lines and redundant bit steering.
+    rel: [E68, E92, E94, E191, E314, E42, E95]
+  - q: interconnect link training problems
+    kind: paraphrase
+    why: link training / train / alignment failures on the torus/tree or link card.
+    rel: [E125, E57, E61, E73]
+  - q: disk full
+    kind: paraphrase
+    no_relevant: true
+    why: BGL has no disk-full template.
+    rel: []
+
+openstack:
+  - q: VM slow to boot
+    kind: paraphrase
+    why: spawn and build duration templates.
+    rel: [E9, E21]
+  - q: instance deleted
+    kind: keyword
+    why: terminate / destroy / delete instance and the DELETE API request.
+    rel: [E34, E17, E30, E35, E8, E39]
+  - q: disk space on the compute host
+    kind: keyword
+    why: disk totals, limits and the final resource view.
+    rel: [E33, E11, E2]
+  - q: how much RAM is left
+    kind: paraphrase
+    why: memory totals and limits, claims and final resource view.
+    rel: [E28, E29, E2, E13]
+  - q: CPU capacity
+    kind: paraphrase
+    why: vcpu templates.
+    rel: [E27, E10, E20, E1]
+  - q: login failures
+    kind: paraphrase
+    why: token validation / identity templates.
+    rel: [E24, E6, E45]
+  - q: token validation errors
+    kind: keyword
+    why: token templates.
+    rel: [E24, E6]
+  - q: image cache cleanup
+    kind: paraphrase
+    why: image cache manager base-file templates.
+    rel: [E47, E43, E40, E46, E31, E44, E5]
+  - q: VM lifecycle events
+    kind: keyword
+    why: Lifecycle Event templates.
+    rel: [E25, E23, E26, E22]
+  - q: instance power state synchronisation
+    kind: keyword
+    why: sync_power_state and instance sync templates.
+    rel: [E3, E4, E19, E7]
+  - q: API response time
+    kind: paraphrase
+    why: wsgi request lines carry time.
+    rel: [E42, E41, E39]
+  - q: resource tracker audit
+    kind: paraphrase
+    why: auditing resources and final resource view, service record update, usage audit.
+    rel: [E16, E20, E2, E32, E14]
+  - q: hypervisor errors
+    kind: paraphrase
+    why: libvirt domain / generic error templates.
+    rel: [E1, E48]
+  - q: errors
+    kind: keyword
+    why: every template that reports a failure.
+    rel: [E48, E1, E24, E6, E15]
+  - q: network teardown slow
+    kind: paraphrase
+    why: deallocate network duration.
+    rel: [E12]
+  - q: scheduling a new VM onto a host
+    kind: paraphrase
+    why: claim attempt, claim result and the resource checks of the claim.
+    rel: [E13, E36, E28, E29, E33, E11, E27, E10]
+  - q: instance not found
+    kind: keyword
+    why: No instances found.
+    rel: [E15]
+  - q: VM paused
+    kind: keyword
+    why: literal.
+    rel: [E26]
+  - q: virtual machine shut down unexpectedly
+    kind: paraphrase
+    why: VM Stopped lifecycle event.
+    rel: [E25]
+  - q: remove old base files
+    kind: keyword
+    why: removable / removing / too young base files.
+    rel: [E40, E43, E31, E46]
+  - q: compute service heartbeat
+    kind: paraphrase
+    why: Compute_service record updated; periodic resource audit.
+    rel: [E32, E16]
+  - q: how long did it take to destroy the VM
+    kind: keyword
+    why: destroy duration.
+    rel: [E8]
+  - q: out of memory
+    kind: paraphrase
+    why: memory limit / free and memory used lines are the closest evidence.
+    rel: [E29, E28]
+  - q: creating a new virtual machine
+    kind: paraphrase
+    why: "spawn path - creating image, spawned successfully, took to spawn/build, POST servers."
+    rel: [E37, E18, E9, E21, E41, E38]
+  - q: disk full
+    kind: paraphrase
+    no_relevant: true
+    why: no disk-full template in OpenStack.
+    rel: []

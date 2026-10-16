@@ -1,0 +1,42 @@
+{
+ "create_secret": {
+  "ok": true,
+  "ms": 132.1,
+  "rows": null
+ },
+ "list_secret": {
+  "ok": true,
+  "ms": 289.0,
+  "rows": "[('r7_rwth', 'openai')]"
+ },
+ "embed_one": {
+  "ok": true,
+  "ms": 811.9,
+  "rows": "[(4096,)]"
+ },
+ "embed_one_again": {
+  "ok": true,
+  "ms": 326.5,
+  "rows": "[(4096,)]"
+ },
+ "embed_templates_bgl": {
+  "ok": true,
+  "ms": 9999.8,
+  "rows": "None"
+ },
+ "count": {
+  "ok": true,
+  "ms": 21.7,
+  "rows": "[(368, 368)]"
+ },
+ "knn_exact_sql": {
+  "ok": true,
+  "ms": 523.0,
+  "rows": "[('E106', 0.41051966), ('E86', 0.4216444), ('E110', 0.44462472), ('E117', 0.44514292), ('E102', 0.45218652)]"
+ },
+ "drop_secret": {
+  "ok": true,
+  "ms": 9.4,
+  "rows": "None"
+ }
+}

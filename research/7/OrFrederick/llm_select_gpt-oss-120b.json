@@ -1,0 +1,371 @@
+{
+"bgl::memory problems": [
+"E94",
+"E191",
+"E86",
+"E126",
+"E95",
+"E106",
+"E117",
+"E102",
+"E110",
+"E275"
+],
+"bgl::network issues": [
+"E312",
+"E1",
+"E55",
+"E134",
+"E307",
+"E100",
+"E52",
+"E73",
+"E125",
+"E89"
+],
+"bgl::file system or storage unavailable": [
+"E257",
+"E211",
+"E276"
+],
+"bgl::lustre mount failed": [
+"E211",
+"E276"
+],
+"bgl::nodes overheating": [
+"E254",
+"E120"
+],
+"bgl::power supply failure": [
+"E66",
+"E304",
+"E54",
+"E221",
+"E223",
+"E225"
+],
+"bgl::application crashed and dumped core": [
+"E315",
+"E228",
+"E91"
+],
+"bgl::job failed to start because the program binary is missing or invalid": [
+"E35",
+"E50",
+"E48"
+],
+"bgl::cache parity errors": [
+"E208",
+"E238",
+"E249",
+"E255",
+"E303"
+],
+"bgl::kernel panic": [
+"E315",
+"E264",
+"E258",
+"E306",
+"E305"
+],
+"bgl::hardware that needs to be replaced": [
+"E86",
+"E166",
+"E189",
+"E120",
+"E221",
+"E223",
+"E261",
+"E260",
+"E259",
+"E297"
+],
+"bgl::machine check interrupt": [
+"E286",
+"E97",
+"E89",
+"E51",
+"E130",
+"E265",
+"E286",
+"E286",
+"E286",
+"E286"
+],
+"bgl::TLB errors": [
+"E227",
+"E285"
+],
+"bgl::link card failures": [
+"E260",
+"E223",
+"E73",
+"E57",
+"E61",
+"E60",
+"E93",
+"E31"
+],
+"bgl::node card not working": [
+"E259",
+"E261",
+"E297",
+"E120",
+"E221",
+"E253",
+"E45",
+"E167",
+"E46",
+"E30"
+],
+"bgl::scheduled hardware maintenance": [
+"E46",
+"E30",
+"E31",
+"E39",
+"E252",
+"E101",
+"E66"
+],
+"bgl::control system daemons restarted": [
+"E280",
+"E32",
+"E22",
+"E14",
+"E272"
+],
+"bgl::lost connection to compute node": [
+"E21",
+"E29",
+"E37",
+"E71",
+"E104",
+"E80",
+"E47"
+],
+"bgl::floating point exceptions": [
+"E150",
+"E153",
+"E163",
+"E194",
+"E195",
+"E204",
+"E155",
+"E185",
+"E190",
+"E277"
+],
+"bgl::alignment exceptions": [
+"E12",
+"E240",
+"E183",
+"E9"
+],
+"bgl::illegal instruction": [
+"E140"
+],
+"bgl::bad or missing cables": [
+"E100",
+"E52"
+],
+"bgl::something timed out": [
+"E37"
+],
+"bgl::debugger died": [
+"E80"
+],
+"bgl::jobs were killed": [
+"E278",
+"E226",
+"E258",
+"E305"
+],
+"bgl::bit errors on memory chips that were fixed automatically": [
+"E94",
+"E68",
+"E92",
+"E191",
+"E95",
+"E208"
+],
+"bgl::interconnect link training problems": [
+"E125",
+"E73",
+"E61"
+],
+"bgl::disk full": [
+"E257",
+"E211",
+"E276"
+],
+"openstack::VM slow to boot": [
+"E9",
+"E21",
+"E18",
+"E23",
+"E4",
+"E3",
+"E41",
+"E42",
+"E44",
+"E5"
+],
+"openstack::instance deleted": [
+"E34",
+"E17",
+"E30",
+"E35",
+"E8"
+],
+"openstack::disk space on the compute host": [
+"E2",
+"E33",
+"E16",
+"E14",
+"E31",
+"E40",
+"E43",
+"E46",
+"E5",
+"E47"
+],
+"openstack::how much RAM is left": [
+"E29",
+"E2",
+"E28"
+],
+"openstack::CPU capacity": [
+"E20",
+"E2",
+"E27",
+"E13",
+"E1",
+"E16",
+"E10"
+],
+"openstack::login failures": [
+"E24",
+"E6",
+"E45"
+],
+"openstack::token validation errors": [
+"E6",
+"E24",
+"E45"
+],
+"openstack::image cache cleanup": [
+"E40",
+"E43",
+"E31",
+"E46",
+"E44",
+"E5",
+"E47"
+],
+"openstack::VM lifecycle events": [
+"E23",
+"E25",
+"E26",
+"E22",
+"E18",
+"E17",
+"E34",
+"E9",
+"E21",
+"E8"
+],
+"openstack::instance power state synchronisation": [
+"E3",
+"E4"
+],
+"openstack::API response time": [
+"E42",
+"E41",
+"E39"
+],
+"openstack::resource tracker audit": [
+"E16",
+"E20",
+"E2",
+"E32"
+],
+"openstack::hypervisor errors": [
+"E1"
+],
+"openstack::errors": [
+"E48",
+"E15",
+"E6",
+"E24",
+"E1",
+"E46"
+],
+"openstack::network teardown slow": [
+"E12"
+],
+"openstack::scheduling a new VM onto a host": [
+"E13",
+"E36",
+"E16",
+"E20",
+"E2",
+"E19",
+"E7",
+"E14",
+"E21",
+"E23"
+],
+"openstack::instance not found": [
+"E15"
+],
+"openstack::VM paused": [
+"E26"
+],
+"openstack::virtual machine shut down unexpectedly": [
+"E25",
+"E34",
+"E17",
+"E30",
+"E35",
+"E26"
+],
+"openstack::remove old base files": [
+"E40",
+"E31",
+"E43",
+"E46",
+"E47",
+"E44"
+],
+"openstack::compute service heartbeat": [
+"E32",
+"E16",
+"E48",
+"E14",
+"E20"
+],
+"openstack::how long did it take to destroy the VM": [
+"E8"
+],
+"openstack::out of memory": [
+"E13",
+"E28",
+"E29",
+"E2"
+],
+"openstack::creating a new virtual machine": [
+"E41",
+"E37",
+"E18",
+"E9",
+"E21",
+"E23",
+"E13",
+"E36"
+],
+"openstack::disk full": [
+"E33",
+"E2",
+"E16"
+]
+}

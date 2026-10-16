@@ -1,0 +1,39 @@
+{
+ "bgl": {
+  "lines": 4747963,
+  "distinct_raw": 358357,
+  "distinct_masked": 4216,
+  "sql_s": 1.8
+ },
+ "openstack": {
+  "lines": 207820,
+  "distinct_raw": 139789,
+  "distinct_masked": 2691,
+  "sql_s": 1.1
+ },
+ "sample_lines": 2000,
+ "sample_mean_chars": 48.7,
+ "minilm-l6": {
+  "lines_per_s": 22.2,
+  "dim": 384,
+  "bgl_all_hours": 59.29,
+  "bgl_masked_distinct_min": 3.16,
+  "bgl_all_storage_GB_float32": 7.29,
+  "bgl_all_storage_GB_sq8": 1.82
+ },
+ "granite-small-r2": {
+  "lines_per_s": 11.6,
+  "dim": 384,
+  "bgl_all_hours": 113.99,
+  "bgl_masked_distinct_min": 6.07,
+  "bgl_all_storage_GB_float32": 7.29,
+  "bgl_all_storage_GB_sq8": 1.82
+ },
+ "qwen3-emb-8b@rwth": {
+  "lines_per_s": 36.8,
+  "dim": 4096,
+  "bgl_all_hours": 35.8,
+  "bgl_masked_distinct_min": 1.9,
+  "bgl_all_storage_GB_float32": 77.8
+ }
+}

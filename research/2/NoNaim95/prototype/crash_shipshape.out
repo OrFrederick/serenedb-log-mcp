@@ -1,0 +1,34 @@
+# crash_shipshape.py (uses crash_discriminate.main with the variants below)
+# 23:16:11Z crash_discriminate.py, 12 rounds, seed 42
+# L: sort=relevance: BM25 selected, ORDER BY s DESC (single key), ts_between(%s,%s)::score(NULL), LIMIT 20
+#    SELECT line_no, ts, node, component, level, message, BM25(r2p_bgl_idx.tableoid) s FROM r2p_bgl_idx WHERE message @@ websearch_to_tsquery(%s) AND ts @@ ts_between(%s::timestamp, %s::timestamp, true, false)::score(NULL) ORDER BY s DESC LIMIT %s  params=('error', '2005-06-01', '2005-07-01', 20)
+# M: sort=time: plain ts range, ORDER BY ts, line_no, LIMIT 20
+#    SELECT line_no, ts, node, component, level, message FROM r2p_bgl_idx WHERE message @@ websearch_to_tsquery(%s) AND ts >= %s::timestamp AND ts < %s::timestamp ORDER BY ts, line_no LIMIT %s  params=('error', '2005-06-01', '2005-07-01', 20)
+# start state: 2026-10-16T23:14:32.650363698Z  SIGSEGV lines so far: 64
+23:16:16Z round 1 M OK        0.43s server-up | rows=20 first=1
+23:16:19Z round 1 L OK        0.46s server-up | rows=20 first=1108468
+23:16:22Z round 2 M OK        0.34s server-up | rows=20 first=1
+23:16:25Z round 2 L OK        0.39s server-up | rows=20 first=1108468
+23:16:28Z round 3 L OK        0.39s server-up | rows=20 first=1108468
+23:16:31Z round 3 M OK        0.37s server-up | rows=20 first=1
+23:16:33Z round 4 M OK        0.37s server-up | rows=20 first=1
+23:16:36Z round 4 L OK        0.39s server-up | rows=20 first=1108468
+23:16:39Z round 5 M OK        0.38s server-up | rows=20 first=1
+23:16:42Z round 5 L OK        0.28s server-up | rows=20 first=1108468
+23:16:45Z round 6 M OK        0.27s server-up | rows=20 first=1
+23:16:48Z round 6 L OK        0.78s server-up | rows=20 first=1108468
+23:16:50Z round 7 M OK        0.21s server-up | rows=20 first=1
+23:16:52Z round 7 L OK        0.27s server-up | rows=20 first=1108468
+23:16:56Z round 8 M OK        0.42s server-up | rows=20 first=1
+23:16:59Z round 8 L OK        0.53s server-up | rows=20 first=1108468
+23:17:01Z round 9 L OK        0.39s server-up | rows=20 first=1108468
+23:17:04Z round 9 M OK        0.42s server-up | rows=20 first=1
+23:17:07Z round 10 M OK        0.38s server-up | rows=20 first=1
+23:17:10Z round 10 L OK        0.53s server-up | rows=20 first=1108468
+23:17:13Z round 11 M OK        0.32s server-up | rows=20 first=1
+23:17:15Z round 11 L OK        0.38s server-up | rows=20 first=1097317
+23:17:18Z round 12 M OK        0.37s server-up | rows=20 first=1
+23:17:21Z round 12 L OK        0.39s server-up | rows=20 first=1108468
+# end state: 2026-10-16T23:14:32.650363698Z  SIGSEGV lines: 64
+# L: 0/12 crashed  sort=relevance: BM25 selected, ORDER BY s DESC (single key), ts_between(%s,%s)::score(NULL), LIMIT 20
+# M: 0/12 crashed  sort=time: plain ts range, ORDER BY ts, line_no, LIMIT 20

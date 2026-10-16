@@ -30,6 +30,18 @@ Most entries will be "an MCP server with search, count and trend tools, plus thr
 9. **Demo priority**: line-versus-Incident reveal, then live self-verification, then visuals in Claude, then the ground-truth score, then the refusal. The 1B-row scale result goes on one slide with numbers, not as a live wait.
 10. **Optional hosted MCP endpoint** (streamable HTTP, read-only, rate-limited) pointing at the **organiser-provided** SereneDB instance. It is a convenience only. The brief says "use only the tools and resources listed in this brief", so the local stdio path from a clean checkout stays the documented required route.
 
+## Differentiators, round 2 (2026-10-16)
+- **Precursor mining (accepted, with a guard).** Across all occurrences of a pattern, find which patterns precede it on the same node within a time window, and compare that rate against the baseline. Report a precursor only when it passes a minimum support and lift threshold that we state. Otherwise answer "no consistent precursor found". No speculative or made-up links.
+- **Play to the sponsor (accepted).** Combine search and analytics in one SQL statement (`@@`, BM25, `GROUP BY`, `time_bucket`). Showcase the inverted index over remote Parquet. Show query time in every piece of Evidence. The README gets a "SereneDB features used" section.
+- **Pattern-first search (accepted).** The agent searches the template list first and then counts and fetches entries by template id. Vector search is in scope only if it needs no external embedding key.
+- **Corpus-relative time (accepted).** Relative times such as "last week" resolve against the corpus end date. The resolved range goes into the Data Scope.
+- **Noise versus signal (accepted).** Pareto view in `top_patterns`, with a chronic/benign flag based on level, trend and precursor links.
+- **Ownership gaps and cross-team Incidents (parked).** Decide after #4 (Role differentiation) reports.
+- **Ticket drafts and decision memo (parked).** Risk of overbuilding. Decide after #4.
+- **Hypothesis tracker (dropped).** Out of scope.
+- **Judge install (open).** Either a Claude Desktop extension (`.mcpb`) or a self-hosted endpoint. Decide after the spike on MCP Apps over stdio.
+- **Demo insurance (accepted).** A recorded backup video and a cached replay of the Evidence.
+
 ## Open (research issues)
 - Template mining and log parsing: which tool or approach to use.
 - Incident model: how to get from Log Entries to Incidents. Examples: one node spamming versus many nodes, bursts, cascades.

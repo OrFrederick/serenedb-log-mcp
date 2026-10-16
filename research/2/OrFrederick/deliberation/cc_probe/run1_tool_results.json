@@ -1,0 +1,221 @@
+[
+ {
+  "init": {
+   "claude_code_version": "2.1.263",
+   "model": "claude-haiku-4-5-20251001",
+   "tools": [
+    "Task",
+    "Artifact",
+    "Bash",
+    "CronCreate",
+    "CronDelete",
+    "CronList",
+    "DesignSync",
+    "Edit",
+    "EnterWorktree",
+    "ExitWorktree",
+    "ListAgents",
+    "ListMcpResourcesTool",
+    "Monitor",
+    "PushNotification",
+    "Read",
+    "ReadMcpResourceDirTool",
+    "ReadMcpResourceTool",
+    "RemoteTrigger",
+    "ReportFindings",
+    "ScheduleWakeup",
+    "SendMessage",
+    "Skill",
+    "TaskCreate",
+    "TaskGet",
+    "TaskList",
+    "TaskOutput",
+    "TaskStop",
+    "TaskUpdate",
+    "ToolSearch",
+    "WebFetch",
+    "WebSearch",
+    "Workflow",
+    "Write",
+    "mcp__probe__probe_error_raise",
+    "mcp__probe__probe_error_struct",
+    "mcp__probe__probe_error_toolerror",
+    "mcp__probe__probe_large",
+    "mcp__probe__probe_mixed",
+    "mcp__probe__probe_model",
+    "mcp__probe__probe_text_default",
+    "mcp__probe__probe_text_plain"
+   ],
+   "mcp_servers": [
+    {
+     "name": "probe",
+     "status": "connected"
+    }
+   ]
+  }
+ },
+ {
+  "assistant_text": "I'll run the diagnostics by calling each probe tool. First, let me fetch their schemas."
+ },
+ {
+  "tool": [
+   "ToolSearch",
+   {
+    "query": "select:mcp__probe__probe_model,mcp__probe__probe_text_default,mcp__probe__probe_text_plain,mcp__probe__probe_mixed,mcp__probe__probe_error_raise,mcp__probe__probe_error_struct,mcp__probe__probe_error_toolerror,mcp__probe__probe_large",
+    "max_results": 10
+   }
+  ],
+  "is_error": null,
+  "markers": [],
+  "content": [
+   {
+    "type": "tool_reference",
+    "tool_name": "mcp__probe__probe_model"
+   },
+   {
+    "type": "tool_reference",
+    "tool_name": "mcp__probe__probe_text_default"
+   },
+   {
+    "type": "tool_reference",
+    "tool_name": "mcp__probe__probe_text_plain"
+   },
+   {
+    "type": "tool_reference",
+    "tool_name": "mcp__probe__probe_mixed"
+   },
+   {
+    "type": "tool_reference",
+    "tool_name": "mcp__probe__probe_error_raise"
+   },
+   {
+    "type": "tool_reference",
+    "tool_name": "mcp__probe__probe_error_struct"
+   },
+   {
+    "type": "tool_reference",
+    "tool_name": "mcp__probe__probe_error_toolerror"
+   },
+   {
+    "type": "tool_reference",
+    "tool_name": "mcp__probe__probe_large"
+   }
+  ],
+  "tool_use_result_field(not sent to model)": "{\"matches\": [\"mcp__probe__probe_model\", \"mcp__probe__probe_text_default\", \"mcp__probe__probe_text_plain\", \"mcp__probe__probe_mixed\", \"mcp__probe__probe_error_raise\", \"mcp__probe__probe_error_struct\", \"mcp__probe__probe_error_toolerror\", \"mcp__probe__probe_large\"], \"query\": \"select:mcp__probe__probe_model,mcp__probe__probe_text_default,mcp__probe__probe_text_plain,mcp__probe__probe_mixed,mcp__probe__probe_error_raise,mcp__probe__probe_error_struct,mcp__probe__probe_error_toolerror,mcp__probe__probe_large\", \"total_deferred_tools\": 29}"
+ },
+ {
+  "assistant_text": "Now calling all tools:"
+ },
+ {
+  "tool": [
+   "mcp__probe__probe_model",
+   {}
+  ],
+  "is_error": null,
+  "markers": [
+   "MODEL-STRUCT-MARKER"
+  ],
+  "content": "{\"evidence_id\":\"E1\",\"marker\":\"MODEL-STRUCT-MARKER\",\"truncated\":true,\"note\":\"NOTE-INSIDE-STRUCTURED: call again with cursor=abc for more\"}",
+  "tool_use_result_field(not sent to model)": "{\"content\": \"{\\\"evidence_id\\\":\\\"E1\\\",\\\"marker\\\":\\\"MODEL-STRUCT-MARKER\\\",\\\"truncated\\\":true,\\\"note\\\":\\\"NOTE-INSIDE-STRUCTURED: call again with cursor=abc for more\\\"}\", \"structuredContent\": {\"evidence_id\": \"E1\", \"marker\": \"MODEL-STRUCT-MARKER\", \"truncated\": true, \"note\": \"NOTE-INSIDE-STRUCTURED: call again with cursor=abc for more\"}}"
+ },
+ {
+  "tool": [
+   "mcp__probe__probe_text_default",
+   {}
+  ],
+  "is_error": null,
+  "markers": [
+   "TEXT-DEFAULT-MARKER"
+  ],
+  "content": "{\"result\":\"## TEXT-DEFAULT-MARKER\\n- item one\\n- item two\"}",
+  "tool_use_result_field(not sent to model)": "{\"content\": \"{\\\"result\\\":\\\"## TEXT-DEFAULT-MARKER\\\\n- item one\\\\n- item two\\\"}\", \"structuredContent\": {\"result\": \"## TEXT-DEFAULT-MARKER\\n- item one\\n- item two\"}}"
+ },
+ {
+  "tool": [
+   "mcp__probe__probe_error_raise",
+   {}
+  ],
+  "is_error": true,
+  "markers": [],
+  "content": "Error executing tool probe_error_raise",
+  "tool_use_result_field(not sent to model)": "\"Error: Error executing tool probe_error_raise\""
+ },
+ {
+  "tool": [
+   "mcp__probe__probe_text_plain",
+   {}
+  ],
+  "is_error": null,
+  "markers": [
+   "TEXT-PLAIN-MARKER"
+  ],
+  "content": [
+   {
+    "type": "text",
+    "text": "## TEXT-PLAIN-MARKER\n- item one\n- item two"
+   }
+  ],
+  "tool_use_result_field(not sent to model)": "[{\"type\": \"text\", \"text\": \"## TEXT-PLAIN-MARKER\\n- item one\\n- item two\"}]"
+ },
+ {
+  "tool": [
+   "mcp__probe__probe_mixed",
+   {}
+  ],
+  "is_error": null,
+  "markers": [
+   "MIXED-STRUCT-MARKER"
+  ],
+  "content": "{\"marker\":\"MIXED-STRUCT-MARKER\"}",
+  "tool_use_result_field(not sent to model)": "{\"content\": \"{\\\"marker\\\":\\\"MIXED-STRUCT-MARKER\\\"}\", \"structuredContent\": {\"marker\": \"MIXED-STRUCT-MARKER\"}}"
+ },
+ {
+  "tool": [
+   "mcp__probe__probe_error_toolerror",
+   {}
+  ],
+  "is_error": true,
+  "markers": [
+   "TOOLERROR-MARKER"
+  ],
+  "content": "Error executing tool probe_error_toolerror: TOOLERROR-MARKER: parameter 'time_from' must be ISO-8601.",
+  "tool_use_result_field(not sent to model)": "\"Error: Error executing tool probe_error_toolerror: TOOLERROR-MARKER: parameter 'time_from' must be ISO-8601.\""
+ },
+ {
+  "tool": [
+   "mcp__probe__probe_error_struct",
+   {}
+  ],
+  "is_error": true,
+  "markers": [
+   "ERRTEXT-MARKER"
+  ],
+  "content": "ERRTEXT-MARKER: unknown component 'KERNAL', did you mean 'KERNEL'?",
+  "tool_use_result_field(not sent to model)": "\"Error: ERRTEXT-MARKER: unknown component 'KERNAL', did you mean 'KERNEL'?\""
+ },
+ {
+  "tool": [
+   "mcp__probe__probe_large",
+   {
+    "chars": 60000
+   }
+  ],
+  "is_error": null,
+  "markers": [
+   "LARGE-HEAD-MARKER"
+  ],
+  "content": "<persisted-output>\nOutput too large (58.6KB). Full output saved to: /Users/frederick/.claude/projects/-private-tmp-claude-501--Users-frederick-Development-LogSearcher-bbdd15e1-b2d7-42b2-8c5d-c8e1bbcc9ff9-scratchpad-d2probe/d9059664-cbe8-41d6-9b2c-f73131c7d993/tool-results/toolu_01RecHZYyjqkhYh8ZTvTrV3x.json\n\nPreview (first 2KB):\n[\n  {\n    \"type\": \"text\",\n    \"text\": \"LARGE-HEAD-MARKER xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n...\n</persisted-output>",
+  "tool_use_result_field(not sent to model)": "[{\"type\": \"text\", \"text\": \"LARGE-HEAD-MARKER xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+ },
+ {
+  "assistant_text": "## Diagnostics results\n\nAll tools executed. Markers found:\n\n**probe_model**\n- `MODEL-STRUCT-MARKER`\n\n**probe_text_default**\n- `TEXT-DEFAULT-MARKER`\n\n**probe_text_plain**\n- `TEXT-PLAIN-MARKER`\n\n**probe_mixed**\n- `MIXED-STRUCT-MARKER`\n\n**probe_error_raise**\n- (no markers)\n\n**probe_error_struct**\n- `ERRTEXT-MARKER`\n\n**probe_error_toolerror**\n- `TOOLERROR-MARKER`\n\n**probe_large**\n- `LARGE-HEAD-MARKER`"
+ },
+ {
+  "result": {
+   "subtype": "success",
+   "num_turns": 10,
+   "total_cost_usd": 0.1112271,
+   "is_error": false
+  }
+ }
+]

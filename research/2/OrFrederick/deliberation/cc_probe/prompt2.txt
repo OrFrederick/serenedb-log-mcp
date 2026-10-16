@@ -1,0 +1,1 @@
+Diagnostics run. Do NOT use ToolSearch. First state which tools named mcp__probe2__* you currently have full schemas for (listed as callable functions) and which appear only as deferred names. Then call mcp__probe2__loaded_upfront and mcp__probe2__deferred_tool directly, once each, and report verbatim any MARKER strings or errors.

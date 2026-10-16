@@ -1,0 +1,344 @@
+{
+ "tools": [
+  {
+   "name": "probe_model",
+   "description": "Returns a Pydantic model (SDK auto-generates outputSchema; text = JSON of the model).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {},
+    "title": "probe_modelArguments"
+   },
+   "outputSchema": {
+    "properties": {
+     "evidence_id": {
+      "description": "Ledger id, cite as [E<n>].",
+      "title": "Evidence Id",
+      "type": "string"
+     },
+     "marker": {
+      "title": "Marker",
+      "type": "string"
+     },
+     "truncated": {
+      "title": "Truncated",
+      "type": "boolean"
+     },
+     "note": {
+      "title": "Note",
+      "type": "string"
+     }
+    },
+    "required": [
+     "evidence_id",
+     "marker",
+     "truncated",
+     "note"
+    ],
+    "title": "Evidence",
+    "type": "object"
+   },
+   "annotations": {
+    "readOnlyHint": true,
+    "openWorldHint": false
+   }
+  },
+  {
+   "name": "probe_text_default",
+   "description": "Returns a markdown str with default settings (SDK wraps it as {'result': ...}).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {},
+    "title": "probe_text_defaultArguments"
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "title": "Result",
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "title": "probe_text_defaultOutput",
+    "type": "object"
+   },
+   "annotations": {
+    "readOnlyHint": true,
+    "openWorldHint": false
+   }
+  },
+  {
+   "name": "probe_text_plain",
+   "description": "Returns a markdown str with structured_output=False (text only).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {},
+    "title": "probe_text_plainArguments"
+   },
+   "annotations": {
+    "readOnlyHint": true,
+    "openWorldHint": false
+   }
+  },
+  {
+   "name": "probe_mixed",
+   "description": "Returns a hand-built CallToolResult with DIFFERENT content and structuredContent.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {},
+    "title": "probe_mixedArguments"
+   },
+   "annotations": {
+    "readOnlyHint": true,
+    "openWorldHint": false
+   }
+  },
+  {
+   "name": "probe_error_raise",
+   "description": "Raises an exception with an actionable message (expected: isError=true).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "field": {
+      "default": "time_from",
+      "title": "Field",
+      "type": "string"
+     }
+    },
+    "title": "probe_error_raiseArguments"
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "title": "Result",
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "title": "probe_error_raiseOutput",
+    "type": "object"
+   },
+   "annotations": {
+    "readOnlyHint": true,
+    "openWorldHint": false
+   }
+  },
+  {
+   "name": "probe_error_struct",
+   "description": "Returns isError=true with text AND structuredContent carrying different markers.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {},
+    "title": "probe_error_structArguments"
+   },
+   "annotations": {
+    "readOnlyHint": true,
+    "openWorldHint": false
+   }
+  },
+  {
+   "name": "probe_large",
+   "description": "Returns a text of the given number of characters (tests the 50,000-char persist-to-disk rule).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "chars": {
+      "default": 60000,
+      "title": "Chars",
+      "type": "integer"
+     }
+    },
+    "title": "probe_largeArguments"
+   },
+   "annotations": {
+    "readOnlyHint": true,
+    "openWorldHint": false
+   }
+  },
+  {
+   "name": "probe_error_toolerror",
+   "description": "Raises mcp.server.mcpserver.exceptions.ToolError (anticipated failure).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "field": {
+      "default": "time_from",
+      "title": "Field",
+      "type": "string"
+     }
+    },
+    "title": "probe_error_toolerrorArguments"
+   },
+   "outputSchema": {
+    "properties": {
+     "result": {
+      "title": "Result",
+      "type": "string"
+     }
+    },
+    "required": [
+     "result"
+    ],
+    "title": "probe_error_toolerrorOutput",
+    "type": "object"
+   },
+   "annotations": {
+    "readOnlyHint": true,
+    "openWorldHint": false
+   }
+  }
+ ],
+ "calls": {
+  "probe_model": {
+   "_meta": {
+    "io.modelcontextprotocol/serverInfo": {
+     "name": "probe",
+     "version": ""
+    }
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "{\n  \"evidence_id\": \"E1\",\n  \"marker\": \"MODEL-STRUCT-MARKER\",\n  \"truncated\": true,\n  \"note\": \"NOTE-INSIDE-STRUCTURED: call again with cursor=abc for more\"\n}"
+    }
+   ],
+   "structuredContent": {
+    "evidence_id": "E1",
+    "marker": "MODEL-STRUCT-MARKER",
+    "truncated": true,
+    "note": "NOTE-INSIDE-STRUCTURED: call again with cursor=abc for more"
+   },
+   "isError": false,
+   "resultType": "complete"
+  },
+  "probe_text_default": {
+   "_meta": {
+    "io.modelcontextprotocol/serverInfo": {
+     "name": "probe",
+     "version": ""
+    }
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "## TEXT-DEFAULT-MARKER\n- item one\n- item two"
+    }
+   ],
+   "structuredContent": {
+    "result": "## TEXT-DEFAULT-MARKER\n- item one\n- item two"
+   },
+   "isError": false,
+   "resultType": "complete"
+  },
+  "probe_text_plain": {
+   "_meta": {
+    "io.modelcontextprotocol/serverInfo": {
+     "name": "probe",
+     "version": ""
+    }
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "## TEXT-PLAIN-MARKER\n- item one\n- item two"
+    }
+   ],
+   "isError": false,
+   "resultType": "complete"
+  },
+  "probe_mixed": {
+   "_meta": {
+    "io.modelcontextprotocol/serverInfo": {
+     "name": "probe",
+     "version": ""
+    }
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "MIXED-CONTENT-MARKER (markdown table here)"
+    },
+    {
+     "type": "text",
+     "text": "MIXED-SECOND-BLOCK-MARKER (truncation notice)"
+    }
+   ],
+   "structuredContent": {
+    "marker": "MIXED-STRUCT-MARKER"
+   },
+   "isError": false,
+   "resultType": "complete"
+  },
+  "probe_error_raise": {
+   "_meta": {
+    "io.modelcontextprotocol/serverInfo": {
+     "name": "probe",
+     "version": ""
+    }
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Error executing tool probe_error_raise"
+    }
+   ],
+   "isError": true,
+   "resultType": "complete"
+  },
+  "probe_error_struct": {
+   "_meta": {
+    "io.modelcontextprotocol/serverInfo": {
+     "name": "probe",
+     "version": ""
+    }
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "ERRTEXT-MARKER: unknown component 'KERNAL', did you mean 'KERNEL'?"
+    }
+   ],
+   "structuredContent": {
+    "code": "VALIDATION_FAILED",
+    "marker": "ERRSTRUCT-MARKER"
+   },
+   "isError": true,
+   "resultType": "complete"
+  },
+  "probe_large": {
+   "_meta": {
+    "io.modelcontextprotocol/serverInfo": {
+     "name": "probe",
+     "version": ""
+    }
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "LARGE-HEAD-MARKER xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx LARGE-TAIL-MARKER"
+    }
+   ],
+   "isError": false,
+   "resultType": "complete"
+  },
+  "probe_error_toolerror": {
+   "_meta": {
+    "io.modelcontextprotocol/serverInfo": {
+     "name": "probe",
+     "version": ""
+    }
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Error executing tool probe_error_toolerror: TOOLERROR-MARKER: parameter 'time_from' must be ISO-8601."
+    }
+   ],
+   "isError": true,
+   "resultType": "complete"
+  }
+ }
+}

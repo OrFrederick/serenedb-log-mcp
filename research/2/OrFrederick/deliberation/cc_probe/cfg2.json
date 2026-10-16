@@ -1,0 +1,1 @@
+{"mcpServers": {"probe2": {"type": "stdio", "command": "/private/tmp/claude-501/-Users-frederick-Development-LogSearcher/bbdd15e1-b2d7-42b2-8c5d-c8e1bbcc9ff9/scratchpad/d2probe/.venv/bin/python", "args": ["-I", "/private/tmp/claude-501/-Users-frederick-Development-LogSearcher/bbdd15e1-b2d7-42b2-8c5d-c8e1bbcc9ff9/scratchpad/d2probe/probe_server_alwaysload.py"]}}}

@@ -1,0 +1,100 @@
+[
+ {
+  "init": {
+   "claude_code_version": "2.1.263",
+   "model": "claude-haiku-4-5-20251001",
+   "tools": [
+    "Task",
+    "Artifact",
+    "Bash",
+    "CronCreate",
+    "CronDelete",
+    "CronList",
+    "DesignSync",
+    "Edit",
+    "EnterWorktree",
+    "ExitWorktree",
+    "ListAgents",
+    "ListMcpResourcesTool",
+    "Monitor",
+    "PushNotification",
+    "Read",
+    "ReadMcpResourceDirTool",
+    "ReadMcpResourceTool",
+    "RemoteTrigger",
+    "ReportFindings",
+    "ScheduleWakeup",
+    "SendMessage",
+    "Skill",
+    "TaskCreate",
+    "TaskGet",
+    "TaskList",
+    "TaskOutput",
+    "TaskStop",
+    "TaskUpdate",
+    "ToolSearch",
+    "WebFetch",
+    "WebSearch",
+    "Workflow",
+    "Write",
+    "mcp__probe2__deferred_tool",
+    "mcp__probe2__loaded_upfront"
+   ],
+   "mcp_servers": [
+    {
+     "name": "probe2",
+     "status": "connected"
+    }
+   ]
+  }
+ },
+ {
+  "assistant_text": "**Schema status:**\n- **Full schemas (callable):** `mcp__probe2__loaded_upfront`\n- **Deferred names only:** `mcp__probe2__deferred_tool`\n\nRunning diagnostics:"
+ },
+ {
+  "tool": [
+   "ToolSearch",
+   {
+    "query": "select:mcp__probe2__deferred_tool",
+    "max_results": 1
+   }
+  ],
+  "is_error": null,
+  "markers": [],
+  "content": [
+   {
+    "type": "tool_reference",
+    "tool_name": "mcp__probe2__deferred_tool"
+   }
+  ],
+  "tool_use_result_field(not sent to model)": "{\"matches\": [\"mcp__probe2__deferred_tool\"], \"query\": \"select:mcp__probe2__deferred_tool\", \"total_deferred_tools\": 22}"
+ },
+ {
+  "tool": [
+   "mcp__probe2__loaded_upfront",
+   {}
+  ],
+  "is_error": null,
+  "markers": [
+   "UPFRONT-MARKER"
+  ],
+  "content": [
+   {
+    "type": "text",
+    "text": "UPFRONT-MARKER"
+   }
+  ],
+  "tool_use_result_field(not sent to model)": "[{\"type\": \"text\", \"text\": \"UPFRONT-MARKER\"}]"
+ },
+ {
+  "assistant_text": "Both probe2 tools operational. `loaded_upfront` returned `UPFRONT-MARKER`. `deferred_tool` schema now loaded via ToolSearch. Ready for next task."
+ },
+ {
+  "result": {
+   "subtype": "success",
+   "num_turns": 3,
+   "total_cost_usd": 0.0989535,
+   "is_error": false
+  }
+ }
+]

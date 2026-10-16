@@ -1,0 +1,9 @@
+Tool 'probe_error_raise' raised an unexpected exception
+Traceback (most recent call last):
+ValueError: RAISE-ERROR-MARKER: parameter 'time_from' must be ISO-8601, e.g. 2005-06-03T00:00:00. Call describe_corpus to see the valid range.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+mcp.server.mcpserver.exceptions.UnexpectedToolError: Error executing tool probe_error_raise
+Tool 'probe_error_toolerror' failed: "Error executing tool probe_error_toolerror: TOOLERROR-MARKER: parameter 'time_from' must be ISO-8601."

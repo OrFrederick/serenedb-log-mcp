@@ -1,5 +1,10 @@
 {
   "mcpServers": {
+    "serenedb-log": {
+      "type": "stdio",
+      "command": "uv",
+      "args": ["run", "serenedb-log-mcp"]
+    },
     "serenedb-docs": {
       "type": "http",
       "url": "https://api.serenedb.com/mcp"

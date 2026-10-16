@@ -1,0 +1,19 @@
+top10  lines | A(OrFrederick) | B(NoNaim95 b) | C(merge: Incidents)
+ 1 KERNDTLB  | APPSEV    | APPSEV    | KERNMC   
+ 2 KERNSTOR  | KERNMNTF  | KERNSTOR  | APPSEV   
+ 3 APPSEV    | KERNMC    | KERNRTSP  | KERNRTSP 
+ 4 KERNMNTF  | KERNRTSP  | KERNMNTF  | KERNMNTF 
+ 5 KERNTERM  | KERNSOCK  | KERNTERM  | KERNSOCK 
+ 6 KERNREC   | APPOUT    | KERNMC    | MASABNORM
+ 7 APPREAD   | KERNREC   | APPOUT    | LINKIAP  
+ 8 KERNRTSP  | KERNTERM  | KERNREC   | KERNREC  
+ 9 APPRES    | APPRES    | APPRES    | KERNTERM 
+10 APPUNAV   | MASABNORM | KERNDTLB  | APPRES   
+KERNDTLB: lines=152734 inc=37 ncu=366 mp=44 eff=1 wk=8 ratio=0.00 rec=37  ranks L/A/B/C = 1/12/10/11
+KERNSTOR: lines=63491 inc=8 ncu=1347 mp=45 eff=21629 wk=4 ratio=0.00 rec=43  ranks L/A/B/C = 2/13/2/16
+KERNMC: lines=342 inc=291 ncu=295 mp=109 eff=156 wk=32 ratio=0.56 rec=1  ranks L/A/B/C = 16/3/6/1
+KERNRTSP: lines=3983 inc=260 ncu=544 mp=103 eff=2653 wk=32 ratio=0.04 rec=1  ranks L/A/B/C = 8/4/3/3
+APPSEV: lines=49651 inc=136 ncu=24528 mp=128 eff=1007 wk=21 ratio=1.69 rec=1  ranks L/A/B/C = 3/1/1/2
+KERNMNTF: lines=31531 inc=105 ncu=13864 mp=128 eff=994 wk=15 ratio=0.32 rec=1  ranks L/A/B/C = 4/2/4/4
+tau A-B 0.655  A-C 0.851  B-C 0.530  L-A 0.594 L-C 0.506
+C top5 frequency under 2000 Dirichlet weightings: [(100.0, 'KERNMC'), (100.0, 'APPSEV'), (99.6, 'KERNMNTF'), (98.65, 'KERNSOCK'), (97.45, 'KERNRTSP'), (2.45, 'APPOUT'), (1.0, 'KERNTERM')]

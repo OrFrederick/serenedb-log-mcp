@@ -1,0 +1,168 @@
+# 04_oliner_filter.sql  (repeat=3, median wall time)
+
+
+## stmt 1  median=0.164s  runs=[0.164]
+
+```sql
+-- the per-category "last seen" time is updated also for removed alerts (X[c] <- t_i in both branches),
+-- so an alert is kept iff (t_i - t_prev_same_category) >= T  (strict "< T" removes).
+-- The text says T = 5 s. Published BG/L numbers (thesis Table 2.1.2 = DSN'07 Table 4):
+--   total raw 348,460 filtered 1,202; per-category values below.
+
+-- published values (raw, filtered) for the 10 listed categories + "31 Others"
+DROP TABLE IF EXISTS r1e_os07
+```
+
+
+## stmt 2  median=0.181s  runs=[0.181]
+
+```sql
+CREATE TABLE r1e_os07 AS SELECT * FROM (VALUES
+ ('KERNDTLB', 152734, 37), ('KERNSTOR', 63491, 8), ('APPSEV', 49651, 138), ('KERNMNTF', 31531, 105),
+ ('KERNTERM', 23338, 99), ('KERNREC', 6145, 9), ('APPREAD', 5983, 11), ('KERNRTSP', 3983, 260),
+ ('APPRES', 2370, 13), ('APPUNAV', 2048, 3), ('OTHERS', 7186, 519)) v(cat, raw_pub, filt_pub)
+```
+
+
+## stmt 3  median=0.318s  runs=[0.946, 0.318, 0.228]
+
+```sql
+-- our raw + filtered counts at T = 5 s (as stated) and T = 300 s, vs published
+WITH a AS (SELECT alert_tag c, t, t - lag(t) OVER (PARTITION BY alert_tag ORDER BY t, line_no) gap
+           FROM r1e_bgl WHERE alert_tag <> '-'),
+     per AS (SELECT CASE WHEN c IN (SELECT cat FROM r1e_os07) THEN c ELSE 'OTHERS' END cat,
+                    count(*) raw, count(*) FILTER (WHERE gap IS NULL OR gap >= 5) f5,
+                    count(*) FILTER (WHERE gap IS NULL OR gap >= 300) f300, count(DISTINCT c) ncat
+             FROM a GROUP BY 1)
+SELECT p.cat, p.ncat, p.raw, o.raw_pub, p.f5, p.f300, o.filt_pub, p.f300 - o.filt_pub AS diff300
+FROM per p JOIN r1e_os07 o ON o.cat = p.cat
+UNION ALL
+SELECT 'TOTAL', sum(ncat), sum(raw), 348460, sum(f5), sum(f300), 1202, sum(f300) - 1202 FROM per
+ORDER BY raw DESC
+```
+
+cat | ncat | raw | raw_pub | f5 | f300 | filt_pub | diff300
+TOTAL | 41 | 348460 | 348460 | 1643 | 1202 | 1202 | 0
+KERNDTLB | 1 | 152734 | 152734 | 86 | 37 | 37 | 0
+KERNSTOR | 1 | 63491 | 63491 | 8 | 8 | 8 | 0
+APPSEV | 1 | 49651 | 49651 | 227 | 136 | 138 | -2
+KERNMNTF | 1 | 31531 | 31531 | 244 | 105 | 105 | 0
+KERNTERM | 1 | 23338 | 23338 | 99 | 99 | 99 | 0
+OTHERS | 31 | 7186 | 7186 | 642 | 521 | 519 | 2
+KERNREC | 1 | 6145 | 6145 | 9 | 9 | 9 | 0
+APPREAD | 1 | 5983 | 5983 | 17 | 11 | 11 | 0
+KERNRTSP | 1 | 3983 | 3983 | 290 | 260 | 260 | 0
+APPRES | 1 | 2370 | 2370 | 18 | 13 | 13 | 0
+APPUNAV | 1 | 2048 | 2048 | 3 | 3 | 3 | 0
+-- 12 rows
+
+## stmt 4  median=0.158s  runs=[0.158, 0.092, 0.215]
+
+```sql
+-- T sweep: total filtered count as function of T (plateau at 1202 for T in [299, 310])
+WITH a AS (SELECT t - lag(t) OVER (PARTITION BY alert_tag ORDER BY t, line_no) gap FROM r1e_bgl WHERE alert_tag <> '-')
+SELECT thr, count(*) FILTER (WHERE gap IS NULL OR gap >= thr) filtered,
+       count(*) FILTER (WHERE gap IS NULL OR gap >= thr) - 1202 AS minus_published
+FROM a, (SELECT unnest([1, 5, 10, 30, 60, 120, 180, 240, 270, 290, 295, 298, 299, 300, 301, 305, 310, 311, 315, 330, 360, 600, 1800, 3600, 86400]) AS thr) x
+GROUP BY thr ORDER BY thr
+```
+
+thr | filtered | minus_published
+1 | 2851 | 1649
+5 | 1643 | 441
+10 | 1511 | 309
+30 | 1361 | 159
+60 | 1309 | 107
+120 | 1257 | 55
+180 | 1229 | 27
+240 | 1219 | 17
+270 | 1216 | 14
+290 | 1212 | 10
+295 | 1207 | 5
+298 | 1202 | 0
+299 | 1202 | 0
+300 | 1202 | 0
+301 | 1202 | 0
+305 | 1202 | 0
+310 | 1202 | 0
+311 | 1202 | 0
+315 | 1201 | -1
+330 | 1199 | -3
+360 | 1192 | -10
+600 | 1149 | -53
+1800 | 1006 | -196
+3600 | 914 | -288
+86400 | 380 | -822
+-- 25 rows
+
+## stmt 5  median=0.116s  runs=[0.145, 0.116, 0.097]
+
+```sql
+-- same with the integer epoch column (second granularity) instead of microsecond ts
+WITH a AS (SELECT epoch - lag(epoch) OVER (PARTITION BY alert_tag ORDER BY epoch, line_no) gap FROM bgl WHERE alert_tag <> '-')
+SELECT count(*) FILTER (WHERE gap IS NULL OR gap >= 5) f5_epoch, count(*) FILTER (WHERE gap IS NULL OR gap >= 300) f300_epoch FROM a
+```
+
+f5_epoch | f300_epoch
+1678 | 1202
+-- 1 rows
+
+## stmt 6  median=0.123s  runs=[0.132, 0.123, 0.095]
+
+```sql
+-- per-category detail at T=300 for "others" (31 categories) for the record
+WITH a AS (SELECT alert_tag c, t - lag(t) OVER (PARTITION BY alert_tag ORDER BY t, line_no) gap FROM r1e_bgl WHERE alert_tag <> '-')
+SELECT c, count(*) raw, count(*) FILTER (WHERE gap IS NULL OR gap >= 5) f5, count(*) FILTER (WHERE gap IS NULL OR gap >= 300) f300
+FROM a WHERE c NOT IN (SELECT cat FROM r1e_os07) GROUP BY c ORDER BY raw DESC
+```
+
+c | raw | f5 | f300
+APPTO | 1991 | 5 | 4
+KERNMICRO | 1503 | 8 | 5
+APPOUT | 816 | 4 | 1
+KERNMNT | 720 | 9 | 7
+APPBUSY | 512 | 1 | 1
+KERNMC | 342 | 326 | 291
+APPCHILD | 320 | 3 | 3
+KERNSOCK | 209 | 39 | 39
+KERNPOW | 192 | 12 | 10
+LINKIAP | 166 | 83 | 28
+APPALLOC | 144 | 2 | 2
+KERNSERV | 94 | 6 | 5
+MASABNORM | 37 | 36 | 33
+LINKDISC | 24 | 12 | 6
+KERNPAN | 18 | 15 | 14
+KERNCON | 16 | 16 | 16
+KERNNOETH | 14 | 13 | 10
+LINKPAP | 14 | 7 | 5
+MONPOW | 12 | 12 | 10
+APPTORUS | 10 | 5 | 4
+MASNORM | 10 | 10 | 9
+KERNPROG | 5 | 5 | 5
+KERNFLOAT | 3 | 2 | 2
+MMCS | 3 | 2 | 2
+KERNRTSA | 3 | 2 | 2
+LINKBLL | 2 | 1 | 1
+MONNULL | 2 | 2 | 2
+KERNEXT | 1 | 1 | 1
+KERNBIT | 1 | 1 | 1
+MONILL | 1 | 1 | 1
+KERNTLBE | 1 | 1 | 1
+-- 31 rows
+
+## stmt 7  median=0.041s  runs=[0.061, 0.041, 0.032]
+
+```sql
+-- the APPSEV gap (136 vs 138): APPSEV gaps closest to 300 s
+WITH a AS (SELECT alert_tag c, t, t - lag(t) OVER (PARTITION BY alert_tag ORDER BY t, line_no) gap FROM r1e_bgl WHERE alert_tag <> '-')
+SELECT c, make_timestamp_ms((t * 1000)::bigint) ts, round(gap, 3) gap FROM a WHERE c = 'APPSEV' AND gap BETWEEN 150 AND 600 ORDER BY abs(gap - 300) LIMIT 8
+```
+
+c | ts | gap
+APPSEV | 2005-12-01 09:22:26.442000 | 313.656
+APPSEV | 2005-08-22 07:46:23.457000 | 214.891
+APPSEV | 2005-11-21 06:38:10.459000 | 158.835
+APPSEV | 2005-09-29 02:58:03.191000 | 156.868
+APPSEV | 2005-12-01 09:32:29.869000 | 589.902
+APPSEV | 2005-11-21 06:50:19.720000 | 595.006
+-- 6 rows

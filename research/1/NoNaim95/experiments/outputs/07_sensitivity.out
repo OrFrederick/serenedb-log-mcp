@@ -1,0 +1,149 @@
+# 07_sensitivity.sql  (repeat=3, median wall time)
+
+
+## stmt 1  median=0.988s  runs=[1.788, 0.988, 0.383]
+
+```sql
+-- 07_sensitivity.sql: how #Incidents changes with G (Burst gap), G' (Incident merge gap) and spread thresholds.
+
+-- (1) alert_tag key, finer G' sweep: entry-level sessionisation on category (equivalent to Bursts with any G <= G')
+WITH a AS (SELECT alert_tag k, t - lag(t) OVER (PARTITION BY alert_tag ORDER BY t, line_no) gap FROM r1e_bgl WHERE alert_tag <> '-')
+SELECT gp, count(*) FILTER (WHERE gap IS NULL OR gap > gp) incidents,
+       count(*) FILTER (WHERE (gap IS NULL OR gap > gp) AND k = 'KERNDTLB') kerndtlb,
+       count(*) FILTER (WHERE (gap IS NULL OR gap > gp) AND k = 'KERNSTOR') kernstor,
+       count(*) FILTER (WHERE (gap IS NULL OR gap > gp) AND k = 'APPSEV') appsev,
+       count(*) FILTER (WHERE (gap IS NULL OR gap > gp) AND k = 'KERNTERM') kernterm,
+       count(*) FILTER (WHERE (gap IS NULL OR gap > gp) AND k = 'KERNRTSP') kernrtsp
+FROM a, (SELECT unnest([1, 5, 30, 60, 120, 300, 600, 1800, 3600, 21600, 86400]) gp) x GROUP BY gp ORDER BY gp
+```
+
+gp | incidents | kerndtlb | kernstor | appsev | kernterm | kernrtsp
+1 | 2851 | 318 | 8 | 716 | 103 | 314
+5 | 1643 | 86 | 8 | 227 | 99 | 290
+30 | 1361 | 37 | 8 | 165 | 99 | 277
+60 | 1309 | 37 | 8 | 146 | 99 | 277
+120 | 1257 | 37 | 8 | 140 | 99 | 276
+300 | 1202 | 37 | 8 | 136 | 99 | 260
+600 | 1149 | 32 | 8 | 133 | 91 | 252
+1800 | 1006 | 22 | 5 | 130 | 44 | 236
+3600 | 914 | 16 | 5 | 114 | 36 | 217
+21600 | 665 | 10 | 5 | 85 | 27 | 153
+86400 | 380 | 9 | 4 | 35 | 18 | 68
+-- 11 rows
+
+## stmt 2  median=0.611s  runs=[0.611, 1.29, 0.197]
+
+```sql
+-- (2) Burst counts (per node) vs G for both keys (from 02), and Incident counts for all computed G x G'
+SELECT kt, g, count(*) bursts, count(*) FILTER (WHERE n >= 100) bursts_ge100 FROM r1e_burst GROUP BY kt, g ORDER BY kt, g
+```
+
+kt | g | bursts | bursts_ge100
+mask | 5 | 3434097 | 367
+mask | 60 | 3232530 | 333
+mask | 300 | 2987862 | 388
+mask | 3600 | 2182940 | 969
+tag | 5 | 195894 | 1
+tag | 60 | 194508 | 1
+tag | 300 | 190290 | 1
+tag | 3600 | 143004 | 1
+-- 8 rows
+
+## stmt 3  median=0.214s  runs=[2.494, 0.214, 0.064]
+
+```sql
+SELECT kt, g, gp, count(*) incidents, round(avg(nodes), 1) avg_nodes, max(n) max_entries FROM r1e_inc GROUP BY kt, g, gp ORDER BY kt, g, gp
+```
+
+kt | g | gp | incidents | avg_nodes | max_entries
+mask | 60 | 60 | 74823 | 40.8 | 152182
+mask | 60 | 300 | 55815 | 51.3 | 152182
+mask | 60 | 3600 | 34946 | 56.1 | 223556
+tag | 5 | 5 | 1643 | 118.7 | 152182
+tag | 5 | 60 | 1309 | 147.1 | 152182
+tag | 5 | 300 | 1202 | 157.7 | 152182
+tag | 5 | 3600 | 914 | 154.8 | 152182
+tag | 60 | 60 | 1309 | 147.1 | 152182
+tag | 60 | 300 | 1202 | 157.7 | 152182
+tag | 60 | 3600 | 914 | 154.8 | 152182
+tag | 300 | 300 | 1202 | 157.7 | 152182
+tag | 300 | 3600 | 914 | 154.8 | 152182
+tag | 3600 | 3600 | 914 | 154.8 | 152182
+-- 13 rows
+
+## stmt 4  median=0.021s  runs=[0.039, 0.021, 0.01]
+
+```sql
+-- (3) spread thresholds: #Incidents at or above each threshold (tag key, G=G'=300 and G'=3600)
+SELECT gp, count(*) total,
+       count(*) FILTER (WHERE nodes >= 2) n_ge2, count(*) FILTER (WHERE nodes >= 10) n_ge10,
+       count(*) FILTER (WHERE nodes >= 100) n_ge100, count(*) FILTER (WHERE nodes >= 1000) n_ge1000,
+       count(*) FILTER (WHERE midplanes >= 2) mp_ge2, count(*) FILTER (WHERE racks >= 2) r_ge2,
+       count(*) FILTER (WHERE racks >= 8) r_ge8, count(*) FILTER (WHERE racks >= 32) r_ge32
+FROM r1e_inc WHERE kt = 'tag' AND g = 300 GROUP BY gp ORDER BY gp
+```
+
+gp | total | n_ge2 | n_ge10 | n_ge100 | n_ge1000 | mp_ge2 | r_ge2 | r_ge8 | r_ge32
+300 | 1202 | 481 | 343 | 251 | 38 | 362 | 359 | 251 | 161
+3600 | 914 | 338 | 240 | 181 | 36 | 286 | 284 | 176 | 115
+-- 2 rows
+
+## stmt 5  median=0.028s  runs=[0.023, 0.028, 0.033]
+
+```sql
+-- (4) same for masked-key Incidents (G=60), to show the effect of the pattern key
+SELECT gp, count(*) total, count(*) FILTER (WHERE nodes >= 2) n_ge2, count(*) FILTER (WHERE nodes >= 10) n_ge10,
+       count(*) FILTER (WHERE nodes >= 100) n_ge100, count(*) FILTER (WHERE racks >= 2) r_ge2, count(*) FILTER (WHERE racks >= 8) r_ge8
+FROM r1e_inc WHERE kt = 'mask' GROUP BY gp ORDER BY gp
+```
+
+gp | total | n_ge2 | n_ge10 | n_ge100 | r_ge2 | r_ge8
+60 | 74823 | 21959 | 6547 | 1478 | 17711 | 3811
+300 | 55815 | 18284 | 5361 | 1337 | 15656 | 3990
+3600 | 34946 | 10816 | 3777 | 992 | 9456 | 2895
+-- 3 rows
+
+## stmt 6  median=0.011s  runs=[0.025, 0.011, 0.006]
+
+```sql
+-- (5) node-dominance threshold sensitivity (share of entries from the loudest node), tag key G'=300
+SELECT thr, count(*) FILTER (WHERE top_node_share >= thr) incidents_dominated,
+       sum(n) FILTER (WHERE top_node_share >= thr) entries_in_dominated
+FROM r1e_feat, (SELECT unnest([0.5, 0.8, 0.9, 0.99, 1.0]) thr) x GROUP BY thr ORDER BY thr
+```
+
+thr | incidents_dominated | entries_in_dominated
+0.50 | 755 | 153479
+0.80 | 721 | 153407
+0.90 | 721 | 153407
+0.99 | 721 | 153407
+1.00 | 721 | 153407
+-- 5 rows
+
+## stmt 7  median=0.067s  runs=[0.064, 0.067, 0.134]
+
+```sql
+-- (6) per-category Incident counts across G' (tag key), top categories
+SELECT k, sum(n) FILTER (WHERE gp = 300) entries,
+       count(*) FILTER (WHERE gp = 5) gp5, count(*) FILTER (WHERE gp = 60) gp60,
+       count(*) FILTER (WHERE gp = 300) gp300, count(*) FILTER (WHERE gp = 3600) gp3600
+FROM r1e_inc WHERE kt = 'tag' AND g = 5 GROUP BY k ORDER BY entries DESC LIMIT 15
+```
+
+k | entries | gp5 | gp60 | gp300 | gp3600
+KERNDTLB | 152734 | 86 | 37 | 37 | 16
+KERNSTOR | 63491 | 8 | 8 | 8 | 5
+APPSEV | 49651 | 227 | 146 | 136 | 114
+KERNMNTF | 31531 | 244 | 117 | 105 | 50
+KERNTERM | 23338 | 99 | 99 | 99 | 36
+KERNREC | 6145 | 9 | 9 | 9 | 8
+APPREAD | 5983 | 17 | 13 | 11 | 7
+KERNRTSP | 3983 | 290 | 277 | 260 | 217
+APPRES | 2370 | 18 | 13 | 13 | 13
+APPUNAV | 2048 | 3 | 3 | 3 | 2
+APPTO | 1991 | 5 | 4 | 4 | 3
+KERNMICRO | 1503 | 8 | 6 | 5 | 5
+APPOUT | 816 | 4 | 1 | 1 | 1
+KERNMNT | 720 | 9 | 9 | 7 | 5
+APPBUSY | 512 | 1 | 1 | 1 | 1
+-- 15 rows

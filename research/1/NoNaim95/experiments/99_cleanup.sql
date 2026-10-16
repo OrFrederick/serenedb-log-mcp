@@ -1,0 +1,18 @@
+-- 99_cleanup.sql: drop all r1e_ tables (run when the team no longer needs them)
+DROP TABLE IF EXISTS r1e_bgl;
+DROP TABLE IF EXISTS r1e_gap;
+DROP TABLE IF EXISTS r1e_bid;
+DROP TABLE IF EXISTS r1e_burst;
+DROP TABLE IF EXISTS r1e_bm;
+DROP TABLE IF EXISTS r1e_inc;
+DROP TABLE IF EXISTS r1e_os07;
+DROP TABLE IF EXISTS r1e_ent;
+DROP TABLE IF EXISTS r1e_feat;
+DROP TABLE IF EXISTS r1e_casc_tag;
+DROP TABLE IF EXISTS r1e_casc_mask;
+DROP TABLE IF EXISTS r1e_pat;
+DROP TABLE IF EXISTS r1e_wk;
+DROP TABLE IF EXISTS r1e_os_anom;
+DROP TABLE IF EXISTS r1e_os_inst;
+DROP TABLE IF EXISTS r1e_os_api;
+DROP TABLE IF EXISTS r1e_episode;

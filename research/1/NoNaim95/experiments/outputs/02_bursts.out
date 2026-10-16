@@ -1,0 +1,198 @@
+# 02_bursts.sql  (repeat=3, median wall time)
+
+
+## stmt 1  median=0.013s  runs=[0.013]
+
+```sql
+-- 02_bursts.sql: Burst = maximal run of Log Entries with the same (node, pattern key) where each
+-- consecutive gap <= G seconds. A new Burst starts when gap to previous entry of that (node,key) > G.
+-- Two keyings: kt='tag' (alert_tag, alert rows only) and kt='mask' (masked message key, all rows).
+
+-- per-entry gap to previous entry of same (node,key); one table holds both keyings
+DROP TABLE IF EXISTS r1e_gap
+```
+
+
+## stmt 2  median=0.482s  runs=[0.482]
+
+```sql
+CREATE TABLE r1e_gap AS
+SELECT 'tag' AS kt, line_no, t, coalesce(node, '<null>') AS node, alert_tag AS k, alert_tag,
+       rack, midplane, nodecard,
+       t - lag(t) OVER (PARTITION BY coalesce(node, '<null>'), alert_tag ORDER BY t, line_no) AS gap
+FROM r1e_bgl WHERE alert_tag <> '-'
+```
+
+
+## stmt 3  median=5.142s  runs=[5.142]
+
+```sql
+INSERT INTO r1e_gap
+SELECT 'mask', line_no, t, coalesce(node, '<null>'), pkey, alert_tag, rack, midplane, nodecard,
+       t - lag(t) OVER (PARTITION BY coalesce(node, '<null>'), pkey ORDER BY t, line_no)
+FROM r1e_bgl
+```
+
+
+## stmt 4  median=2.869s  runs=[2.869]
+
+```sql
+-- burst ids for each G in one pass (cumulative sum of "is start" flags)
+-- GOTCHA: sum() returns HUGEINT; GROUP BY on these HUGEINT ids crashed SereneDB (SIGSEGV) twice -> cast to BIGINT.
+DROP TABLE IF EXISTS r1e_bid
+```
+
+
+## stmt 5  median=7.209s  runs=[7.209]
+
+```sql
+CREATE TABLE r1e_bid AS
+SELECT kt, line_no, t, node, k, alert_tag, rack, midplane, nodecard,
+       (sum(CASE WHEN gap IS NULL OR gap > 5    THEN 1 ELSE 0 END) OVER w)::BIGINT AS b5,
+       (sum(CASE WHEN gap IS NULL OR gap > 60   THEN 1 ELSE 0 END) OVER w)::BIGINT AS b60,
+       (sum(CASE WHEN gap IS NULL OR gap > 300  THEN 1 ELSE 0 END) OVER w)::BIGINT AS b300,
+       (sum(CASE WHEN gap IS NULL OR gap > 3600 THEN 1 ELSE 0 END) OVER w)::BIGINT AS b3600
+FROM r1e_gap
+WINDOW w AS (PARTITION BY kt, node, k ORDER BY t, line_no ROWS UNBOUNDED PRECEDING)
+```
+
+
+## stmt 6  median=0.005s  runs=[0.005]
+
+```sql
+-- materialise Bursts for each G (one INSERT per G to keep memory low on the shared server)
+DROP TABLE IF EXISTS r1e_burst
+```
+
+
+## stmt 7  median=4.073s  runs=[4.073]
+
+```sql
+CREATE TABLE r1e_burst AS
+SELECT kt, 5 AS g, node, k, b5 AS b, min(t) t0, max(t) t1, count(*) n, max(alert_tag) alert_tag,
+       max(rack) rack, max(midplane) midplane, max(nodecard) nodecard
+FROM r1e_bid GROUP BY kt, node, k, b5
+```
+
+
+## stmt 8  median=5.593s  runs=[5.593]
+
+```sql
+INSERT INTO r1e_burst SELECT kt, 60, node, k, b60, min(t), max(t), count(*), max(alert_tag), max(rack), max(midplane), max(nodecard) FROM r1e_bid GROUP BY kt, node, k, b60
+```
+
+
+## stmt 9  median=6.025s  runs=[6.025]
+
+```sql
+INSERT INTO r1e_burst SELECT kt, 300, node, k, b300, min(t), max(t), count(*), max(alert_tag), max(rack), max(midplane), max(nodecard) FROM r1e_bid GROUP BY kt, node, k, b300
+```
+
+
+## stmt 10  median=7.351s  runs=[7.351]
+
+```sql
+INSERT INTO r1e_burst SELECT kt, 3600, node, k, b3600, min(t), max(t), count(*), max(alert_tag), max(rack), max(midplane), max(nodecard) FROM r1e_bid GROUP BY kt, node, k, b3600
+```
+
+
+## stmt 11  median=3.820s  runs=[2.921, 13.226, 3.82]
+
+```sql
+-- #Bursts and entries-per-Burst distribution per G
+SELECT kt, g, count(*) bursts, sum(n) entries, median(n) med, quantile_cont(n, 0.9) p90,
+       quantile_cont(n, 0.99) p99, max(n) mx, count(*) FILTER (WHERE n = 1) singleton_bursts,
+       count(*) FILTER (WHERE n >= 1000) bursts_ge_1000, median(t1 - t0) med_dur_s
+FROM r1e_burst GROUP BY kt, g ORDER BY kt, g
+```
+
+kt | g | bursts | entries | med | p90 | p99 | mx | singleton_bursts | bursts_ge_1000 | med_dur_s
+mask | 5 | 3434097 | 4747963 | 1.0 | 2.0 | 2.0 | 152182 | 2673232 | 26 | 0.0
+mask | 60 | 3232530 | 4747963 | 1.0 | 2.0 | 6.0 | 152182 | 2472918 | 29 | 0.0
+mask | 300 | 2987862 | 4747963 | 1.0 | 2.0 | 8.0 | 152182 | 2198870 | 22 | 0.0
+mask | 3600 | 2182940 | 4747963 | 1.0 | 4.0 | 10.0 | 152182 | 1361088 | 24 | 0.0
+tag | 5 | 195894 | 348460 | 1.0 | 1.0 | 1.0 | 152182 | 195758 | 1 | 0.0
+tag | 60 | 194508 | 348460 | 1.0 | 1.0 | 1.0 | 152182 | 193296 | 1 | 0.0
+tag | 300 | 190290 | 348460 | 1.0 | 1.0 | 2.0 | 152182 | 186116 | 1 | 0.0
+tag | 3600 | 143004 | 348460 | 1.0 | 2.0 | 4.0 | 152182 | 103368 | 1 | 0.0
+-- 8 rows
+
+## stmt 12  median=0.091s  runs=[0.091, 0.131, 0.07]
+
+```sql
+-- top "one node spamming" Bursts (G=300, masked key)
+SELECT node, k, n, make_timestamp_ms((t0 * 1000)::bigint) start_ts, round(t1 - t0) dur_s,
+       round(n / greatest(t1 - t0, 1), 2) per_s, alert_tag
+FROM r1e_burst WHERE kt = 'mask' AND g = 300 ORDER BY n DESC LIMIT 15
+```
+
+node | k | n | start_ts | dur_s | per_s | alert_tag
+R30-M0-N9-C:J16-U01 | data TLB error interrupt | 152182 | 2005-06-11 17:17:44.898000 | 22908.0 | 6.64 | KERNDTLB
+NULL | idoproxydb hit ASSERT condition: ASSERT expression=<N> Source file=idotransportmgr.cpp Source line=<N> Function=int IdoTransportMgr::SendPacket(IdoUdpMgr*, BglCtlPavTrace*) | 63468 | 2005-09-20 12:05:58.880000 | 498.0 | 127.54 | -
+R37-M1-NC-C:J02-U11 | instruction cache parity error corrected | 29527 | 2005-12-26 15:31:40.951000 | 44927.0 | 0.66 | -
+NULL | idoproxydb hit ASSERT condition: ASSERT expression=<N> Source file=idotransportmgr.cpp Source line=<N> Function=int IdoTransportMgr::SendPacket(IdoUdpMgr*, BglCtlPavTrace*) | 19240 | 2005-08-03 16:09:40.451000 | 551.0 | 34.94 | -
+R02-M1-N0-C:J12-U11 | instruction cache parity error corrected | 16067 | 2005-06-06 10:26:28.480000 | 3489.0 | 4.61 | -
+R26-M0-N0-I:J18-U11 | MACHINE CHECK DCR read timeout (mc=e<N>x iar <HEX> lr <HEX>) | 14481 | 2005-11-21 06:40:44.345000 | 2551.0 | 5.68 | -
+R02-M0-N4-C:J04-U11 | data cache search parity error detected. attempting to correct | 13523 | 2005-10-17 04:40:59.125000 | 3941.0 | 3.43 | -
+R02-M1-N0-C:J12-U11 | instruction cache parity error corrected | 10166 | 2005-06-14 22:07:56.076000 | 2400.0 | 4.24 | -
+R02-M1-N0-C:J12-U11 | instruction cache parity error corrected | 8883 | 2005-06-14 21:27:54.658000 | 1814.0 | 4.9 | -
+R02-M1-N0-C:J12-U11 | instruction cache parity error corrected | 5215 | 2005-06-16 15:24:58.324000 | 2019.0 | 2.58 | -
+R02-M1-N0-C:J12-U11 | instruction cache parity error corrected | 4863 | 2005-06-03 15:42:50.364000 | 1140.0 | 4.27 | -
+R02-M1-N0-C:J12-U11 | instruction cache parity error corrected | 4201 | 2005-06-15 09:13:27.802000 | 946.0 | 4.44 | -
+R37-M1-NC-C:J02-U11 | instruction cache parity error corrected | 3773 | 2005-12-27 04:34:21.036000 | 10067.0 | 0.37 | -
+R02-M1-N0-C:J12-U11 | instruction cache parity error corrected | 3540 | 2005-06-15 11:10:16.515000 | 1354.0 | 2.62 | -
+R02-M1-N0-C:J12-U11 | instruction cache parity error corrected | 3255 | 2005-06-16 16:15:08.620000 | 1166.0 | 2.79 | -
+-- 15 rows
+
+## stmt 13  median=0.061s  runs=[0.078, 0.061, 0.027]
+
+```sql
+-- top single-node alert Bursts (G=300, alert_tag key)
+SELECT node, k, n, make_timestamp_ms((t0 * 1000)::bigint) start_ts, round(t1 - t0) dur_s
+FROM r1e_burst WHERE kt = 'tag' AND g = 300 ORDER BY n DESC LIMIT 15
+```
+
+node | k | n | start_ts | dur_s
+R30-M0-N9-C:J16-U01 | KERNDTLB | 152182 | 2005-06-11 17:17:44.898000 | 22908.0
+R63-M0-L2-U21-A | LINKIAP | 72 | 2005-09-01 10:31:56.455000 | 2140.0
+R50-M1-NC-I:J18-U11 | KERNSERV | 32 | 2005-11-17 05:41:20.247000 | 83.0
+NULL | KERNPOW | 32 | 2005-09-07 07:46:46.119000 | 67.0
+NULL | KERNPOW | 32 | 2005-10-10 04:12:04.189000 | 208.0
+NULL | KERNPOW | 16 | 2005-07-08 22:57:34.592000 | 0.0
+NULL | KERNSERV | 16 | 2005-11-17 06:12:22.767000 | 2.0
+NULL | KERNPOW | 16 | 2005-09-19 13:03:30.870000 | 0.0
+NULL | KERNPOW | 16 | 2005-07-11 01:50:28.211000 | 0.0
+NULL | KERNPOW | 16 | 2005-07-08 10:50:43.611000 | 0.0
+NULL | KERNSERV | 16 | 2005-11-17 05:32:47.259000 | 2.0
+NULL | KERNPOW | 16 | 2005-07-21 03:20:23.987000 | 0.0
+NULL | KERNPOW | 16 | 2005-07-06 11:11:15.341000 | 0.0
+NULL | KERNPOW | 16 | 2005-07-11 14:03:23.474000 | 0.0
+NULL | KERNPOW | 16 | 2005-10-10 00:53:34.372000 | 0.0
+-- 15 rows
+
+## stmt 14  median=0.132s  runs=[0.119, 0.21, 0.132]
+
+```sql
+-- whole-period per-node domination: share of a key's entries from its single loudest node
+WITH nk AS (SELECT k, node, count(*) n FROM r1e_gap WHERE kt = 'tag' GROUP BY k, node),
+     a AS (SELECT k, sum(n) tot, max(n) top, arg_max(node, n) top_node, count(*) nodes FROM nk GROUP BY k)
+SELECT k, tot, nodes, top_node, top, round(top::double / tot, 3) top_share FROM a ORDER BY tot DESC LIMIT 15
+```
+
+k | tot | nodes | top_node | top | top_share
+KERNDTLB | 152734 | 541 | R30-M0-N9-C:J16-U01 | 152182 | 0.996
+KERNSTOR | 63491 | 22529 | R02-M0-N6-C:J16-U01 | 4 | 0.0
+APPSEV | 49651 | 1024 | R22-M0-NC-I:J18-U01 | 67 | 0.001
+KERNMNTF | 31531 | 1024 | R00-M0-N4-I:J18-U01 | 54 | 0.002
+KERNTERM | 23338 | 9524 | R32-M0-N4-C:J12-U01 | 31 | 0.001
+KERNREC | 6145 | 4609 | R63-M0-N1-C:J07-U11 | 3 | 0.0
+APPREAD | 5983 | 512 | R04-M1-NC-I:J18-U01 | 15 | 0.003
+KERNRTSP | 3983 | 3394 | R63-M0-NE-C:J12-U01 | 22 | 0.006
+APPRES | 2370 | 1014 | R63-M1-NC-I:J18-U11 | 6 | 0.003
+APPUNAV | 2048 | 1024 | R00-M0-N0-I:J18-U11 | 3 | 0.001
+APPTO | 1991 | 972 | R66-M0-N4-I:J18-U01 | 4 | 0.002
+KERNMICRO | 1503 | 960 | R51-M1-N8-I:J18-U11 | 3 | 0.002
+APPOUT | 816 | 816 | R05-M0-N4-I:J18-U11 | 1 | 0.001
+KERNMNT | 720 | 406 | R00-M0-N4-I:J18-U01 | 5 | 0.007
+APPBUSY | 512 | 512 | R03-M0-N0-I:J18-U01 | 1 | 0.002
+-- 15 rows

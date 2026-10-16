@@ -1,0 +1,153 @@
+# 05b_cascade.sql  (repeat=3, median wall time)
+
+
+## stmt 1  median=0.002s  runs=[0.002]
+
+```sql
+-- lift = conf / baseline(B).  Only located nodes (rack parsed) are used.
+
+-- alert_tag patterns, W = 3600 s
+DROP TABLE IF EXISTS r1e_casc_tag
+```
+
+
+## stmt 2  median=0.198s  runs=[0.198]
+
+```sql
+CREATE TABLE r1e_casc_tag AS
+WITH b AS (SELECT node, k, t0 FROM r1e_burst WHERE kt = 'tag' AND g = 300 AND rack IS NOT NULL),
+     p AS (SELECT DISTINCT a.k ka, c.k kb, a.node, a.t0 FROM b a JOIN b c
+             ON a.node = c.node AND c.t0 > a.t0 AND c.t0 <= a.t0 + 3600 AND c.k <> a.k),
+     na AS (SELECT k, count(*) n FROM b GROUP BY k),
+     tot AS (SELECT count(*) n FROM b),
+     base AS (SELECT kb, count(*) followed FROM p GROUP BY kb),
+     s AS (SELECT ka, kb, count(*) support, count(DISTINCT node) nodes FROM p GROUP BY ka, kb)
+SELECT s.ka, s.kb, s.support, s.nodes, na.n AS a_bursts, (s.support::double) / na.n AS conf,
+       (base.followed::double) / (tot.n - nb.n) AS baseline,
+       ((s.support::double) / na.n) / ((base.followed::double) / (tot.n - nb.n)) AS lift
+FROM s JOIN na ON na.k = s.ka JOIN na nb ON nb.k = s.kb JOIN base ON base.kb = s.kb, tot
+```
+
+
+## stmt 3  median=0.007s  runs=[0.014, 0.004, 0.007]
+
+```sql
+SELECT ka, kb, support, nodes, a_bursts, round(conf, 3) conf, round(baseline, 5) baseline, round(lift, 1) lift
+FROM r1e_casc_tag WHERE support >= 20 ORDER BY support DESC LIMIT 20
+```
+
+ka | kb | support | nodes | a_bursts | conf | baseline | lift
+KERNTERM | KERNREC | 6144 | 4608 | 23338 | 0.263 | 0.03337 | 7.9
+KERNREC | KERNTERM | 512 | 512 | 6145 | 0.083 | 0.00345 | 24.1
+APPRES | APPTO | 254 | 254 | 2370 | 0.107 | 0.00138 | 77.6
+KERNMC | KERNRTSP | 181 | 157 | 303 | 0.597 | 0.00192 | 311.7
+KERNDTLB | KERNRTSP | 131 | 126 | 553 | 0.237 | 0.00192 | 123.6
+APPSEV | KERNMNTF | 100 | 100 | 47045 | 0.002 | 0.00074 | 2.9
+KERNDTLB | KERNTERM | 64 | 64 | 553 | 0.116 | 0.00345 | 33.5
+KERNTERM | KERNRTSP | 32 | 30 | 23338 | 0.001 | 0.00192 | 0.7
+-- 8 rows
+
+## stmt 4  median=0.002s  runs=[0.002]
+
+```sql
+-- masked-message patterns, W = 60 s (finer: catches kernel-crash -> core-dump chains in non-alert lines)
+DROP TABLE IF EXISTS r1e_casc_mask
+```
+
+
+## stmt 5  median=4.907s  runs=[4.907]
+
+```sql
+CREATE TABLE r1e_casc_mask AS
+WITH b AS (SELECT node, k, t0 FROM r1e_burst WHERE kt = 'mask' AND g = 300 AND rack IS NOT NULL),
+     p AS (SELECT DISTINCT a.k ka, c.k kb, a.node, a.t0 FROM b a JOIN b c
+             ON a.node = c.node AND c.t0 > a.t0 AND c.t0 <= a.t0 + 60 AND c.k <> a.k),
+     na AS (SELECT k, count(*) n FROM b GROUP BY k),
+     tot AS (SELECT count(*) n FROM b),
+     base AS (SELECT kb, count(*) followed FROM p GROUP BY kb),
+     s AS (SELECT ka, kb, count(*) support, count(DISTINCT node) nodes FROM p GROUP BY ka, kb)
+SELECT s.ka, s.kb, s.support, s.nodes, na.n AS a_bursts, (s.support::double) / na.n AS conf,
+       (base.followed::double) / (tot.n - nb.n) AS baseline,
+       ((s.support::double) / na.n) / ((base.followed::double) / (tot.n - nb.n)) AS lift
+FROM s JOIN na ON na.k = s.ka JOIN na nb ON nb.k = s.kb JOIN base ON base.kb = s.kb, tot
+```
+
+
+## stmt 6  median=0.011s  runs=[0.012, 0.008, 0.011]
+
+```sql
+-- top pairs by support with high confidence and lift (support >= 50 nodes-bursts, conf >= 0.5, lift >= 10)
+SELECT left(ka, 70) ka, left(kb, 70) kb, support, nodes, a_bursts, round(conf, 3) conf, round(lift, 1) lift
+FROM r1e_casc_mask WHERE support >= 50 AND conf >= 0.5 AND lift >= 10 ORDER BY support DESC LIMIT 25
+```
+
+ka | kb | support | nodes | a_bursts | conf | lift
+<N> microseconds spent in the rbs signal handler during <N> calls. <N> | <N> total interrupts. <N> critical input interrupts. <N> microseconds  | 134362 | 65533 | 134362 | 1.0 | 21.1
+<N> ddr errors(s) detected and corrected on rank <N>, symbol <N>, bit  | CE sym <N>, at <HEX>, mask <HEX> | 30292 | 1626 | 30732 | 0.986 | 86.7
+CE sym <N>, at <HEX>, mask <HEX> | total of <N> ddr error(s) detected and corrected | 26479 | 1552 | 33529 | 0.79 | 44.6
+<N> ddr errors(s) detected and corrected on rank <N>, symbol <N>, bit  | total of <N> ddr error(s) detected and corrected | 25716 | 1540 | 30732 | 0.837 | 47.3
+<N> ddr error(s) detected and corrected on rank <N>, symbol <N> over < | total of <N> ddr error(s) detected and corrected over <N> seconds | 10157 | 1059 | 10157 | 1.0 | 221.4
+Node card is not fully functional | Can not get assembly information for node card | 9787 | 1999 | 9798 | 0.999 | 301.7
+Can not get assembly information for node card | Node card status: no ALERTs are active. Clock Mode is Low. Clock Selec | 9744 | 1997 | 9791 | 0.995 | 151.4
+Node card is not fully functional | Node card status: no ALERTs are active. Clock Mode is Low. Clock Selec | 9740 | 1997 | 9798 | 0.994 | 151.3
+<HEX> floating point alignment exceptions | iar <HEX> dear <HEX> | 8543 | 1024 | 9064 | 0.943 | 115.6
+critical input interrupt (unit=<HEX> bit=<HEX>): warning for tree <HEX | suppressing further interrupts of same type | 2214 | 1021 | 2231 | 0.992 | 389.4
+<N> torus receiver x+ input pipe error(s) (dcr <HEX>) detected and cor | <N> tree receiver <N> in re-synch state event(s) (dcr <HEX>) detected | 1607 | 321 | 2396 | 0.671 | 262.4
+<N> torus receiver x+ input pipe error(s) (dcr <HEX>) detected and cor | <N> torus receiver z- input pipe error(s) (dcr <HEX>) detected and cor | 1409 | 282 | 2396 | 0.588 | 330.8
+<N> torus receiver z- input pipe error(s) (dcr <HEX>) detected and cor | <N> tree receiver <N> in re-synch state event(s) (dcr <HEX>) detected | 1355 | 323 | 1986 | 0.682 | 267.0
+critical input interrupt (unit=<HEX> bit=<HEX>): warning for torus z-  | suppressing further interrupts of same type | 1284 | 512 | 1315 | 0.976 | 383.2
+<N> torus receiver y+ input pipe error(s) (dcr <HEX>) detected and cor | <N> torus receiver z- input pipe error(s) (dcr <HEX>) detected and cor | 1272 | 306 | 1904 | 0.668 | 375.8
+<N> torus receiver x+ input pipe error(s) (dcr <HEX>) detected and cor | <N> torus receiver y+ input pipe error(s) (dcr <HEX>) detected and cor | 1220 | 275 | 2396 | 0.509 | 681.8
+<N> torus receiver y+ input pipe error(s) (dcr <HEX>) detected and cor | <N> tree receiver <N> in re-synch state event(s) (dcr <HEX>) detected | 1161 | 318 | 1904 | 0.61 | 238.6
+critical input interrupt (unit=<HEX> bit=<HEX>): warning for torus z+  | suppressing further interrupts of same type | 1119 | 530 | 1141 | 0.981 | 384.9
+ciod: Missing or invalid fields on line <N> of node map file /home/aus | ciod: Error creating node map from file /home/auselton/bgl/<N>mps.sequ | 1024 | 512 | 1024 | 1.0 | 2910.2
+critical input interrupt (unit=<HEX> bit=<HEX>): warning for torus y+  | suppressing further interrupts of same type | 993 | 399 | 1016 | 0.977 | 383.6
+<N> torus receiver x- input pipe error(s) (dcr <HEX>) detected and cor | <N> torus receiver y+ input pipe error(s) (dcr <HEX>) detected and cor | 979 | 278 | 1446 | 0.677 | 906.5
+<N> torus receiver x- input pipe error(s) (dcr <HEX>) detected and cor | <N> torus receiver z- input pipe error(s) (dcr <HEX>) detected and cor | 962 | 279 | 1446 | 0.665 | 374.2
+<N> torus receiver x- input pipe error(s) (dcr <HEX>) detected and cor | <N> tree receiver <N> in re-synch state event(s) (dcr <HEX>) detected | 899 | 307 | 1446 | 0.622 | 243.3
+<N> torus receiver x- input pipe error(s) (dcr <HEX>) detected and cor | <N> torus receiver z+ input pipe error(s) (dcr <HEX>) detected and cor | 846 | 268 | 1446 | 0.585 | 523.0
+critical input interrupt (unit=<HEX> bit=<HEX>): warning for torus x-  | suppressing further interrupts of same type | 842 | 369 | 849 | 0.992 | 389.2
+-- 25 rows
+
+## stmt 7  median=0.017s  runs=[0.034, 0.017, 0.015]
+
+```sql
+-- pairs where A is an alert pattern (an alert followed by something else on the same node)
+SELECT left(c.ka, 60) ka, left(c.kb, 70) kb, c.support, c.nodes, c.a_bursts, round(c.conf, 3) conf, round(c.lift, 1) lift
+FROM r1e_casc_mask c
+WHERE c.ka IN (SELECT DISTINCT pkey FROM r1e_bgl WHERE alert_tag <> '-') AND c.support >= 20 AND c.lift >= 5
+ORDER BY c.support DESC LIMIT 20
+```
+
+ka | kb | support | nodes | a_bursts | conf | lift
+rts: kernel terminated for reason <N> | Error receiving packet on tree network, expecting type <N> instead of  | 4431 | 2895 | 18587 | 0.238 | 160.1
+ciod: Error reading message prefix on CioStream socket to <I | ciod: Received signal <N>, code=<N>, errno=<N>, address=<HEX> | 1926 | 878 | 26546 | 0.073 | 87.5
+rts: kernel terminated for reason <N> | rts: bad message header: expecting type <N> instead of type <N> (softh | 1146 | 1145 | 18587 | 0.062 | 160.0
+rts: kernel terminated for reason <N>rts: bad message header | <N> | 809 | 584 | 1605 | 0.504 | 1730.6
+rts: kernel terminated for reason <N> | rts: bad message header: cpu <N> invalid (softheader=<HEX> <HEX> <HEX> | 619 | 614 | 18587 | 0.033 | 146.2
+Microloader Assertion | CHECK_INITIAL_GLOBAL_INTERRUPT_VALUES | 536 | 536 | 983 | 0.545 | 3032.1
+rts: kernel terminated for reason <N>rts: bad message header |  | 535 | 426 | 1605 | 0.333 | 205.0
+ciod: Error reading message prefix on CioStream socket to <I | ciod: Received signal <N>, code=<N>, errno=<N>, address=<HEX> | 500 | 406 | 2256 | 0.222 | 267.4
+rts: kernel terminated for reason <N> | rts: bad message header: index <N> greater than total <N> (softheader= | 238 | 237 | 18587 | 0.013 | 160.4
+rts panic! - stopping execution | <N> tree receiver <N> in re-synch state event(s) (dcr <HEX>) detected | 212 | 192 | 3963 | 0.053 | 20.9
+machine check interrupt | instruction address: <HEX> | 161 | 150 | 161 | 1.0 | 5871.5
+machine check interrupt | instruction plb error.............<N> | 158 | 147 | 161 | 0.981 | 2633.0
+machine check interrupt | data write plb error..............<N> | 158 | 147 | 161 | 0.981 | 1756.9
+machine check interrupt | data read plb error...............<N> | 158 | 147 | 161 | 0.981 | 2100.0
+machine check interrupt | tlb error.........................<N> | 158 | 147 | 161 | 0.981 | 1503.2
+machine check interrupt | i-cache parity error..............<N> | 157 | 146 | 161 | 0.975 | 1314.7
+machine check interrupt | d-cache search parity error.......<N> | 156 | 145 | 161 | 0.969 | 1168.9
+machine check interrupt | summary...........................<N> | 155 | 144 | 161 | 0.963 | 3936.6
+machine check interrupt | machine check status register: <HEX> | 155 | 144 | 161 | 0.963 | 5868.6
+machine check interrupt | d-cache flush parity error........<N> | 152 | 143 | 161 | 0.944 | 1040.4
+-- 20 rows
+
+## stmt 8  median=0.005s  runs=[0.007, 0.004, 0.005]
+
+```sql
+SELECT count(*) pairs, count(*) FILTER (WHERE support >= 50 AND conf >= 0.5 AND lift >= 10) strong_pairs FROM r1e_casc_mask
+```
+
+pairs | strong_pairs
+16892 | 1620
+-- 1 rows

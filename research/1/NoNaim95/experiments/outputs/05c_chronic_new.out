@@ -1,0 +1,190 @@
+# 05c_chronic_new.sql  (repeat=3, median wall time)
+
+
+## stmt 1  median=0.025s  runs=[0.025]
+
+```sql
+-- 05c_chronic_new.sql: (d) chronic background vs new pattern, and pattern-level slow trickle.
+-- Pattern = masked-message key. Corpus spans 2005-06-03 .. 2006-01-04 (ts = log wall clock).
+
+DROP TABLE IF EXISTS r1e_pat
+```
+
+
+## stmt 2  median=7.489s  runs=[7.489]
+
+```sql
+CREATE TABLE r1e_pat AS
+SELECT pkey k, count(*) n, min(ts) first_seen, max(ts) last_seen, count(DISTINCT date_trunc('day', ts)) active_days,
+       count(DISTINCT node) nodes, max(alert_tag) alert_tag, max(level) lvl
+FROM r1e_bgl GROUP BY pkey
+```
+
+
+## stmt 3  median=0.140s  runs=[0.14, 0.076, 0.162]
+
+```sql
+-- chronic vs new vs gone: classes by first/last-seen and activity
+WITH c AS (SELECT max(last_seen) corpus_end, min(first_seen) corpus_start FROM r1e_pat)
+SELECT CASE WHEN first_seen >= corpus_end - INTERVAL 14 DAY THEN 'new (first seen in last 14 d)'
+            WHEN active_days >= 60 THEN 'chronic (>=60 active days)'
+            WHEN last_seen < corpus_end - INTERVAL 30 DAY THEN 'gone (not seen in last 30 d)'
+            ELSE 'intermittent' END cls,
+       count(*) patterns, sum(n) entries, count(*) FILTER (WHERE alert_tag <> '-') alert_patterns
+FROM r1e_pat, c GROUP BY 1 ORDER BY 3 DESC
+```
+
+cls | patterns | entries | alert_patterns
+gone (not seen in last 30 d) | 4760 | 3729596 | 66
+chronic (>=60 active days) | 64 | 678325 | 2
+intermittent | 314 | 337810 | 11
+new (first seen in last 14 d) | 59 | 2232 | 1
+-- 4 rows
+
+## stmt 4  median=0.019s  runs=[0.081, 0.019, 0.008]
+
+```sql
+-- the new patterns (first seen in the last 14 days), biggest first
+WITH c AS (SELECT max(last_seen) corpus_end FROM r1e_pat)
+SELECT left(k, 90) k, n, nodes, active_days, first_seen, alert_tag, lvl
+FROM r1e_pat, c WHERE first_seen >= corpus_end - INTERVAL 14 DAY ORDER BY n DESC LIMIT 15
+```
+
+k | n | nodes | active_days | first_seen | alert_tag | lvl
+ciod: generated <N> core files for program /g/g<N>/rfisher/FLASH<N>/object/flash<N> | 1024 | 512 | 1 | 2005-12-26 13:05:37.440177 | - | INFO
+ciod: generated <N> core files for program /p/gb<N>/kubota/Chamonix<N>/inferno | 568 | 80 | 1 | 2005-12-22 11:17:02.199733 | - | INFO
+ciod: generated <N> core files for program /g/g<N>/germann<N>/SPaSM_mini/MEAM/r<N> | 392 | 392 | 3 | 2005-12-25 14:53:55.765681 | - | INFO
+ciod: for node <N>, incomplete data written to core file core.<N> | 38 | 13 | 2 | 2005-12-26 13:05:03.609705 | - | INFO
+ciod: generated <N> core files for program /g/g<N>/buber/Yunsic/BlueGene/partad.develf/tad | 37 | 14 | 1 | 2005-12-21 08:42:52.876303 | - | INFO
+ciod: generated <N> core files for program /p/gb<N>/kubota/Nielsen<N>/inferno | 32 | 32 | 1 | 2005-12-30 17:24:20.532697 | - | INFO
+ciod: Error loading /g/g<N>/germann<N>/SPaSM_mini/DSMC/r<N>: invalid or missing program im | 32 | 32 | 1 | 2006-01-01 08:30:55.454724 | - | FATAL
+ciod: Error loading /p/gb<N>/kubota/Chamonix<N>/inferno: program image too big, <HEX> > <H | 24 | 8 | 1 | 2005-12-22 10:55:30.517106 | - | FATAL
+ciod: Error loading /g/g<N>/buber/Yunsic/BlueGene/partad.develf/taddriver.<HEX>.exe: progr | 8 | 8 | 1 | 2005-12-21 11:17:57.470771 | - | FATAL
+ciod: Error loading /g/g<N>/spelce<N>/MarseilleBGL/inferno: invalid or missing program ima | 8 | 8 | 1 | 2005-12-28 09:43:59.595659 | - | FATAL
+Ido chip status changed: FF:<HEX>:<HEX>:<N>:<HEX>:<HEX>:<N>:<HEX>:<N>:<HEX>:<HEX>:<N> ip=< | 7 | 1 | 1 | 2005-12-26 10:58:24.272047 | - | INFO
+Ido chip status changed: FF:<HEX>:<HEX>:<N>:<HEX>:<HEX>:<N>:<HEX>:<N>:<HEX>:<HEX>:<HEX> ip | 5 | 1 | 1 | 2005-12-26 10:58:24.221326 | - | INFO
+Ido chip status changed: FF:<HEX>:<HEX>:<N>:<HEX>:<N>:<N>:<HEX>:<N>:<HEX>:<N>:<HEX> ip=<IP | 3 | 1 | 1 | 2005-12-29 16:10:28.238837 | - | INFO
+Ido chip status changed: FF:<HEX>:<HEX>:<N>:<HEX>:<N>:<N>:<HEX>:<N>:EA:<N>:<HEX> ip=<IP> v | 3 | 1 | 1 | 2005-12-29 16:10:28.268553 | - | INFO
+Ido chip status changed: FF:<HEX>:<HEX>:<N>:<HEX>:<N>:<N>:<HEX>:<N>:<HEX>:<HEX>:<HEX> ip=< | 2 | 1 | 1 | 2005-12-29 16:10:28.184734 | - | INFO
+-- 15 rows
+
+## stmt 5  median=0.009s  runs=[0.029, 0.009, 0.009]
+
+```sql
+-- chronic background: most active-days patterns
+SELECT left(k, 90) k, n, nodes, active_days, first_seen, last_seen, alert_tag, lvl FROM r1e_pat ORDER BY active_days DESC, n DESC LIMIT 12
+```
+
+k | n | nodes | active_days | first_seen | last_seen | alert_tag | lvl
+CE sym <N>, at <HEX>, mask <HEX> | 201206 | 1653 | 184 | 2005-06-03 16:01:50.945374 | 2005-12-06 01:14:43.502735 | - | INFO
+<N> ddr errors(s) detected and corrected on rank <N>, symbol <N>, bit <N> | 33939 | 1632 | 169 | 2005-06-03 16:01:50.687138 | 2005-11-21 04:09:31.186639 | - | INFO
+total of <N> ddr error(s) detected and corrected | 28481 | 1570 | 169 | 2005-06-03 16:01:51.141964 | 2005-11-21 04:09:54.384778 | - | INFO
+<N> tree receiver <N> in re-synch state event(s) (dcr <HEX>) detected | 7847 | 595 | 166 | 2005-06-03 18:21:45.321124 | 2005-11-21 04:09:47.229120 | - | INFO
+<N> L<N> EDRAM error(s) (dcr <HEX>) detected and corrected | 4228 | 75 | 166 | 2005-06-03 16:01:50.728205 | 2005-11-21 04:09:30.854824 | - | INFO
+<N> torus receiver x+ input pipe error(s) (dcr <HEX>) detected and corrected | 2400 | 526 | 164 | 2005-06-05 01:55:10.026393 | 2005-11-21 04:09:29.996865 | - | INFO
+<N> torus receiver z- input pipe error(s) (dcr <HEX>) detected and corrected | 1987 | 501 | 159 | 2005-06-05 01:55:12.299741 | 2005-11-21 04:09:40.822811 | - | INFO
+instruction cache parity error corrected | 105924 | 156 | 157 | 2005-06-03 15:42:50.363779 | 2006-01-04 04:46:38.802083 | - | INFO
+<N> torus receiver y+ input pipe error(s) (dcr <HEX>) detected and corrected | 1905 | 594 | 157 | 2005-06-05 01:55:11.600884 | 2005-11-21 04:09:35.587782 | - | INFO
+instruction address: <HEX> | 51227 | 23886 | 146 | 2005-06-05 00:49:47.926325 | 2006-01-03 03:24:46.963349 | - | INFO
+<N> torus receiver x- input pipe error(s) (dcr <HEX>) detected and corrected | 1447 | 539 | 144 | 2005-06-05 01:55:10.863878 | 2005-11-21 04:09:30.083787 | - | INFO
+wait state enable.................<N> | 6745 | 6655 | 142 | 2005-06-05 01:55:01.597902 | 2006-01-03 03:24:50.967260 | - | INFO
+-- 12 rows
+
+## stmt 6  median=0.003s  runs=[0.003]
+
+```sql
+-- weekly rate jump: Incidents per week per pattern (mask key, G=60, G'=300) vs trailing 8-week baseline
+DROP TABLE IF EXISTS r1e_wk
+```
+
+
+## stmt 7  median=1.164s  runs=[1.164]
+
+```sql
+CREATE TABLE r1e_wk AS
+WITH w AS (SELECT DISTINCT date_trunc('week', make_timestamp_ms((t0 * 1000)::bigint)) wk FROM r1e_inc WHERE kt = 'mask' AND g = 60 AND gp = 300),
+     ks AS (SELECT DISTINCT k FROM r1e_inc WHERE kt = 'mask' AND g = 60 AND gp = 300),
+     obs AS (SELECT k, date_trunc('week', make_timestamp_ms((t0 * 1000)::bigint)) wk, count(*) inc, sum(n) entries
+             FROM r1e_inc WHERE kt = 'mask' AND g = 60 AND gp = 300 GROUP BY 1, 2),
+     grid AS (SELECT ks.k, w.wk, coalesce(obs.inc, 0) inc, coalesce(obs.entries, 0) entries
+              FROM ks CROSS JOIN w LEFT JOIN obs ON obs.k = ks.k AND obs.wk = w.wk)
+SELECT *, avg(inc) OVER tr base_mean, stddev_samp(inc) OVER tr base_sd, count(*) OVER tr base_weeks
+FROM grid WINDOW tr AS (PARTITION BY k ORDER BY wk ROWS BETWEEN 8 PRECEDING AND 1 PRECEDING)
+```
+
+
+## stmt 8  median=0.046s  runs=[0.046, 0.114, 0.023]
+
+```sql
+-- biggest week-over-baseline jumps (z with sd floored at 1 to avoid divide-by-zero on silent patterns)
+SELECT left(k, 80) k, wk, inc, round(base_mean, 2) base_mean, round(base_sd, 2) base_sd,
+       round((inc - base_mean) / greatest(coalesce(base_sd, 0), 1), 1) z, entries
+FROM r1e_wk WHERE base_weeks = 8 ORDER BY (inc - base_mean) / greatest(coalesce(base_sd, 0), 1) DESC LIMIT 15
+```
+
+k | wk | inc | base_mean | base_sd | z | entries
+ddr: Suppressing further CE interrupts | 2005-12-05 00:00:00 | 74 | 0.38 | 1.06 | 69.4 | 190
+Lustre mount FAILED : bglio<N> : point /p/gb<N> | 2005-08-29 00:00:00 | 42 | 0.0 | 0.0 | 42.0 | 14529
+iar <HEX> dear <HEX> | 2005-10-31 00:00:00 | 35 | 0.0 | 0.0 | 35.0 | 248956
+ | 2005-10-31 00:00:00 | 34 | 0.0 | 0.0 | 34.0 | 19661
+<N> floating point alignment exceptions | 2005-10-31 00:00:00 | 29 | 0.0 | 0.0 | 29.0 | 66233
+<N> torus sender x+ retransmission error(s) (dcr <HEX>) detected and corrected | 2005-08-08 00:00:00 | 41 | 3.0 | 1.41 | 26.9 | 76
+rts: kernel terminated for reason <N> | 2005-08-15 00:00:00 | 37 | 0.5 | 1.41 | 25.8 | 7670
+critical input interrupt (unit=<HEX> bit=<HEX>): warning for torus x+ wire | 2005-09-26 00:00:00 | 38 | 2.25 | 1.39 | 25.7 | 118
+ddr: activating redundant bit steering for next allocation: rank=<N> symbol=<N> | 2005-10-24 00:00:00 | 24 | 0.0 | 0.0 | 24.0 | 25
+<N> torus receiver x- input pipe error(s) (dcr <HEX>) detected and corrected | 2005-08-08 00:00:00 | 59 | 10.13 | 2.1 | 23.3 | 67
+New ido chip inserted into the database: FF:<HEX>:<HEX>:<N>:<HEX>:<N>:<N>:<HEX>: | 2005-08-01 00:00:00 | 23 | 0.0 | 0.0 | 23.0 | 150
+<N> torus sender y+ retransmission error(s) (dcr <HEX>) detected and corrected | 2005-08-08 00:00:00 | 40 | 1.13 | 1.73 | 22.5 | 75
+ciod: Error reading message prefix on CioStream socket to <IP>, Link has been se | 2005-11-21 00:00:00 | 24 | 0.38 | 1.06 | 22.3 | 8685
+New ido chip inserted into the database: FF:<HEX>:<HEX>:<N>:<HEX>:<N>:<N>:<HEX>: | 2005-08-01 00:00:00 | 22 | 0.0 | 0.0 | 22.0 | 38
+rts: bad message header: cpu <N> invalid (softheader=<HEX> <HEX> <HEX> <HEX>) PS | 2005-08-15 00:00:00 | 22 | 0.25 | 0.71 | 21.8 | 432
+-- 15 rows
+
+## stmt 9  median=0.020s  runs=[0.021, 0.014, 0.02]
+
+```sql
+-- last full week of the corpus: which patterns jump (what a Team Lead would see "this week")
+SELECT left(k, 80) k, wk, inc, round(base_mean, 2) base_mean, round((inc - base_mean) / greatest(coalesce(base_sd, 0), 1), 1) z, entries
+FROM r1e_wk WHERE base_weeks = 8 AND wk = (SELECT max(wk) FROM r1e_wk) - INTERVAL 7 DAY AND inc > 0
+ORDER BY z DESC LIMIT 10
+```
+
+k | wk | inc | base_mean | z | entries
+<N> torus processor sram reception error(s) (dcr <HEX>) detected and corrected o | 2005-12-26 00:00:00 | 6 | 0.25 | 5.8 | 6
+<N> torus sender y- retransmission error(s) (dcr <HEX>) detected and corrected o | 2005-12-26 00:00:00 | 11 | 1.5 | 5.1 | 17
+<N> torus sender y+ retransmission error(s) (dcr <HEX>) detected and corrected o | 2005-12-26 00:00:00 | 8 | 1.25 | 4.5 | 11
+<N> torus sender x+ retransmission error(s) (dcr <HEX>) detected and corrected o | 2005-12-26 00:00:00 | 13 | 3.5 | 2.4 | 16
+<N> torus sender z+ retransmission error(s) (dcr <HEX>) detected and corrected o | 2005-12-26 00:00:00 | 7 | 1.88 | 2.3 | 9
+<N> torus sender z- retransmission error(s) (dcr <HEX>) detected and corrected o | 2005-12-26 00:00:00 | 6 | 1.63 | 2.1 | 7
+Ido chip status changed: FF:<HEX>:<HEX>:<N>:<HEX>:EF:<N>:<HEX>:<N>:<HEX>:<HEX>:< | 2005-12-26 00:00:00 | 2 | 0.0 | 2.0 | 2
+Ido chip status changed: FF:<HEX>:<HEX>:<N>:<HEX>:<HEX>:<N>:<HEX>:<N>:<HEX>:<HEX | 2005-12-26 00:00:00 | 2 | 0.0 | 2.0 | 5
+ciod: generated <N> core files for program /g/g<N>/rfisher/FLASH<N>/object/flash | 2005-12-26 00:00:00 | 2 | 0.0 | 2.0 | 1024
+Ido chip status changed: FF:<HEX>:<HEX>:<N>:<HEX>:<HEX>:<N>:<HEX>:<N>:<HEX>:<HEX | 2005-12-26 00:00:00 | 2 | 0.0 | 2.0 | 7
+-- 10 rows
+
+## stmt 10  median=0.062s  runs=[0.091, 0.062, 0.03]
+
+```sql
+-- pattern-level slow trickle: many small Incidents spread over many days (chronic low-rate)
+SELECT left(i.k, 80) k, count(*) incidents, sum(i.n) entries, median(i.n) med_entries_per_inc,
+       p.active_days, round(sum(i.n)::double / p.active_days, 1) entries_per_active_day, p.nodes
+FROM r1e_inc i JOIN r1e_pat p ON p.k = i.k
+WHERE i.kt = 'mask' AND i.g = 60 AND i.gp = 300
+GROUP BY i.k, p.active_days, p.nodes HAVING p.active_days >= 60 AND median(i.n) <= 3
+ORDER BY incidents DESC LIMIT 12
+```
+
+k | incidents | entries | med_entries_per_inc | active_days | entries_per_active_day | nodes
+total of <N> ddr error(s) detected and corrected | 3029 | 28481 | 3.0 | 169 | 168.5 | 1570
+<N> L<N> EDRAM error(s) (dcr <HEX>) detected and corrected | 1536 | 4228 | 2.0 | 166 | 25.5 | 75
+<N> tree receiver <N> in re-synch state event(s) (dcr <HEX>) detected | 1441 | 7847 | 3.0 | 166 | 47.3 | 595
+instruction cache parity error corrected | 1213 | 105924 | 1.0 | 157 | 674.7 | 156
+<N> torus receiver x+ input pipe error(s) (dcr <HEX>) detected and corrected | 1098 | 2400 | 1.0 | 164 | 14.6 | 526
+ddr: activating redundant bit steering: rank=<N> symbol=<N> | 1012 | 1314 | 1.0 | 128 | 10.3 | 482
+<N> torus receiver z- input pipe error(s) (dcr <HEX>) detected and corrected | 820 | 1987 | 1.0 | 159 | 12.5 | 501
+<N> torus receiver y+ input pipe error(s) (dcr <HEX>) detected and corrected | 712 | 1905 | 1.0 | 157 | 12.1 | 594
+MidplaneSwitchController performing bit sparing on <NODE> bit <N> | 694 | 964 | 1.0 | 74 | 13.0 | 5
+suppressing further interrupts of same type | 594 | 7694 | 2.0 | 83 | 92.7 | 3257
+<N> torus receiver x- input pipe error(s) (dcr <HEX>) detected and corrected | 516 | 1447 | 1.0 | 144 | 10.0 | 539
+<N> torus receiver z+ input pipe error(s) (dcr <HEX>) detected and corrected | 506 | 1459 | 1.0 | 141 | 10.3 | 500
+-- 12 rows

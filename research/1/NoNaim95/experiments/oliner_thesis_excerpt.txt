@@ -1,0 +1,224 @@
+Source: A. J. Oliner, 'Using Influence to Understand Complex Systems', PhD dissertation, Stanford, September 2011, https://theory.stanford.edu/~aiken/publications/theses/oliner.pdf (pdftotext -layout). Chapter 2 is the DSN 2007 study (Oliner & Stearley, 'What Supercomputers Say', DOI 10.1109/DSN.2007.103).
+--- Table (lines 600-720) ---
+Our study includes all of these logs.
+   On BG/L, logging is managed by the Machine Management Control System
+CHAPTER 2. SYSTEM LOGS                                                                9
+
+
+                                          Raw            Filtered
+                       Type          Count      %      Count     %
+                     Hardware      174,586,516 98.04    1,999 18.78
+                     Software          144,899  0.08    6,814 64.01
+                   Indeterminate     3,350,044  1.88    1,832 17.21
+
+Table 2.4: Hardware was the most common type of alert, but not the most common
+type of failure (as estimated by the filtered results). Filtering dramatically changes
+the distribution of alert types.
+
+
+(MMCS), which runs on the service node, of which there are two per rack [1]. Com-
+pute chips store errors locally until they are polled, at which point the messages are
+collected via the JTAG-mailbox protocol. The polling frequency for our logs was set
+at around one millisecond. The service node MMCS process then relays the messages
+to a centralized DB2 database. That RAS database was the source of our data, and
+includes hardware and software errors at all levels, from chip SRAM parity errors to
+fan failures. Events in BG/L often set various RAS flags, which appear as separate
+lines in the log. The time granularity for BG/L logs is down to the microsecond, un-
+like the one-second granularity of typical syslogs. This study does not include syslogs
+from BG/L’s Lustre I/O cluster and shared disk subsystem.
+
+
+2.1.2     Identifying Alerts
+For each of the systems, we worked in consultation with the respective system admin-
+istrators to determine the subset of log entries that they would tag as being alerts.
+Thus, the alerts we identify in the logs are certainly alerts by our definition, but
+the set is (necessarily) not exhaustive. In all, we identified 178,081,459 alerts across
+the logs; see Table 2.2 for the breakdown by system and Table 2.1.2 for the alerts,
+themselves. Alerts were assigned types based on their ostensible subsystem of origin
+(hardware, software, or indeterminate); this is based on each administrator’s best
+understanding of the alert, and may not necessarily be root cause. Table 2.4 presents
+the distribution of types both before and after filtering (described in Section 2.1.3).
+   Table 2.1.2 provides example alert messages from the supercomputers. System
+names are listed with the total number alerts before and after filtering. “Cat.” is the
+CHAPTER 2. SYSTEM LOGS                                                               10
+
+
+
+alert category. Types are H (Hardware), S (Software), and I (Indeterminate). Indeter-
+minate alerts can originate from both hardware and software, or have unknown cause.
+Due to space, we list only the most common of the 41 BG/L alert categories. Brack-
+eted text indicates information that is omitted; a bracketed ellipsis indicates sundry
+text. Alert categories vary among machines as a function of system configurations,
+logging mechanisms, and what each system’s administrators deem important.
+
+
+ Alert Type/Cat.       Raw        Filtered   Example Message Body (Anonymized)
+ BG/L                  348,460       1202
+ H / KERNDTLB           152,734        37    data TLB error interrupt
+ H / KERNSTOR            63,491         8    data storage interrupt
+ S / APPSEV              49,651       138    ciod: Error reading message prefix
+                                             after LOGIN MESSAGE on CioStream [...]
+ S / KERNMNTF            31,531       105    Lustre mount FAILED : bglio11 : block id
+                                             : location
+ S / KERNTERM            23,338        99    rts: kernel terminated for reason
+                                             1004rts: bad message header: [...]
+ S / KERNREC              6145          9    Error receiving packet on tree network,
+                                             expecting type 57 instead of [...]
+ S / APPREAD              5983         11    ciod: failed to read message prefix on
+                                             control stream [...]
+ S / KERNRTSP             3983        260    rts panic! - stopping execution
+ S / APPRES               2370         13    ciod: Error reading message prefix
+                                             after LOAD MESSAGE on CioStream [...]
+ I / APPUNAV              2048          3    ciod: Error creating node map from file
+                                             [...]
+ I / 31 Others             7186       519    machine check interrupt
+ Thunderbird         3,248,239       2088
+ I / VAPI             3,229,194       276    kernel: [KERNEL IB][...]       (Fatal error
+                                             (Local Catastrophic Error))
+ S / PBS CON              5318         16    pbs mom: Connection refused (111) in
+                                             open demux, open demux: cannot [...]
+ I / MPT                  4583        157    kernel: mptscsih: ioc0: attempting
+                                             task abort! (sc=00000101bddee480)
+ H / EXT FS               4022        778    kernel: EXT3-fs error (device sda5):
+                                             [...] Detected aborted journal
+ S / CPU                  2741        367    kernel: Losing some ticks... checking
+                                             if CPU frequency changed.
+ H / SCSI                 2186        317    kernel: scsi0 (0:0): rejecting I/O to
+                                             offline device
+ H / ECC                   146        143    Server Administrator: Instrumentation
+                                             Service EventID: 1404 Memory device [...]
+CHAPTER 2. SYSTEM LOGS                                                          11
+
+
+
+S / PBS BFD              28      28   pbs mom: Bad file descriptor (9) in
+                                      tm request, job [job] not running
+H / CHK DSK              13       2   check-disks:     [node:time] , Fault Status
+                                      assert [...]
+I / NMI                   8       4   kernel: Uhhuh. NMI received. Dazed
+                                      and confused, but trying to continue
+Red Storm         1,665,744    1430
+H / BUS PAR        1,550,217      5   DMT HINT Warning: Verify Host 2 bus
+                                      parity error: 0200 Tier:5 LUN:4 [...]
+I / HBEAT             94,784    266   ec heartbeat stop|src:::[node]
+                                      |svc:::[node]warn|node heartbeat fault|[...]
+I / PTL EXP           11,047    421   kernel: LustreError: [...]        @@@ timeout
+                                      (sent at [time], 300s ago) [...]
+H / ADDR ERR           6763       1   DMT 102 Address error LUN:0 command:28
+                                      address:f000000 length:1 Anonymous [...]
+H / CMD ABORT          1686     497   DMT 310 Command Aborted: SCSI cmd:2A LUN
+                                      2 DMT 310 Lane:3 T:299 a: [...]
+I / PTL ERR             631      54   kernel: LustreError: [...]        @@@ type ==
+                                      [...]
+I / TOAST               186       9   ec console log|src:::[node]|svc:::[node]|
+                                      PANIC SP WE ARE TOASTED!
+I / EW                  163      58   kernel: Lustre:[...] Expired watchdog for
+                                      pid[job] disabled after [#]s
+I / WT                  107      45   kernel: Lustre:[...]     Watchdog triggered
+                                      for pid[job]: it was inactive for [#]ms
+I / RBB                 105      19   kernel: LustreError:        [...]     All mds
+                                      cray kern nal request buffers busy (0us
+                                      idle)
+H / DSK FAIL             54      54   DMT DINT Failing Disk 2A
+I / OST                   1       1   kernel: LustreError: [...]         Failure to
+--- Filtering (lines 1141-1240) ---
+2.1.3      Filtering
+A single failure may generate alerts across many nodes or many alerts on a single node.
+Filtering is used to reduce a related set of alerts to a single initial alert per failure; that
+is, to make the ratio of alerts to failures nearly one. This section motivates the need
+for effective filtering and then describes our algorithm, which is based on previous
+work [27, 28] with some incremental optimizations. Briefly, the filtering removes an
+alert if any source had generated that category of alert within the last T seconds, for
+a given threshold T . Two alerts are in the same category if they were both tagged
+by the same expert rule.
+
+Motivation for Filtering
+
+During the first quarter of 2006, Liberty saw 2231 job-fatal alerts that were caused by
+a troublesome software bug in the Portable Batch System (PBS). The alerts, which
+read pbs mom:         task check, cannot tm reply, indicated that the MPI rank 0 mom
+died. Jobs afflicted by this bug could not complete and were eventually killed, but
+CHAPTER 2. SYSTEM LOGS                                                                20
+
+
+
+not before generating the task check message up to 74 times. We estimate that this
+bug killed as many as 1336 jobs before it was tracked down and fixed (see Figure 2.5).
+    Between November 10, 2005 and July 10, 2006, Thunderbird experienced 3,229,194
+so-called “Local Catastrophic Errors” related to VAPI (the exact nature of many of
+these alerts is not well-understood by our experts). A single node was responsible for
+643,925 of them, of which filtering removes all but 246.
+    The Spirit logs were largest, despite the system being the second smallest. This
+was due almost entirely to disk-related alert messages which were repeated millions
+of times. For example, over a six-day period between February 28 and March 5, there
+was a disk problem that triggered a total of 56,793,797 alerts. These were heavily
+concentrated among a handful of problematic nodes. Over the complete observation
+period, node id sn373 logged 89,632,571 such messages, which was more than half of
+all Spirit alerts.
+
+Filtering Algorithm
+
+A temporal filter coalesces alerts within T seconds of each other on a given source
+into a single alert. For example, if a node reports a particular alert every T seconds
+for a week, the temporal filter keeps only the first. Similarly, a spatial filter removes
+an alert if some other source had previously reported that alert within T seconds.
+For example, if k nodes report the same alert in a round-robin fashion, each message
+within T seconds of the last, then only the first is kept. Previous work applied these
+filters serially [27, 28].
+    Our filtering algorithm, however, performs both temporal and spatial filtering si-
+multaneously; an alert message generated by source s is considered redundant (and
+removed) if any source, including s, had reported that alert category within T sec-
+onds. This change reduces computational costs (16% faster on the Spirit logs) and is
+conceptually simpler. We applied this filter to the logs from the five supercomputers
+using T = 5 seconds in correspondence with previous work [9, 27, 28]. The algorithm
+in pseudocode is given below, where A is the sequence of N unfiltered alerts. Alert
+ai happens at time ti and has category ci . The sequence is sorted by increasing time.
+The table X is used to store the last time at which a particular category of alert was
+CHAPTER 2. SYSTEM LOGS                                                              21
+
+
+
+reported.
+
+Algorithm 2.1.1: LogFilter(A)
+
+ l←0
+ for i ← 1 to N
+       
+       
+       
+        if ti − l > T
+       
+       
+       
+       
+          then clear(X)
+       
+       l ← ti
+       
+       
+       
+   do if ci ∈ X and ti − X[ci ] < T
+       
+           then X[ci ] ← ti
+       
+       
+       
+       
+       
+                 (
+       
+                   X[ci ] ← ti
+        else
+       
+       
+       
+                    output (ai )
+
+   This filter may remove independent alerts of the same category that, by coinci-
+dence, happen near the same time on different nodes. For example, node sn373 on
+Spirit experienced disk problems and output tens of millions of alerts over the course
+of several days. Coincidentally, another node (sn325) had an independent disk failure
+during this time. Our filter removed the symptomatic alert, erroneously.
+   In some cases, serial filtering fails to remove alerts that share a root cause, and
+which a human would consider to be redundant. The problem arises when the tem-

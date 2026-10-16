@@ -1,0 +1,157 @@
+# 03_incidents.sql  (repeat=3, median wall time)
+
+
+## stmt 1  median=0.466s  runs=[0.466]
+
+```sql
+-- 03_incidents.sql: Incident = merge of Bursts of the same pattern key across nodes.
+-- Bursts (per node, gap G) are sorted by start time within (key); a new Incident starts when a Burst
+-- starts more than G' seconds after the latest end of all earlier Bursts of that key
+-- (gap-based sessionisation at pattern level, ignoring node).
+-- Note: if G <= G', this equals entry-level gap sessionisation on the key with gap G' (node ignored),
+-- i.e. the Oliner & Stearley filter with T = G' when the key is alert_tag.
+
+DROP TABLE IF EXISTS r1e_bm
+```
+
+
+## stmt 2  median=94.134s  runs=[94.134]
+
+```sql
+-- Burst -> Incident membership. tag key: all G x G' combinations; mask key: selected combos.
+CREATE TABLE r1e_bm AS
+WITH x AS (
+  SELECT b.*, gp FROM r1e_burst b, (SELECT unnest([5, 60, 300, 3600]) AS gp) p
+  WHERE b.kt = 'tag' AND b.g <= p.gp
+  UNION ALL
+  SELECT b.*, gp FROM r1e_burst b, (SELECT unnest([60, 300, 3600]) AS gp) p
+  WHERE b.kt = 'mask' AND b.g = 60 AND b.g <= p.gp),
+y AS (
+  SELECT *, max(t1) OVER (PARTITION BY kt, g, gp, k ORDER BY t0, node ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) AS prev_end
+  FROM x)
+SELECT kt, g, gp, k, node, b, t0, t1, n, alert_tag, rack, midplane, nodecard,
+       (sum(CASE WHEN prev_end IS NULL OR t0 - prev_end > gp THEN 1 ELSE 0 END)
+          OVER (PARTITION BY kt, g, gp, k ORDER BY t0, node ROWS UNBOUNDED PRECEDING))::BIGINT AS iid
+FROM y
+```
+
+
+## stmt 3  median=0.940s  runs=[0.94]
+
+```sql
+DROP TABLE IF EXISTS r1e_inc
+```
+
+
+## stmt 4  median=80.699s  runs=[80.699]
+
+```sql
+CREATE TABLE r1e_inc AS
+SELECT kt, g, gp, k, iid, min(t0) t0, max(t1) t1, sum(n) n, count(*) bursts,
+       count(DISTINCT node) nodes, count(DISTINCT rack) racks, count(DISTINCT midplane) midplanes,
+       count(DISTINCT nodecard) nodecards,
+       sum(CASE WHEN rack IS NULL THEN n ELSE 0 END) nonstd_entries,
+       max(n) top_burst_n, arg_max(node, n) top_node, max(alert_tag) alert_tag
+FROM r1e_bm GROUP BY kt, g, gp, k, iid
+```
+
+
+## stmt 5  median=0.166s  runs=[0.874, 0.166, 0.098]
+
+```sql
+-- #Incidents per alert category, G=300 bursts, G'=300 (expected to equal Oliner-Stearley filtered counts)
+SELECT k AS category, sum(n) entries, count(*) incidents,
+       count(*) FILTER (WHERE nodes = 1) single_node, count(*) FILTER (WHERE nodes >= 2) multi_node,
+       count(*) FILTER (WHERE racks >= 2) multi_rack, max(nodes) max_nodes, max(racks) max_racks,
+       median(nodes) med_nodes, sum(nonstd_entries) nonstd_entries
+FROM r1e_inc WHERE kt = 'tag' AND g = 300 AND gp = 300 GROUP BY k ORDER BY entries DESC
+```
+
+category | entries | incidents | single_node | multi_node | multi_rack | max_nodes | max_racks | med_nodes | nonstd_entries
+KERNDTLB | 152734 | 37 | 12 | 25 | 14 | 98 | 8 | 3.0 | 0
+KERNSTOR | 63491 | 8 | 3 | 5 | 5 | 20480 | 20 | 5120.0 | 0
+APPSEV | 49651 | 136 | 2 | 134 | 115 | 1024 | 64 | 223.5 | 0
+KERNMNTF | 31531 | 105 | 1 | 104 | 71 | 1024 | 64 | 131.0 | 0
+KERNTERM | 23338 | 99 | 8 | 91 | 65 | 2048 | 64 | 120.0 | 0
+KERNREC | 6145 | 9 | 1 | 8 | 2 | 2048 | 2 | 512.0 | 0
+APPREAD | 5983 | 11 | 1 | 10 | 10 | 510 | 32 | 254.0 | 0
+KERNRTSP | 3983 | 260 | 223 | 37 | 18 | 2048 | 8 | 1.0 | 0
+APPRES | 2370 | 13 | 2 | 11 | 11 | 935 | 64 | 29.0 | 0
+APPUNAV | 2048 | 3 | 0 | 3 | 3 | 1024 | 64 | 512.0 | 0
+APPTO | 1991 | 4 | 0 | 4 | 4 | 832 | 64 | 535.0 | 0
+KERNMICRO | 1503 | 5 | 2 | 3 | 2 | 520 | 38 | 16.0 | 0
+APPOUT | 816 | 1 | 0 | 1 | 1 | 816 | 64 | 816.0 | 0
+KERNMNT | 720 | 7 | 0 | 7 | 3 | 349 | 59 | 8.0 | 0
+APPBUSY | 512 | 1 | 0 | 1 | 1 | 512 | 32 | 512.0 | 0
+KERNMC | 342 | 291 | 284 | 7 | 7 | 6 | 5 | 1.0 | 0
+APPCHILD | 320 | 3 | 0 | 3 | 3 | 256 | 16 | 32.0 | 0
+KERNSOCK | 209 | 39 | 22 | 17 | 17 | 75 | 53 | 1.0 | 0
+KERNPOW | 192 | 10 | 10 | 0 | 0 | 1 | 0 | 1.0 | 192
+LINKIAP | 166 | 28 | 28 | 0 | 0 | 1 | 1 | 1.0 | 0
+APPALLOC | 144 | 2 | 0 | 2 | 2 | 128 | 8 | 72.0 | 0
+KERNSERV | 94 | 5 | 5 | 0 | 0 | 1 | 1 | 1.0 | 32
+MASABNORM | 37 | 33 | 33 | 0 | 0 | 1 | 0 | 1.0 | 37
+LINKDISC | 24 | 6 | 6 | 0 | 0 | 1 | 1 | 1.0 | 0
+KERNPAN | 18 | 14 | 10 | 4 | 2 | 2 | 2 | 1.0 | 0
+KERNCON | 16 | 16 | 16 | 0 | 0 | 1 | 1 | 1.0 | 0
+KERNNOETH | 14 | 10 | 9 | 1 | 0 | 2 | 1 | 1.0 | 0
+LINKPAP | 14 | 5 | 5 | 0 | 0 | 1 | 1 | 1.0 | 0
+MONPOW | 12 | 10 | 9 | 1 | 1 | 2 | 2 | 1.0 | 0
+MASNORM | 10 | 9 | 9 | 0 | 0 | 1 | 0 | 1.0 | 10
+APPTORUS | 10 | 4 | 2 | 2 | 2 | 5 | 2 | 2.0 | 0
+KERNPROG | 5 | 5 | 5 | 0 | 0 | 1 | 1 | 1.0 | 0
+KERNFLOAT | 3 | 2 | 2 | 0 | 0 | 1 | 1 | 1.0 | 0
+KERNRTSA | 3 | 2 | 2 | 0 | 0 | 1 | 1 | 1.0 | 0
+MMCS | 3 | 2 | 2 | 0 | 0 | 1 | 1 | 1.0 | 0
+MONNULL | 2 | 2 | 2 | 0 | 0 | 1 | 1 | 1.0 | 0
+LINKBLL | 2 | 1 | 1 | 0 | 0 | 1 | 1 | 1.0 | 0
+KERNBIT | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 1.0 | 0
+KERNTLBE | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 1.0 | 0
+MONILL | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 1.0 | 0
+KERNEXT | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 1.0 | 0
+-- 41 rows
+
+## stmt 6  median=0.057s  runs=[0.057, 0.043, 0.243]
+
+```sql
+-- totals for every G x G' combination (tag key) and the mask-key combos
+SELECT kt, g, gp, count(*) incidents, count(*) FILTER (WHERE nodes = 1) single_node,
+       count(*) FILTER (WHERE nodes >= 10) ge10_nodes, count(*) FILTER (WHERE racks >= 2) multi_rack,
+       count(*) FILTER (WHERE midplanes >= 2) multi_midplane
+FROM r1e_inc GROUP BY kt, g, gp ORDER BY kt, g, gp
+```
+
+kt | g | gp | incidents | single_node | ge10_nodes | multi_rack | multi_midplane
+mask | 60 | 60 | 74823 | 52864 | 6547 | 17711 | 17925
+mask | 60 | 300 | 55815 | 37531 | 5361 | 15656 | 15861
+mask | 60 | 3600 | 34946 | 24130 | 3777 | 9456 | 9561
+tag | 5 | 5 | 1643 | 911 | 481 | 553 | 558
+tag | 5 | 60 | 1309 | 806 | 357 | 370 | 373
+tag | 5 | 300 | 1202 | 721 | 343 | 359 | 362
+tag | 5 | 3600 | 914 | 576 | 240 | 284 | 286
+tag | 60 | 60 | 1309 | 806 | 357 | 370 | 373
+tag | 60 | 300 | 1202 | 721 | 343 | 359 | 362
+tag | 60 | 3600 | 914 | 576 | 240 | 284 | 286
+tag | 300 | 300 | 1202 | 721 | 343 | 359 | 362
+tag | 300 | 3600 | 914 | 576 | 240 | 284 | 286
+tag | 3600 | 3600 | 914 | 576 | 240 | 284 | 286
+-- 13 rows
+
+## stmt 7  median=0.042s  runs=[0.218, 0.042, 0.016]
+
+```sql
+-- Spread distribution for alert Incidents (G=300,G'=300)
+SELECT CASE WHEN nodes = 1 THEN '1 node' WHEN nodecards <= 1 THEN '1 nodecard, >1 node'
+            WHEN midplanes <= 1 THEN '1 midplane, >1 nodecard' WHEN racks <= 1 THEN '1 rack, 2 midplanes'
+            ELSE '>=2 racks' END AS spread_class,
+       count(*) incidents, sum(n) entries
+FROM r1e_inc WHERE kt = 'tag' AND g = 300 AND gp = 300 GROUP BY 1 ORDER BY 2 DESC
+```
+
+spread_class | incidents | entries
+1 node | 721 | 153407
+>=2 racks | 359 | 184307
+1 midplane, >1 nodecard | 111 | 10684
+1 nodecard, >1 node | 8 | 56
+1 rack, 2 midplanes | 3 | 6
+-- 5 rows

@@ -1,0 +1,172 @@
+# 01_keys.sql  (repeat=3, median wall time)
+
+
+## stmt 1  median=6.823s  runs=[5.324, 6.823, 7.088]
+
+```sql
+-- rack/midplane are parsed where a prefix exists, otherwise NULL.
+CREATE OR REPLACE TABLE r1e_bgl AS
+SELECT line_no,
+       ts,
+       epoch_us(ts) / 1e6                                         AS t,      -- seconds, microsecond precision
+       alert_tag,
+       node,
+       component,
+       level,
+       nullif(regexp_extract(node, '^(R[0-9A-F]{2})', 1), '')              AS rack,
+       nullif(regexp_extract(node, '^(R[0-9A-F]{2}-M[01])', 1), '')        AS midplane,
+       nullif(regexp_extract(node, '^(R[0-9A-F]{2}-M[01]-N[0-9A-F])', 1), '') AS nodecard,
+       CASE WHEN node IS NULL THEN 'null'
+            WHEN regexp_full_match(node, 'R[0-9A-F]{2}-M[01]-N[0-9A-F]-[CI]:J[0-9]{2}-U[0-9]{2}') THEN 'chip'
+            WHEN regexp_full_match(node, 'R[0-9A-F]{2}-M[01]-N[0-9A-F]') THEN 'nodecard'
+            WHEN regexp_full_match(node, 'R[0-9A-F]{2}-M[01]-L[0-9A-F].*') THEN 'linkcard'
+            WHEN regexp_full_match(node, 'R[0-9A-F]{2}.*') THEN 'rack_or_midplane'
+            ELSE 'nonlocation' END                                AS node_kind,
+       regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(
+           coalesce(message, ''),
+           'R[0-9A-F]{2}-M[01](-[A-Z][0-9A-F](-[A-Z0-9:-]+)?)?', '<NODE>', 'g'),
+           '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}(:[0-9]+)?', '<IP>', 'g'),
+           '0x[0-9a-fA-F]+', '<HEX>', 'g'),
+           '\b[0-9a-fA-F]{8,}\b', '<HEX>', 'g'),
+           '\b[0-9a-fA-F]*([0-9][0-9a-fA-F]*[a-fA-F]|[a-fA-F][0-9a-fA-F]*[0-9])[0-9a-fA-F]*\b', '<HEX>', 'g'),
+           '[0-9]+', '<N>', 'g'),
+           '\s+', ' ', 'g')                                       AS pkey
+FROM bgl
+```
+
+
+## stmt 2  median=0.300s  runs=[0.3, 0.385, 0.119]
+
+```sql
+-- distinct keys: masked key, masked key restricted to alert rows, alert_tag
+SELECT count(DISTINCT pkey) AS masked_keys,
+       count(DISTINCT pkey) FILTER (WHERE alert_tag <> '-') AS masked_keys_on_alert_rows,
+       count(DISTINCT alert_tag) FILTER (WHERE alert_tag <> '-') AS alert_tags,
+       count(DISTINCT component || '|' || pkey) AS comp_masked_keys
+FROM r1e_bgl
+```
+
+masked_keys | masked_keys_on_alert_rows | alert_tags | comp_masked_keys
+5197 | 80 | 41 | 5197
+-- 1 rows
+
+## stmt 3  median=0.018s  runs=[0.016, 0.018, 0.022]
+
+```sql
+-- key frequency distribution: how many keys cover 50/90/99% of entries
+WITH k AS (SELECT pkey, count(*) n FROM r1e_bgl GROUP BY pkey),
+     r AS (SELECT n, (sum(n) OVER (ORDER BY n DESC ROWS UNBOUNDED PRECEDING))::double / (sum(n) OVER ())::double AS cum, -- NB: int/int is integer division in SereneDB
+                  row_number() OVER (ORDER BY n DESC) rk FROM k)
+SELECT min(rk) FILTER (WHERE cum >= 0.5) k50, min(rk) FILTER (WHERE cum >= 0.9) k90,
+       min(rk) FILTER (WHERE cum >= 0.99) k99, count(*) FILTER (WHERE n = 1) singletons, count(*) total_keys
+FROM r
+```
+
+k50 | k90 | k99 | singletons | total_keys
+3 | 55 | 336 | 2223 | 5197
+-- 1 rows
+
+## stmt 4  median=0.017s  runs=[0.017, 0.019, 0.015]
+
+```sql
+-- how many masked keys per alert_tag (alert_tag is coarser)
+SELECT alert_tag, count(*) n, count(DISTINCT pkey) masked_keys, min(pkey) example_key
+FROM r1e_bgl WHERE alert_tag <> '-' GROUP BY alert_tag ORDER BY n DESC
+```
+
+alert_tag | n | masked_keys | example_key
+KERNDTLB | 152734 | 1 | data TLB error interrupt
+KERNSTOR | 63491 | 1 | data storage interrupt
+APPSEV | 49651 | 5 | ciod: Error reading message prefix after LOAD_MESSAGE on CioStream socket to <IP>: Link has been severed
+KERNMNTF | 31531 | 2 | Lustre mount FAILED : bglio<N> : block_id : location
+KERNTERM | 23338 | 13 | rts: kernel terminated for reason <N>
+KERNREC | 6145 | 2 | Error receiving packet on tree network, expecting type <N> instead of type <N> (softheader=<HEX> <HEX> <HEX> <HEX>) PSR<N>=<HEX> PSR<N>=<HEX> PRXF=<HEX> PIXF=<HEX>
+APPREAD | 5983 | 1 | ciod: failed to read message prefix on control stream (CioStream socket to <IP>
+KERNRTSP | 3983 | 1 | rts panic! - stopping execution
+APPRES | 2370 | 2 | ciod: Error reading message prefix after LOAD_MESSAGE on CioStream socket to <IP>: Connection reset by peer
+APPUNAV | 2048 | 2 | ciod: Error creating node map from file /home/auselton/bgl/<N>mps.sequential.mapfile: Resource temporarily unavailable
+APPTO | 1991 | 1 | ciod: Error reading message prefix on CioStream socket to <IP>, Connection timed out
+KERNMICRO | 1503 | 1 | Microloader Assertion
+APPOUT | 816 | 1 | ciod: LOGIN chdir(/p/gb<N>/stella/RAPTOR/<N>) failed: Input/output error
+KERNMNT | 720 | 1 | Error: unable to mount filesystem
+APPBUSY | 512 | 1 | ciod: Error creating node map from file /p/gb<N>/pakin<N>/sweep<N>d-<N>x<N>x<N>-<N>mk-<N>mmi-<N>pes-sweep/sweep.map: Device or resource busy
+KERNMC | 342 | 8 | DDR machine check register: <HEX> <HEX>
+APPCHILD | 320 | 3 | ciod: Error creating node map from file ./map-xyzt-<N>x<N>x<N>x<N>-<N>-mid: No child processes
+KERNSOCK | 209 | 2 | MailboxMonitor::serviceMailboxes() lib_ido_error: -<N> socket closed
+KERNPOW | 192 | 1 | Power deactivated: <NODE>
+LINKIAP | 166 | 1 | MidplaneSwitchController::receiveTrain() iap failed: <NODE>, status=<HEX> <HEX>
+APPALLOC | 144 | 2 | ciod: Error creating node map from file /home/fgygi/qb/test/h<N>o/h<N>o<N>/txyz<N>.map: Cannot allocate memory
+KERNSERV | 94 | 2 | Power Good signal deactivated: <NODE>. A service action may be required.
+MASABNORM | 37 | 3 | ciodb exited abnormally due to signal: Aborted
+LINKDISC | 24 | 1 | MidplaneSwitchController::sendTrain() port disconnected: <NODE>
+KERNPAN | 18 | 1 | kernel panic
+KERNCON | 16 | 2 | MailboxMonitor::serviceMailboxes() lib_ido_error: -<N> BGLERR_IDO_PKT_TIMEOUT connection lost to node/link/service card
+KERNNOETH | 14 | 1 | no ethernet link
+LINKPAP | 14 | 1 | MidplaneSwitchController::parityAlignment() pap failed: <NODE>, status=<HEX> <HEX>
+MONPOW | 12 | 3 | No power module U<N> found found on link card
+APPTORUS | 10 | 1 | external input interrupt (unit=<HEX> bit=<HEX>): uncorrectable torus error
+MASNORM | 10 | 2 | ciodb exited normally with exit code <N>
+KERNPROG | 5 | 1 | program interrupt
+KERNFLOAT | 3 | 1 | floating point unavailable interrupt
+KERNRTSA | 3 | 2 | rts assertion failed: `personality->version == BGLPERSONALITY_VERSION' in `void start()' at start.cc:<N>
+MMCS | 3 | 1 | L<N> major internal error
+LINKBLL | 2 | 1 | MidplaneSwitchController::clearPort() bll_clear_port failed: <NODE>
+MONNULL | 2 | 1 | While inserting monitor info into DB caught java.lang.NullPointerException
+MONILL | 1 | 1 | monitor caught java.lang.IllegalStateException: while executing CONTROL Operation caught java.io.EOFException and is stopping
+KERNEXT | 1 | 1 | external input interrupt (unit=<HEX> bit=<HEX>): tree header with no target waiting
+KERNBIT | 1 | 1 | ddr: redundant bit steering failed, sequencer timeout
+KERNTLBE | 1 | 1 | instruction TLB error interrupt
+-- 41 rows
+
+## stmt 5  median=0.070s  runs=[0.077, 0.07, 0.07]
+
+```sql
+-- node value kinds (non-standard node values)
+SELECT node_kind, count(*) entries, count(DISTINCT node) distinct_values,
+       count(*) FILTER (WHERE alert_tag <> '-') alert_entries
+FROM r1e_bgl GROUP BY node_kind ORDER BY entries DESC
+```
+
+node_kind | entries | distinct_values | alert_entries
+chip | 4552957 | 66560 | 347967
+nonlocation | 116659 | 3 | 271
+nodecard | 73545 | 2025 | 9
+linkcard | 3909 | 524 | 212
+rack_or_midplane | 893 | 140 | 1
+-- 5 rows
+
+## stmt 6  median=0.005s  runs=[0.004, 0.005, 0.006]
+
+```sql
+-- compare against Loghub-2.0 template count (320 templates per decisions.md)
+SELECT count(DISTINCT event_id) lh2_templates FROM lh2_bgl
+```
+
+lh2_templates
+320
+-- 1 rows
+
+## stmt 7  median=0.140s  runs=[0.132, 0.142, 0.14]
+
+```sql
+-- top keys by volume
+SELECT pkey, count(*) n, count(DISTINCT node) nodes, max(alert_tag) any_tag FROM r1e_bgl GROUP BY pkey ORDER BY n DESC LIMIT 15
+```
+
+pkey | n | nodes | any_tag
+generating core.<N> | 1706751 | 32768 | -
+iar <HEX> dear <HEX> | 442966 | 33004 | -
+<N> floating point alignment exceptions | 257317 | 47418 | -
+CE sym <N>, at <HEX>, mask <HEX> | 201206 | 1653 | -
+<N> double-hummer alignment exceptions | 175184 | 44060 | -
+data TLB error interrupt | 152734 | 541 | KERNDTLB
+<N> total interrupts. <N> critical input interrupts. <N> microseconds total spent on critical input interrupts, <N> microseconds max time in a critical input interrupt. | 135090 | 65533 | -
+<N> microseconds spent in the rbs signal handler during <N> calls. <N> microseconds was the maximum time for a single instance of a correctable ddr. | 135090 | 65533 | -
+<HEX> double-hummer alignment exceptions | 120580 | 51657 | -
+instruction cache parity error corrected | 105924 | 156 | -
+idoproxydb hit ASSERT condition: ASSERT expression=<N> Source file=idotransportmgr.cpp Source line=<N> Function=int IdoTransportMgr::SendPacket(IdoUdpMgr*, BglCtlPavTrace*) | 84168 | 1 | -
+data storage interrupt | 63493 | 22529 | KERNSTOR
+instruction address: <HEX> | 51227 | 23886 | -
+ciod: Received signal <N>, code=<N>, errno=<N>, address=<HEX> | 39457 | 1024 | -
+ | 34470 | 3935 | -
+-- 15 rows

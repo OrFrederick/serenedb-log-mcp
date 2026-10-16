@@ -1,0 +1,307 @@
+# 06_openstack.sql  (repeat=3, median wall time)
+
+
+## stmt 1  median=0.004s  runs=[0.004]
+
+```sql
+-- 06_openstack.sql: per-instance timelines, the 4 labelled anomaly instances, and API latency.
+-- Anomaly UUIDs from anomaly_labels.txt.
+
+DROP TABLE IF EXISTS r1e_os_anom
+```
+
+
+## stmt 2  median=0.016s  runs=[0.016]
+
+```sql
+CREATE TABLE r1e_os_anom AS SELECT * FROM (VALUES
+  ('544fd51c-4edc-4780-baae-ba1d80a0acfc'), ('ae651dff-c7ad-43d6-ac96-bbcd820ccca8'),
+  ('a445709b-6ad0-40ec-8860-bec60b6ca0c2'), ('1643649d-2f42-4303-bfcd-7798baec19f9')) v(instance_id)
+```
+
+
+## stmt 3  median=0.003s  runs=[0.003]
+
+```sql
+-- per-instance lifecycle features
+DROP TABLE IF EXISTS r1e_os_inst
+```
+
+
+## stmt 4  median=0.159s  runs=[0.159]
+
+```sql
+CREATE TABLE r1e_os_inst AS
+WITH e AS (
+  SELECT source_file, instance_id, ts, level, message,
+         regexp_extract(message, 'Took ([0-9.]+) seconds to spawn', 1) spawn_s,
+         regexp_extract(message, 'Took ([0-9.]+) seconds to build', 1) build_s,
+         regexp_extract(message, 'Took ([0-9.]+) seconds to destroy', 1) destroy_s,
+         regexp_extract(message, 'Took ([0-9.]+) seconds to deallocate', 1) dealloc_s
+  FROM openstack WHERE instance_id IS NOT NULL)
+SELECT source_file, instance_id, count(*) entries, min(ts) t_first, max(ts) t_last,
+       epoch_us(max(ts)) / 1e6 - epoch_us(min(ts)) / 1e6 AS life_s,
+       max(nullif(spawn_s, ''))::double spawn_s, max(nullif(build_s, ''))::double build_s,
+       max(nullif(destroy_s, ''))::double destroy_s, max(nullif(dealloc_s, ''))::double dealloc_s,
+       (epoch_us(min(ts) FILTER (WHERE message LIKE '%VM Started%')) - epoch_us(min(ts) FILTER (WHERE message LIKE '%Creating image%'))) / 1e6 AS image_to_start_s,
+       (epoch_us(min(ts) FILTER (WHERE message LIKE '%VM Resumed%')) - epoch_us(min(ts) FILTER (WHERE message LIKE '%VM Paused%'))) / 1e6 AS paused_s,
+       (epoch_us(min(ts) FILTER (WHERE message LIKE '%Creating image%')) - epoch_us(min(ts) FILTER (WHERE message LIKE '%Claim successful%'))) / 1e6 AS claim_to_image_s,
+       count(*) FILTER (WHERE message LIKE '%Claim successful%') n_claim,
+       count(*) FILTER (WHERE message LIKE '%spawned successfully%') n_spawned,
+       count(*) FILTER (WHERE message LIKE '%Terminating instance%') n_term,
+       count(*) FILTER (WHERE message LIKE '%VM Stopped%') n_stopped,
+       count(*) FILTER (WHERE level <> 'INFO') n_nonINFO,
+       instance_id IN (SELECT instance_id FROM r1e_os_anom) AS is_anom
+FROM e GROUP BY source_file, instance_id
+```
+
+
+## stmt 5  median=0.012s  runs=[0.026, 0.012, 0.008]
+
+```sql
+-- the 4 anomalies vs everyone else (same file and all files)
+SELECT source_file, is_anom, count(*) instances, median(entries) med_entries,
+       round(median(spawn_s), 2) med_spawn, round(quantile_cont(spawn_s, 0.95), 2) p95_spawn, round(max(spawn_s), 2) max_spawn,
+       round(median(build_s), 2) med_build, round(median(image_to_start_s), 2) med_img2start,
+       round(median(paused_s), 2) med_paused, round(median(claim_to_image_s), 2) med_claim2img,
+       round(median(destroy_s), 2) med_destroy, sum(n_nonINFO) nonINFO
+FROM r1e_os_inst GROUP BY ALL ORDER BY source_file, is_anom
+```
+
+source_file | is_anom | instances | med_entries | med_spawn | p95_spawn | max_spawn | med_build | med_img2start | med_paused | med_claim2img | med_destroy | noninfo
+openstack_abnormal.log | False | 194 | 25.0 | 19.76 | 21.01 | 26.69 | 20.61 | 13.07 | 6.61 | 0.59 | 1.01 | 0
+openstack_abnormal.log | True | 4 | 25.0 | 36.54 | 49.38 | 50.72 | 37.47 | 29.93 | 6.56 | 0.68 | 1.02 | 0
+openstack_normal1.log | False | 557 | 25.0 | 19.73 | 21.02 | 22.15 | 20.55 | 13.07 | 6.57 | 0.59 | 1.02 | 0
+openstack_normal2.log | False | 1315 | 25.0 | 19.74 | 20.96 | 22.56 | 20.54 | 13.08 | 6.56 | 0.59 | 1.02 | 0
+-- 4 rows
+
+## stmt 6  median=0.013s  runs=[0.024, 0.012, 0.013]
+
+```sql
+-- each anomaly instance with its rank among the instances of its file
+SELECT instance_id, source_file, is_anom, entries, spawn_s, build_s, round(image_to_start_s, 2) img2start, round(paused_s, 2) paused,
+       round(claim_to_image_s, 2) claim2img, destroy_s, dealloc_s, n_nonINFO,
+       rank() OVER (PARTITION BY source_file ORDER BY spawn_s DESC NULLS LAST) spawn_rank,
+       count(*) OVER (PARTITION BY source_file) n_in_file
+FROM r1e_os_inst QUALIFY is_anom OR rank() OVER (PARTITION BY source_file ORDER BY spawn_s DESC NULLS LAST) <= 6
+ORDER BY source_file, spawn_s DESC NULLS LAST
+```
+
+instance_id | source_file | is_anom | entries | spawn_s | build_s | img2start | paused | claim2img | destroy_s | dealloc_s | n_noninfo | spawn_rank | n_in_file
+a445709b-6ad0-40ec-8860-bec60b6ca0c2 | openstack_abnormal.log | True | 25 | 50.72 | 51.59 | 44.45 | 6.19 | 0.68 | 1.02 | 0.62 | 0 | 1 | 198
+544fd51c-4edc-4780-baae-ba1d80a0acfc | openstack_abnormal.log | True | 25 | 41.81 | 42.81 | 34.65 | 7.09 | 0.79 | 1.0 | 0.54 | 0 | 2 | 198
+1643649d-2f42-4303-bfcd-7798baec19f9 | openstack_abnormal.log | True | 25 | 31.27 | 32.12 | 25.22 | 5.98 | 0.67 | 1.02 | 0.44 | 0 | 3 | 198
+ae651dff-c7ad-43d6-ac96-bbcd820ccca8 | openstack_abnormal.log | True | 25 | 29.46 | 30.32 | 22.44 | 6.93 | 0.67 | 1.03 | 0.44 | 0 | 4 | 198
+d7d68893-c44f-4e7c-8d4b-0e7801d62776 | openstack_abnormal.log | False | 25 | 26.69 | 27.61 | 19.81 | 6.8 | 0.74 | 1.02 | 0.46 | 0 | 5 | 198
+7eb500e0-477a-4997-b827-d28ab286cf0c | openstack_abnormal.log | False | 25 | 21.93 | 22.68 | 14.17 | 7.69 | 0.57 | 1.02 | 0.48 | 0 | 6 | 198
+f62173ce-6976-4b89-949e-491776eddf4a | openstack_normal1.log | False | 25 | 22.15 | 22.91 | 14.75 | 7.33 | 0.56 | 1.01 | 0.58 | 0 | 1 | 557
+541bccc6-b118-4be7-a64c-71bbf83ae078 | openstack_normal1.log | False | 25 | 21.85 | 22.59 | 15.02 | 6.75 | 0.55 | 1.05 | 0.57 | 0 | 2 | 557
+ef3fdf05-5421-4ace-9fbb-ae7b3cddd013 | openstack_normal1.log | False | 25 | 21.69 | 22.56 | 14.73 | 6.88 | 0.67 | 1.01 | 0.48 | 0 | 3 | 557
+69771f65-07ff-42df-ab75-e0a067011b79 | openstack_normal1.log | False | 25 | 21.67 | 22.46 | 15.18 | 6.41 | 0.6 | 1.04 | 0.49 | 0 | 4 | 557
+02efdf3e-0370-4f3d-9e06-1db6909a4361 | openstack_normal1.log | False | 25 | 21.62 | 22.37 | 15.3 | 6.25 | 0.57 | 1.04 | 0.46 | 0 | 5 | 557
+01648529-9cfe-4dcd-af4a-da30bdae69f1 | openstack_normal1.log | False | 25 | 21.46 | 22.27 | 14.51 | 6.87 | 0.63 | 1.0 | 0.51 | 0 | 6 | 557
+f0ff0b46-b3cd-43e6-97eb-839fd1cdaa87 | openstack_normal2.log | False | 25 | 22.56 | 23.34 | 14.83 | 7.66 | 0.6 | 1.0 | 0.57 | 0 | 1 | 1315
+35ef7d14-fd25-42fd-8140-9b7f71416c6d | openstack_normal2.log | False | 25 | 22.17 | 22.98 | 14.77 | 7.33 | 0.62 | 1.01 | 0.47 | 0 | 2 | 1315
+15fd1c53-fbef-4d52-a69b-f7166c8845af | openstack_normal2.log | False | 25 | 22.07 | 22.87 | 14.95 | 7.04 | 0.61 | 1.02 | 0.46 | 0 | 3 | 1315
+4c09a3a7-b94d-459f-879c-a7c0d3c21085 | openstack_normal2.log | False | 25 | 22.02 | 22.81 | 14.38 | 7.57 | 0.61 | 1.02 | 0.56 | 0 | 4 | 1315
+09658381-190b-4ff1-a1c0-1e7a6742187e | openstack_normal2.log | False | 26 | 21.99 | 22.77 | 15.0 | 6.91 | 0.57 | 1.05 | 0.46 | 0 | 5 | 1315
+df02fff4-5fd5-4052-b172-60a5452b7a45 | openstack_normal2.log | False | 25 | 21.98 | 22.86 | 14.42 | 7.49 | 0.69 | 1.01 | 0.49 | 0 | 6 | 1315
+-- 18 rows
+
+## stmt 7  median=0.009s  runs=[0.009, 0.012, 0.006]
+
+```sql
+-- incomplete lifecycles (missing events): instances whose entry count or key events differ from the modal 25-line lifecycle
+SELECT source_file, entries, n_claim, n_spawned, n_term, n_stopped, count(*) instances, count(*) FILTER (WHERE is_anom) anom
+FROM r1e_os_inst GROUP BY ALL ORDER BY instances DESC LIMIT 15
+```
+
+source_file | entries | n_claim | n_spawned | n_term | n_stopped | instances | anom
+openstack_normal2.log | 25 | 1 | 1 | 1 | 1 | 1133 | 0
+openstack_normal1.log | 25 | 1 | 1 | 1 | 1 | 476 | 0
+openstack_abnormal.log | 25 | 1 | 1 | 1 | 1 | 166 | 4
+openstack_normal2.log | 24 | 1 | 1 | 1 | 1 | 109 | 0
+openstack_normal2.log | 26 | 1 | 1 | 1 | 1 | 68 | 0
+openstack_normal1.log | 24 | 1 | 1 | 1 | 1 | 57 | 0
+openstack_normal1.log | 26 | 1 | 1 | 1 | 1 | 22 | 0
+openstack_abnormal.log | 24 | 1 | 1 | 1 | 1 | 18 | 0
+openstack_abnormal.log | 26 | 1 | 1 | 1 | 1 | 11 | 0
+openstack_normal2.log | 27 | 1 | 1 | 1 | 1 | 2 | 0
+openstack_normal1.log | 16 | 0 | 1 | 1 | 1 | 1 | 0
+openstack_abnormal.log | 17 | 1 | 1 | 0 | 0 | 1 | 0
+openstack_normal1.log | 9 | 1 | 0 | 0 | 0 | 1 | 0
+openstack_normal2.log | 1 | 0 | 0 | 0 | 1 | 1 | 0
+openstack_abnormal.log | 18 | 0 | 1 | 1 | 1 | 1 | 0
+-- 15 rows
+
+## stmt 8  median=0.009s  runs=[0.02, 0.009, 0.007]
+
+```sql
+-- z-score detector: spawn time vs the abnormal file's other instances (does a simple threshold find exactly the 4?)
+WITH s AS (SELECT avg(spawn_s) mu, stddev_samp(spawn_s) sd, median(spawn_s) med FROM r1e_os_inst WHERE NOT is_anom)
+SELECT i.instance_id, i.source_file, i.is_anom, i.spawn_s, round((i.spawn_s - s.mu) / s.sd, 1) z_spawn
+FROM r1e_os_inst i, s WHERE i.spawn_s > s.med * 1.5 ORDER BY i.spawn_s DESC LIMIT 15
+```
+
+instance_id | source_file | is_anom | spawn_s | z_spawn
+a445709b-6ad0-40ec-8860-bec60b6ca0c2 | openstack_abnormal.log | True | 50.72 | 46.4
+544fd51c-4edc-4780-baae-ba1d80a0acfc | openstack_abnormal.log | True | 41.81 | 33.0
+1643649d-2f42-4303-bfcd-7798baec19f9 | openstack_abnormal.log | True | 31.27 | 17.2
+-- 3 rows
+
+## stmt 9  median=0.012s  runs=[0.015, 0.01, 0.012]
+
+```sql
+-- non-INFO lines in the abnormal file, by template and time (failure evidence vs no evidence)
+SELECT level, component, left(regexp_replace(message, '[0-9a-f]{8}-[0-9a-f-]{27}|[0-9a-f]{40}|[0-9]+', '<*>', 'g'), 110) tmpl, count(*) n,
+       min(ts) first_ts, max(ts) last_ts
+FROM openstack WHERE source_file = 'openstack_abnormal.log' AND level <> 'INFO' GROUP BY ALL ORDER BY n DESC
+```
+
+level | component | tmpl | n | first_ts | last_ts
+WARNING | nova.virt.libvirt.imagecache | Unknown base file: /var/lib/nova/instances/_base/<*> | 270 | 2017-05-14 19:39:36.041000 | 2017-05-14 21:55:50.584000
+WARNING | nova.compute.manager | While synchronizing instance power states, found <*> instances in the database and <*> instances on the hyperv | 4 | 2017-05-14 19:39:09.660000 | 2017-05-14 21:21:19.486000
+WARNING | nova.virt.libvirt.driver | couldn't obtain the vcpu count from domain id: <*>, exception: Requested operation is not valid: cpu affinity  | 1 | 2017-05-14 19:51:01.501000 | 2017-05-14 19:51:01.501000
+-- 3 rows
+
+## stmt 10  median=0.002s  runs=[0.002]
+
+```sql
+-- API latency per 5-minute bucket (nova.osapi_compute.wsgi.server 'time: X')
+DROP TABLE IF EXISTS r1e_os_api
+```
+
+
+## stmt 11  median=0.353s  runs=[0.353]
+
+```sql
+CREATE TABLE r1e_os_api AS
+SELECT source_file, ts, request_id, regexp_extract(message, '"([A-Z]+) ', 1) method,
+       regexp_replace(regexp_extract(message, '"[A-Z]+ ([^ ?]+)', 1), '[0-9a-f]{8}-[0-9a-f-]{27}|[0-9a-f]{32}', '<id>', 'g') path,
+       regexp_extract(message, 'status: ([0-9]+)', 1)::int status,
+       regexp_extract(message, 'time: ([0-9.]+)', 1)::double latency_s
+FROM openstack WHERE component = 'nova.osapi_compute.wsgi.server' AND message LIKE '%time: %'
+```
+
+
+## stmt 12  median=0.034s  runs=[0.034, 0.039, 0.028]
+
+```sql
+SELECT source_file, method, path, status, count(*) n, round(quantile_cont(latency_s, 0.5), 3) p50,
+       round(quantile_cont(latency_s, 0.95), 3) p95, round(quantile_cont(latency_s, 0.99), 3) p99, round(max(latency_s), 3) mx
+FROM r1e_os_api GROUP BY ALL ORDER BY source_file, n DESC
+```
+
+source_file | method | path | status | n | p50 | p95 | p99 | mx
+openstack_abnormal.log | GET | /v2/<id>/servers/detail | 200 | 6519 | 0.264 | 0.365 | 0.437 | 0.547
+openstack_abnormal.log | GET | /v2/<id>/servers/<id> | 200 | 197 | 0.194 | 0.22 | 0.296 | 0.303
+openstack_abnormal.log | POST | /v2/<id>/os-server-external-events | 404 | 196 | 0.089 | 0.098 | 0.105 | 0.111
+openstack_abnormal.log | POST | /v2/<id>/servers | 202 | 196 | 0.507 | 0.599 | 0.784 | 0.944
+openstack_abnormal.log | DELETE | /v2/<id>/servers/<id> | 204 | 196 | 0.265 | 0.296 | 0.333 | 0.448
+openstack_abnormal.log | POST | /v2/<id>/os-server-external-events | 200 | 196 | 0.095 | 0.106 | 0.254 | 0.257
+openstack_abnormal.log | GET | /v2/<id>/images/<id> | 200 | 14 | 0.152 | 0.216 | 0.301 | 0.322
+openstack_abnormal.log | GET | /v2/<id>/flavors/2 | 200 | 14 | 0.061 | 0.07 | 0.07 | 0.07
+openstack_normal1.log | GET | /v2/<id>/servers/detail | 200 | 18209 | 0.264 | 0.365 | 0.439 | 0.675
+openstack_normal1.log | GET | /v2/<id>/servers/<id> | 200 | 556 | 0.193 | 0.216 | 0.294 | 0.313
+openstack_normal1.log | POST | /v2/<id>/os-server-external-events | 200 | 556 | 0.095 | 0.106 | 0.254 | 0.277
+openstack_normal1.log | POST | /v2/<id>/os-server-external-events | 404 | 556 | 0.089 | 0.098 | 0.121 | 0.316
+openstack_normal1.log | POST | /v2/<id>/servers | 202 | 556 | 0.504 | 0.633 | 0.732 | 0.879
+openstack_normal1.log | DELETE | /v2/<id>/servers/<id> | 204 | 556 | 0.262 | 0.291 | 0.311 | 0.549
+openstack_normal1.log | GET | /v2/<id>/flavors/2 | 200 | 38 | 0.06 | 0.068 | 0.07 | 0.071
+openstack_normal1.log | GET | /v2/<id>/images/<id> | 200 | 38 | 0.15 | 0.195 | 0.33 | 0.337
+openstack_normal1.log | GET | /v2/<id>/servers/detail | 503 | 1 | 0.008 | 0.008 | 0.008 | 0.008
+openstack_normal2.log | GET | /v2/<id>/servers/detail | 200 | 42986 | 0.265 | 0.366 | 0.435 | 4.164
+openstack_normal2.log | POST | /v2/<id>/servers | 202 | 1313 | 0.503 | 0.659 | 0.774 | 1.793
+openstack_normal2.log | GET | /v2/<id>/servers/<id> | 200 | 1313 | 0.197 | 0.368 | 0.395 | 0.721
+openstack_normal2.log | POST | /v2/<id>/os-server-external-events | 200 | 1313 | 0.095 | 0.11 | 0.256 | 2.145
+openstack_normal2.log | DELETE | /v2/<id>/servers/<id> | 204 | 1312 | 0.26 | 0.3 | 0.447 | 1.251
+openstack_normal2.log | POST | /v2/<id>/os-server-external-events | 404 | 1312 | 0.09 | 0.104 | 0.262 | 0.72
+openstack_normal2.log | GET | /v2/<id>/flavors/2 | 200 | 92 | 0.06 | 0.068 | 0.074 | 0.076
+openstack_normal2.log | GET | /v2/<id>/images/<id> | 200 | 92 | 0.152 | 0.303 | 0.329 | 0.343
+openstack_normal2.log | GET | /v2/<id>/images | 200 | 1 | 0.365 | 0.365 | 0.365 | 0.365
+openstack_normal2.log | GET | /v2/<id>/servers/detail | 503 | 1 | 0.01 | 0.01 | 0.01 | 0.01
+openstack_normal2.log | GET | /v2/<id>/flavors | 200 | 1 | 0.065 | 0.065 | 0.065 | 0.065
+-- 28 rows
+
+## stmt 13  median=0.032s  runs=[0.039, 0.032, 0.028]
+
+```sql
+-- latency degradation: 5-minute buckets whose p95 is > 3x the file's median-bucket p95
+WITH b AS (SELECT source_file, time_bucket(INTERVAL 5 MINUTE, ts) bucket, count(*) n,
+                  quantile_cont(latency_s, 0.5) p50, quantile_cont(latency_s, 0.95) p95, quantile_cont(latency_s, 0.99) p99,
+                  count(*) FILTER (WHERE status >= 400) errors
+           FROM r1e_os_api GROUP BY 1, 2),
+     m AS (SELECT source_file, median(p95) med_p95, median(p50) med_p50 FROM b GROUP BY 1)
+SELECT b.source_file, b.bucket, b.n, round(b.p50, 3) p50, round(b.p95, 3) p95, round(b.p99, 3) p99, b.errors,
+       round(b.p95 / m.med_p95, 1) p95_ratio
+FROM b JOIN m USING (source_file)
+QUALIFY b.p95 > 3 * m.med_p95 OR row_number() OVER (PARTITION BY b.source_file ORDER BY b.p95 DESC) <= 3
+ORDER BY b.source_file, b.bucket
+```
+
+source_file | bucket | n | p50 | p95 | p99 | errors | p95_ratio
+openstack_abnormal.log | 2017-05-14 19:45:00 | 268 | 0.264 | 0.427 | 0.515 | 8 | 1.1
+openstack_abnormal.log | 2017-05-14 20:45:00 | 278 | 0.263 | 0.427 | 0.544 | 7 | 1.1
+openstack_abnormal.log | 2017-05-14 21:55:00 | 58 | 0.261 | 0.434 | 0.524 | 2 | 1.1
+openstack_normal1.log | 2017-05-16 00:20:00 | 276 | 0.263 | 0.43 | 0.554 | 7 | 1.0
+openstack_normal1.log | 2017-05-16 00:35:00 | 275 | 0.264 | 0.428 | 0.551 | 7 | 1.0
+openstack_normal1.log | 2017-05-16 05:25:00 | 278 | 0.263 | 0.429 | 0.494 | 7 | 1.0
+openstack_normal2.log | 2017-05-17 06:20:00 | 275 | 0.263 | 0.435 | 0.527 | 7 | 1.1
+openstack_normal2.log | 2017-05-17 06:25:00 | 9 | 0.256 | 3.357 | 4.003 | 1 | 8.4
+openstack_normal2.log | 2017-05-17 11:55:00 | 2 | 0.572 | 0.967 | 1.002 | 0 | 2.4
+-- 9 rows
+
+## stmt 14  median=0.022s  runs=[0.022, 0.024, 0.019]
+
+```sql
+-- per-file bucket summary (is there any degradation at all?)
+WITH b AS (SELECT source_file, time_bucket(INTERVAL 5 MINUTE, ts) bucket, quantile_cont(latency_s, 0.95) p95, quantile_cont(latency_s, 0.5) p50 FROM r1e_os_api GROUP BY 1, 2)
+SELECT source_file, count(*) buckets, round(min(p50), 3) min_p50, round(median(p50), 3) med_p50, round(max(p50), 3) max_p50,
+       round(median(p95), 3) med_p95, round(max(p95), 3) max_p95 FROM b GROUP BY 1 ORDER BY 1
+```
+
+source_file | buckets | min_p50 | med_p50 | max_p50 | med_p95 | max_p95
+openstack_abnormal.log | 29 | 0.261 | 0.264 | 0.266 | 0.404 | 0.434
+openstack_normal1.log | 78 | 0.26 | 0.263 | 0.275 | 0.413 | 0.43
+openstack_normal2.log | 248 | 0.087 | 0.263 | 0.572 | 0.4 | 3.357
+-- 3 rows
+
+## stmt 15  median=0.016s  runs=[0.029, 0.01, 0.016]
+
+```sql
+-- API request latency in the minute windows around the 4 anomalies vs the rest of the abnormal file
+WITH w AS (SELECT i.instance_id, i.t_first - INTERVAL 1 MINUTE AS w0, i.t_last + INTERVAL 1 MINUTE AS w1 FROM r1e_os_inst i WHERE is_anom)
+SELECT CASE WHEN EXISTS (SELECT 1 FROM w WHERE a.ts BETWEEN w.w0 AND w.w1) THEN 'inside anomaly windows' ELSE 'rest of abnormal file' END win,
+       count(*) n, round(quantile_cont(latency_s, 0.5), 3) p50, round(quantile_cont(latency_s, 0.95), 3) p95,
+       round(quantile_cont(latency_s, 0.99), 3) p99, count(*) FILTER (WHERE status >= 400) errors
+FROM r1e_os_api a WHERE source_file = 'openstack_abnormal.log' GROUP BY 1
+```
+
+win | n | p50 | p95 | p99 | errors
+inside anomaly windows | 571 | 0.264 | 0.385 | 0.485 | 13
+rest of abnormal file | 6957 | 0.264 | 0.415 | 0.524 | 183
+-- 2 rows
+
+## stmt 16  median=0.009s  runs=[0.01, 0.009, 0.007]
+
+```sql
+-- HTTP status distribution (request failures are explicit status codes, latency is a separate signal)
+SELECT source_file, status, count(*) n FROM r1e_os_api GROUP BY ALL ORDER BY source_file, n DESC
+```
+
+source_file | status | n
+openstack_abnormal.log | 200 | 6940
+openstack_abnormal.log | 204 | 196
+openstack_abnormal.log | 202 | 196
+openstack_abnormal.log | 404 | 196
+openstack_normal1.log | 200 | 19397
+openstack_normal1.log | 202 | 556
+openstack_normal1.log | 404 | 556
+openstack_normal1.log | 204 | 556
+openstack_normal1.log | 503 | 1
+openstack_normal2.log | 200 | 45798
+openstack_normal2.log | 202 | 1313
+openstack_normal2.log | 204 | 1312
+openstack_normal2.log | 404 | 1312
+openstack_normal2.log | 503 | 1
+-- 14 rows

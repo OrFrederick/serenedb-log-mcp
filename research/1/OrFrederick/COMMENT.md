@@ -142,7 +142,7 @@ The spatial rule moves the count by about 150×; the gap moves it by about 1.8×
 
 ### Candidate real Incidents (for #5)
 **BGL:**
-1. **Recurring machine-wide ciod I/O errors (APPSEV)**: 136 Incidents and 49,651 lines from 2005-07-20 to 2006-01-03; 51 Incidents reach 128 of 128 midplanes. The largest was on 2005-08-12 at 23:48 (2,096 lines, 1,024 I/O nodes, 64 racks). This is systemic and our strongest Manager item.
+1. **Recurring machine-wide ciod I/O errors (APPSEV)**: 136 Incidents and 49,651 lines from 2005-07-20 to 2006-01-03; 51 Incidents reach at least 64 of the 128 midplanes, and 19 reach all 128 (re-checked by the coordinator). The largest was on 2005-08-12 at 23:48 (2,096 lines, 1,024 I/O nodes, 64 racks). This is systemic and our strongest Manager item.
 2. **Lustre mount failures (KERNMNTF)**: 105 Incidents and 31,531 lines; 40 are machine-wide. They are concentrated between 2005-08-31 and 2005-09-13. Of these, 100 nodes show an APPSEV → KERNMNTF cascade.
 3. **KERNTERM → KERNREC cascade**: on 2,895 nodes. The largest instance was on 2005-11-15 at 19:18: 2,048 nodes on 4 midplanes, KERNTERM followed by KERNREC about 2 min later.
 4. **KERNSTOR storm**, 2005-06-13/14: 8 Incidents and 63,491 lines. The largest has 20,480 compute cards on 40 midplanes, over 534 s.

@@ -118,7 +118,8 @@ def main():
                 row = {"id": q["id"], "role": q["role"], "trial": trial, "passed": all(ok for ok, _ in res.values()),
                        "checks": res, "calls": [asdict(c) | {"result": None} for c in tr.tool_calls],
                        "answer": tr.final_text, "cost_usd": tr.cost_usd, "duration_ms": tr.duration_ms,
-                       "num_turns": tr.num_turns, "model": tr.model, "golden": golden}
+                       "num_turns": tr.num_turns, "model": tr.model, "golden": golden,
+                       "ledger": tr.ledger, "is_error": tr.is_error, "error": tr.error}  # enough to regrade offline
                 rows.append(row); out.write(json.dumps(row, default=str) + "\n"); out.flush()
                 print(q["id"], trial, "PASS" if row["passed"] else "FAIL",
                       {k: v[1] for k, v in res.items() if not v[0]}, f"${tr.cost_usd:.3f}", flush=True)

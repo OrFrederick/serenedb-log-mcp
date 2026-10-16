@@ -12,6 +12,10 @@ from evtrace import Trace
 
 SECTIONS = ["Observed Facts", "Hypotheses", "Unknowns", "Next Step"]
 CITE_RE = re.compile(r"\[E(\d+)\]")
+# Identifiers, not measurements: "line 222715", "lines 222716–222765", IPs, "HTTP 503", "status: 200", "len: 323".
+LINE_REF_RE = re.compile(r"\b(?:lines?|line_no)\s+\d[\d,]*(?:\s*(?:[–-]|to)\s*\d[\d,]*)?"
+                         r"|\b\d{1,3}(?:\.\d{1,3}){3}\b"
+                         r"|\b(?:HTTP|status(?: code)?|len):?\s*\d+", re.I)
 # A number: 1,234,567 | 1234567 | 12.5 | 12.5% ; not part of an evidence id, ISO date, rack/node id.
 NUM_RE = re.compile(r"(?<![\w\-:./\[])(\d{1,3}(?:,\d{3})+|\d+(?:\.\d+)?)(%?)(?![\w\-:/])")
 
@@ -106,7 +110,7 @@ def check_numbers_grounded(tr: Trace, min_value: float = 10, pct_tol: float = 0.
     problems, checked = [], 0
     for sent in re.split(r"(?<=[.!?])\s+|\n+", facts):
         cites = [f"E{n}" for n in CITE_RE.findall(sent)]
-        clean = CITE_RE.sub("", sent)
+        clean = LINE_REF_RE.sub("", CITE_RE.sub("", sent))
         for tok, pct in NUM_RE.findall(clean):
             val = _to_float(tok)
             if not pct and val < min_value:

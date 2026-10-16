@@ -125,3 +125,24 @@ def test_kappa():
     assert a["kappa"] == 1.0 and a["tpr"] == 1.0
     b = agreement([True, True, True, False, False, False], [True, True, False, False, False, True])
     assert abs(b["kappa"] - (1 / 3)) < 1e-9
+
+
+def test_line_numbers_are_identifiers_not_measurements():
+    text = GOOD.replace("- 152,182 of them", "- Lines 222716–222765 and line 222715 are on the same node. 152,182 of them")
+    assert C.check_numbers_grounded(tr(text))[0]
+
+
+def test_uncited_count_still_fails_next_to_line_number():
+    text = GOOD.replace("on 2005-06-11 [E2]", "on 2005-06-11, see line 222715")
+    assert not C.check_numbers_grounded(tr(text))[0]
+
+
+def test_ip_addresses_and_http_codes_are_not_measurements():
+    text = GOOD.replace("- 152,182 of them",
+                        "- Requests from 10.11.10.1 got HTTP 503 and status: 200, len: 323. 152,182 of them")
+    assert C.check_numbers_grounded(tr(text))[0]
+
+
+def test_uncited_count_with_http_code_still_fails():
+    text = GOOD.replace("on 2005-06-11 [E2]", "on 2005-06-11 with HTTP 503")
+    assert not C.check_numbers_grounded(tr(text))[0]

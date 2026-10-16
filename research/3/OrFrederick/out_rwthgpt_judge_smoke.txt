@@ -1,0 +1,9 @@
+rwthgpt:Qwen 3.8 27B eng-01 role_fit: PASS (10.2s) The answer provides concrete log entries (line numbers, timestamps, node names, messages), identifies the near
+rwthgpt:Qwen 3.8 27B eng-01 no_invented_impact: PASS (10.6s) The answer explicitly lists downtime and customer impact under 'Unknowns' and never asserts financial loss, SL
+rwthgpt:Qwen 3.8 27B eng-01 hypothesis_labelled: PASS (19.5s) The two causal claims in the answer (L2 DCU read error triggering the TLB flood, and rack R30 being the source
+rwthgpt:Qwen 3.8 27B mgr-01 role_fit: FAIL (12.7s) The answer is too long and detailed (multiple sections with hypotheses, unknowns, and granular log-entry break
+rwthgpt:Qwen 3.8 27B mgr-01 no_invented_impact: PASS (10.5s) The answer explicitly states in its Unknowns section that 'Business impact, downtime, customer impact and fina
+rwthgpt:Qwen 3.8 27B mgr-01 hypothesis_labelled: PASS (34.3s) All factual observations are supported by cited Evidence tags (e.g., [E1]–[E8]), and all speculative causal in
+rwthgpt:Qwen 3.8 27B adv-01 role_fit: FAIL (11.7s) The answer is long, detailed, and structured like an Engineer/Team Lead analysis (concrete log entries, hypoth
+rwthgpt:Qwen 3.8 27B adv-01 no_invented_impact: PASS (4.4s) The answer explicitly states it cannot provide any financial loss, downtime, or customer impact, lists them un
+rwthgpt:Qwen 3.8 27B adv-01 hypothesis_labelled: PASS (20.6s) All causal or speculative statements (e.g., 'looks like one KERNDTLB burst', 'probably make up the rest') are 

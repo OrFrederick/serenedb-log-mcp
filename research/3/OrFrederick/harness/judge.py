@@ -8,7 +8,10 @@ held-out 25%; the judge gates CI only when kappa >= 0.6 on that held-out set.
 from __future__ import annotations
 
 import json
+import os
+import re
 import subprocess
+import urllib.request
 
 RUBRIC = {
     "role_fit": "Does the answer serve the stated Role? Engineer: concrete Log Entries, nearby events and a check to run. "
@@ -24,10 +27,37 @@ SCHEMA = {"type": "object", "properties": {"verdict": {"enum": ["PASS", "FAIL", 
           "required": ["verdict", "reason"]}
 
 
+RWTHGPT_URL = os.environ.get("RWTHGPT_BASE_URL", "https://chat.kiconnect.nrw/api/v1") + "/chat/completions"
+
+
+def _judge_rwthgpt(prompt: str, model: str) -> dict:
+    """Free judge on RWTHgpt / KI:connect (OpenAI-compatible). Key only from RWTHGPT_API_KEY."""
+    body = {"model": model, "max_completion_tokens": 4000,
+            "messages": [{"role": "system", "content": "Reply with only a JSON object: "
+                          '{"verdict": "PASS"|"FAIL"|"UNKNOWN", "reason": "<one sentence>"}'},
+                         {"role": "user", "content": prompt}]}
+    req = urllib.request.Request(RWTHGPT_URL, data=json.dumps(body).encode(), method="POST",
+                                 headers={"Content-Type": "application/json",
+                                          "Authorization": f"Bearer {os.environ['RWTHGPT_API_KEY']}"})
+    with urllib.request.urlopen(req, timeout=300) as r:
+        content = json.load(r)["choices"][0]["message"]["content"] or ""
+    m = re.search(r"\{.*\}", content, re.S)
+    try:
+        out = json.loads(m.group(0)) if m else {}
+    except json.JSONDecodeError:
+        out = {}
+    if out.get("verdict") not in ("PASS", "FAIL", "UNKNOWN"):
+        return {"verdict": "UNKNOWN", "reason": f"unparseable judge output: {content[:200]}"}
+    return out
+
+
 def judge(criterion: str, role: str, question: str, answer: str, model: str = "opus") -> dict:
+    """model: a Claude alias/id (via `claude -p`), or `rwthgpt:<model id>` for the free RWTHgpt judge."""
     prompt = (f"You grade one criterion of an answer produced by a log-analysis agent.\nCriterion: {RUBRIC[criterion]}\n"
               f"Role: {role}\nQuestion: {question}\n<answer>\n{answer}\n</answer>\n"
               "Reply PASS or FAIL; reply UNKNOWN if the criterion cannot be judged from the text.")
+    if model.startswith("rwthgpt:"):
+        return _judge_rwthgpt(prompt, model.removeprefix("rwthgpt:"))
     p = subprocess.run(["claude", "-p", prompt, "--tools", "", "--output-format", "json", "--model", model,
                         "--json-schema", json.dumps(SCHEMA), "--no-session-persistence"],
                        capture_output=True, text=True, timeout=180, stdin=subprocess.DEVNULL)

@@ -1,0 +1,807 @@
+[
+ {
+  "who": "postgres",
+  "sql": "DROP VIEW IF EXISTS r4e_mgr_counts",
+  "ok": true,
+  "rows": [],
+  "nrows": 0,
+  "s": 0.018,
+  "note": ""
+ },
+ {
+  "who": "postgres",
+  "sql": "DROP VIEW IF EXISTS r4e_lead_counts",
+  "ok": true,
+  "rows": [],
+  "nrows": 0,
+  "s": 0.005,
+  "note": ""
+ },
+ {
+  "who": "postgres",
+  "sql": "DROP VIEW IF EXISTS r4e_mgr_risk",
+  "ok": true,
+  "rows": [],
+  "nrows": 0,
+  "s": 0.004,
+  "note": ""
+ },
+ {
+  "who": "postgres",
+  "sql": "DROP ROLE IF EXISTS r4e_manager",
+  "ok": true,
+  "rows": [],
+  "nrows": 0,
+  "s": 0.016,
+  "note": ""
+ },
+ {
+  "who": "postgres",
+  "sql": "DROP ROLE IF EXISTS r4e_lead",
+  "ok": false,
+  "error": "role \"r4e_lead\" cannot be dropped because some objects depend on it",
+  "s": 0.007,
+  "note": ""
+ },
+ {
+  "who": "postgres",
+  "sql": "DROP ROLE IF EXISTS r4e_engineer",
+  "ok": false,
+  "error": "role \"r4e_engineer\" cannot be dropped because some objects depend on it",
+  "s": 0.003,
+  "note": ""
+ },
+ {
+  "who": "postgres",
+  "sql": "DROP ROLE IF EXISTS r4e_nopw",
+  "ok": true,
+  "rows": [],
+  "nrows": 0,
+  "s": 0.004,
+  "note": ""
+ },
+ {
+  "who": "postgres",
+  "sql": "SELECT has_table_privilege('public', 'bgl', 'SELECT') AS public_has_select_on_bgl",
+  "ok": true,
+  "rows": [
+   [
+    "False"
+   ]
+  ],
+  "nrows": 1,
+  "s": 0.003,
+  "note": "check PUBLIC first; we must not REVOKE from PUBLIC on a shared table"
+ },
+ {
+  "who": "postgres",
+  "sql": "CREATE VIEW r4e_mgr_counts AS\n  SELECT 'BGL' AS dataset, component, alert_tag AS problem_group, time_bucket(INTERVAL 7 DAY, ts) AS week,\n         count(*) AS entries, count(DISTINCT node) AS nodes, count(DISTINCT regexp_extract(node, '^(R[0-9]+)-', 1)) AS racks\n  FROM bgl WHERE alert_tag <> '-' GROUP BY 1,2,3,4\n  UNION ALL\n  SELECT 'OpenStack', component, level, time_bucket(INTERVAL 7 DAY, ts), count(*), count(DISTINCT instance_id), NULL\n  FROM openstack WHERE level IN ('ERROR','WARNING','CRITICAL') GROUP BY 1,2,3,4",
+  "ok": true,
+  "rows": [],
+  "nrows": 0,
+  "s": 0.01,
+  "note": ""
+ },
+ {
+  "who": "postgres",
+  "sql": "CREATE VIEW r4e_mgr_risk AS\n  SELECT dataset, gkey AS problem_group, n AS entries, nodes, racks, eff_sources, persistence_proxy, trend_ratio, recency_days\n  FROM (SELECT *, active_days AS persistence_proxy FROM r4e_factors) f WHERE kind = 'alert_tag'",
+  "ok": true,
+  "rows": [],
+  "nrows": 0,
+  "s": 0.008,
+  "note": ""
+ },
+ {
+  "who": "postgres",
+  "sql": "CREATE VIEW r4e_lead_counts AS\n  SELECT dataset, kind, gkey AS problem_group, component, team, rack, date_trunc('day', ts) AS day, count(*) AS entries, count(DISTINCT node) AS nodes\n  FROM r4e_pg GROUP BY ALL",
+  "ok": true,
+  "rows": [],
+  "nrows": 0,
+  "s": 0.01,
+  "note": ""
+ },
+ {
+  "who": "postgres",
+  "sql": "CREATE ROLE r4e_manager LOGIN PASSWORD 'r4e_mgr_pw'",
+  "ok": true,
+  "rows": [],
+  "nrows": 0,
+  "s": 0.012,
+  "note": ""
+ },
+ {
+  "who": "postgres",
+  "sql": "CREATE ROLE r4e_lead LOGIN PASSWORD 'r4e_lead_pw'",
+  "ok": false,
+  "error": "role \"r4e_lead\" already exists",
+  "s": 0.005,
+  "note": ""
+ },
+ {
+  "who": "postgres",
+  "sql": "CREATE ROLE r4e_engineer LOGIN PASSWORD 'r4e_eng_pw'",
+  "ok": false,
+  "error": "role \"r4e_engineer\" already exists",
+  "s": 0.005,
+  "note": ""
+ },
+ {
+  "who": "postgres",
+  "sql": "CREATE ROLE r4e_nopw LOGIN",
+  "ok": true,
+  "rows": [],
+  "nrows": 0,
+  "s": 0.007,
+  "note": ""
+ },
+ {
+  "who": "postgres",
+  "sql": "GRANT SELECT ON r4e_mgr_counts TO r4e_manager",
+  "ok": true,
+  "rows": [],
+  "nrows": 0,
+  "s": 0.007,
+  "note": ""
+ },
+ {
+  "who": "postgres",
+  "sql": "GRANT SELECT ON r4e_mgr_risk TO r4e_manager",
+  "ok": true,
+  "rows": [],
+  "nrows": 0,
+  "s": 0.004,
+  "note": ""
+ },
+ {
+  "who": "postgres",
+  "sql": "GRANT SELECT ON r4e_lead_counts TO r4e_lead",
+  "ok": true,
+  "rows": [],
+  "nrows": 0,
+  "s": 0.003,
+  "note": ""
+ },
+ {
+  "who": "postgres",
+  "sql": "GRANT SELECT ON r4e_mgr_counts TO r4e_lead",
+  "ok": true,
+  "rows": [],
+  "nrows": 0,
+  "s": 0.008,
+  "note": ""
+ },
+ {
+  "who": "postgres",
+  "sql": "GRANT SELECT (line_no, ts, node, component, level, alert_tag) ON bgl TO r4e_lead",
+  "ok": true,
+  "rows": [],
+  "nrows": 0,
+  "s": 0.005,
+  "note": "column grant: lead may see who/when but not message/raw"
+ },
+ {
+  "who": "postgres",
+  "sql": "GRANT SELECT ON bgl TO r4e_engineer",
+  "ok": true,
+  "rows": [],
+  "nrows": 0,
+  "s": 0.003,
+  "note": ""
+ },
+ {
+  "who": "postgres",
+  "sql": "GRANT SELECT ON openstack TO r4e_engineer",
+  "ok": true,
+  "rows": [],
+  "nrows": 0,
+  "s": 0.004,
+  "note": ""
+ },
+ {
+  "who": "postgres",
+  "sql": "REVOKE ALL ON bgl FROM r4e_manager",
+  "ok": true,
+  "rows": [],
+  "nrows": 0,
+  "s": 0.007,
+  "note": "explicit revoke on base table (no-op if never granted)"
+ },
+ {
+  "who": "postgres",
+  "sql": "REVOKE ALL ON openstack FROM r4e_manager",
+  "ok": true,
+  "rows": [],
+  "nrows": 0,
+  "s": 0.004,
+  "note": ""
+ },
+ {
+  "who": "postgres",
+  "sql": "SELECT 'r4e_manager' r, has_table_privilege('r4e_manager', 'bgl', 'SELECT') bgl, has_table_privilege('r4e_manager', 'r4e_mgr_counts', 'SELECT') mgr_view,\n       has_column_privilege('r4e_manager', 'bgl', 'message', 'SELECT') bgl_message, has_column_privilege('r4e_manager', 'bgl', 'node', 'SELECT') bgl_node",
+  "ok": true,
+  "rows": [
+   [
+    "r4e_manager",
+    "False",
+    "True",
+    "False",
+    "False"
+   ]
+  ],
+  "nrows": 1,
+  "s": 0.004,
+  "note": ""
+ },
+ {
+  "who": "postgres",
+  "sql": "SELECT 'r4e_lead' r, has_table_privilege('r4e_lead', 'bgl', 'SELECT') bgl, has_table_privilege('r4e_lead', 'r4e_mgr_counts', 'SELECT') mgr_view,\n       has_column_privilege('r4e_lead', 'bgl', 'message', 'SELECT') bgl_message, has_column_privilege('r4e_lead', 'bgl', 'node', 'SELECT') bgl_node",
+  "ok": true,
+  "rows": [
+   [
+    "r4e_lead",
+    "False",
+    "True",
+    "False",
+    "True"
+   ]
+  ],
+  "nrows": 1,
+  "s": 0.003,
+  "note": ""
+ },
+ {
+  "who": "postgres",
+  "sql": "SELECT 'r4e_engineer' r, has_table_privilege('r4e_engineer', 'bgl', 'SELECT') bgl, has_table_privilege('r4e_engineer', 'r4e_mgr_counts', 'SELECT') mgr_view,\n       has_column_privilege('r4e_engineer', 'bgl', 'message', 'SELECT') bgl_message, has_column_privilege('r4e_engineer', 'bgl', 'node', 'SELECT') bgl_node",
+  "ok": true,
+  "rows": [
+   [
+    "r4e_engineer",
+    "True",
+    "False",
+    "True",
+    "True"
+   ]
+  ],
+  "nrows": 1,
+  "s": 0.004,
+  "note": ""
+ },
+ {
+  "who": "postgres",
+  "sql": "SELECT relname, relacl FROM pg_class WHERE relname IN ('bgl', 'r4e_mgr_counts', 'r4e_lead_counts', 'r4e_mgr_risk')",
+  "ok": true,
+  "rows": [
+   [
+    "bgl",
+    "['postgres=arwdDxtm/postgres', 'r2p_reader=r/postgres', 'r4e_engineer=r/postgres']"
+   ],
+   [
+    "r4e_lead_counts",
+    "['postgres=arwdDxtm/postgres', 'r4e_lead=r/postgres']"
+   ],
+   [
+    "r4e_mgr_counts",
+    "['postgres=arwdDxtm/postgres', 'r4e_manager=r/postgres', 'r4e_lead=r/postgres']"
+   ],
+   [
+    "r4e_mgr_risk",
+    "['postgres=arwdDxtm/postgres', 'r4e_manager=r/postgres']"
+   ]
+  ],
+  "nrows": 4,
+  "s": 0.007,
+  "note": ""
+ },
+ {
+  "who": "r4e_manager",
+  "sql": "CONNECT password=<right>",
+  "ok": true,
+  "rows": [],
+  "note": "connected"
+ },
+ {
+  "who": "r4e_manager",
+  "sql": "CONNECT password=<wrong>",
+  "ok": true,
+  "rows": [],
+  "note": "connected"
+ },
+ {
+  "who": "r4e_nopw",
+  "sql": "CONNECT password=<none>",
+  "ok": true,
+  "rows": [],
+  "note": "connected"
+ },
+ {
+  "who": "r4e_manager",
+  "sql": "SELECT current_user, session_user",
+  "ok": true,
+  "rows": [
+   [
+    "r4e_manager",
+    "r4e_manager"
+   ]
+  ],
+  "nrows": 1,
+  "s": 0.003,
+  "note": ""
+ },
+ {
+  "who": "r4e_manager",
+  "sql": "SELECT dataset, problem_group, sum(entries) entries FROM r4e_mgr_counts GROUP BY 1,2 ORDER BY 3 DESC LIMIT 5",
+  "ok": true,
+  "rows": [
+   [
+    "BGL",
+    "KERNDTLB",
+    "152734"
+   ],
+   [
+    "BGL",
+    "KERNSTOR",
+    "63491"
+   ],
+   [
+    "BGL",
+    "APPSEV",
+    "49651"
+   ],
+   [
+    "BGL",
+    "KERNMNTF",
+    "31531"
+   ],
+   [
+    "BGL",
+    "KERNTERM",
+    "23338"
+   ]
+  ],
+  "nrows": 5,
+  "s": 0.289,
+  "note": "allowed: aggregated view"
+ },
+ {
+  "who": "r4e_manager",
+  "sql": "SELECT problem_group, entries, nodes, eff_sources, trend_ratio FROM r4e_mgr_risk ORDER BY entries DESC LIMIT 3",
+  "ok": true,
+  "rows": [
+   [
+    "KERNDTLB",
+    "152734",
+    "541",
+    "1.0072676031462695",
+    "4.102967012581704e-05"
+   ],
+   [
+    "KERNSTOR",
+    "63491",
+    "22529",
+    "21628.54764216916",
+    "9.87000987000987e-05"
+   ],
+   [
+    "APPSEV",
+    "49651",
+    "1024",
+    "1006.6045286186823",
+    "1.775274819945553"
+   ]
+  ],
+  "nrows": 3,
+  "s": 0.03,
+  "note": ""
+ },
+ {
+  "who": "r4e_manager",
+  "sql": "SELECT count(*) FROM bgl",
+  "ok": false,
+  "error": "permission denied for table bgl",
+  "s": 0.003,
+  "note": "base table must be refused"
+ },
+ {
+  "who": "r4e_manager",
+  "sql": "SELECT message FROM bgl LIMIT 1",
+  "ok": false,
+  "error": "permission denied for table bgl",
+  "s": 0.006,
+  "note": ""
+ },
+ {
+  "who": "r4e_manager",
+  "sql": "SELECT message FROM r4e_mgr_counts LIMIT 1",
+  "ok": false,
+  "error": "Referenced column \"message\" not found in FROM clause!",
+  "s": 0.006,
+  "note": "no message column in view"
+ },
+ {
+  "who": "r4e_manager",
+  "sql": "SELECT * FROM openstack LIMIT 1",
+  "ok": false,
+  "error": "permission denied for table openstack",
+  "s": 0.002,
+  "note": ""
+ },
+ {
+  "who": "r4e_manager",
+  "sql": "SELECT count(*) FROM r4e_pg",
+  "ok": false,
+  "error": "permission denied for table r4e_pg",
+  "s": 0.003,
+  "note": "my own helper table with masked text: not granted"
+ },
+ {
+  "who": "r4e_manager",
+  "sql": "SELECT count(*) FROM r2p_bgl_idx WHERE message @@ 'severed'",
+  "ok": false,
+  "error": "permission denied for table bgl",
+  "s": 0.006,
+  "note": "inverted index queried as a relation: does it bypass table grants?"
+ },
+ {
+  "who": "r4e_manager",
+  "sql": "SELECT count(*) FROM r4e_lead_counts",
+  "ok": false,
+  "error": "permission denied for view r4e_lead_counts",
+  "s": 0.002,
+  "note": "other Role's view"
+ },
+ {
+  "who": "r4e_manager",
+  "sql": "CREATE VIEW r4e_mgr_sneak AS SELECT message FROM bgl",
+  "ok": false,
+  "error": "permission denied for schema public",
+  "s": 0.002,
+  "note": "can the manager create a view over bgl?"
+ },
+ {
+  "who": "r4e_manager",
+  "sql": "SELECT * FROM r4e_mgr_sneak LIMIT 1",
+  "ok": false,
+  "error": "Table with name r4e_mgr_sneak does not exist!",
+  "s": 0.005,
+  "note": ""
+ },
+ {
+  "who": "r4e_manager",
+  "sql": "CREATE TABLE r4e_mgr_tmp AS SELECT 1 x",
+  "ok": false,
+  "error": "permission denied for schema public",
+  "s": 0.006,
+  "note": "can the manager create tables in public?"
+ },
+ {
+  "who": "r4e_manager",
+  "sql": "SELECT definition FROM pg_views WHERE viewname = 'r4e_mgr_counts'",
+  "ok": true,
+  "rows": [
+   [
+    "(SELECT 'BGL' AS dataset, component, alert_tag AS problem_group, time_bucket(to_days(CAST(trunc(CAST(7 AS DOUBLE)) AS INTEGER)), ts) AS \"week\", count_star() AS entries, count(DISTINCT node) AS nodes, count(DISTINCT regexp_extract(node, '^(R[0-9]+)-', 1)) AS racks FROM bgl WHERE (alert_tag != '-') GROUP BY 1, 2, 3, 4) UNION ALL (SELECT 'OpenStack', component, \"level\", time_bucket(to_days(CAST(trunc(CAST(7 AS DOUBLE)) AS INTEGER)), ts), count_star(), count(DISTINCT instance_id), NULL FROM openstack WHERE (\"level\" IN ('ERROR', 'WARNING', 'CRITICAL')) GROUP BY 1, 2, 3, 4);"
+   ]
+  ],
+  "nrows": 1,
+  "s": 0.035,
+  "note": "catalog: view SQL visible (metadata, not data)"
+ },
+ {
+  "who": "r4e_manager",
+  "sql": "SELECT * FROM read_csv('/etc/passwd') LIMIT 2",
+  "ok": true,
+  "rows": [
+   [
+    "daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin"
+   ],
+   [
+    "bin:x:2:2:bin:/bin:/usr/sbin/nologin"
+   ]
+  ],
+  "nrows": 2,
+  "s": 0.038,
+  "note": "file-reading table function as non-superuser"
+ },
+ {
+  "who": "r4e_manager",
+  "sql": "GRANT SELECT ON bgl TO r4e_manager",
+  "ok": false,
+  "error": "permission denied for table bgl",
+  "s": 0.006,
+  "note": "self-escalation"
+ },
+ {
+  "who": "r4e_manager",
+  "sql": "SET ROLE postgres",
+  "ok": false,
+  "error": "permission denied to set role \"postgres\"",
+  "s": 0.004,
+  "note": "role switch"
+ },
+ {
+  "who": "r4e_manager",
+  "sql": "SELECT problem_group, sum(entries) FROM r4e_mgr_counts WHERE dataset='BGL' GROUP BY 1 ORDER BY 2 DESC LIMIT 3",
+  "ok": true,
+  "rows": [
+   [
+    "KERNDTLB",
+    "152734"
+   ],
+   [
+    "KERNSTOR",
+    "63491"
+   ],
+   [
+    "APPSEV",
+    "49651"
+   ]
+  ],
+  "nrows": 3,
+  "s": 0.106,
+  "note": "timing run 1: view aggregates 4.7M rows at query time"
+ },
+ {
+  "who": "r4e_manager",
+  "sql": "SELECT problem_group, sum(entries) FROM r4e_mgr_counts WHERE dataset='BGL' GROUP BY 1 ORDER BY 2 DESC LIMIT 3",
+  "ok": true,
+  "rows": [
+   [
+    "KERNDTLB",
+    "152734"
+   ],
+   [
+    "KERNSTOR",
+    "63491"
+   ],
+   [
+    "APPSEV",
+    "49651"
+   ]
+  ],
+  "nrows": 3,
+  "s": 0.12,
+  "note": "timing run 2: view aggregates 4.7M rows at query time"
+ },
+ {
+  "who": "r4e_manager",
+  "sql": "SELECT problem_group, sum(entries) FROM r4e_mgr_counts WHERE dataset='BGL' GROUP BY 1 ORDER BY 2 DESC LIMIT 3",
+  "ok": true,
+  "rows": [
+   [
+    "KERNDTLB",
+    "152734"
+   ],
+   [
+    "KERNSTOR",
+    "63491"
+   ],
+   [
+    "APPSEV",
+    "49651"
+   ]
+  ],
+  "nrows": 3,
+  "s": 0.126,
+  "note": "timing run 3: view aggregates 4.7M rows at query time"
+ },
+ {
+  "who": "r4e_manager",
+  "sql": "DROP VIEW IF EXISTS r4e_mgr_sneak",
+  "ok": true,
+  "rows": [],
+  "nrows": 0,
+  "s": 0.013,
+  "note": ""
+ },
+ {
+  "who": "r4e_manager",
+  "sql": "DROP TABLE IF EXISTS r4e_mgr_tmp",
+  "ok": true,
+  "rows": [],
+  "nrows": 0,
+  "s": 0.011,
+  "note": ""
+ },
+ {
+  "who": "r4e_lead",
+  "sql": "SELECT count(*) FROM bgl",
+  "ok": true,
+  "rows": [
+   [
+    "4747963"
+   ]
+  ],
+  "nrows": 1,
+  "s": 0.003,
+  "note": "count(*) with column grant only"
+ },
+ {
+  "who": "r4e_lead",
+  "sql": "SELECT component, count(*) FROM bgl GROUP BY 1 ORDER BY 2 DESC LIMIT 3",
+  "ok": true,
+  "rows": [
+   [
+    "KERNEL",
+    "4324651"
+   ],
+   [
+    "APP",
+    "228536"
+   ],
+   [
+    "DISCOVERY",
+    "97172"
+   ]
+  ],
+  "nrows": 3,
+  "s": 0.016,
+  "note": "granted columns"
+ },
+ {
+  "who": "r4e_lead",
+  "sql": "SELECT message FROM bgl LIMIT 1",
+  "ok": false,
+  "error": "permission denied for table bgl",
+  "s": 0.003,
+  "note": "ungranted column"
+ },
+ {
+  "who": "r4e_lead",
+  "sql": "SELECT * FROM bgl LIMIT 1",
+  "ok": false,
+  "error": "permission denied for table bgl",
+  "s": 0.004,
+  "note": "SELECT * includes ungranted columns"
+ },
+ {
+  "who": "r4e_lead",
+  "sql": "SELECT count(*) FROM bgl WHERE message LIKE '%severed%'",
+  "ok": false,
+  "error": "permission denied for table bgl",
+  "s": 0.005,
+  "note": "filter on ungranted column"
+ },
+ {
+  "who": "r4e_lead",
+  "sql": "SELECT problem_group, sum(entries) FROM r4e_lead_counts WHERE kind='alert_tag' GROUP BY 1 ORDER BY 2 DESC LIMIT 3",
+  "ok": true,
+  "rows": [
+   [
+    "KERNDTLB",
+    "152734"
+   ],
+   [
+    "KERNSTOR",
+    "63491"
+   ],
+   [
+    "APPSEV",
+    "49651"
+   ]
+  ],
+  "nrows": 3,
+  "s": 0.125,
+  "note": ""
+ },
+ {
+  "who": "r4e_engineer",
+  "sql": "SELECT left(message, 60) FROM bgl WHERE alert_tag = 'APPSEV' LIMIT 1",
+  "ok": true,
+  "rows": [
+   [
+    "ciod: Error reading message prefix after LOGIN_MESSAGE on Ci"
+   ]
+  ],
+  "nrows": 1,
+  "s": 0.023,
+  "note": ""
+ },
+ {
+  "who": "r4e_engineer",
+  "sql": "SELECT count(*) FROM r2p_bgl_idx WHERE message @@ '\"Link has been severed\"'",
+  "ok": true,
+  "rows": [
+   [
+    "52690"
+   ]
+  ],
+  "nrows": 1,
+  "s": 0.031,
+  "note": "engineer FTS via index relation"
+ },
+ {
+  "who": "r4e_engineer",
+  "sql": "SELECT count(*) FROM r4e_mgr_counts",
+  "ok": false,
+  "error": "permission denied for view r4e_mgr_counts",
+  "s": 0.006,
+  "note": "engineer not granted manager view"
+ },
+ {
+  "who": "r4e_manager",
+  "sql": "SELECT count(*) FROM glob('/var/lib/serenedb/*')",
+  "ok": true,
+  "rows": [
+   [
+    "1"
+   ]
+  ],
+  "nrows": 1,
+  "s": 0.084,
+  "note": "list server data dir"
+ },
+ {
+  "who": "r4e_manager",
+  "sql": "SELECT * FROM read_text('/etc/hostname')",
+  "ok": true,
+  "rows": [
+   [
+    "/etc/hostname",
+    "923786aa27f1\n",
+    "13",
+    "2026-10-16 21:39:25+00:00"
+   ]
+  ],
+  "nrows": 1,
+  "s": 0.026,
+  "note": "read_text arbitrary server file"
+ },
+ {
+  "who": "r4e_manager",
+  "sql": "SELECT count(*) FROM read_csv('/var/lib/serenedb/pg_hba.conf')",
+  "ok": false,
+  "error": "No files found that match the pattern \"/var/lib/serenedb/pg_hba.conf\"",
+  "s": 0.018,
+  "note": "read server auth config"
+ },
+ {
+  "who": "r4e_manager",
+  "sql": "COPY (SELECT 1 AS x) TO '/tmp/r4e_mgr_copy.csv'",
+  "ok": false,
+  "error": "permission denied to COPY to a file",
+  "s": 0.039,
+  "note": "write a server file"
+ },
+ {
+  "who": "r4e_manager",
+  "sql": "SELECT 1 FROM read_parquet('https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_000.parquet') LIMIT 1",
+  "ok": true,
+  "rows": [
+   [
+    "1"
+   ]
+  ],
+  "nrows": 1,
+  "s": 2.835,
+  "note": "remote read (egress)"
+ },
+ {
+  "who": "r4e_manager",
+  "sql": "ATTACH ':memory:' AS r4e_mem",
+  "ok": false,
+  "error": "permission denied to create database",
+  "s": 0.011,
+  "note": "ATTACH"
+ },
+ {
+  "who": "r4e_manager",
+  "sql": "SELECT current_setting('hba')",
+  "ok": true,
+  "rows": [
+   [
+    ""
+   ]
+  ],
+  "nrows": 1,
+  "s": 0.005,
+  "note": "read hba setting"
+ },
+ {
+  "who": "r4e_manager",
+  "sql": "SET hba = 'host all all 0.0.0.0/0 trust'",
+  "ok": false,
+  "error": "permission denied to set parameter \"hba\"",
+  "s": 0.009,
+  "note": "change auth as non-superuser"
+ }
+]

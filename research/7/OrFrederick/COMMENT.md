@@ -187,7 +187,7 @@ All code and outputs are at https://github.com/OrFrederick/serenedb-log-mcp/tree
 - **Catalogue reading was tested with gpt-oss-120b**, not Claude. Guess: Claude does at least as well. It costs about 6.7k tokens per BGL catalogue read, and a session needs it once.
 - **Latency on a shared host.** Other agents and Docker were running, so local embedding throughput (22 lines/s) is far below an idle machine. Relative ordering only.
 - e5-mistral's poor result is probably a configuration issue at the endpoint and was not investigated.
-- Retrieval quality on the official loader's templates is unknown, because we used the Loghub-2.0 templates. Our own template miner (#3/#6) may produce different text.
+- Retrieval quality on the official loader's templates is unknown, because we used the Loghub-2.0 templates. Our own template miner (#6) may produce different text.
 
 ### Open questions for the humans
 1. Should `list_patterns` (full catalogue to the agent) be the primary pattern-finding path? It ties with embeddings at zero install cost.

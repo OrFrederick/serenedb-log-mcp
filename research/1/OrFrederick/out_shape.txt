@@ -1,0 +1,7 @@
+shape|incidents|lines|categories
+single-node storm|1|152182|1
+multi-midplane|226|96113|19
+machine-wide (>=64 of 128 midplanes)|136|88200|11
+one midplane, several nodes|119|10740|10
+single-node isolated|720|1225|34
+-- 5 rows, 0.055s

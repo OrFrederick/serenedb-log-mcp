@@ -1,0 +1,6 @@
+source_file|labelled|n|avg_spawn|max_spawn|avg_pause|max_pause|avg_image|avg_stop|max_stop
+openstack_abnormal.log|False|194|19.84|26.69|6.75|7.86|13.14|15.29|15.98
+openstack_abnormal.log|True|4|38.32|50.72|6.67|7.24|31.69|15.30|15.45
+openstack_normal1.log|False|557|19.78|22.15|6.74|7.92|13.10|15.31|15.75
+openstack_normal2.log|False|1315|19.79|22.56|6.73|8.21|13.12|15.31|15.97
+-- 4 rows, 0.465s

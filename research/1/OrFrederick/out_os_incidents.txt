@@ -1,0 +1,32 @@
+source_file|level|tpl|incidents|lines|first_ts
+openstack_normal2.log|WARNING|Unknown base file: /var/lib/nova/instances/_base/<N><N>ac<N>e<N>|1|1951|2017-05-16 15:15:55.746000
+openstack_normal1.log|WARNING|Unknown base file: /var/lib/nova/instances/_base/<N><N>ac<N>e<N>|1|838|2017-05-16 00:00:20.345000
+openstack_abnormal.log|WARNING|Unknown base file: /var/lib/nova/instances/_base/<N><N>ac<N>e<N>|1|270|2017-05-14 19:39:36.041000
+openstack_normal2.log|WARNING|While synchronizing instance power states, found <N> instances in the database and <N> ins|27|27|2017-05-16 16:00:25.656000
+openstack_normal1.log|WARNING|While synchronizing instance power states, found <N> instances in the database and <N> ins|14|14|2017-05-16 00:09:41.850000
+openstack_normal2.log|WARNING|couldn't obtain the vcpu count from domain id: <UUID>, exception: Requested operation is n|7|9|2017-05-16 18:58:43.225000
+openstack_normal2.log|ERROR|Exit code: <N>|7|7|2017-05-16 16:30:35.360000
+openstack_normal2.log|ERROR|    inuse_backing_images = self._list_backing_images()|7|7|2017-05-16 16:30:35.360000
+openstack_normal2.log|ERROR|Traceback (most recent call last):|7|7|2017-05-16 16:30:35.360000
+openstack_normal2.log|ERROR|Command: /usr/bin/python -m oslo_concurrency.prlimit --as=<N> --cpu=<N> -- env LC_ALL=C LA|7|7|2017-05-16 16:30:35.360000
+openstack_normal2.log|ERROR|Stderr: u"qemu-img: Could not open '/var/lib/nova/instances/<UUID>/disk': Could not open '|7|7|2017-05-16 16:30:35.360000
+openstack_normal2.log|ERROR|  File "/usr/lib/python<N>/dist-packages/nova/virt/libvirt/utils.py", line <N>, in get_dis|7|7|2017-05-16 16:30:35.360000
+openstack_normal2.log|ERROR|  File "/usr/lib/python<N>/dist-packages/nova/compute/manager.py", line <N>, in _run_image|7|7|2017-05-16 16:30:35.360000
+openstack_normal2.log|ERROR|  File "/usr/lib/python<N>/dist-packages/oslo_service/periodic_task.py", line <N>, in run_|7|7|2017-05-16 16:30:35.360000
+openstack_normal2.log|ERROR|  File "/usr/lib/python<N>/dist-packages/nova/virt/libvirt/driver.py", line <N>, in manage|7|7|2017-05-16 16:30:35.360000
+openstack_normal2.log|ERROR|  File "/usr/lib/python<N>/dist-packages/nova/virt/libvirt/imagecache.py", line <N>, in _l|7|7|2017-05-16 16:30:35.360000
+openstack_normal2.log|ERROR|    disk_path)|7|7|2017-05-16 16:30:35.360000
+openstack_normal2.log|ERROR|    raise exception.InvalidDiskInfo(reason=msg)|7|7|2017-05-16 16:30:35.360000
+openstack_normal2.log|ERROR|  File "/usr/lib/python<N>/dist-packages/nova/virt/images.py", line <N>, in qemu_img_info|7|7|2017-05-16 16:30:35.360000
+openstack_normal2.log|ERROR|InvalidDiskInfo: Disk info file is invalid: qemu-img failed to execute on /var/lib/nova/in|7|7|2017-05-16 16:30:35.360000
+openstack_normal2.log|ERROR|  File "/usr/lib/python<N>/dist-packages/nova/virt/libvirt/imagecache.py", line <N>, in _a|7|7|2017-05-16 16:30:35.360000
+openstack_normal2.log|ERROR|    self.image_cache_manager.update(context, all_instances)|7|7|2017-05-16 16:30:35.360000
+openstack_normal2.log|ERROR|    self.driver.manage_image_cache(context, filtered_instances)|7|7|2017-05-16 16:30:35.360000
+openstack_normal2.log|ERROR|    self._age_and_verify_cached_images(context, all_instances, base_dir)|7|7|2017-05-16 16:30:35.360000
+openstack_normal2.log|ERROR|  File "/usr/lib/python<N>/dist-packages/nova/virt/libvirt/imagecache.py", line <N>, in up|7|7|2017-05-16 16:30:35.360000
+openstack_normal2.log|ERROR|Stdout: u''|7|7|2017-05-16 16:30:35.360000
+openstack_normal2.log|ERROR|    backing_file = images.qemu_img_info(path, format).backing_file|7|7|2017-05-16 16:30:35.360000
+openstack_normal2.log|ERROR|Error during ComputeManager._run_image_cache_manager_pass|7|7|2017-05-16 16:30:35.360000
+openstack_normal2.log|ERROR|    task(self, context)|7|7|2017-05-16 16:30:35.360000
+openstack_abnormal.log|WARNING|While synchronizing instance power states, found <N> instances in the database and <N> ins|4|4|2017-05-14 19:39:09.660000
+-- 61 rows, 0.612s

@@ -38,3 +38,6 @@ Adopt NoNaim95's converged recommendation with one change in implementation:
 1. Confirm the glossary additions above, and whether "Pattern" or #6's term is canonical for the key.
 2. Expose `gap_s` as a parameter (stable band 60–600 s) or fix it at 300 s for reproducibility?
 3. Lead story for #5: the one-node DTLB loop (152,182 lines, 1 Incident) or the machine-wide APPSEV recurrence?
+
+### On NoNaim95's Decision proposal
+NoNaim95 posted a Decision proposal while this verification ran. It matches ours in substance, and **we endorse it**. Our evidence settles its open decision 4: the full-row query-time path does not hold up on our host either (5.5–12.3 s count-only, 37–79 s with Spread, see above), while filtered and alert-level paths stay at 0.3–1.2 s. So precompute the Pattern id column and the default Incident table at load time, and run query-time Incidents only on filtered data. Two wording fixes for the proposal: KERNTERM → KERNREC should cite the per-node median delay (85 s, range 47–142 s), and the README must say `ts` is US Pacific local time with DST, so gaps are computed on UTC.

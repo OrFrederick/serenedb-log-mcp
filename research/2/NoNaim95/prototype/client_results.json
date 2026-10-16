@@ -1,0 +1,398 @@
+[
+ {
+  "tool": "describe_corpus",
+  "args": {},
+  "ms": 505,
+  "is_error": false,
+  "text_chars": 1247,
+  "text_tokens": 311,
+  "sc_chars": 1916,
+  "sc_tokens": 479,
+  "total": 4955783,
+  "returned": 2,
+  "truncated": true,
+  "query_ms": 436.1
+ },
+ {
+  "tool": "search_logs",
+  "args": {
+   "query": "ciod failed",
+   "dataset": "bgl",
+   "limit": 20
+  },
+  "ms": 507,
+  "is_error": false,
+  "text_chars": 3832,
+  "text_tokens": 958,
+  "sc_chars": 7938,
+  "sc_tokens": 1984,
+  "total": 50918,
+  "returned": 20,
+  "truncated": true,
+  "query_ms": 480.2
+ },
+ {
+  "tool": "search_logs",
+  "args": {
+   "query": "ciod failed",
+   "dataset": "bgl",
+   "limit": 50
+  },
+  "ms": 121,
+  "is_error": false,
+  "text_chars": 8932,
+  "text_tokens": 2233,
+  "sc_chars": 18798,
+  "sc_tokens": 4699,
+  "total": 50918,
+  "returned": 50,
+  "truncated": true,
+  "query_ms": 103.3
+ },
+ {
+  "tool": "search_logs",
+  "args": {
+   "query": "kernel panic",
+   "mode": "phrase",
+   "limit": 20
+  },
+  "ms": 129,
+  "is_error": false,
+  "text_chars": 2053,
+  "text_tokens": 513,
+  "sc_chars": 5814,
+  "sc_tokens": 1453,
+  "total": 18,
+  "returned": 18,
+  "truncated": false,
+  "query_ms": 113.1
+ },
+ {
+  "tool": "search_logs",
+  "args": {
+   "query": "interupt",
+   "mode": "fuzzy",
+   "limit": 20,
+   "time_from": "2005-06-01",
+   "time_to": "2005-07-01"
+  },
+  "ms": 369,
+  "is_error": false,
+  "text_chars": 2549,
+  "text_tokens": 637,
+  "sc_chars": 6848,
+  "sc_tokens": 1712,
+  "total": 332841,
+  "returned": 20,
+  "truncated": true,
+  "query_ms": 346.9
+ },
+ {
+  "tool": "search_logs",
+  "args": {
+   "query": "instance",
+   "dataset": "openstack",
+   "levels": [
+    "ERROR",
+    "WARNING"
+   ],
+   "limit": 20
+  },
+  "ms": 200,
+  "is_error": false,
+  "text_chars": 4658,
+  "text_tokens": 1164,
+  "sc_chars": 9667,
+  "sc_tokens": 2416,
+  "total": 45,
+  "returned": 20,
+  "truncated": true,
+  "query_ms": 191.1
+ },
+ {
+  "tool": "search_logs",
+  "args": {
+   "query": "error",
+   "components": [
+    "APP"
+   ],
+   "levels": [
+    "FATAL"
+   ],
+   "order": "newest",
+   "limit": 20
+  },
+  "ms": 113,
+  "is_error": false,
+  "text_chars": 4126,
+  "text_tokens": 1031,
+  "sc_chars": 8377,
+  "sc_tokens": 2094,
+  "total": 178304,
+  "returned": 20,
+  "truncated": true,
+  "query_ms": 104.1
+ },
+ {
+  "tool": "search_logs",
+  "args": {
+   "query": "zzqqxx",
+   "limit": 20
+  },
+  "ms": 37,
+  "is_error": false,
+  "text_chars": 511,
+  "text_tokens": 127,
+  "sc_chars": 690,
+  "sc_tokens": 172,
+  "total": 0,
+  "returned": 0,
+  "truncated": false,
+  "query_ms": 32.0
+ },
+ {
+  "tool": "get_context",
+  "args": {
+   "dataset": "bgl",
+   "line_no": 1577127,
+   "before": 10,
+   "after": 10
+  },
+  "ms": 616,
+  "is_error": false,
+  "text_chars": 4497,
+  "text_tokens": 1124,
+  "sc_chars": 8685,
+  "sc_tokens": 2171,
+  "total": 456,
+  "returned": 21,
+  "truncated": true,
+  "query_ms": 510.6
+ },
+ {
+  "tool": "get_context",
+  "args": {
+   "dataset": "bgl",
+   "line_no": 1577127,
+   "scope": "time_window",
+   "window_seconds": 30,
+   "before": 25,
+   "after": 25
+  },
+  "ms": 187,
+  "is_error": false,
+  "text_chars": 2966,
+  "text_tokens": 741,
+  "sc_chars": 6385,
+  "sc_tokens": 1596,
+  "total": 16,
+  "returned": 16,
+  "truncated": false,
+  "query_ms": 155.1
+ },
+ {
+  "tool": "get_context",
+  "args": {
+   "dataset": "openstack",
+   "line_no": 201287,
+   "scope": "same_instance",
+   "before": 25,
+   "after": 25
+  },
+  "ms": 104,
+  "is_error": false,
+  "text_chars": 5221,
+  "text_tokens": 1305,
+  "sc_chars": 12099,
+  "sc_tokens": 3024,
+  "total": 25,
+  "returned": 25,
+  "truncated": false,
+  "query_ms": 51.0
+ },
+ {
+  "tool": "get_context",
+  "args": {
+   "dataset": "bgl",
+   "line_no": 1577127,
+   "scope": "same_request"
+  },
+  "ms": 45,
+  "is_error": true,
+  "text_chars": 128,
+  "text_tokens": 32,
+  "sc_chars": 0,
+  "sc_tokens": 0,
+  "total": null,
+  "returned": null,
+  "truncated": null,
+  "query_ms": null
+ },
+ {
+  "tool": "count_by",
+  "args": {
+   "group_by": "dataset"
+  },
+  "ms": 105,
+  "is_error": false,
+  "text_chars": 507,
+  "text_tokens": 126,
+  "sc_chars": 766,
+  "sc_tokens": 191,
+  "total": 2,
+  "returned": 2,
+  "truncated": false,
+  "query_ms": 92.1
+ },
+ {
+  "tool": "count_by",
+  "args": {
+   "group_by": "component",
+   "dataset": "all"
+  },
+  "ms": 45,
+  "is_error": false,
+  "text_chars": 1290,
+  "text_tokens": 322,
+  "sc_chars": 2158,
+  "sc_tokens": 539,
+  "total": 27,
+  "returned": 25,
+  "truncated": true,
+  "query_ms": 38.0
+ },
+ {
+  "tool": "count_by",
+  "args": {
+   "group_by": "component",
+   "dataset": "bgl",
+   "query": "error"
+  },
+  "ms": 93,
+  "is_error": false,
+  "text_chars": 530,
+  "text_tokens": 132,
+  "sc_chars": 883,
+  "sc_tokens": 220,
+  "total": 5,
+  "returned": 5,
+  "truncated": false,
+  "query_ms": 88.7
+ },
+ {
+  "tool": "count_by",
+  "args": {
+   "group_by": "node",
+   "dataset": "bgl",
+   "levels": [
+    "FATAL",
+    "FAILURE"
+   ],
+   "limit": 25
+  },
+  "ms": 225,
+  "is_error": false,
+  "text_chars": 1294,
+  "text_tokens": 323,
+  "sc_chars": 2204,
+  "sc_tokens": 551,
+  "total": 32260,
+  "returned": 25,
+  "truncated": true,
+  "query_ms": 218.9
+ },
+ {
+  "tool": "count_by",
+  "args": {
+   "group_by": "rack",
+   "dataset": "all"
+  },
+  "ms": 2,
+  "is_error": true,
+  "text_chars": 86,
+  "text_tokens": 21,
+  "sc_chars": 0,
+  "sc_tokens": 0,
+  "total": null,
+  "returned": null,
+  "truncated": null,
+  "query_ms": null
+ },
+ {
+  "tool": "trend",
+  "args": {
+   "dataset": "bgl",
+   "bucket": "day",
+   "levels": [
+    "FATAL",
+    "FAILURE"
+   ]
+  },
+  "ms": 216,
+  "is_error": false,
+  "text_chars": 4860,
+  "text_tokens": 1215,
+  "sc_chars": 11584,
+  "sc_tokens": 2896,
+  "total": 856909,
+  "returned": 856909,
+  "truncated": false,
+  "query_ms": 89.0
+ },
+ {
+  "tool": "trend",
+  "args": {
+   "dataset": "bgl",
+   "bucket": "hour",
+   "query": "ciod failed"
+  },
+  "ms": 15,
+  "is_error": true,
+  "text_chars": 116,
+  "text_tokens": 29,
+  "sc_chars": 0,
+  "sc_tokens": 0,
+  "total": null,
+  "returned": null,
+  "truncated": null,
+  "query_ms": null
+ },
+ {
+  "tool": "trend",
+  "args": {
+   "dataset": "openstack",
+   "bucket": "hour",
+   "levels": [
+    "ERROR"
+   ]
+  },
+  "ms": 56,
+  "is_error": false,
+  "text_chars": 783,
+  "text_tokens": 195,
+  "sc_chars": 4060,
+  "sc_tokens": 1015,
+  "total": 186,
+  "returned": 186,
+  "truncated": false,
+  "query_ms": 39.1
+ },
+ {
+  "tool": "trend",
+  "args": {
+   "dataset": "bgl",
+   "bucket": "week",
+   "query": "ciod failed"
+  },
+  "ms": 224,
+  "is_error": false,
+  "text_chars": 1125,
+  "text_tokens": 281,
+  "sc_chars": 2566,
+  "sc_tokens": 641,
+  "total": 50918,
+  "returned": 50918,
+  "truncated": false,
+  "query_ms": 211.4
+ }
+]

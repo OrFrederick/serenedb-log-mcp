@@ -1,0 +1,178 @@
+[10/16/26 23:40:35] ERROR    Tool 'probe_error_raise' raised an    server.py:455
+                             unexpected exception                               
+                             ╭─ Traceback (most recent call last─╮              
+                             │ /tmp/r2probe/.venv/lib/python3.12 │              
+                             │ /site-packages/mcp/server/mcpserv │              
+                             │ er/tools/base.py:179 in run       │              
+                             │                                   │              
+                             │   176 │   │   │   │   │   return  │              
+                             │       else resolved               │              
+                             │   177 │   │   │   │   pass_direct │              
+                             │   178 │   │   │                   │              
+                             │ ❱ 179 │   │   │   result = await  │              
+                             │       pass_directly)              │              
+                             │   180 │   │   │                   │              
+                             │   181 │   │   │   # Registration  │              
+                             │   182 │   │   │   # a body that r │              
+                             │                                   │              
+                             │ /tmp/r2probe/.venv/lib/python3.12 │              
+                             │ /site-packages/mcp/server/mcpserv │              
+                             │ er/utilities/func_metadata.py:164 │              
+                             │  in call_fn                       │              
+                             │                                   │              
+                             │   161 │   │   kwargs = arguments  │              
+                             │   162 │   │   if fn_is_async:     │              
+                             │   163 │   │   │   return await fn │              
+                             │ ❱ 164 │   │   return await anyio. │              
+                             │   165 │                           │              
+                             │   166 │   @deprecated(            │              
+                             │   167 │   │   "FuncMetadata.call_ │              
+                             │       3.0; "                      │              
+                             │                                   │              
+                             │ /tmp/r2probe/.venv/lib/python3.12 │              
+                             │ /site-packages/anyio/to_thread.py │              
+                             │ :65 in run_sync                   │              
+                             │                                   │              
+                             │   62 │   │   │   stacklevel=2,    │              
+                             │   63 │   │   )                    │              
+                             │   64 │                            │              
+                             │ ❱ 65 │   return await get_async_b │              
+                             │   66 │   │   func, args, abandon_ │              
+                             │   67 │   )                        │              
+                             │   68                              │              
+                             │                                   │              
+                             │ /tmp/r2probe/.venv/lib/python3.12 │              
+                             │ /site-packages/anyio/_backends/_a │              
+                             │ syncio.py:2706 in                 │              
+                             │ run_sync_in_worker_thread         │              
+                             │                                   │              
+                             │   2703 │   │   │   │   │   worker │              
+                             │   2704 │   │   │   │              │              
+                             │   2705 │   │   │   │   worker.que │              
+                             │ ❱ 2706 │   │   │   │   return awa │              
+                             │   2707 │                          │              
+                             │   2708 │   @classmethod           │              
+                             │   2709 │   def check_cancelled(cl │              
+                             │                                   │              
+                             │ /tmp/r2probe/.venv/lib/python3.12 │              
+                             │ /site-packages/anyio/_backends/_a │              
+                             │ syncio.py:1100 in run             │              
+                             │                                   │              
+                             │   1097 │   │   │   │   │   except │              
+                             │   1098 │   │   │   │   │   thread │              
+                             │   1099 │   │   │   │   │   try:   │              
+                             │ ❱ 1100 │   │   │   │   │   │   re │              
+                             │   1101 │   │   │   │   │   except │              
+                             │   1102 │   │   │   │   │   │   ex │              
+                             │   1103 │   │   │   │   │   finall │              
+                             │                                   │              
+                             │ /Users/deni/hackathon/serenedb-lo │              
+                             │ g-mcp/.claude/worktrees/r2/resear │              
+                             │ ch/2/NoNaim95/survey/probe_server │              
+                             │ .py:58 in probe_error_raise       │              
+                             │                                   │              
+                             │   55 @mcp.tool(annotations=RO)    │              
+                             │   56 def probe_error_raise(field: │              
+                             │   57 │   """Raises an exception w │              
+                             │ ❱ 58 │   raise ValueError(f"RAISE │              
+                             │      2005-06-03T00:00:00. "       │              
+                             │   59 │   │   │   │   │    "Call d │              
+                             │   60                              │              
+                             │   61                              │              
+                             ╰───────────────────────────────────╯              
+                             ValueError: RAISE-ERROR-MARKER:                    
+                             parameter 'time_from' must be                      
+                             ISO-8601, e.g. 2005-06-03T00:00:00.                
+                             Call describe_corpus to see the valid              
+                             range.                                             
+                                                                                
+                             The above exception was the direct                 
+                             cause of the following exception:                  
+                                                                                
+                             ╭─ Traceback (most recent call last─╮              
+                             │ /tmp/r2probe/.venv/lib/python3.12 │              
+                             │ /site-packages/mcp/server/mcpserv │              
+                             │ er/server.py:442 in               │              
+                             │ _handle_call_tool                 │              
+                             │                                   │              
+                             │    439 │   ) -> CallToolResult |  │              
+                             │    440 │   │   context = Context( │              
+                             │        subscriptions=self._subscr │              
+                             │    441 │   │   try:               │              
+                             │ ❱  442 │   │   │   return await s │              
+                             │    443 │   │   except MCPError:   │              
+                             │    444 │   │   │   raise          │              
+                             │    445 │   │   except Exception a │              
+                             │                                   │              
+                             │ /tmp/r2probe/.venv/lib/python3.12 │              
+                             │ /site-packages/mcp/server/mcpserv │              
+                             │ er/server.py:548 in call_tool     │              
+                             │                                   │              
+                             │    545 │   │   """                │              
+                             │    546 │   │   if context is None │              
+                             │    547 │   │   │   context = Cont │              
+                             │ ❱  548 │   │   return await self. │              
+                             │        convert_result=True)       │              
+                             │    549 │                          │              
+                             │    550 │   async def list_resourc │              
+                             │    551 │   │   """List all availa │              
+                             │                                   │              
+                             │ /tmp/r2probe/.venv/lib/python3.12 │              
+                             │ /site-packages/mcp/server/mcpserv │              
+                             │ er/tools/tool_manager.py:87 in    │              
+                             │ call_tool                         │              
+                             │                                   │              
+                             │   84 │   │   if not tool:         │              
+                             │   85 │   │   │   raise ToolError( │              
+                             │   86 │   │                        │              
+                             │ ❱ 87 │   │   return await tool.ru │              
+                             │   88                              │              
+                             │                                   │              
+                             │ /tmp/r2probe/.venv/lib/python3.12 │              
+                             │ /site-packages/mcp/server/mcpserv │              
+                             │ er/tools/base.py:213 in run       │              
+                             │                                   │              
+                             │   210 │   │   │   raise ToolError │              
+                             │   211 │   │   except Exception as │              
+                             │   212 │   │   │   # A crash: the  │              
+                             │ ❱ 213 │   │   │   raise Unexpecte │              
+                             │   214                             │              
+                             ╰───────────────────────────────────╯              
+                             UnexpectedToolError: Error executing               
+                             tool probe_error_raise                             
+protocol: 2026-07-28
+TOOL probe_model annotations= {'read_only_hint': True, 'open_world_hint': False} outputSchema= yes
+TOOL probe_text_default annotations= {'read_only_hint': True, 'open_world_hint': False} outputSchema= yes
+TOOL probe_text_plain annotations= {'read_only_hint': True, 'open_world_hint': False} outputSchema= no
+TOOL probe_mixed annotations= {'read_only_hint': True, 'open_world_hint': False} outputSchema= no
+TOOL probe_error_raise annotations= {'read_only_hint': True, 'open_world_hint': False} outputSchema= yes
+TOOL probe_error_struct annotations= {'read_only_hint': True, 'open_world_hint': False} outputSchema= no
+TOOL probe_large annotations= {'read_only_hint': True, 'open_world_hint': False} outputSchema= no
+
+probe_model: is_error=False
+  content=[('text', '{\n  "evidence_id": "E1",\n  "marker": "MODEL-STRUCT-MARKER",\n  "truncat...[154 chars]')]
+  structured={"evidence_id": "E1", "marker": "MODEL-STRUCT-MARKER", "truncated": true, "note": "NOTE-INSIDE-STRUCTURED: call again with cursor=abc for more"}
+
+probe_text_default: is_error=False
+  content=[('text', '## TEXT-DEFAULT-MARKER\n- item one\n- item two')]
+  structured={"result": "## TEXT-DEFAULT-MARKER\n- item one\n- item two"}
+
+probe_text_plain: is_error=False
+  content=[('text', '## TEXT-PLAIN-MARKER\n- item one\n- item two')]
+  structured=None
+
+probe_mixed: is_error=False
+  content=[('text', 'MIXED-CONTENT-MARKER (markdown table here)'), ('text', 'MIXED-SECOND-BLOCK-MARKER (truncation notice)')]
+  structured={"marker": "MIXED-STRUCT-MARKER"}
+
+probe_error_raise: is_error=True
+  content=[('text', 'Error executing tool probe_error_raise')]
+  structured=None
+
+probe_error_struct: is_error=True
+  content=[('text', "ERRTEXT-MARKER: unknown component 'KERNAL', did you mean 'KERNEL'?")]
+  structured={"code": "VALIDATION_FAILED", "marker": "ERRSTRUCT-MARKER"}
+
+probe_large: is_error=False
+  content=[('text', 'LARGE-HEAD-MARKER xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx...[60000 chars]')]
+  structured=None

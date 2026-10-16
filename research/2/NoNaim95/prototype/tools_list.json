@@ -1,0 +1,1485 @@
+[
+ {
+  "name": "describe_corpus",
+  "description": "Describe the Base Corpus: per Dataset (bgl, openstack) the number of Log Entries, first/last timestamp,\n    and Log Entry counts per Component and per level. Call this first to learn valid filter values and time ranges.\n    No inputs. Output: one row per Dataset plus Evidence.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {},
+   "title": "describe_corpusArguments"
+  },
+  "outputSchema": {
+   "$defs": {
+    "DataScope": {
+     "properties": {
+      "datasets": {
+       "items": {
+        "type": "string"
+       },
+       "title": "Datasets",
+       "type": "array"
+      },
+      "time_from": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "default": null,
+       "title": "Time From"
+      },
+      "time_to": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "default": null,
+       "title": "Time To"
+      },
+      "filters": {
+       "additionalProperties": true,
+       "title": "Filters",
+       "type": "object"
+      }
+     },
+     "required": [
+      "datasets"
+     ],
+     "title": "DataScope",
+     "type": "object"
+    },
+    "DatasetInfo": {
+     "properties": {
+      "dataset": {
+       "title": "Dataset",
+       "type": "string"
+      },
+      "entries": {
+       "title": "Entries",
+       "type": "integer"
+      },
+      "time_from": {
+       "title": "Time From",
+       "type": "string"
+      },
+      "time_to": {
+       "title": "Time To",
+       "type": "string"
+      },
+      "components": {
+       "additionalProperties": {
+        "type": "integer"
+       },
+       "title": "Components",
+       "type": "object"
+      },
+      "levels": {
+       "additionalProperties": {
+        "type": "integer"
+       },
+       "title": "Levels",
+       "type": "object"
+      }
+     },
+     "required": [
+      "dataset",
+      "entries",
+      "time_from",
+      "time_to",
+      "components",
+      "levels"
+     ],
+     "title": "DatasetInfo",
+     "type": "object"
+    },
+    "Evidence": {
+     "properties": {
+      "evidence_id": {
+       "description": "Cite as [E<n>] next to every number taken from this result",
+       "title": "Evidence Id",
+       "type": "string"
+      },
+      "tool": {
+       "title": "Tool",
+       "type": "string"
+      },
+      "sql": {
+       "description": "Executed SQL statements (parameter placeholders shown as %s)",
+       "items": {
+        "type": "string"
+       },
+       "title": "Sql",
+       "type": "array"
+      },
+      "params": {
+       "items": {
+        "items": {},
+        "type": "array"
+       },
+       "title": "Params",
+       "type": "array"
+      },
+      "data_scope": {
+       "$ref": "#/$defs/DataScope"
+      },
+      "total_count": {
+       "anyOf": [
+        {
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Exact number of matching Log Entries (or groups) in the Data Scope",
+       "title": "Total Count"
+      },
+      "returned_count": {
+       "title": "Returned Count",
+       "type": "integer"
+      },
+      "truncated": {
+       "description": "True when returned_count < total_count",
+       "title": "Truncated",
+       "type": "boolean"
+      },
+      "query_ms": {
+       "title": "Query Ms",
+       "type": "number"
+      }
+     },
+     "required": [
+      "evidence_id",
+      "tool",
+      "sql",
+      "params",
+      "data_scope",
+      "total_count",
+      "returned_count",
+      "truncated",
+      "query_ms"
+     ],
+     "title": "Evidence",
+     "type": "object"
+    }
+   },
+   "properties": {
+    "evidence": {
+     "$ref": "#/$defs/Evidence"
+    },
+    "datasets": {
+     "items": {
+      "$ref": "#/$defs/DatasetInfo"
+     },
+     "title": "Datasets",
+     "type": "array"
+    }
+   },
+   "required": [
+    "evidence",
+    "datasets"
+   ],
+   "title": "CorpusResult",
+   "type": "object"
+  },
+  "annotations": {
+   "readOnlyHint": true,
+   "destructiveHint": false,
+   "idempotentHint": true,
+   "openWorldHint": false
+  }
+ },
+ {
+  "name": "search_logs",
+  "description": "Full-text search of Log Entries (BM25 ranking, phrase, fuzzy) with time, Component, level and source filters.\n    Returns at most `limit` entries with highlighted messages plus the EXACT total number of matching entries,\n    so `truncated` tells you whether you saw everything. Use count_by/trend, not this, to say how often something\n    happens. Next: get_context(dataset, line_no) on an interesting entry.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "query": {
+     "description": "Words to find in the message, e.g. 'ciod failed'",
+     "title": "Query",
+     "type": "string"
+    },
+    "dataset": {
+     "default": "bgl",
+     "enum": [
+      "bgl",
+      "openstack"
+     ],
+     "title": "Dataset",
+     "type": "string"
+    },
+    "mode": {
+     "default": "all_words",
+     "description": "all_words (default): every word must appear; any_words: at least one; phrase: exact word sequence; fuzzy: each word within edit distance 1 (typos); web: websearch syntax with \"quoted phrases\", OR and -exclusions",
+     "enum": [
+      "all_words",
+      "any_words",
+      "phrase",
+      "fuzzy",
+      "web"
+     ],
+     "title": "Mode",
+     "type": "string"
+    },
+    "time_from": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "ISO start, inclusive",
+     "title": "Time From"
+    },
+    "time_to": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "ISO end, exclusive",
+     "title": "Time To"
+    },
+    "components": {
+     "anyOf": [
+      {
+       "items": {
+        "type": "string"
+       },
+       "type": "array"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "Exact Component names from describe_corpus",
+     "title": "Components"
+    },
+    "levels": {
+     "anyOf": [
+      {
+       "items": {
+        "type": "string"
+       },
+       "type": "array"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "Exact levels, e.g. ['FATAL','ERROR']",
+     "title": "Levels"
+    },
+    "sources": {
+     "anyOf": [
+      {
+       "items": {
+        "type": "string"
+       },
+       "type": "array"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "BGL node ids or OpenStack source files",
+     "title": "Sources"
+    },
+    "order": {
+     "default": "relevance",
+     "enum": [
+      "relevance",
+      "newest",
+      "oldest"
+     ],
+     "title": "Order",
+     "type": "string"
+    },
+    "limit": {
+     "default": 20,
+     "maximum": 50,
+     "minimum": 1,
+     "title": "Limit",
+     "type": "integer"
+    }
+   },
+   "required": [
+    "query"
+   ],
+   "title": "search_logsArguments"
+  },
+  "outputSchema": {
+   "$defs": {
+    "DataScope": {
+     "properties": {
+      "datasets": {
+       "items": {
+        "type": "string"
+       },
+       "title": "Datasets",
+       "type": "array"
+      },
+      "time_from": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "default": null,
+       "title": "Time From"
+      },
+      "time_to": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "default": null,
+       "title": "Time To"
+      },
+      "filters": {
+       "additionalProperties": true,
+       "title": "Filters",
+       "type": "object"
+      }
+     },
+     "required": [
+      "datasets"
+     ],
+     "title": "DataScope",
+     "type": "object"
+    },
+    "Evidence": {
+     "properties": {
+      "evidence_id": {
+       "description": "Cite as [E<n>] next to every number taken from this result",
+       "title": "Evidence Id",
+       "type": "string"
+      },
+      "tool": {
+       "title": "Tool",
+       "type": "string"
+      },
+      "sql": {
+       "description": "Executed SQL statements (parameter placeholders shown as %s)",
+       "items": {
+        "type": "string"
+       },
+       "title": "Sql",
+       "type": "array"
+      },
+      "params": {
+       "items": {
+        "items": {},
+        "type": "array"
+       },
+       "title": "Params",
+       "type": "array"
+      },
+      "data_scope": {
+       "$ref": "#/$defs/DataScope"
+      },
+      "total_count": {
+       "anyOf": [
+        {
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Exact number of matching Log Entries (or groups) in the Data Scope",
+       "title": "Total Count"
+      },
+      "returned_count": {
+       "title": "Returned Count",
+       "type": "integer"
+      },
+      "truncated": {
+       "description": "True when returned_count < total_count",
+       "title": "Truncated",
+       "type": "boolean"
+      },
+      "query_ms": {
+       "title": "Query Ms",
+       "type": "number"
+      }
+     },
+     "required": [
+      "evidence_id",
+      "tool",
+      "sql",
+      "params",
+      "data_scope",
+      "total_count",
+      "returned_count",
+      "truncated",
+      "query_ms"
+     ],
+     "title": "Evidence",
+     "type": "object"
+    },
+    "LogEntry": {
+     "properties": {
+      "dataset": {
+       "title": "Dataset",
+       "type": "string"
+      },
+      "line_no": {
+       "title": "Line No",
+       "type": "integer"
+      },
+      "ts": {
+       "title": "Ts",
+       "type": "string"
+      },
+      "source": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "BGL node or OpenStack source file",
+       "title": "Source"
+      },
+      "component": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Component"
+      },
+      "level": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Level"
+      },
+      "message": {
+       "description": "Message text, highlighted with **term** when from a search, capped at 240 chars",
+       "title": "Message",
+       "type": "string"
+      },
+      "score": {
+       "anyOf": [
+        {
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "default": null,
+       "title": "Score"
+      },
+      "request_id": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "default": null,
+       "title": "Request Id"
+      },
+      "instance_id": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "default": null,
+       "title": "Instance Id"
+      },
+      "alert_tag": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "default": null,
+       "title": "Alert Tag"
+      },
+      "is_anchor": {
+       "default": false,
+       "title": "Is Anchor",
+       "type": "boolean"
+      }
+     },
+     "required": [
+      "dataset",
+      "line_no",
+      "ts",
+      "source",
+      "component",
+      "level",
+      "message"
+     ],
+     "title": "LogEntry",
+     "type": "object"
+    }
+   },
+   "properties": {
+    "evidence": {
+     "$ref": "#/$defs/Evidence"
+    },
+    "entries": {
+     "items": {
+      "$ref": "#/$defs/LogEntry"
+     },
+     "title": "Entries",
+     "type": "array"
+    }
+   },
+   "required": [
+    "evidence",
+    "entries"
+   ],
+   "title": "SearchResult",
+   "type": "object"
+  },
+  "annotations": {
+   "readOnlyHint": true,
+   "destructiveHint": false,
+   "idempotentHint": true,
+   "openWorldHint": false
+  }
+ },
+ {
+  "name": "get_context",
+  "description": "Log Entries just before and after one anchor entry, in time order: on the same node/source, the same\n    OpenStack request or instance, or across all sources in a time window. Use it to see what happened around a\n    failure. Output: entries (anchor flagged is_anchor) plus Evidence; total_count is the number of entries in\n    the context scope, so truncated shows whether the window holds more.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "dataset": {
+     "enum": [
+      "bgl",
+      "openstack"
+     ],
+     "title": "Dataset",
+     "type": "string"
+    },
+    "line_no": {
+     "description": "line_no of the anchor Log Entry (from search_logs)",
+     "title": "Line No",
+     "type": "integer"
+    },
+    "scope": {
+     "default": "same_source",
+     "description": "same_source: same BGL node / OpenStack file; same_request / same_instance: OpenStack only; time_window: all sources within +/- window_seconds",
+     "enum": [
+      "same_source",
+      "same_request",
+      "same_instance",
+      "time_window"
+     ],
+     "title": "Scope",
+     "type": "string"
+    },
+    "before": {
+     "default": 10,
+     "maximum": 50,
+     "minimum": 0,
+     "title": "Before",
+     "type": "integer"
+    },
+    "after": {
+     "default": 10,
+     "maximum": 50,
+     "minimum": 0,
+     "title": "After",
+     "type": "integer"
+    },
+    "window_seconds": {
+     "default": 60,
+     "maximum": 3600,
+     "minimum": 1,
+     "title": "Window Seconds",
+     "type": "integer"
+    }
+   },
+   "required": [
+    "dataset",
+    "line_no"
+   ],
+   "title": "get_contextArguments"
+  },
+  "outputSchema": {
+   "$defs": {
+    "DataScope": {
+     "properties": {
+      "datasets": {
+       "items": {
+        "type": "string"
+       },
+       "title": "Datasets",
+       "type": "array"
+      },
+      "time_from": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "default": null,
+       "title": "Time From"
+      },
+      "time_to": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "default": null,
+       "title": "Time To"
+      },
+      "filters": {
+       "additionalProperties": true,
+       "title": "Filters",
+       "type": "object"
+      }
+     },
+     "required": [
+      "datasets"
+     ],
+     "title": "DataScope",
+     "type": "object"
+    },
+    "Evidence": {
+     "properties": {
+      "evidence_id": {
+       "description": "Cite as [E<n>] next to every number taken from this result",
+       "title": "Evidence Id",
+       "type": "string"
+      },
+      "tool": {
+       "title": "Tool",
+       "type": "string"
+      },
+      "sql": {
+       "description": "Executed SQL statements (parameter placeholders shown as %s)",
+       "items": {
+        "type": "string"
+       },
+       "title": "Sql",
+       "type": "array"
+      },
+      "params": {
+       "items": {
+        "items": {},
+        "type": "array"
+       },
+       "title": "Params",
+       "type": "array"
+      },
+      "data_scope": {
+       "$ref": "#/$defs/DataScope"
+      },
+      "total_count": {
+       "anyOf": [
+        {
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Exact number of matching Log Entries (or groups) in the Data Scope",
+       "title": "Total Count"
+      },
+      "returned_count": {
+       "title": "Returned Count",
+       "type": "integer"
+      },
+      "truncated": {
+       "description": "True when returned_count < total_count",
+       "title": "Truncated",
+       "type": "boolean"
+      },
+      "query_ms": {
+       "title": "Query Ms",
+       "type": "number"
+      }
+     },
+     "required": [
+      "evidence_id",
+      "tool",
+      "sql",
+      "params",
+      "data_scope",
+      "total_count",
+      "returned_count",
+      "truncated",
+      "query_ms"
+     ],
+     "title": "Evidence",
+     "type": "object"
+    },
+    "LogEntry": {
+     "properties": {
+      "dataset": {
+       "title": "Dataset",
+       "type": "string"
+      },
+      "line_no": {
+       "title": "Line No",
+       "type": "integer"
+      },
+      "ts": {
+       "title": "Ts",
+       "type": "string"
+      },
+      "source": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "BGL node or OpenStack source file",
+       "title": "Source"
+      },
+      "component": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Component"
+      },
+      "level": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Level"
+      },
+      "message": {
+       "description": "Message text, highlighted with **term** when from a search, capped at 240 chars",
+       "title": "Message",
+       "type": "string"
+      },
+      "score": {
+       "anyOf": [
+        {
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "default": null,
+       "title": "Score"
+      },
+      "request_id": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "default": null,
+       "title": "Request Id"
+      },
+      "instance_id": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "default": null,
+       "title": "Instance Id"
+      },
+      "alert_tag": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "default": null,
+       "title": "Alert Tag"
+      },
+      "is_anchor": {
+       "default": false,
+       "title": "Is Anchor",
+       "type": "boolean"
+      }
+     },
+     "required": [
+      "dataset",
+      "line_no",
+      "ts",
+      "source",
+      "component",
+      "level",
+      "message"
+     ],
+     "title": "LogEntry",
+     "type": "object"
+    }
+   },
+   "properties": {
+    "evidence": {
+     "$ref": "#/$defs/Evidence"
+    },
+    "entries": {
+     "items": {
+      "$ref": "#/$defs/LogEntry"
+     },
+     "title": "Entries",
+     "type": "array"
+    }
+   },
+   "required": [
+    "evidence",
+    "entries"
+   ],
+   "title": "SearchResult",
+   "type": "object"
+  },
+  "annotations": {
+   "readOnlyHint": true,
+   "destructiveHint": false,
+   "idempotentHint": true,
+   "openWorldHint": false
+  }
+ },
+ {
+  "name": "count_by",
+  "description": "Exact counts of Log Entries grouped by Component, level, node, rack, midplane, alert_tag (BGL), source_file\n    or instance_id (OpenStack), or by dataset, over the whole Base Corpus or one Dataset, with optional full-text\n    and time/Component/level filters. Use this to say HOW OFTEN something occurs. Counts are Log Entries, not\n    incidents. Output: top `limit` groups by count, total_entries over all groups, Evidence (total_count = number\n    of groups; truncated if more groups than returned).",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "group_by": {
+     "enum": [
+      "component",
+      "level",
+      "node",
+      "rack",
+      "midplane",
+      "alert_tag",
+      "source_file",
+      "instance_id",
+      "dataset"
+     ],
+     "title": "Group By",
+     "type": "string"
+    },
+    "dataset": {
+     "default": "all",
+     "enum": [
+      "bgl",
+      "openstack",
+      "all"
+     ],
+     "title": "Dataset",
+     "type": "string"
+    },
+    "query": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "Optional full-text filter (all words must appear)",
+     "title": "Query"
+    },
+    "time_from": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Time From"
+    },
+    "time_to": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Time To"
+    },
+    "components": {
+     "anyOf": [
+      {
+       "items": {
+        "type": "string"
+       },
+       "type": "array"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Components"
+    },
+    "levels": {
+     "anyOf": [
+      {
+       "items": {
+        "type": "string"
+       },
+       "type": "array"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Levels"
+    },
+    "limit": {
+     "default": 25,
+     "maximum": 100,
+     "minimum": 1,
+     "title": "Limit",
+     "type": "integer"
+    }
+   },
+   "required": [
+    "group_by"
+   ],
+   "title": "count_byArguments"
+  },
+  "outputSchema": {
+   "$defs": {
+    "DataScope": {
+     "properties": {
+      "datasets": {
+       "items": {
+        "type": "string"
+       },
+       "title": "Datasets",
+       "type": "array"
+      },
+      "time_from": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "default": null,
+       "title": "Time From"
+      },
+      "time_to": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "default": null,
+       "title": "Time To"
+      },
+      "filters": {
+       "additionalProperties": true,
+       "title": "Filters",
+       "type": "object"
+      }
+     },
+     "required": [
+      "datasets"
+     ],
+     "title": "DataScope",
+     "type": "object"
+    },
+    "Evidence": {
+     "properties": {
+      "evidence_id": {
+       "description": "Cite as [E<n>] next to every number taken from this result",
+       "title": "Evidence Id",
+       "type": "string"
+      },
+      "tool": {
+       "title": "Tool",
+       "type": "string"
+      },
+      "sql": {
+       "description": "Executed SQL statements (parameter placeholders shown as %s)",
+       "items": {
+        "type": "string"
+       },
+       "title": "Sql",
+       "type": "array"
+      },
+      "params": {
+       "items": {
+        "items": {},
+        "type": "array"
+       },
+       "title": "Params",
+       "type": "array"
+      },
+      "data_scope": {
+       "$ref": "#/$defs/DataScope"
+      },
+      "total_count": {
+       "anyOf": [
+        {
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Exact number of matching Log Entries (or groups) in the Data Scope",
+       "title": "Total Count"
+      },
+      "returned_count": {
+       "title": "Returned Count",
+       "type": "integer"
+      },
+      "truncated": {
+       "description": "True when returned_count < total_count",
+       "title": "Truncated",
+       "type": "boolean"
+      },
+      "query_ms": {
+       "title": "Query Ms",
+       "type": "number"
+      }
+     },
+     "required": [
+      "evidence_id",
+      "tool",
+      "sql",
+      "params",
+      "data_scope",
+      "total_count",
+      "returned_count",
+      "truncated",
+      "query_ms"
+     ],
+     "title": "Evidence",
+     "type": "object"
+    },
+    "Group": {
+     "properties": {
+      "key": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Key"
+      },
+      "count": {
+       "title": "Count",
+       "type": "integer"
+      },
+      "share": {
+       "description": "count / total_entries",
+       "title": "Share",
+       "type": "number"
+      }
+     },
+     "required": [
+      "key",
+      "count",
+      "share"
+     ],
+     "title": "Group",
+     "type": "object"
+    }
+   },
+   "properties": {
+    "evidence": {
+     "$ref": "#/$defs/Evidence"
+    },
+    "total_entries": {
+     "description": "Matching Log Entries across all groups",
+     "title": "Total Entries",
+     "type": "integer"
+    },
+    "groups": {
+     "items": {
+      "$ref": "#/$defs/Group"
+     },
+     "title": "Groups",
+     "type": "array"
+    }
+   },
+   "required": [
+    "evidence",
+    "total_entries",
+    "groups"
+   ],
+   "title": "CountResult",
+   "type": "object"
+  },
+  "annotations": {
+   "readOnlyHint": true,
+   "destructiveHint": false,
+   "idempotentHint": true,
+   "openWorldHint": false
+  }
+ },
+ {
+  "name": "trend",
+  "description": "Count of matching Log Entries per time bucket (gap-filled with zeros) for one Dataset, with optional\n    full-text, Component, level and source filters. Use it to show whether a problem is rising, steady or a\n    one-off burst over a stated period. At most 400 buckets: pick a coarser bucket or a shorter range otherwise.\n    Output: buckets [{bucket, count}] plus Evidence (total_count = sum of counts).",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "dataset": {
+     "enum": [
+      "bgl",
+      "openstack"
+     ],
+     "title": "Dataset",
+     "type": "string"
+    },
+    "bucket": {
+     "default": "day",
+     "enum": [
+      "minute",
+      "hour",
+      "day",
+      "week"
+     ],
+     "title": "Bucket",
+     "type": "string"
+    },
+    "query": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "Optional full-text filter (all words must appear)",
+     "title": "Query"
+    },
+    "time_from": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Time From"
+    },
+    "time_to": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Time To"
+    },
+    "components": {
+     "anyOf": [
+      {
+       "items": {
+        "type": "string"
+       },
+       "type": "array"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Components"
+    },
+    "levels": {
+     "anyOf": [
+      {
+       "items": {
+        "type": "string"
+       },
+       "type": "array"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Levels"
+    },
+    "sources": {
+     "anyOf": [
+      {
+       "items": {
+        "type": "string"
+       },
+       "type": "array"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Sources"
+    }
+   },
+   "required": [
+    "dataset"
+   ],
+   "title": "trendArguments"
+  },
+  "outputSchema": {
+   "$defs": {
+    "Bucket": {
+     "properties": {
+      "bucket": {
+       "title": "Bucket",
+       "type": "string"
+      },
+      "count": {
+       "title": "Count",
+       "type": "integer"
+      }
+     },
+     "required": [
+      "bucket",
+      "count"
+     ],
+     "title": "Bucket",
+     "type": "object"
+    },
+    "DataScope": {
+     "properties": {
+      "datasets": {
+       "items": {
+        "type": "string"
+       },
+       "title": "Datasets",
+       "type": "array"
+      },
+      "time_from": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "default": null,
+       "title": "Time From"
+      },
+      "time_to": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "default": null,
+       "title": "Time To"
+      },
+      "filters": {
+       "additionalProperties": true,
+       "title": "Filters",
+       "type": "object"
+      }
+     },
+     "required": [
+      "datasets"
+     ],
+     "title": "DataScope",
+     "type": "object"
+    },
+    "Evidence": {
+     "properties": {
+      "evidence_id": {
+       "description": "Cite as [E<n>] next to every number taken from this result",
+       "title": "Evidence Id",
+       "type": "string"
+      },
+      "tool": {
+       "title": "Tool",
+       "type": "string"
+      },
+      "sql": {
+       "description": "Executed SQL statements (parameter placeholders shown as %s)",
+       "items": {
+        "type": "string"
+       },
+       "title": "Sql",
+       "type": "array"
+      },
+      "params": {
+       "items": {
+        "items": {},
+        "type": "array"
+       },
+       "title": "Params",
+       "type": "array"
+      },
+      "data_scope": {
+       "$ref": "#/$defs/DataScope"
+      },
+      "total_count": {
+       "anyOf": [
+        {
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Exact number of matching Log Entries (or groups) in the Data Scope",
+       "title": "Total Count"
+      },
+      "returned_count": {
+       "title": "Returned Count",
+       "type": "integer"
+      },
+      "truncated": {
+       "description": "True when returned_count < total_count",
+       "title": "Truncated",
+       "type": "boolean"
+      },
+      "query_ms": {
+       "title": "Query Ms",
+       "type": "number"
+      }
+     },
+     "required": [
+      "evidence_id",
+      "tool",
+      "sql",
+      "params",
+      "data_scope",
+      "total_count",
+      "returned_count",
+      "truncated",
+      "query_ms"
+     ],
+     "title": "Evidence",
+     "type": "object"
+    }
+   },
+   "properties": {
+    "evidence": {
+     "$ref": "#/$defs/Evidence"
+    },
+    "bucket": {
+     "title": "Bucket",
+     "type": "string"
+    },
+    "buckets": {
+     "items": {
+      "$ref": "#/$defs/Bucket"
+     },
+     "title": "Buckets",
+     "type": "array"
+    }
+   },
+   "required": [
+    "evidence",
+    "bucket",
+    "buckets"
+   ],
+   "title": "TrendResult",
+   "type": "object"
+  },
+  "annotations": {
+   "readOnlyHint": true,
+   "destructiveHint": false,
+   "idempotentHint": true,
+   "openWorldHint": false
+  }
+ }
+]

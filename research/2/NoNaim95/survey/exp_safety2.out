@@ -1,0 +1,48 @@
+OK     0.087s  'CREATE TABLE IF NOT EXISTS r2s_t(a INT)' -> None
+OK     0.190s  'DROP ROLE IF EXISTS r2s_reader' -> []
+OK     0.043s  'CREATE ROLE r2s_reader LOGIN' -> []
+OK     0.008s  'GRANT SELECT ON r2s_t TO r2s_reader' -> None
+
+== A. read-only transaction syntaxes (as superuser)
+OK     0.012s  'BEGIN READ ONLY' -> None
+ERR    0.028s  'INSERT after BEGIN READ ONLY' -> ReadOnlySqlTransaction: Cannot write to database ""postgres"" - transaction is launched in read-only mode
+OK     0.005s  'ROLLBACK' -> None
+OK     0.005s  'START TRANSACTION READ ONLY' -> None
+ERR   31.136s  'INSERT after START TRANSACTION READ ONLY' -> ReadOnlySqlTransaction: Cannot write to database ""postgres"" - transaction is launched in read-only mode
+OK     0.005s  'ROLLBACK' -> None
+OK     0.005s  'BEGIN TRANSACTION READ ONLY' -> None
+ERR   56.188s  'INSERT after BEGIN TRANSACTION READ ONLY' -> ReadOnlySqlTransaction: Cannot write to database ""postgres"" - transaction is launched in read-only mode
+OK     0.143s  'ROLLBACK' -> None
+ERR    1.450s  'SET SESSION CHARACTERISTICS ... READ ONLY' -> SyntaxError: syntax error at or near "READ"
+LINE 1: SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY
+                                                   ^
+OK     0.690s  'INSERT after SET SESSION CHARACTERISTICS' -> None
+OK     7.958s  'rows in r2s_t (inserts that leaked through)' -> [(1,)]
+
+== B. external access by SELECT-only role
+OK     2.621s  'reader read_csv /etc/passwd' -> [(19,)]
+OK     8.022s  'reader read_text /etc/hostname' -> [('/etc/hostname', '923786aa27f1\n', 13, datetime.datetime(2026, 10, 16, 21, 33, 41, tzinfo=zoneinfo.ZoneInfo(key='Etc/UTC')))]
+ERR    2.414s  'reader COPY TO /tmp file' -> InsufficientPrivilege: permission denied to COPY to a file
+OK     0.399s  'reader glob data dir' -> [('/var/lib/serenedb/LOCK',)]
+OK     1.809s  'reader SET enable_external_access=false' -> None
+ERR    0.413s  'reader read_csv after disabling (session)' -> InsufficientPrivilege: Cannot access file "/etc/passwd" - file system operations are disabled by configuration
+ERR    1.033s  'reader re-enable external access' -> InvalidParameterValue: Cannot enable external access while database is running
+OK     1.367s  'reader SET memory_limit (global)' -> None
+OK     0.677s  'reader SET threads' -> None
+
+== C. per-connection hardening knobs (superuser on own session, then check other conn)
+OK     0.095s  'SET operator_memory_limit' -> None
+OK     0.052s  "SELECT current_setting('operator_memory_limit')" -> [('488.2 MiB',)]
+OK     0.237s  'operator_memory_limit seen by other conn' -> [(None,)]
+OK     0.075s  'enable_external_access seen by other conn' -> [('off',)]
+
+== D. FTS with bound parameters against an existing inverted index (read only)
+OK     0.122s  'BGL @@ bound text param' -> [(557845,)]
+OK     0.755s  'BGL @@ bound ::TSQUERY' -> [(557845,)]
+OK     0.323s  '@@ + verbatim filter' -> [(360884,)]
+OK     1.383s  'BM25 + ts_highlight with bound param' -> [(623624, '<b>machine check</b> enable..............0'), (623626, '<b>machine check</b> enable..............0')]
+OK     0.256s  'injection-looking text as @@ param' -> [(680758,)]
+
+== cleanup
+OK     0.248s  'DROP TABLE IF EXISTS r2s_t' -> None
+OK     0.174s  'DROP ROLE IF EXISTS r2s_reader' -> []

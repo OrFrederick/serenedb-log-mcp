@@ -1,0 +1,57 @@
+OK     0.464s  'SELECT version()' -> [('PostgreSQL 18.3 (SereneDB 26.10.1)',)]
+
+== 1. statement_timeout (docs say: accepted but not enforced)
+OK     0.120s  'SET statement_timeout = 500' -> None
+OK     1.688s  'SHOW statement_timeout' -> [('500',)]
+OK     6.704s  'slow query under statement_timeout=500ms' -> [(0,)]
+OK     0.366s  'RESET statement_timeout' -> None
+
+== 2. client-side cancel via psycopg Connection.cancel_safe() after 1.0s
+ERR    3.462s  'slow query, cancel_safe() at 1.0s' -> QueryCanceled: canceling statement due to user request
+OK     2.098s  'connection still usable after cancel' -> [(42,)]
+
+== 3. server-side cancel via pg_cancel_backend(pid) from another connection
+backend pid: 852528906
+OK     1.296s  'pg_cancel_backend' -> [(True,)]
+ERR   14.145s  'slow query, pg_cancel_backend at 1.0s' -> QueryCanceled: canceling statement due to user request
+
+== 4. read-only transaction / session
+OK     0.180s  'CREATE TABLE IF NOT EXISTS r2s_t(a INT)' -> None
+OK     0.267s  'SET default_transaction_read_only = on' -> None
+OK     0.230s  'INSERT with default_transaction_read_only=on' -> None
+OK     0.682s  'SELECT with default_transaction_read_only=on' -> [(1,)]
+ERR    0.094s  'SET TRANSACTION READ ONLY' -> SyntaxError: syntax error at or near "READ"
+LINE 1: SET TRANSACTION READ ONLY
+                        ^
+OK     0.011s  'INSERT inside SET TRANSACTION READ ONLY' -> None
+ERR    0.012s  'SET access_mode=READ_ONLY (session?)' -> InvalidParameterValue: Cannot change access_mode setting while database is running - it must be set when opening or attaching the database
+
+== 5. read-only LOGIN role with SELECT grant
+OK     0.022s  'DROP ROLE IF EXISTS r2s_reader' -> []
+OK     0.172s  'CREATE ROLE r2s_reader LOGIN' -> []
+OK     0.022s  'GRANT SELECT ON r2s_t TO r2s_reader' -> None
+OK     0.028s  'GRANT SELECT ON bgl TO r2s_reader' -> None
+OK     0.009s  'SELECT current_user' -> [('r2s_reader',)]
+OK     0.029s  'reader SELECT granted table' -> [(1,)]
+ERR    0.043s  'reader INSERT' -> InsufficientPrivilege: permission denied for table r2s_t
+ERR    0.008s  'reader CREATE TABLE' -> InsufficientPrivilege: permission denied for schema public
+ERR    0.004s  'reader DROP TABLE' -> InsufficientPrivilege: must be owner of table r2s_t
+ERR    0.003s  'reader SELECT ungranted table' -> InsufficientPrivilege: permission denied for table openstack
+OK     0.099s  'reader read_csv local file' -> [(19,)]
+
+== 6. server-side bind parameters
+OK     0.071s  'client-side-style %s params (psycopg sends $1.. extended protocol)' -> [(14677,)]
+OK     0.022s  'simple param' -> [(4324651,)]
+OK     0.010s  'typed param' -> [(42,)]
+OK     0.072s  'injection string as value' -> [(0,)]
+OK   prepared x3 0.407s
+OK   binary cursor -> [(datetime.datetime(2005, 6, 3, 15, 42, 50, 363779), 'R02-M1-N0-C:J12-U11'), (datetime.datetime(2005, 6, 3, 15, 42, 50, 527847), 'R02-M1-N0-C:J12-U11')]
+
+== 7. full-text search with bound TSQUERY / text parameters
+OK     0.033s  'list indexes' -> [('r2p_bgl_idx', 'bgl'), ('r2p_os_idx', 'openstack')]
+
+== cleanup
+OK     0.007s  'DROP TABLE IF EXISTS r2s_t' -> None
+OK     0.002s  'DROP TABLE IF EXISTS r2s_evil' -> None
+OK     0.004s  'REVOKE SELECT ON bgl FROM r2s_reader' -> None
+OK     0.006s  'DROP ROLE IF EXISTS r2s_reader' -> []

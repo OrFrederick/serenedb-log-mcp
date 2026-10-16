@@ -1,0 +1,224 @@
+## search.topk_bm25_filters: median 882.7 ms  runs=[2088.4, 882.7, 711.6]  rows=20
+    ('14736', '2005-06-04 00:24:31.560279', 'R23-M0-N4-I:J18-U11', 'APP', 'FATAL', '8.015575', '<b>ciod</b>: LOGIN chdir(/p/gb2/draeger/benchmark/dat32k_060205) <b>failed</b>: No such file or directory')
+    ('14737', '2005-06-04 00:24:31.594456', 'R23-M1-N8-I:J18-U01', 'APP', 'FATAL', '8.015575', '<b>ciod</b>: LOGIN chdir(/p/gb2/draeger/benchmark/dat32k_060205) <b>failed</b>: No such file or directory')
+    ('14738', '2005-06-04 00:24:32.398284', 'R23-M1-N8-I:J18-U11', 'APP', 'FATAL', '8.015575', '<b>ciod: failed</b> to read message prefix on control stream (CioStream socket to 172.16.96.116:33399')
+    ('14739', '2005-06-04 00:24:32.432192', 'R04-M1-N4-I:J18-U11', 'APP', 'FATAL', '8.015575', '<b>ciod: failed</b> to read message prefix on control stream (CioStream socket to 172.16.96.116:33569')
+## search.count_exact: median 57.3 ms  runs=[65.4, 57.3, 24.7]  rows=1
+    ('50918',)
+## search.topk_with_window_count: median 882.6 ms  runs=[1444.4, 811.1, 882.6]  rows=20
+    ('14736', '2005-06-04 00:24:31.560279', 'R23-M0-N4-I:J18-U11', 'APP', 'FATAL', '8.015575', '50918')
+    ('14737', '2005-06-04 00:24:31.594456', 'R23-M1-N8-I:J18-U01', 'APP', 'FATAL', '8.015575', '50918')
+    ('14738', '2005-06-04 00:24:32.398284', 'R23-M1-N8-I:J18-U11', 'APP', 'FATAL', '8.015575', '50918')
+    ('14739', '2005-06-04 00:24:32.432192', 'R04-M1-N4-I:J18-U11', 'APP', 'FATAL', '8.015575', '50918')
+## search.topk_plus_count_one_stmt: median 485.9 ms  runs=[489.1, 457.1, 485.9]  rows=20
+    ('14736', '2005-06-04 00:24:31.560279', 'R23-M0-N4-I:J18-U11', 'APP', 'FATAL', '6.636587', '50918')
+    ('14737', '2005-06-04 00:24:31.594456', 'R23-M1-N8-I:J18-U01', 'APP', 'FATAL', '6.636587', '50918')
+    ('14738', '2005-06-04 00:24:32.398284', 'R23-M1-N8-I:J18-U11', 'APP', 'FATAL', '6.636587', '50918')
+    ('14739', '2005-06-04 00:24:32.432192', 'R04-M1-N4-I:J18-U11', 'APP', 'FATAL', '6.636587', '50918')
+## search.broad_term_topk: median 32.4 ms  runs=[34.1, 32.4, 28.1]  rows=20
+    ('191415', '2005-06-08 08:51:34.527786', 'R33-M1-N6', '1.9294766')
+    ('191418', '2005-06-08 08:51:41.601114', 'R33-M1-ND', '1.9294766')
+    ('191421', '2005-06-08 08:51:48.687001', 'R33-M1-N4', '1.9294766')
+    ('191424', '2005-06-08 08:51:55.702054', 'R33-M1-N1', '1.9294766')
+## search.broad_term_count: median 2.4 ms  runs=[3.1, 2.3, 2.4]  rows=1
+    ('557845',)
+## search.newest_first: median 19.0 ms  runs=[49.0, 13.7, 19.0]  rows=20
+    ('4747416', '2006-01-03 11:56:38.877831', 'R52-M0-N8-I:J18-U01', 'APP', 'FATAL', 'ciod: Error reading message prefix on CioStream socket to 172.16.96.116:38289, Link has been severed')
+    ('4747415', '2006-01-03 11:56:21.995387', 'R76-M0-N8-I:J18-U01', 'APP', 'FATAL', 'ciod: Error reading message prefix on CioStream socket to 172.16.96.116:38953, Link has been severed')
+    ('4746801', '2006-01-03 03:25:26.575310', 'R23-M0-N8-I:J18-U01', 'APP', 'FATAL', 'ciod: Error reading message prefix on CioStream socket to 172.16.96.116:39432, Link has been severed')
+    ('4746800', '2006-01-03 03:25:26.288016', 'R21-M0-N4-I:J18-U11', 'APP', 'FATAL', 'ciod: Error reading message prefix on CioStream socket to 172.16.96.116:39399, Link has been severed')
+## search.phrase: median 9.0 ms  runs=[57.9, 9.0, 6.8]  rows=18
+    ('3050899', '2005-08-15 16:31:53.274944', 'R04-M0-N8-I:J18-U01', '<b>kernel panic</b>')
+    ('3050900', '2005-08-15 16:31:54.039941', 'R24-M1-N4-I:J18-U11', '<b>kernel panic</b>')
+    ('3050902', '2005-08-15 17:03:49.739447', 'R10-M0-N4-I:J18-U11', '<b>kernel panic</b>')
+    ('3069219', '2005-08-19 13:56:00.280831', 'R43-M0-NC-I:J18-U01', '<b>kernel panic</b>')
+## search.phrase_websearch_quotes: median 3.4 ms  runs=[19.5, 3.4, 3.0]  rows=1
+    ('295',)
+## search.fuzzy: median 67.9 ms  runs=[79.2, 67.4, 67.9]  rows=20
+    ('17742', '2005-06-05 00:08:13.410695', 'R20-M0-N2-C:J10-U11', '1.4016876', 'data TLB error <b>interrupt</b>')
+    ('17745', '2005-06-05 00:08:13.577322', 'R20-M0-N2-C:J14-U01', '1.4016876', 'data TLB error <b>interrupt</b>')
+    ('17758', '2005-06-05 00:08:13.959099', 'R20-M0-ND-C:J13-U11', '1.4016876', 'data TLB error <b>interrupt</b>')
+    ('17809', '2005-06-05 00:08:15.474037', 'R20-M0-N9-C:J14-U01', '1.4016876', 'data TLB error <b>interrupt</b>')
+## search.fuzzy_count: median 6.5 ms  runs=[17.4, 6.5, 3.8]  rows=1
+    ('481401',)
+## search.openstack_topk: median 6.5 ms  runs=[9.1, 4.4, 6.5]  rows=0
+## search.FINAL_scoreNULL_filters: median 143.1 ms  runs=[168.8, 143.1, 37.7]  rows=20
+    ('14736', '2005-06-04 00:24:31.560279', 'R23-M0-N4-I:J18-U11', 'APP', 'FATAL', '4.636587', '<b>ciod</b>: LOGIN chdir(/p/gb2/draeger/benchmark/dat32k_060205) <b>failed</b>: No such file or directory')
+    ('14737', '2005-06-04 00:24:31.594456', 'R23-M1-N8-I:J18-U01', 'APP', 'FATAL', '4.636587', '<b>ciod</b>: LOGIN chdir(/p/gb2/draeger/benchmark/dat32k_060205) <b>failed</b>: No such file or directory')
+    ('14738', '2005-06-04 00:24:32.398284', 'R23-M1-N8-I:J18-U11', 'APP', 'FATAL', '4.636587', '<b>ciod: failed</b> to read message prefix on control stream (CioStream socket to 172.16.96.116:33399')
+    ('14739', '2005-06-04 00:24:32.432192', 'R04-M1-N4-I:J18-U11', 'APP', 'FATAL', '4.636587', '<b>ciod: failed</b> to read message prefix on control stream (CioStream socket to 172.16.96.116:33569')
+## search.FINAL_count: median 20.0 ms  runs=[20.0, 25.3, 18.9]  rows=1
+    ('50918',)
+## search.os_error_level: median 38.5 ms  runs=[54.6, 26.2, 38.5]  rows=20
+    ('1297', '2017-05-16 00:09:41.850000', 'nova.compute.manager', 'WARNING', 'None', '0.8398142', 'While synchronizing <b>instance</b> power states, found 1 instances in the database and 0 instances on the hyp')
+    ('5385', '2017-05-16 00:40:03.665000', 'nova.compute.manager', 'WARNING', 'None', '0.8398142', 'While synchronizing <b>instance</b> power states, found 1 instances in the database and 0 instances on the hyp')
+    ('6773', '2017-05-16 00:50:27.660000', 'nova.compute.manager', 'WARNING', 'None', '0.8398142', 'While synchronizing <b>instance</b> power states, found 1 instances in the database and 0 instances on the hyp')
+    ('8172', '2017-05-16 01:00:47.653000', 'nova.compute.manager', 'WARNING', 'None', '0.8398142', 'While synchronizing <b>instance</b> power states, found 1 instances in the database and 0 instances on the hyp')
+## context.bgl_same_node_before: median 33.6 ms  runs=[108.3, 33.6, 33.5]  rows=10
+    ('1510857', '2005-07-05 12:29:04.609100', 'APP', 'FATAL', 'ciod: Error creating node map from file /home/auselton/bgl/64mps.sequential.mapfile: Resource temporarily unav')
+    ('1510345', '2005-07-05 12:28:47.770495', 'KERNEL', 'INFO', 'ciod: Missing or invalid fields on line 1 of node map file /home/auselton/bgl/64mps.sequential.mapfile')
+    ('1509833', '2005-07-05 12:22:32.481287', 'APP', 'FATAL', 'ciod: Error creating node map from file /home/auselton/bgl/64mps.sequential.mapfile: Resource temporarily unav')
+    ('1509321', '2005-07-05 12:22:15.733903', 'KERNEL', 'INFO', 'ciod: Missing or invalid fields on line 1 of node map file /home/auselton/bgl/64mps.sequential.mapfile')
+## context.bgl_same_node_before_idx: median 12.6 ms  runs=[39.3, 12.6, 7.5]  rows=10
+    ('1510857', '2005-07-05 12:29:04.609100', 'APP', 'FATAL')
+    ('1510345', '2005-07-05 12:28:47.770495', 'KERNEL', 'INFO')
+    ('1509833', '2005-07-05 12:22:32.481287', 'APP', 'FATAL')
+    ('1509321', '2005-07-05 12:22:15.733903', 'KERNEL', 'INFO')
+## context.bgl_same_node_both_union: median 28.3 ms  runs=[26.2, 28.3, 37.5]  rows=21
+    ('1025184', '2005-06-25 14:51:38.431287', 'APP', 'FATAL', 'ciod: Error loading /home/glosli/src/ddcMD/ddcMD/1.1.13/ddcMDbglV: invalid or missing program image, No such f')
+    ('1067421', '2005-06-26 10:01:35.414832', 'APP', 'FATAL', 'ciod: Error loading /p/gb2/welcome3/32k/miranda: invalid or missing program image, No such file or directory')
+    ('1235186', '2005-06-30 16:22:29.127434', 'KERNEL', 'INFO', 'ciod: Error opening node map file /p/gb2/welcome3/32k_128x256x1_8x4x4.map, No such file or directory')
+    ('1235698', '2005-06-30 16:22:45.761710', 'APP', 'FATAL', 'ciod: Error creating node map from file /p/gb2/welcome3/32k_128x256x1_8x4x4.map: Bad file descriptor')
+## context.bgl_time_window_all_nodes: median 12.9 ms  runs=[22.0, 11.0, 12.9]  rows=16
+    ('1577127', '2005-07-07 22:49:47.314458', 'R03-M0-N4-I:J18-U11', 'APP', 'FATAL', 'ciod: LOGIN chdir(/p/gb2/spelce/Raptor_run/) failed: No such file or directory')
+    ('1577128', '2005-07-07 22:49:47.341931', 'R03-M0-N4-I:J18-U01', 'APP', 'FATAL', 'ciod: LOGIN chdir(/p/gb2/spelce/Raptor_run/) failed: No such file or directory')
+    ('1577129', '2005-07-07 22:49:47.360496', 'R03-M0-N0-I:J18-U11', 'APP', 'FATAL', 'ciod: LOGIN chdir(/p/gb2/spelce/Raptor_run/) failed: No such file or directory')
+    ('1577130', '2005-07-07 22:49:47.379080', 'R03-M0-N0-I:J18-U01', 'APP', 'FATAL', 'ciod: LOGIN chdir(/p/gb2/spelce/Raptor_run/) failed: No such file or directory')
+## context.bgl_time_window_count: median 7.2 ms  runs=[10.9, 7.2, 6.0]  rows=1
+    ('16', '16')
+## context.os_same_instance: median 7.2 ms  runs=[13.5, 6.5, 7.2]  rows=25
+    ('201287', '2017-05-14 21:07:37.102000', 'nova.compute.claims', 'INFO', 'req-d6143bd4-9784-4e95-a0c8-83fba00530b6', '[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Attempting claim: memory 2048 MB, disk 20 GB, vcpus 1 CPU')
+    ('201288', '2017-05-14 21:07:37.103000', 'nova.compute.claims', 'INFO', 'req-d6143bd4-9784-4e95-a0c8-83fba00530b6', '[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Total memory: 64172 MB, used: 512.00 MB')
+    ('201289', '2017-05-14 21:07:37.103000', 'nova.compute.claims', 'INFO', 'req-d6143bd4-9784-4e95-a0c8-83fba00530b6', '[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] memory limit: 96258.00 MB, free: 95746.00 MB')
+    ('201290', '2017-05-14 21:07:37.104000', 'nova.compute.claims', 'INFO', 'req-d6143bd4-9784-4e95-a0c8-83fba00530b6', '[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Total disk: 15 GB, used: 0.00 GB')
+## context.os_same_request: median 11.1 ms  runs=[17.9, 11.1, 10.0]  rows=12
+    ('201285', '2017-05-14 21:07:36.772000', 'nova.osapi_compute.wsgi.server', 'INFO', '10.11.10.1 "POST /v2/54fadb412c4e40cdbaed9335e4c35a9e/servers HTTP/1.1" status: 202 len: 733 time: 0.4794919')
+    ('201287', '2017-05-14 21:07:37.102000', 'nova.compute.claims', 'INFO', '[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Attempting claim: memory 2048 MB, disk 20 GB, vcpus 1 CPU')
+    ('201288', '2017-05-14 21:07:37.103000', 'nova.compute.claims', 'INFO', '[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Total memory: 64172 MB, used: 512.00 MB')
+    ('201289', '2017-05-14 21:07:37.103000', 'nova.compute.claims', 'INFO', '[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] memory limit: 96258.00 MB, free: 95746.00 MB')
+## count_by.component_bgl: median 16.3 ms  runs=[19.0, 14.6, 16.3]  rows=14
+    ('KERNEL', '4324651')
+    ('APP', '228536')
+    ('DISCOVERY', '97172')
+    ('MMCS', '88930')
+## count_by.level_bgl_filtered: median 26.1 ms  runs=[22.0, 26.9, 26.1]  rows=2
+    ('INFO', '3698201')
+    ('FATAL', '626450')
+## count_by.node_top: median 66.2 ms  runs=[94.5, 66.2, 55.8]  rows=20
+    ('R30-M0-N9-C:J16-U01', '152229', '32260')
+    ('R71-M0-N4-C:J14-U01', '1567', '32260')
+    ('R12-M0-N0-C:J12-U01', '1385', '32260')
+    ('R03-M1-NF-C:J07-U01', '966', '32260')
+## count_by.rack: median 52.8 ms  runs=[63.5, 36.9, 52.8]  rows=20
+    ('R30', '154206')
+    ('R63', '6821')
+    ('R05', '5604')
+    ('R00', '5568')
+## count_by.alert_tag: median 34.7 ms  runs=[42.3, 29.5, 34.7]  rows=41
+    ('KERNDTLB', '152734', '541')
+    ('KERNSTOR', '63491', '22529')
+    ('APPSEV', '49651', '1024')
+    ('KERNMNTF', '31531', '1024')
+## count_by.dataset_whole_corpus: median 37.2 ms  runs=[43.7, 34.2, 37.2]  rows=15
+    ('BGL', 'INFO', '3735813')
+    ('BGL', 'FATAL', '855195')
+    ('BGL', 'ERROR', '112355')
+    ('BGL', 'WARNING', '23357')
+## count_by.fts_by_component: median 15.4 ms  runs=[85.9, 15.4, 13.0]  rows=5
+    ('KERNEL', '360898')
+    ('APP', '178304')
+    ('DISCOVERY', '18301')
+    ('MONITOR', '353')
+## count_by.fts_by_component_os: median 11.1 ms  runs=[40.4, 11.1, 5.5]  rows=8
+    ('nova.compute.manager', '24784')
+    ('nova.compute.claims', '16520')
+    ('nova.virt.libvirt.imagecache', '12043')
+    ('nova.virt.libvirt.driver', '10324')
+## trend.day_bgl: median 23.5 ms  runs=[25.9, 16.3, 23.5]  rows=200
+    ('2005-06-03 00:00:00', '40')
+    ('2005-06-04 00:00:00', '2176')
+    ('2005-06-05 00:00:00', '4046')
+    ('2005-06-06 00:00:00', '13')
+## trend.week_by_component: median 31.6 ms  runs=[31.6, 30.7, 35.2]  rows=86
+    ('2005-05-30 00:00:00', 'APP', '2040')
+    ('2005-05-30 00:00:00', 'KERNEL', '569')
+    ('2005-06-06 00:00:00', 'KERNEL', '152225')
+    ('2005-06-06 00:00:00', 'APP', '124')
+## trend.hour_fts: median 9.1 ms  runs=[9.7, 9.1, 7.9]  rows=65
+    ('2005-06-04 00:00:00', '1024')
+    ('2005-06-04 04:00:00', '1024')
+    ('2005-06-05 05:00:00', '192')
+    ('2005-06-07 16:00:00', '512')
+## trend.date_trunc_day_os: median 12.8 ms  runs=[17.7, 11.9, 12.8]  rows=71
+    ('2017-05-14 19:00:00', 'INFO', '2756')
+    ('2017-05-14 19:00:00', 'WARNING', '39')
+    ('2017-05-14 20:00:00', 'INFO', '7958')
+    ('2017-05-14 20:00:00', 'WARNING', '120')
+## compare_periods.component: median 22.8 ms  runs=[56.4, 22.8, 11.9]  rows=5
+    ('KERNEL', '18136', '25334', '7198', '1.397')
+    ('APP', '8941', '9253', '312', '1.035')
+    ('LINKCARD', '12', '152', '140', '12.667')
+    ('BGLMASTER', '24', '0', '-24', '0.0')
+## compare_periods.filter_agg: median 16.6 ms  runs=[29.7, 16.6, 12.2]  rows=20
+    ('KERNMNTF', '3783', '23641')
+    ('KERNTERM', '11349', '1087')
+    ('KERNMICRO', '1486', '0')
+    ('APPSEV', '7808', '9248')
+## trend.day_gapfilled: median 19.6 ms  runs=[29.2, 19.6, 14.7]  rows=216
+    ('2005-06-03 00:00:00', '40')
+    ('2005-06-04 00:00:00', '2176')
+    ('2005-06-05 00:00:00', '4046')
+    ('2005-06-06 00:00:00', '13')
+## top_patterns.bgl_all: median 11145.8 ms  runs=[11145.8, 14061.3, 6996.9]  rows=20
+    ('generating core.<N>', '1706751', '32768', '2005-06-03 15:51:25.712950', '2005-07-28 13:10:53.079264', '2735')
+    ('<N> double-hummer alignment exceptions', '295764', '63134', '2005-06-03 16:43:07.560710', '2005-08-28 02:57:21.077850', '5065')
+    ('<N> floating point alignment exceptions', '267725', '47418', '2005-06-22 16:14:49.101467', '2005-11-10 23:12:57.422837', '903668')
+    ('CE sym <N>, at <HEX>, mask <HEX>', '201206', '1653', '2005-06-03 16:01:50.945374', '2005-12-06 01:14:43.502735', '4884')
+## top_patterns.bgl_fatal: median 1458.9 ms  runs=[1613.5, 1458.9, 1175.9]  rows=20
+    ('data TLB error interrupt', '152734', '541')
+    ('data storage interrupt', '63491', '22529')
+    ('instruction address: <HEX>', '47563', '22791')
+    ('ciod: Error reading message prefix on CioStream socket to <N>.<N>.<N>.<N>:<N>, Link has been severed', '26546', '1024')
+## top_patterns.bgl_fts: median 605.6 ms  runs=[671.5, 605.6, 537.5]  rows=20
+    ('data TLB error interrupt', '152734')
+    ('instruction cache parity error corrected', '105924')
+    ('total of <N> ddr error(s) detected and corrected', '28485')
+    ('ciod: Error reading message prefix on CioStream socket to <N>.<N>.<N>.<N>:<N>, Link has been severed', '26546')
+## top_patterns.bgl_lh2_template: median 19.4 ms  runs=[104.6, 19.4, 18.6]  rows=20
+    ('E310', 'generating core.<*>', '1706751')
+    ('E317', 'iar <*> dear <*>', '442966')
+    ('E237', '<*> double-hummer alignment exceptions', '295764')
+    ('E240', '<*> floating point alignment exceptions', '267725')
+## top_patterns.os_all: median 327.2 ms  runs=[301.6, 378.4, 327.2]  rows=20
+    ('<N> "GET /v<N>/<HEX>/servers/detail HTTP/<N>" status: <N> len: <N> time: <N>', '67363')
+    ('image <UUID> at (/var/lib/nova/instances/_base/<HEX><N>ac<N>e<N>): in use: on this node <N> local, <N> on othe', '12043')
+    ('image <UUID> at (/var/lib/nova/instances/_base/<HEX><N>ac<N>e<N>): checking', '12043')
+    ('Active base files: /var/lib/nova/instances/_base/<HEX><N>ac<N>e<N>', '12035')
+## latency.endpoint_overall: median 1177.9 ms  runs=[706.6, 1427.0, 1177.9]  rows=20
+    ('GET /v2/{tenant}/servers/detail', '67716', '0.2646', '0.3654', '0.4364', '4.1645')
+    ('POST /v2/{tenant}/os-server-external-events', '4129', '0.0925', '0.1056', '0.2566', '2.1446')
+    ('GET /openstack/{n}-10-17/vendor_data.json', '4071', '0.2203', '0.3271', '0.3981', '2.2387')
+    ('GET /openstack/{n}-10-17/meta_data.json', '3322', '0.2109', '0.2755', '0.4018', '0.7884')
+## latency.endpoint_bucket_list_quantile: median 459.3 ms  runs=[596.1, 459.3, 439.3]  rows=448
+    ('2017-05-16 15:00:00', 'GET /v2/{tenant}/servers/detail', '2082', '[0.26567555, 0.3650939199999999, 0.432349847]')
+    ('2017-05-16 15:00:00', 'POST /v2/{tenant}/os-server-external-events', '126', '[0.0926654, 0.10345220000000001, 0.2645268]')
+    ('2017-05-16 15:00:00', 'GET /openstack/{n}-10-17/vendor_data.json', '126', '[0.2190881, 0.2477751, 0.395535775]')
+    ('2017-05-16 15:00:00', 'GET /openstack/{n}-10-17/meta_data.json', '106', '[0.00265285, 0.25174525, 0.34182109000000005]')
+## latency.approx: median 1158.9 ms  runs=[1425.0, 1158.9, 695.4]  rows=20
+    ('GET /v2/{tenant}/servers/detail', '67716', '0.4368989138030317')
+    ('POST /v2/{tenant}/os-server-external-events', '4129', '0.25718167406582715')
+    ('GET /openstack/{n}-10-17/vendor_data.json', '4071', '0.39953698950960354')
+    ('GET /openstack/{n}-10-17/meta_data.json', '3322', '0.40167302558171003')
+## latency.instance_lifecycle_abnormal: median 11.3 ms  runs=[26.4, 11.3, 8.2]  rows=10
+    ('a445709b-6ad0-40ec-8860-bec60b6ca0c2', '2017-05-14 21:42:42.319000', '2017-05-14 21:43:56.880000', '74.56100010871887', '25')
+    ('544fd51c-4edc-4780-baae-ba1d80a0acfc', '2017-05-14 21:07:37.102000', '2017-05-14 21:08:42.508000', '65.40599989891052', '25')
+    ('1643649d-2f42-4303-bfcd-7798baec19f9', '2017-05-14 21:46:48.622000', '2017-05-14 21:47:43.028000', '54.4060001373291', '25')
+    ('ae651dff-c7ad-43d6-ac96-bbcd820ccca8', '2017-05-14 21:08:40.907000', '2017-05-14 21:09:33.816000', '52.90899991989136', '25')
+## latency.precomputed_table: median 24.8 ms  runs=[25.2, 24.8, 19.9]  rows=20
+    ('GET /v2/{tenant}/servers/detail', '67716', '[0.2645831, 0.365448425, 0.43640722000000004]')
+    ('POST /v2/{tenant}/os-server-external-events', '4129', '[0.0924511, 0.1056139, 0.256553816]')
+    ('GET /openstack/{n}-10-17/vendor_data.json', '4071', '[0.220294, 0.32712555, 0.39813283]')
+    ('GET /openstack/{n}-10-17/meta_data.json', '3322', '[0.21087945000000002, 0.2754746499999995, 0.401774722]')
+## top_patterns.precomputed_col: median 175.5 ms  runs=[478.7, 137.7, 175.5]  rows=20
+    ('data TLB error interrupt', '152734', '541')
+    ('data storage interrupt', '63491', '22529')
+    ('instruction address: <HEX>', '47563', '22791')
+    ('ciod: Error reading message prefix on CioStream socket to <N>.<N>.<N>.<N>:<N>, Link has been severed', '26546', '1024')
+## describe.datasets: median 136.0 ms  runs=[151.4, 136.0, 110.8]  rows=2
+    ('BGL', '4747963', '2005-06-03 15:42:50.363779', '2006-01-04 08:00:05.233639', '14', '69252')
+    ('OpenStack', '207820', '2017-05-14 19:39:01.445000', '2017-05-17 12:02:35.320000', '12', '15')
+## describe.components: median 44.8 ms  runs=[44.8, 48.0, 44.1]  rows=27
+    ('BGL', 'KERNEL', '4324651')
+    ('BGL', 'APP', '228536')
+    ('BGL', 'DISCOVERY', '97172')
+    ('BGL', 'MMCS', '88930')

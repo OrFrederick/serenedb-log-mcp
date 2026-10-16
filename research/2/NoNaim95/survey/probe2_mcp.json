@@ -1,0 +1,1 @@
+{"mcpServers": {"probe2": {"type": "stdio", "command": "/tmp/r2probe/.venv/bin/python", "args": ["-I", "/Users/deni/hackathon/serenedb-log-mcp/.claude/worktrees/r2/research/2/NoNaim95/survey/probe_server_alwaysload.py"]}}}

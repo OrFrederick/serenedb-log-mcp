@@ -1,0 +1,5 @@
+OK  1.004s fts count: [(557845,)]
+OK  0.176s agg by component: [('KERNEL', 4324651), ('APP', 228536), ('DISCOVERY', 97172)]
+OK  0.249s time_bucket trend: [(datetime.datetime(2005, 6, 1, 0, 0), 1240932), (datetime.datetime(2005, 7, 1, 0, 0), 1667866), (datetime.datetime(2005, 8, 1, 0, 0), 403715)]
+ERR 0.191s insert: ReadOnlySqlTransaction: Cannot write to database ""postgres"" - transaction is launched in read-only mode
+rows in r2s_t: (0,)

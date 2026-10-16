@@ -1,0 +1,115 @@
+{
+ "_meta": {
+  "io.modelcontextprotocol/serverInfo": {
+   "name": "serenedb-log-mcp-proto",
+   "version": ""
+  }
+ },
+ "content": [
+  {
+   "type": "text",
+   "text": "[E19] scope: openstack start..end; filters: anchor_line_no=201287, scope=same_instance, instance_id=544fd51c-4edc-4780-baae-ba1d80a0acfc; total=25 returned=4 **TRUNCATED: showing 4 of 25**; 45.0 ms\nSQL: (SELECT line_no, ts, source_file AS source, component, level, request_id, instance_id, message FROM openstack WHERE instance_id = %s AND (ts, line_no) < (%s, %s) ORDER BY ts DESC, line_no DESC LIMIT %s) UNION ALL (SELECT line_no, ts, source_file AS source, component, level, request_id, instance_id, message FROM openstack WHERE instance_id = %s AND (ts, line_no) >= (%s, %s) ORDER BY ts, line_no LIM\n>> 2017-05-14 21:07:37.102000 line 201287 openstack_abnormal.log nova.compute.claims INFO: [instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Attempting claim: memory 2048 MB, disk 20 GB, vcpus 1 CPU\n-  2017-05-14 21:07:37.103000 line 201288 openstack_abnormal.log nova.compute.claims INFO: [instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Total memory: 64172 MB, used: 512.00 MB\n-  2017-05-14 21:07:37.103000 line 201289 openstack_abnormal.log nova.compute.claims INFO: [instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] memory limit: 96258.00 MB, free: 95746.00 MB\n-  2017-05-14 21:07:37.104000 line 201290 openstack_abnormal.log nova.compute.claims INFO: [instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Total disk: 15 GB, used: 0.00 GB\n"
+  }
+ ],
+ "structuredContent": {
+  "evidence": {
+   "evidence_id": "E19",
+   "tool": "get_context",
+   "sql": [
+    "(SELECT line_no, ts, source_file AS source, component, level, request_id, instance_id, message FROM openstack WHERE instance_id = %s AND (ts, line_no) < (%s, %s) ORDER BY ts DESC, line_no DESC LIMIT %s) UNION ALL (SELECT line_no, ts, source_file AS source, component, level, request_id, instance_id, message FROM openstack WHERE instance_id = %s AND (ts, line_no) >= (%s, %s) ORDER BY ts, line_no LIMIT %s) ORDER BY ts, line_no",
+    "SELECT count(*) FROM openstack WHERE instance_id = %s"
+   ],
+   "params": [
+    [
+     "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+     "2017-05-14 21:07:37.102000",
+     201287,
+     3,
+     "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+     "2017-05-14 21:07:37.102000",
+     201287,
+     4
+    ],
+    [
+     "544fd51c-4edc-4780-baae-ba1d80a0acfc"
+    ]
+   ],
+   "data_scope": {
+    "datasets": [
+     "openstack"
+    ],
+    "time_from": null,
+    "time_to": null,
+    "filters": {
+     "anchor_line_no": 201287,
+     "scope": "same_instance",
+     "instance_id": "544fd51c-4edc-4780-baae-ba1d80a0acfc"
+    }
+   },
+   "total_count": 25,
+   "returned_count": 4,
+   "truncated": true,
+   "query_ms": 45.0
+  },
+  "entries": [
+   {
+    "dataset": "openstack",
+    "line_no": 201287,
+    "ts": "2017-05-14 21:07:37.102000",
+    "source": "openstack_abnormal.log",
+    "component": "nova.compute.claims",
+    "level": "INFO",
+    "message": "[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Attempting claim: memory 2048 MB, disk 20 GB, vcpus 1 CPU",
+    "score": null,
+    "request_id": "req-d6143bd4-9784-4e95-a0c8-83fba00530b6",
+    "instance_id": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+    "alert_tag": null,
+    "is_anchor": true
+   },
+   {
+    "dataset": "openstack",
+    "line_no": 201288,
+    "ts": "2017-05-14 21:07:37.103000",
+    "source": "openstack_abnormal.log",
+    "component": "nova.compute.claims",
+    "level": "INFO",
+    "message": "[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Total memory: 64172 MB, used: 512.00 MB",
+    "score": null,
+    "request_id": "req-d6143bd4-9784-4e95-a0c8-83fba00530b6",
+    "instance_id": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+    "alert_tag": null,
+    "is_anchor": false
+   },
+   {
+    "dataset": "openstack",
+    "line_no": 201289,
+    "ts": "2017-05-14 21:07:37.103000",
+    "source": "openstack_abnormal.log",
+    "component": "nova.compute.claims",
+    "level": "INFO",
+    "message": "[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] memory limit: 96258.00 MB, free: 95746.00 MB",
+    "score": null,
+    "request_id": "req-d6143bd4-9784-4e95-a0c8-83fba00530b6",
+    "instance_id": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+    "alert_tag": null,
+    "is_anchor": false
+   },
+   {
+    "dataset": "openstack",
+    "line_no": 201290,
+    "ts": "2017-05-14 21:07:37.104000",
+    "source": "openstack_abnormal.log",
+    "component": "nova.compute.claims",
+    "level": "INFO",
+    "message": "[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Total disk: 15 GB, used: 0.00 GB",
+    "score": null,
+    "request_id": "req-d6143bd4-9784-4e95-a0c8-83fba00530b6",
+    "instance_id": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+    "alert_tag": null,
+    "is_anchor": false
+   }
+  ]
+ },
+ "isError": false,
+ "resultType": "complete"
+}

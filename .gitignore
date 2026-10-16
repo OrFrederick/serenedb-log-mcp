@@ -6,3 +6,7 @@ data/
 *.parquet
 *.log
 .DS_Store
+
+# overnight run
+overnight/state/
+.worktrees/

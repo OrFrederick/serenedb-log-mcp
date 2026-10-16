@@ -15,6 +15,7 @@ import functools
 
 import psycopg
 import pytest
+from psycopg import sql
 from psycopg.conninfo import conninfo_to_dict
 
 from serenedb_log_mcp.config import load_settings
@@ -85,7 +86,9 @@ def _corpus_problem() -> str | None:
             ).fetchone()
             if not exists or exists[0] == 0:
                 return f"full Base Corpus missing: {schema}.{table} is missing. Load it with `make load-dev`."
-            row = conn.execute(f'SELECT count(*) FROM "{schema}"."{table}"').fetchone()
+            row = conn.execute(
+                sql.SQL("SELECT count(*) FROM {}").format(sql.Identifier(schema, table))
+            ).fetchone()
             rows = row[0] if row else 0
             if rows != expected:
                 return (

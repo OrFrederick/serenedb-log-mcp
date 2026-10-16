@@ -1,0 +1,9 @@
+t5|t300
+1621|1202
+-- 1 rows, 0.507s
+count
+0
+-- 1 rows, 1.595s
+min|max|count
+None|None|0
+-- 1 rows, 0.192s

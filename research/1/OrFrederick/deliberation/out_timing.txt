@@ -1,0 +1,9 @@
+load averages: 11.92 12.20 12.80
+-- 14 rows, 5.467s
+-- 20 rows, 78.950s
+load averages: 10.95 11.69 12.54
+-- 14 rows, 10.446s
+-- 20 rows, 37.042s
+load averages: 15.99 12.96 12.96
+-- 14 rows, 12.328s
+-- 20 rows, 65.076s

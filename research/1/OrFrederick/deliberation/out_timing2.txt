@@ -1,0 +1,21 @@
+load averages: 15.43 14.66 13.67
+count|sum
+1202|348460
+-- 1 rows, 1.207s
+count|sum
+6163|592259
+-- 1 rows, 0.969s
+load averages: 14.51 14.48 13.62
+count|sum
+1202|348460
+-- 1 rows, 0.340s
+count|sum
+6163|592259
+-- 1 rows, 0.588s
+load averages: 14.51 14.48 13.62
+count|sum
+1202|348460
+-- 1 rows, 0.361s
+count|sum
+6163|592259
+-- 1 rows, 0.596s

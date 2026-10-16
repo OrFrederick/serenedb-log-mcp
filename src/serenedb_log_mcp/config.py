@@ -37,6 +37,7 @@ class Settings(BaseModel):
     database_url: str = DEFAULT_DATABASE_URL
     role_database_urls: dict[RoleName, str] = Field(default_factory=dict)
     slm_schema: str = "slm"
+    raw_schema: str = "public"
     data_dir: Path = Path("data")
     query_timeout_s: float = 15.0
     client_binding: bool = False
@@ -65,11 +66,9 @@ def load_settings(environ: Mapping[str, str] | None = None, **overrides: Any) ->
     if role_urls:
         values["role_database_urls"] = role_urls
     if (schema := get("SLM_SCHEMA")) is not None:
-        if not SCHEMA_RE.fullmatch(schema):
-            raise ConfigError(
-                f"SLM_SCHEMA={schema!r} is not a plain lowercase identifier ({SCHEMA_RE.pattern})"
-            )
-        values["slm_schema"] = schema
+        values["slm_schema"] = _schema("SLM_SCHEMA", schema)
+    if (raw_schema := get("SLM_RAW_SCHEMA")) is not None:
+        values["raw_schema"] = _schema("SLM_RAW_SCHEMA", raw_schema)
     if (data_dir := get("SLM_DATA_DIR")) is not None:
         values["data_dir"] = Path(data_dir)
     if (timeout := get("SLM_QUERY_TIMEOUT_S")) is not None:
@@ -84,6 +83,12 @@ def load_settings(environ: Mapping[str, str] | None = None, **overrides: Any) ->
         values["pattern_tier1"] = _flag("SLM_PATTERN_TIER1", tier1)
     values.update(overrides)
     return Settings(**values)
+
+
+def _schema(name: str, value: str) -> str:
+    if not SCHEMA_RE.fullmatch(value):
+        raise ConfigError(f"{name}={value!r} is not a plain lowercase identifier ({SCHEMA_RE.pattern})")
+    return value
 
 
 def _flag(name: str, value: str) -> bool:

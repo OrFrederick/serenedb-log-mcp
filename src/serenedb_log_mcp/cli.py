@@ -15,9 +15,9 @@ def build_parser() -> argparse.ArgumentParser:
         prog="serenedb-log-mcp",
         description=(
             "Read-only MCP server for Role-specific log search and aggregation over SereneDB. "
-            "Configuration comes from the environment: DATABASE_URL, SLM_SCHEMA, SLM_DATA_DIR, "
-            "SLM_QUERY_TIMEOUT_S, SLM_CLIENT_BINDING, LEDGER_PATH, SLM_EXPORT_DIR, SLM_PATTERN_TIER1 "
-            "and DATABASE_URL_<ROLE>."
+            "Configuration comes from the environment: DATABASE_URL, DATABASE_URL_<ROLE>, "
+            "SLM_SCHEMA, SLM_RAW_SCHEMA, SLM_DATA_DIR, SLM_QUERY_TIMEOUT_S, SLM_CLIENT_BINDING, "
+            "LEDGER_PATH, SLM_EXPORT_DIR and SLM_PATTERN_TIER1."
         ),
     )
     parser.add_argument(

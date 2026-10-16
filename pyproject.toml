@@ -48,8 +48,5 @@ warn_required_dynamic_aliases = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["scripts"]
-addopts = ["-ra", "--strict-markers"]
-markers = [
-    "db: needs a reachable SereneDB at DATABASE_URL (skips with a reason otherwise)",
-    "corpus: needs the full Base Corpus loaded in SereneDB (skips with a reason otherwise)",
-]
+# The db and corpus markers are defined in tests/conftest.py.
+addopts = ["-ra", "--strict-markers", "-p", "pytester"]

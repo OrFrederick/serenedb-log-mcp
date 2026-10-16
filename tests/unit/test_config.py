@@ -13,6 +13,7 @@ def test_defaults_when_environment_is_empty() -> None:
 
     assert s.database_url == "host=localhost port=7890 dbname=postgres user=postgres"
     assert s.slm_schema == "slm"
+    assert s.raw_schema == "public"
     assert s.data_dir == Path("data")
     assert s.query_timeout_s == 15.0
     assert s.client_binding is False
@@ -29,6 +30,7 @@ def test_reads_every_variable_from_the_environment() -> None:
         "DATABASE_URL_TEAM_LEAD": "host=db user=lead",
         "DATABASE_URL_MANAGER": "host=db user=mgr",
         "SLM_SCHEMA": "slm_t10",
+        "SLM_RAW_SCHEMA": "scratch_raw",
         "SLM_DATA_DIR": "/srv/data",
         "SLM_QUERY_TIMEOUT_S": "2.5",
         "SLM_CLIENT_BINDING": "1",
@@ -44,6 +46,7 @@ def test_reads_every_variable_from_the_environment() -> None:
     assert s.database_url_for("team_lead") == "host=db user=lead"
     assert s.database_url_for("manager") == "host=db user=mgr"
     assert s.slm_schema == "slm_t10"
+    assert s.raw_schema == "scratch_raw"
     assert s.data_dir == Path("/srv/data")
     assert s.query_timeout_s == 2.5
     assert s.client_binding is True
@@ -84,10 +87,11 @@ def test_invalid_flag_names_the_variable(value: str) -> None:
         load_settings({"SLM_CLIENT_BINDING": value})
 
 
+@pytest.mark.parametrize("variable", ["SLM_SCHEMA", "SLM_RAW_SCHEMA"])
 @pytest.mark.parametrize("value", ["Slm", "1slm", "slm-x", "slm;drop", "public.x"])
-def test_schema_must_be_a_plain_lowercase_identifier(value: str) -> None:
-    with pytest.raises(ConfigError, match="SLM_SCHEMA"):
-        load_settings({"SLM_SCHEMA": value})
+def test_schemas_must_be_plain_lowercase_identifiers(variable: str, value: str) -> None:
+    with pytest.raises(ConfigError, match=variable):
+        load_settings({variable: value})
 
 
 @pytest.mark.parametrize("value", ["abc", "0", "-1"])

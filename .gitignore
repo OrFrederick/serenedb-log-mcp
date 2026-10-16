@@ -10,3 +10,9 @@ data/
 # overnight run
 overnight/state/
 .worktrees/
+
+# python tooling
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+exports/

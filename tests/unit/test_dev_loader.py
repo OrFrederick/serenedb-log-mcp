@@ -1,0 +1,204 @@
+"""scripts/dev_loader.py: parsing, sample files and argument handling (no SereneDB needed).
+
+The log lines below are synthetic, written in the BGL and OpenStack formats of Loghub
+(https://github.com/logpai/loghub; Zhu et al., ISSRE 2023).
+"""
+
+import hashlib
+from datetime import datetime
+from pathlib import Path
+
+import pytest
+
+import dev_loader
+
+BGL_ALERT = (
+    "KERNDTLB 1118536327 2005.06.11 R30-M0-N9-C:J16-U01 2005-06-11-17.32.07.581048 "
+    "R30-M0-N9-C:J16-U01 RAS KERNEL FATAL data TLB error interrupt"
+)
+BGL_PLAIN = (
+    "- 1117838570 2005.06.03 R02-M1-N0-C:J12-U11 2005-06-03-15.42.50.363779 "
+    "R02-M1-N0-C:J12-U11 RAS KERNEL INFO instruction cache parity error corrected"
+)
+OS_API = (
+    "nova-api.log.1.2017-05-16_13:53:08 2017-05-16 00:00:00.008 25746 INFO nova.osapi_compute.wsgi.server "
+    "[req-38101a0b-2096-447d-96ea-a692162415ae 113d3a99c3da401fbd62cc2caa5b96d2 "
+    '54fadb412c4e40cdbaed9335e4c35a9e - - -] 10.11.10.1 "GET /v2/54fa/servers/detail HTTP/1.1" '
+    "status: 200 len: 1893 time: 0.2477829"
+)
+OS_INSTANCE = (
+    "nova-compute.log.1.2017-05-16_13:55:31 2017-05-16 00:00:10.302 2931 INFO nova.virt.libvirt.driver [-] "
+    "[instance: b9000564-fe1a-409b-b8cc-1e88b294cd1d] Instance spawned successfully."
+)
+
+
+def test_header_says_it_is_not_the_organisers_loader() -> None:
+    assert dev_loader.__doc__ is not None
+    assert "not the organisers' loader" in dev_loader.__doc__
+
+
+def test_bgl_alert_line() -> None:
+    row = dev_loader.parse_bgl_line(7, BGL_ALERT)
+
+    assert row == (
+        7,
+        "KERNDTLB",
+        1118536327,
+        datetime(2005, 6, 11, 17, 32, 7, 581048),
+        "R30-M0-N9-C:J16-U01",
+        "KERNEL",
+        "FATAL",
+        "data TLB error interrupt",
+        BGL_ALERT,
+    )
+
+
+def test_bgl_non_alert_line_keeps_dash_tag() -> None:
+    row = dev_loader.parse_bgl_line(1, BGL_PLAIN)
+
+    assert row[1] == "-"
+    assert row[7] == "instruction cache parity error corrected"
+
+
+def test_bgl_short_line_does_not_fail() -> None:
+    row = dev_loader.parse_bgl_line(3, "- notanepoch 2005.06.03")
+
+    assert row == (3, "-", None, None, None, None, None, None, "- notanepoch 2005.06.03")
+
+
+def test_bgl_bad_timestamp_gives_null_ts() -> None:
+    line = BGL_PLAIN.replace("2005-06-03-15.42.50.363779", "2005-06-03-xx")
+
+    assert dev_loader.parse_bgl_line(1, line)[3] is None
+
+
+def test_nul_bytes_are_escaped_because_copy_rejects_them() -> None:
+    row = dev_loader.parse_bgl_line(1, BGL_PLAIN + "\x00tail")
+
+    assert "\x00" not in row[8]
+    assert row[8].endswith("\\x00tail")
+
+
+def test_openstack_api_line() -> None:
+    row = dev_loader.parse_openstack_line(5, "openstack_normal1.log", OS_API)
+
+    assert row[:9] == (
+        5,
+        "openstack_normal1.log",
+        "nova-api.log.1.2017-05-16_13:53:08",
+        datetime(2017, 5, 16, 0, 0, 0, 8000),
+        25746,
+        "INFO",
+        "nova.osapi_compute.wsgi.server",
+        "req-38101a0b-2096-447d-96ea-a692162415ae",
+        None,
+    )
+    assert row[9].startswith('10.11.10.1 "GET /v2/54fa/servers/detail')
+    assert row[10] == OS_API
+
+
+def test_openstack_instance_line_without_request() -> None:
+    row = dev_loader.parse_openstack_line(9, "OpenStack_2k.log", OS_INSTANCE)
+
+    assert row[7] is None
+    assert row[8] == "b9000564-fe1a-409b-b8cc-1e88b294cd1d"
+    assert row[9] == "[instance: b9000564-fe1a-409b-b8cc-1e88b294cd1d] Instance spawned successfully."
+
+
+def test_openstack_unparsed_line_keeps_raw_text() -> None:
+    row = dev_loader.parse_openstack_line(2, "x.log", "garbage")
+
+    assert row == (2, "x.log", None, None, None, None, None, None, None, "garbage", "garbage")
+
+
+def test_openstack_rows_number_lines_across_files(tmp_path: Path) -> None:
+    first, second = tmp_path / "a.log", tmp_path / "b.log"
+    first.write_text(OS_API + "\n" + OS_INSTANCE + "\n")
+    second.write_text(OS_INSTANCE)
+
+    rows = list(dev_loader.openstack_rows([first, second]))
+
+    assert [(r[0], r[1]) for r in rows] == [(1, "a.log"), (2, "a.log"), (3, "b.log")]
+
+
+def test_lh2_rows_read_the_structured_csv(tmp_path: Path) -> None:
+    csv_path = tmp_path / "x.csv"
+    csv_path.write_text('LineId,Content,EventId,EventTemplate\n1,"a ""b"" c",E1,"a <*> c"\n')
+
+    assert list(dev_loader.lh2_rows(csv_path)) == [(1, 'a "b" c', "E1", "a <*> c")]
+
+
+def _sample(content: bytes) -> dev_loader.SampleFile:
+    return dev_loader.SampleFile(
+        "X_2k.log", "https://example.invalid/X_2k.log", hashlib.sha256(content).hexdigest()
+    )
+
+
+def test_ensure_samples_downloads_missing_files_once(tmp_path: Path) -> None:
+    sample = _sample(b"line\n")
+    calls: list[str] = []
+
+    def fetch(url: str) -> bytes:
+        calls.append(url)
+        return b"line\n"
+
+    paths = dev_loader.ensure_samples(tmp_path, [sample], fetch)
+    dev_loader.ensure_samples(tmp_path, [sample], fetch)
+
+    assert paths == [tmp_path / "X_2k.log"]
+    assert paths[0].read_bytes() == b"line\n"
+    assert calls == ["https://example.invalid/X_2k.log"]
+    assert "Zhu" in (tmp_path / "LOGHUB_LICENSE.txt").read_text()
+
+
+def test_ensure_samples_rejects_a_checksum_mismatch(tmp_path: Path) -> None:
+    sample = _sample(b"expected\n")
+
+    with pytest.raises(dev_loader.LoaderError, match="sha256"):
+        dev_loader.ensure_samples(tmp_path, [sample], lambda url: b"tampered\n")
+
+    assert not (tmp_path / "X_2k.log").exists()
+
+
+def test_pinned_samples_are_the_loghub_2k_files() -> None:
+    names = [s.name for s in dev_loader.SAMPLES]
+
+    assert names == ["BGL_2k.log", "OpenStack_2k.log"]
+    assert all("/logpai/loghub/" in s.url and len(s.sha256) == 64 for s in dev_loader.SAMPLES)
+
+
+def test_full_mode_reports_missing_files_before_connecting(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.setenv("SLM_DATA_DIR", str(tmp_path))
+    monkeypatch.setenv("DATABASE_URL", "host=127.0.0.1 port=9")
+
+    code = dev_loader.main(["bgl"])
+
+    err = capsys.readouterr().err
+    assert code == 2
+    assert str(tmp_path / "raw" / "BGL.log") in err
+    assert "SLM_DATA_DIR" in err
+
+
+def test_sample_mode_rejects_table_names(capsys: pytest.CaptureFixture[str]) -> None:
+    with pytest.raises(SystemExit) as exit_info:
+        dev_loader.main(["--sample", "lh2_bgl"])
+
+    assert exit_info.value.code == 2
+    assert "--sample" in capsys.readouterr().err
+
+
+def test_unknown_table_is_rejected() -> None:
+    with pytest.raises(SystemExit) as exit_info:
+        dev_loader.main(["users"])
+
+    assert exit_info.value.code == 2
+
+
+def test_schema_must_be_a_plain_identifier(capsys: pytest.CaptureFixture[str]) -> None:
+    with pytest.raises(SystemExit) as exit_info:
+        dev_loader.main(["--schema", "public; drop table bgl"])
+
+    assert exit_info.value.code == 2
+    assert "--schema" in capsys.readouterr().err

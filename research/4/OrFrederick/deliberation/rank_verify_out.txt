@@ -1,0 +1,25 @@
+features query: 32.88 s, 41 categories, 348460 alert lines
+
+Top 8 per formula (L=raw lines, A=ours, B=NoNaim95 (b), C=A with Incidents incl. Incident-based trend, C2=C with our nc-hour trend)
+ 1 KERNDTLB  | APPSEV    | APPSEV    | APPSEV    | APPSEV   
+ 2 KERNSTOR  | KERNMNTF  | KERNSTOR  | KERNMC    | KERNMNTF 
+ 3 APPSEV    | KERNRTSP  | KERNRTSP  | KERNRTSP  | KERNMC   
+ 4 KERNMNTF  | KERNMC    | KERNMNTF  | KERNMNTF  | KERNRTSP 
+ 5 KERNTERM  | KERNSOCK  | KERNTERM  | KERNSOCK  | KERNSOCK 
+ 6 KERNREC   | APPOUT    | KERNMC    | KERNTERM  | KERNTERM 
+ 7 APPREAD   | KERNTERM  | APPOUT    | KERNREC   | MASABNORM
+ 8 KERNRTSP  | APPRES    | KERNREC   | APPRES    | APPRES   
+
+Key categories (ranks L/A/B/C/C2):
+KERNDTLB  lines=1.53e+05 incidents=37 nc_hours=366 nodes=541 top_node_share=0.996 eff_sources=1.01 midplanes=44 active_weeks=7 ratio_nch=0 ratio_inc=0 days_since_last=36  ranks 1/10/10/10/11
+KERNSTOR  lines=6.35e+04 incidents=8 nc_hours=1.35e+03 nodes=2.25e+04 top_node_share=6.3e-05 eff_sources=2.16e+04 midplanes=45 active_weeks=4 ratio_nch=0 ratio_inc=0 days_since_last=42  ranks 2/11/2/15/15
+APPSEV    lines=4.97e+04 incidents=136 nc_hours=2.45e+04 nodes=1.02e+03 top_node_share=0.00135 eff_sources=1.01e+03 midplanes=128 active_weeks=20 ratio_nch=1.84 ratio_inc=2.09 days_since_last=0  ranks 3/1/1/1/1
+KERNMNTF  lines=3.15e+04 incidents=105 nc_hours=1.39e+04 nodes=1.02e+03 top_node_share=0.00171 eff_sources=994 midplanes=128 active_weeks=15 ratio_nch=0.481 ratio_inc=0.292 days_since_last=0  ranks 4/2/4/4/2
+KERNMC    lines=342 incidents=291 nc_hours=295 nodes=265 top_node_share=0.0322 eff_sources=156 midplanes=109 active_weeks=31 ratio_nch=0.468 ratio_inc=0.474 days_since_last=1  ranks 16/3/6/2/3
+KERNRTSP  lines=3.98e+03 incidents=260 nc_hours=544 nodes=3.39e+03 top_node_share=0.00552 eff_sources=2.65e+03 midplanes=103 active_weeks=31 ratio_nch=0.296 ratio_inc=0.59 days_since_last=1  ranks 8/3/3/3/4
+KERNSOCK  lines=209 incidents=39 nc_hours=205 nodes=91 top_node_share=0.144 eff_sources=28.4 midplanes=91 active_weeks=15 ratio_nch=0.337 ratio_inc=0.393 days_since_last=0  ranks 18/5/15/5/5
+APPOUT    lines=816 incidents=1 nc_hours=491 nodes=816 top_node_share=0.00123 eff_sources=816 midplanes=128 active_weeks=1 ratio_nch=7.67 ratio_inc=7.67 days_since_last=23  ranks 13/6/7/13/13
+
+Kendall tau: {'L-A': np.float64(0.604), 'L-B': np.float64(0.604), 'L-C': np.float64(0.534), 'L-C2': np.float64(0.529), 'A-B': np.float64(0.676), 'A-C': np.float64(0.857), 'A-C2': np.float64(0.857), 'B-C': np.float64(0.579), 'B-C2': np.float64(0.569), 'C-C2': np.float64(0.985)}
+Top-5 sets equal A vs C: True ['APPSEV', 'KERNMC', 'KERNMNTF', 'KERNRTSP', 'KERNSOCK']
+C in-top-5 % over 2000 Dirichlet weightings: {'APPSEV': 100.0, 'KERNMC': 99.8, 'KERNRTSP': 99.2, 'KERNMNTF': 98.8, 'KERNSOCK': 90.8, 'KERNTERM': 5.1, 'APPOUT': 4.6}

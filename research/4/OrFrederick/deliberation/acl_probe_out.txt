@@ -1,0 +1,86 @@
+SereneDB ACL probe — container serenedb-d4 (port 7894), image serenedb/serenedb:26.09.1.3
+====================================================================================================
+[version] SELECT version()
+    -> OK: [('PostgreSQL 18.3 (SereneDB 26.09.1.3)',)]
+[setup.insert] INSERT 1000 rows into t
+    -> OK: rowcount=1000
+[setup.rows] rows in t
+    -> OK: [(1000,)]
+[setup.v_eng] CREATE VIEW v_eng (all cols)
+    -> OK
+[setup.v_mgr] CREATE VIEW v_mgr (aggregate, no content)
+    -> OK
+[setup.role_eng] CREATE ROLE eng LOGIN
+    -> OK
+[setup.role_mgr] CREATE ROLE mgr LOGIN
+    -> OK
+[setup.role_mgr2] CREATE ROLE mgr2 LOGIN
+    -> OK
+[setup.grant_mgr] GRANT SELECT v_mgr TO mgr
+    -> OK
+[setup.grant_eng] GRANT SELECT v_eng TO eng
+    -> OK
+[1a] mgr: SELECT from own view v_mgr
+    -> OK: [('node', 1000)]
+[1b] mgr: SELECT from base table t (no grant)
+    -> ERROR: InsufficientPrivilege: permission denied for table t
+[1c] mgr: SELECT from v_eng (not granted)
+    -> ERROR: InsufficientPrivilege: permission denied for view v_eng
+[2a] mgr: read_csv('/etc/passwd')
+    -> OK: [('daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin',), ('bin:x:2:2:bin:/bin:/usr/sbin/nologin',), ('sys:x:3:3:sys:/dev:/usr/sbin/nologin',), ('sync:x:4:65534:sync:/bin:/bin/sync',), ('games:x:5:60:games:/usr/games:/usr/sbin/nologin',), ('man:x:6:12:man:/var/cache/man:/usr/sbin/nologin',), ('lp:x:7:7
+[2b] mgr: read_text('/etc/hostname')
+    -> OK: [('d108a2cee0e1\n',)]
+[2c] mgr: read_text glob '/etc/*'
+    -> OK: [(49,)]
+[2d] mgr: read_blob('/etc/hostname')
+    -> OK: [(13,)]
+[3] mgr: COPY (SELECT 1) TO '/tmp/x.csv'
+    -> OK: rowcount=1
+[5] mgr: SELECT definition FROM pg_views WHERE viewname='v_eng'
+    -> OK: [('SELECT line_no, node, "content" FROM t;',)]
+[6a] mgr: SET ROLE postgres
+    -> ERROR: InsufficientPrivilege: permission denied to set role "postgres"
+[6b] mgr: CREATE TABLE evil(x int)
+    -> ERROR: InsufficientPrivilege: permission denied for schema public
+[6c] mgr: CREATE VIEW evilv AS SELECT 1
+    -> ERROR: InsufficientPrivilege: permission denied for schema public
+[6d] mgr: ATTACH ':memory:' AS mgr_mem
+    -> OK: rowcount=-1
+[7setup] postgres: GRANT SELECT (line_no,node) ON t TO mgr2
+    -> OK: []
+[7a] mgr2: SELECT node FROM t (granted col)
+    -> OK: [('node-1',)]
+[7b] mgr2: SELECT content FROM t (ungranted col)
+    -> ERROR: InsufficientPrivilege: permission denied for table t
+[7c] mgr2: SELECT * FROM t
+    -> ERROR: InsufficientPrivilege: permission denied for table t
+[7d] mgr2: SELECT count(*) FROM t
+    -> OK: [(1000,)]
+[8setup] postgres: ALTER DEFAULT PRIVILEGES GRANT SELECT ON TABLES TO mgr
+    -> OK: []
+[8create] postgres: CREATE TABLE t_after(x int); INSERT
+    -> OK: rowcount=-1
+[8] mgr: SELECT from t_after (created after default-priv grant)
+    -> ERROR: InsufficientPrivilege: permission denied for table t_after
+[9] mgr: connect with WRONG password over TCP
+    -> ERROR: OperationalError: connection failed: connection to server at "127.0.0.1", port 7894 failed: FATAL:  password authentication failed for user "mgr"
+[9hba] postgres: SHOW hba
+    -> OK: [('',)]
+[10a] postgres: CREATE TEXT SEARCH DICTIONARY d1 (TEMPLATE='segmentation')  [pg-style]
+    -> OK: []
+[10b] postgres: CREATE TEXT SEARCH DICTIONARY d2 AS split_text(case:='lower')  [serenedb form]
+    -> ERROR: SyntaxError: syntax error at or near "AS"
+[10c] postgres: CREATE TEXT SEARCH DICTIONARY d3 AS split_text_icu('zh_CN')  [icu segmentation]
+    -> ERROR: SyntaxError: syntax error at or near "AS"
+[11] postgres: DROP ROLE mgr2 (holds column grant on t)
+    -> ERROR: DependentObjectsStillExist: role "mgr2" cannot be dropped because some objects depend on it
+[4a] mgr: SET enable_external_access=false
+    -> OK: rowcount=-1
+[4a2] mgr: SET GLOBAL enable_external_access=false
+    -> OK: rowcount=-1
+[4b] postgres(new conn): SHOW enable_external_access
+    -> OK: [('off',)]
+[4c] postgres(new conn): read_text('/etc/hostname') after mgr's SET
+    -> ERROR: InsufficientPrivilege: Cannot access file "/etc/hostname" - file system operations are disabled by configuration
+[4d] postgres: SET GLOBAL enable_external_access=true (attempt restore)
+    -> ERROR: InvalidParameterValue: Cannot enable external access while database is running

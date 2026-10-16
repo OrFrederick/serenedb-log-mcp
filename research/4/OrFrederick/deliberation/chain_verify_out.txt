@@ -1,0 +1,2 @@
+[0.36s] [(128, 128, 8, datetime.datetime(2006, 1, 3, 3, 25, 5, 760549), datetime.datetime(2006, 1, 3, 3, 25, 26, 575310))]
+[0.51s] [('appsev_incident_starts', 136, 64), ('hourly_probes', 5152, 8)]

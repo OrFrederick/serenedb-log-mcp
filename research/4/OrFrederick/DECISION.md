@@ -43,9 +43,9 @@
 The database grants hold for tables and views. Any login role can still read and write server files and change a server-wide setting, so the grants are presented only as defence in depth.
 
 **Rejected options:**
-- **Prompts only:** they are user-controlled, and the Claude Code desktop app does not list them (#75234).
+- **Prompts only:** they are user-controlled, and the Claude Code desktop app does not list them (anthropics/claude-code#75234).
 - **Three registrations as the core:** Claude sees duplicate tools, and switching Role means switching servers. Keep `--role` as an option only.
-- **Dynamic `list_changed` tool lists:** Claude.ai desktop caches `tools/list` (#38324).
+- **Dynamic `list_changed` tool lists:** Claude.ai desktop caches `tools/list` (anthropics/claude-code#38324).
 - **NoNaim95's weighted composite (b) with effective sources as spread:** it ranks KERNSTOR, 8 Incidents and silent for 42 days, at #2.
 - **Node-card-hours as the frequency unit:** it inflates single bursts (APPOUT #6) and needs a new glossary term.
 - **Borda, or FMEA-style multiplication:** both promote tiny groups. The AIAG-VDA 2019 handbook replaced RPN with Action Priority.

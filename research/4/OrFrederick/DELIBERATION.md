@@ -47,9 +47,9 @@ The validator is not new. It is settled differentiator 3 in `docs/decisions.md`,
 - the Manager cites no search Evidence;
 - no forbidden terms appear.
 
-`get_role_brief(role)` is justified. #75234 is CLOSED / NOT_PLANNED: the Claude Code desktop app does not list MCP prompts as slash commands.
+`get_role_brief(role)` is justified. anthropics/claude-code#75234 is CLOSED / NOT_PLANNED: the Claude Code desktop app does not list MCP prompts as slash commands.
 
-**4. What the model sees from a tool result.** Our comment said that Claude Code versions disagree on whether they show `structuredContent` or `content`. NoNaim95 measured Claude Code 2.1.293 in #2: only `structuredContent` reaches the model. #79944 reports the same, but it is an open user report and Anthropic has not confirmed it.
+**4. What the model sees from a tool result.** Our comment said that Claude Code versions disagree on whether they show `structuredContent` or `content`. NoNaim95 measured Claude Code 2.1.293 in #2: only `structuredContent` reaches the model. anthropics/claude-code#79944 reports the same, but it is an open user report and Anthropic has not confirmed it.
 
 I did not re-run that probe here; it belongs to #2. Design rule: `answer_frame` and `not_measured` go **inside `structuredContent`**, with the same text mirrored in `content`.
 

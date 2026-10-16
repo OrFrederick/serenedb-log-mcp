@@ -1,0 +1,634 @@
+{
+"model": "claude-haiku-5-5",
+"all": {
+"R5": 0.81,
+"R10": 0.891,
+"P5": 0.663,
+"MRR": 1.0
+},
+"paraphrase": {
+"R5": 0.773,
+"R10": 0.854,
+"P5": 0.686,
+"MRR": 1.0
+},
+"n": 51,
+"no_relevant": {
+"bgl::disk full": [],
+"openstack::disk full": [
+"E2",
+"E33",
+"E13",
+"E40",
+"E43",
+"E31"
+]
+},
+"cost_usd": 0.101,
+"runs": [
+{
+"ds": "bgl",
+"q": "memory problems",
+"ranked": [
+"E94",
+"E68",
+"E191",
+"E92",
+"E95",
+"E42",
+"E86",
+"E8",
+"E126",
+"E106"
+]
+},
+{
+"ds": "bgl",
+"q": "network issues",
+"ranked": [
+"E18",
+"E58",
+"E125",
+"E312",
+"E63",
+"E70",
+"E119",
+"E53",
+"E99",
+"E73"
+]
+},
+{
+"ds": "bgl",
+"q": "file system or storage unavailable",
+"ranked": [
+"E257",
+"E211",
+"E276",
+"E165",
+"E136",
+"E118"
+]
+},
+{
+"ds": "bgl",
+"q": "lustre mount failed",
+"ranked": [
+"E211",
+"E276",
+"E257"
+]
+},
+{
+"ds": "bgl",
+"q": "nodes overheating",
+"ranked": [
+"E254"
+]
+},
+{
+"ds": "bgl",
+"q": "power supply failure",
+"ranked": [
+"E54",
+"E66",
+"E304",
+"E225",
+"E221",
+"E223",
+"E244"
+]
+},
+{
+"ds": "bgl",
+"q": "application crashed and dumped core",
+"ranked": [
+"E310",
+"E228",
+"E91",
+"E147"
+]
+},
+{
+"ds": "bgl",
+"q": "job failed to start because the program binary is missing or invalid",
+"ranked": [
+"E35",
+"E50",
+"E48",
+"E201"
+]
+},
+{
+"ds": "bgl",
+"q": "cache parity errors",
+"ranked": [
+"E208",
+"E238",
+"E72",
+"E249",
+"E75",
+"E255",
+"E51",
+"E90",
+"E132"
+]
+},
+{
+"ds": "bgl",
+"q": "kernel panic",
+"ranked": [
+"E315",
+"E264",
+"E258"
+]
+},
+{
+"ds": "bgl",
+"q": "hardware that needs to be replaced",
+"ranked": [
+"E166",
+"E189",
+"E86",
+"E8",
+"E297",
+"E260",
+"E261",
+"E232",
+"E259",
+"E100"
+]
+},
+{
+"ds": "bgl",
+"q": "machine check interrupt",
+"ranked": [
+"E286",
+"E97",
+"E129",
+"E51",
+"E89",
+"E231",
+"E213",
+"E130",
+"E265",
+"E243"
+]
+},
+{
+"ds": "bgl",
+"q": "TLB errors",
+"ranked": [
+"E227",
+"E285"
+]
+},
+{
+"ds": "bgl",
+"q": "link card failures",
+"ranked": [
+"E260",
+"E232",
+"E223",
+"E244",
+"E254",
+"E225",
+"E73",
+"E61",
+"E57",
+"E60"
+]
+},
+{
+"ds": "bgl",
+"q": "node card not working",
+"ranked": [
+"E261",
+"E259",
+"E297",
+"E253",
+"E221",
+"E120",
+"E167",
+"E54",
+"E45",
+"E66"
+]
+},
+{
+"ds": "bgl",
+"q": "scheduled hardware maintenance",
+"ranked": [
+"E46",
+"E101",
+"E30",
+"E31",
+"E39",
+"E252"
+]
+},
+{
+"ds": "bgl",
+"q": "control system daemons restarted",
+"ranked": [
+"E280",
+"E245",
+"E226",
+"E224",
+"E98",
+"E14",
+"E32",
+"E22",
+"E15",
+"E272"
+]
+},
+{
+"ds": "bgl",
+"q": "lost connection to compute node",
+"ranked": [
+"E36",
+"E21",
+"E29",
+"E37",
+"E134",
+"E55",
+"E307",
+"E261"
+]
+},
+{
+"ds": "bgl",
+"q": "floating point exceptions",
+"ranked": [
+"E153",
+"E150",
+"E163",
+"E190",
+"E194",
+"E195",
+"E204",
+"E155",
+"E185",
+"E128"
+]
+},
+{
+"ds": "bgl",
+"q": "alignment exceptions",
+"ranked": [
+"E237",
+"E240",
+"E12",
+"E9"
+]
+},
+{
+"ds": "bgl",
+"q": "illegal instruction",
+"ranked": [
+"E140",
+"E142",
+"E308"
+]
+},
+{
+"ds": "bgl",
+"q": "bad or missing cables",
+"ranked": [
+"E100",
+"E52",
+"E73",
+"E125"
+]
+},
+{
+"ds": "bgl",
+"q": "something timed out",
+"ranked": [
+"E278",
+"E37",
+"E307",
+"E113"
+]
+},
+{
+"ds": "bgl",
+"q": "debugger died",
+"ranked": [
+"E80"
+]
+},
+{
+"ds": "bgl",
+"q": "jobs were killed",
+"ranked": [
+"E278",
+"E258",
+"E264",
+"E228"
+]
+},
+{
+"ds": "bgl",
+"q": "bit errors on memory chips that were fixed automatically",
+"ranked": [
+"E94",
+"E95",
+"E42",
+"E191",
+"E68",
+"E92",
+"E216",
+"E218",
+"E112",
+"E82"
+]
+},
+{
+"ds": "bgl",
+"q": "interconnect link training problems",
+"ranked": [
+"E125",
+"E73",
+"E61",
+"E57",
+"E100",
+"E52",
+"E99",
+"E53",
+"E59",
+"E63"
+]
+},
+{
+"ds": "bgl",
+"q": "disk full",
+"ranked": []
+},
+{
+"ds": "openstack",
+"q": "VM slow to boot",
+"ranked": [
+"E9",
+"E21",
+"E37",
+"E18",
+"E4",
+"E13",
+"E36",
+"E23"
+]
+},
+{
+"ds": "openstack",
+"q": "instance deleted",
+"ranked": [
+"E17",
+"E34",
+"E8",
+"E35",
+"E30",
+"E39",
+"E12"
+]
+},
+{
+"ds": "openstack",
+"q": "disk space on the compute host",
+"ranked": [
+"E33",
+"E2",
+"E13",
+"E40",
+"E11",
+"E43",
+"E37",
+"E31",
+"E30",
+"E46"
+]
+},
+{
+"ds": "openstack",
+"q": "how much RAM is left",
+"ranked": [
+"E2",
+"E29",
+"E28"
+]
+},
+{
+"ds": "openstack",
+"q": "CPU capacity",
+"ranked": [
+"E20",
+"E2",
+"E27",
+"E10",
+"E13",
+"E1"
+]
+},
+{
+"ds": "openstack",
+"q": "login failures",
+"ranked": [
+"E6",
+"E24",
+"E45"
+]
+},
+{
+"ds": "openstack",
+"q": "token validation errors",
+"ranked": [
+"E6",
+"E24",
+"E45"
+]
+},
+{
+"ds": "openstack",
+"q": "image cache cleanup",
+"ranked": [
+"E40",
+"E43",
+"E31",
+"E46",
+"E47",
+"E5",
+"E44"
+]
+},
+{
+"ds": "openstack",
+"q": "VM lifecycle events",
+"ranked": [
+"E23",
+"E22",
+"E25",
+"E26",
+"E18",
+"E17"
+]
+},
+{
+"ds": "openstack",
+"q": "instance power state synchronisation",
+"ranked": [
+"E3",
+"E4",
+"E25",
+"E23",
+"E26",
+"E22"
+]
+},
+{
+"ds": "openstack",
+"q": "API response time",
+"ranked": [
+"E42",
+"E41",
+"E39"
+]
+},
+{
+"ds": "openstack",
+"q": "resource tracker audit",
+"ranked": [
+"E16",
+"E2",
+"E20",
+"E32"
+]
+},
+{
+"ds": "openstack",
+"q": "hypervisor errors",
+"ranked": [
+"E1"
+]
+},
+{
+"ds": "openstack",
+"q": "errors",
+"ranked": [
+"E48",
+"E6",
+"E24",
+"E1",
+"E15",
+"E45"
+]
+},
+{
+"ds": "openstack",
+"q": "network teardown slow",
+"ranked": [
+"E12"
+]
+},
+{
+"ds": "openstack",
+"q": "scheduling a new VM onto a host",
+"ranked": [
+"E13",
+"E36",
+"E29",
+"E28",
+"E33",
+"E27",
+"E2",
+"E20"
+]
+},
+{
+"ds": "openstack",
+"q": "instance not found",
+"ranked": [
+"E15"
+]
+},
+{
+"ds": "openstack",
+"q": "VM paused",
+"ranked": [
+"E26"
+]
+},
+{
+"ds": "openstack",
+"q": "virtual machine shut down unexpectedly",
+"ranked": [
+"E25",
+"E17",
+"E3",
+"E7"
+]
+},
+{
+"ds": "openstack",
+"q": "remove old base files",
+"ranked": [
+"E40",
+"E43",
+"E31",
+"E46"
+]
+},
+{
+"ds": "openstack",
+"q": "compute service heartbeat",
+"ranked": [
+"E32",
+"E16"
+]
+},
+{
+"ds": "openstack",
+"q": "how long did it take to destroy the VM",
+"ranked": [
+"E8",
+"E17",
+"E34"
+]
+},
+{
+"ds": "openstack",
+"q": "out of memory",
+"ranked": [
+"E29",
+"E28",
+"E13",
+"E2"
+]
+},
+{
+"ds": "openstack",
+"q": "creating a new virtual machine",
+"ranked": [
+"E18",
+"E37",
+"E9",
+"E21",
+"E13",
+"E36",
+"E23"
+]
+},
+{
+"ds": "openstack",
+"q": "disk full",
+"ranked": [
+"E2",
+"E33",
+"E13",
+"E40",
+"E43",
+"E31"
+]
+}
+]
+}

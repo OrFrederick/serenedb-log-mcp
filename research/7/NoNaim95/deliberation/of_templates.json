@@ -1,0 +1,4186 @@
+{
+"bgl": [
+{
+"id": "E208",
+"template": "instruction cache parity error corrected",
+"occurrences": 105924,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 105924
+},
+"sample": "instruction cache parity error corrected"
+},
+{
+"id": "E93",
+"template": "MidplaneSwitchController performing bit sparing on <*> bit <*>",
+"occurrences": 964,
+"component": "LINKCARD",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 964
+},
+"sample": "MidplaneSwitchController performing bit sparing on R27-M1-L3-U18-C bit 3"
+},
+{
+"id": "E310",
+"template": "generating core.<*>",
+"occurrences": 1706751,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 1706751
+},
+"sample": "generating core.304"
+},
+{
+"id": "E94",
+"template": "<*> ddr errors(s) detected and corrected on rank <*>, symbol <*> bit <*>",
+"occurrences": 33939,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 33939
+},
+"sample": "1 ddr errors(s) detected and corrected on rank 0, symbol 0, bit 3"
+},
+{
+"id": "E218",
+"template": "<*> L3 <*> error(s) (dcr <*>) detected and corrected",
+"occurrences": 4978,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 4978
+},
+"sample": "3450051 L3 EDRAM error(s) (dcr 0x0157) detected and corrected"
+},
+{
+"id": "E314",
+"template": "CE sym <*>, at <*>, mask <*>",
+"occurrences": 201206,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 201206
+},
+"sample": "CE sym 0, at 0x0b8580c0, mask 0x10"
+},
+{
+"id": "E191",
+"template": "total of <*> ddr error(s) detected and corrected",
+"occurrences": 28485,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 28485
+},
+"sample": "total of 1 ddr error(s) detected and corrected"
+},
+{
+"id": "E95",
+"template": "ddr: activating redundant bit steering: rank=<*> symbol=<*>",
+"occurrences": 1314,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 1314
+},
+"sample": "ddr: activating redundant bit steering: rank=0 symbol=0"
+},
+{
+"id": "E86",
+"template": "ddr: excessive soft failures, consider replacing the card",
+"occurrences": 41,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 41
+},
+"sample": "ddr: excessive soft failures, consider replacing the card"
+},
+{
+"id": "E35",
+"template": "ciod: Error loading <*>: invalid or missing program image, No such file or directory",
+"occurrences": 47504,
+"component": "APP",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 47504
+},
+"sample": "ciod: Error loading /p/gb2/stella/RAPTOR/65641/raptor: invalid or missing program image, No such file or directory"
+},
+{
+"id": "E237",
+"template": "<*> double-hummer alignment exceptions",
+"occurrences": 295764,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 295764
+},
+"sample": "1347195 double-hummer alignment exceptions"
+},
+{
+"id": "E99",
+"template": "<*> tree receiver <*> in re-synch state event(s) (dcr <*>) detected",
+"occurrences": 7847,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 7847
+},
+"sample": "1 tree receiver 2 in re-synch state event(s) (dcr 0x019a) detected"
+},
+{
+"id": "E98",
+"template": "idoproxydb has been started: $Name: <*> $ Input parameters: <*>",
+"occurrences": 114,
+"component": "MMCS",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 114
+},
+"sample": "idoproxydb has been started: $Name: DRV142_2005 $ Input parameters: -enableflush -loguserinfo db.properties BlueGene1"
+},
+{
+"id": "E280",
+"template": "ciodb has been restarted.",
+"occurrences": 129,
+"component": "MMCS",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 129
+},
+"sample": "ciodb has been restarted."
+},
+{
+"id": "E118",
+"template": "ciod: LOGIN chdir(<*>) failed: No such file or directory",
+"occurrences": 43647,
+"component": "APP",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 43647
+},
+"sample": "ciod: LOGIN chdir(/p/gb2/draeger/benchmark/dat32k_060205) failed: No such file or directory"
+},
+{
+"id": "E285",
+"template": "data TLB error interrupt",
+"occurrences": 152734,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "KERNDTLB",
+"alert_labels": {
+"KERNDTLB": 152734
+},
+"sample": "data TLB error interrupt"
+},
+{
+"id": "E301",
+"template": "instruction address: <*>",
+"occurrences": 51227,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 51227
+},
+"sample": "instruction address: 0x0000df30"
+},
+{
+"id": "E286",
+"template": "machine check interrupt",
+"occurrences": 161,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "KERNMC",
+"alert_labels": {
+"KERNMC": 161
+},
+"sample": "machine check interrupt"
+},
+{
+"id": "E265",
+"template": "machine check status register: <*>",
+"occurrences": 246,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 246
+},
+"sample": "machine check status register: 0x81000000"
+},
+{
+"id": "E220",
+"template": "summary...........................<*>",
+"occurrences": 244,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 244
+},
+"sample": "summary...........................1"
+},
+{
+"id": "E234",
+"template": "instruction plb error.............<*>",
+"occurrences": 298,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 298
+},
+"sample": "instruction plb error.............0"
+},
+{
+"id": "E248",
+"template": "data read plb error...............<*>",
+"occurrences": 297,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 297
+},
+"sample": "data read plb error...............0"
+},
+{
+"id": "E246",
+"template": "data write plb error..............<*>",
+"occurrences": 296,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 296
+},
+"sample": "data write plb error..............0"
+},
+{
+"id": "E227",
+"template": "tlb error.........................<*>",
+"occurrences": 296,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 296
+},
+"sample": "tlb error.........................0"
+},
+{
+"id": "E238",
+"template": "i-cache parity error..............<*>",
+"occurrences": 296,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 296
+},
+"sample": "i-cache parity error..............0"
+},
+{
+"id": "E249",
+"template": "d-cache search parity error.......<*>",
+"occurrences": 294,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 294
+},
+"sample": "d-cache search parity error.......0"
+},
+{
+"id": "E255",
+"template": "d-cache flush parity error.......<*>",
+"occurrences": 294,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 294
+},
+"sample": "d-cache flush parity error........1"
+},
+{
+"id": "E243",
+"template": "imprecise machine check...........<*>",
+"occurrences": 289,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 289
+},
+"sample": "imprecise machine check...........0"
+},
+{
+"id": "E294",
+"template": "machine state register: <*>",
+"occurrences": 8459,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 8459
+},
+"sample": "machine state register: 0x0000f000"
+},
+{
+"id": "E235",
+"template": "wait state enable.................<*>",
+"occurrences": 6745,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 6745
+},
+"sample": "wait state enable.................0"
+},
+{
+"id": "E251",
+"template": "critical input interrupt enable...<*>",
+"occurrences": 6559,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 6559
+},
+"sample": "critical input interrupt enable...0"
+},
+{
+"id": "E250",
+"template": "external input interrupt enable...<*>",
+"occurrences": 6556,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 6556
+},
+"sample": "external input interrupt enable...1"
+},
+{
+"id": "E256",
+"template": "problem state (<*>=sup,<*>=usr).......<*>",
+"occurrences": 6546,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 6546
+},
+"sample": "problem state (0=sup,1=usr).......1"
+},
+{
+"id": "E247",
+"template": "floating point instr. enabled.....<*>",
+"occurrences": 6541,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 6541
+},
+"sample": "floating point instr. enabled.....1"
+},
+{
+"id": "E239",
+"template": "machine check enable..............<*>",
+"occurrences": 6538,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 6538
+},
+"sample": "machine check enable..............1"
+},
+{
+"id": "E262",
+"template": "floating pt ex mode <*> enable......<*>",
+"occurrences": 13044,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 13044
+},
+"sample": "floating pt ex mode 0 enable......0"
+},
+{
+"id": "E241",
+"template": "debug wait enable.................<*>",
+"occurrences": 6524,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 6524
+},
+"sample": "debug wait enable.................0"
+},
+{
+"id": "E236",
+"template": "debug interrupt enable............<*>",
+"occurrences": 6521,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 6521
+},
+"sample": "debug interrupt enable............0"
+},
+{
+"id": "E233",
+"template": "instruction address space.........<*>",
+"occurrences": 6506,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 6506
+},
+"sample": "instruction address space.........0"
+},
+{
+"id": "E242",
+"template": "data address space................<*>",
+"occurrences": 6503,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 6503
+},
+"sample": "data address space................0"
+},
+{
+"id": "E267",
+"template": "core configuration register: <*>",
+"occurrences": 6431,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 6431
+},
+"sample": "core configuration register: 0x00002000"
+},
+{
+"id": "E174",
+"template": "disable store gathering..................<*>",
+"occurrences": 6495,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 6495
+},
+"sample": "disable store gathering..................0"
+},
+{
+"id": "E197",
+"template": "disable apu instruction broadcast........<*>",
+"occurrences": 2396,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 2396
+},
+"sample": "disable apu instruction broadcast........0"
+},
+{
+"id": "E171",
+"template": "disable trace broadcast..................<*>",
+"occurrences": 2393,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 2393
+},
+"sample": "disable trace broadcast..................0"
+},
+{
+"id": "E203",
+"template": "guaranteed instruction cache block touch.<*>",
+"occurrences": 2390,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 2390
+},
+"sample": "guaranteed instruction cache block touch.0"
+},
+{
+"id": "E205",
+"template": "guaranteed data cache block touch........<*>",
+"occurrences": 2389,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 2389
+},
+"sample": "guaranteed data cache block touch........1"
+},
+{
+"id": "E183",
+"template": "force load/store alignment...............<*>",
+"occurrences": 2389,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 2389
+},
+"sample": "force load/store alignment...............0"
+},
+{
+"id": "E169",
+"template": "icache prefetch depth....................<*>",
+"occurrences": 2389,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 2389
+},
+"sample": "icache prefetch depth....................0"
+},
+{
+"id": "E269",
+"template": "general purpose registers:",
+"occurrences": 2318,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 2318
+},
+"sample": "general purpose registers:"
+},
+{
+"id": "E273",
+"template": "special purpose registers:",
+"occurrences": 2316,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 2316
+},
+"sample": "special purpose registers:"
+},
+{
+"id": "E313",
+"template": "lr:<*> cr:<*> xer:<*> ctr:<*>",
+"occurrences": 2316,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 2316
+},
+"sample": "lr:003625f0 cr:20000000 xer:00000002 ctr:0037f084"
+},
+{
+"id": "E264",
+"template": "rts panic! - stopping execution",
+"occurrences": 3983,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "KERNRTSP",
+"alert_labels": {
+"KERNRTSP": 3983
+},
+"sample": "rts panic! - stopping execution"
+},
+{
+"id": "E70",
+"template": "<*> torus receiver <*> input pipe error(s) (dcr <*>) detected and corrected",
+"occurrences": 10487,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 10487
+},
+"sample": "17 torus receiver x+ input pipe error(s) (dcr 0x02ec) detected and corrected"
+},
+{
+"id": "E306",
+"template": "rts internal error",
+"occurrences": 2187,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 2187
+},
+"sample": "rts internal error"
+},
+{
+"id": "E279",
+"template": "ciod: Message code <*> is not <*> or <*>",
+"occurrences": 2278,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 2278
+},
+"sample": "ciod: Message code 2 is not 3 or 4294967295"
+},
+{
+"id": "E80",
+"template": "ciod: pollControlDescriptors: Detected the debugger died.",
+"occurrences": 6443,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 6443
+},
+"sample": "ciod: pollControlDescriptors: Detected the debugger died."
+},
+{
+"id": "E104",
+"template": "ciod: for node <*> read continuation request but ioState is <*>",
+"occurrences": 395,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 395
+},
+"sample": "ciod: for node 42, read continuation request but ioState is 0"
+},
+{
+"id": "E145",
+"template": "ciod: cpu <*> at treeaddr <*> sent unrecognized message <*>",
+"occurrences": 2569,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 2569
+},
+"sample": "ciod: cpu 0 at treeaddr 926 sent unrecognized message 0xffffffff"
+},
+{
+"id": "E159",
+"template": "ciod: LOGIN chdir(<*>) failed: Permission denied",
+"occurrences": 440,
+"component": "APP",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 440
+},
+"sample": "ciod: LOGIN chdir(/home/bertsch2/src/bgl_hello) failed: Permission denied"
+},
+{
+"id": "E97",
+"template": "machine check interrupt (bit=<*>): L3 major internal error",
+"occurrences": 57,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "KERNMC",
+"alert_labels": {
+"KERNMC": 57
+},
+"sample": "machine check interrupt (bit=0x06): L3 major internal error"
+},
+{
+"id": "E274",
+"template": "L3 global control register: <*>",
+"occurrences": 48,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 48
+},
+"sample": "L3 global control register: 0x001249f0"
+},
+{
+"id": "E158",
+"template": "start initialization.....................<*>",
+"occurrences": 48,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 48
+},
+"sample": "start initialization.....................0"
+},
+{
+"id": "E161",
+"template": "start retagging..........................<*>",
+"occurrences": 48,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 48
+},
+"sample": "start retagging..........................0"
+},
+{
+"id": "E154",
+"template": "start flushing...........................<*>",
+"occurrences": 48,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 48
+},
+"sample": "start flushing...........................0"
+},
+{
+"id": "E160",
+"template": "start prefetching........................<*>",
+"occurrences": 48,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 48
+},
+"sample": "start prefetching........................0"
+},
+{
+"id": "E177",
+"template": "disable speculative access...............<*>",
+"occurrences": 48,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 48
+},
+"sample": "disable speculative access...............0"
+},
+{
+"id": "E215",
+"template": "close EDRAM pages as soon as possible....<*>",
+"occurrences": 48,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 48
+},
+"sample": "close EDRAM pages as soon as possible....0"
+},
+{
+"id": "E200",
+"template": "size of scratchpad portion of L3.........<*> (<*>)",
+"occurrences": 48,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 48
+},
+"sample": "size of scratchpad portion of L3.........0 (0M)"
+},
+{
+"id": "E210",
+"template": "disable all access to cache directory....<*>",
+"occurrences": 48,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 48
+},
+"sample": "disable all access to cache directory....0"
+},
+{
+"id": "E198",
+"template": "write buffer commit threshold............<*>",
+"occurrences": 48,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 48
+},
+"sample": "write buffer commit threshold............2"
+},
+{
+"id": "E199",
+"template": "size of DDR we are caching...............<*> (<*>)",
+"occurrences": 48,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 48
+},
+"sample": "size of DDR we are caching...............1 (512M)"
+},
+{
+"id": "E212",
+"template": "prefetch depth for core <*>................<*>",
+"occurrences": 96,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 96
+},
+"sample": "prefetch depth for core 0................1"
+},
+{
+"id": "E202",
+"template": "max number of outstanding prefetches.....<*>",
+"occurrences": 48,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 48
+},
+"sample": "max number of outstanding prefetches.....7"
+},
+{
+"id": "E193",
+"template": "turn on hidden refreshes.................<*>",
+"occurrences": 48,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 48
+},
+"sample": "turn on hidden refreshes.................1"
+},
+{
+"id": "E217",
+"template": "disable write lines <*>..................<*>",
+"occurrences": 48,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 48
+},
+"sample": "disable write lines 2:4..................0"
+},
+{
+"id": "E293",
+"template": "L3 ecc control register: <*>",
+"occurrences": 48,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 48
+},
+"sample": "L3 ecc control register: 00000000"
+},
+{
+"id": "E114",
+"template": "disable flagging of DDR UE's as major internal error.<*>",
+"occurrences": 47,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 47
+},
+"sample": "disable flagging of DDR UE's as major internal error.0"
+},
+{
+"id": "E300",
+"template": "L3 ecc status register: <*>",
+"occurrences": 47,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 47
+},
+"sample": "L3 ecc status register: 00200000"
+},
+{
+"id": "E214",
+"template": "correctable error detected in directory <*>",
+"occurrences": 94,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 94
+},
+"sample": "correctable error detected in directory 0......0"
+},
+{
+"id": "E143",
+"template": "uncorrectable error detected in directory <*>....<*>",
+"occurrences": 94,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 94
+},
+"sample": "uncorrectable error detected in directory 0....0"
+},
+{
+"id": "E216",
+"template": "correctable error detected in EDRAM bank <*>",
+"occurrences": 94,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 94
+},
+"sample": "correctable error detected in EDRAM bank 0.....0"
+},
+{
+"id": "E164",
+"template": "uncorrectable error detected in EDRAM bank <*>...<*>",
+"occurrences": 94,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 94
+},
+"sample": "uncorrectable error detected in EDRAM bank 0...0"
+},
+{
+"id": "E132",
+"template": "parity error in bank <*>.........................<*>",
+"occurrences": 94,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 94
+},
+"sample": "parity error in bank 0.........................0"
+},
+{
+"id": "E126",
+"template": "uncorrectable error detected in external DDR...<*>",
+"occurrences": 47,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 47
+},
+"sample": "uncorrectable error detected in external DDR...1"
+},
+{
+"id": "E144",
+"template": "parity error in read queue <*>...................<*>",
+"occurrences": 94,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 94
+},
+"sample": "parity error in read queue 0...................0"
+},
+{
+"id": "E83",
+"template": "number of correctable errors detected in L3 directories...<*>",
+"occurrences": 47,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 47
+},
+"sample": "number of correctable errors detected in L3 directories...0"
+},
+{
+"id": "E292",
+"template": "interrupt threshold...<*>",
+"occurrences": 94,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 94
+},
+"sample": "interrupt threshold...0"
+},
+{
+"id": "E82",
+"template": "number of correctable errors detected in L3 EDRAMs........<*>",
+"occurrences": 47,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 47
+},
+"sample": "number of correctable errors detected in L3 EDRAMs........0"
+},
+{
+"id": "E90",
+"template": "number of lines with parity errors written to L3 EDRAMs...<*>",
+"occurrences": 47,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 47
+},
+"sample": "number of lines with parity errors written to L3 EDRAMs...0"
+},
+{
+"id": "E275",
+"template": "DDR machine check register: <*> <*>",
+"occurrences": 47,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "KERNMC",
+"alert_labels": {
+"KERNMC": 47
+},
+"sample": "DDR machine check register: 0x00000000 0x00010000"
+},
+{
+"id": "E109",
+"template": "memory and bus summary...........................<*>",
+"occurrences": 47,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 47
+},
+"sample": "memory and bus summary...........................0"
+},
+{
+"id": "E105",
+"template": "command manager unit summary.....................<*>",
+"occurrences": 47,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 47
+},
+"sample": "command manager unit summary.....................0"
+},
+{
+"id": "E106",
+"template": "memory manager uncorrectable error...............<*>",
+"occurrences": 47,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 47
+},
+"sample": "memory manager uncorrectable error...............1"
+},
+{
+"id": "E107",
+"template": "memory manager strobe gate.......................<*>",
+"occurrences": 47,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 47
+},
+"sample": "memory manager strobe gate.......................0"
+},
+{
+"id": "E117",
+"template": "memory manager address parity error..............<*>",
+"occurrences": 47,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 47
+},
+"sample": "memory manager address parity error..............0"
+},
+{
+"id": "E102",
+"template": "memory manager miscompare........................<*>",
+"occurrences": 47,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 47
+},
+"sample": "memory manager miscompare........................0"
+},
+{
+"id": "E110",
+"template": "memory manager address error.....................<*>",
+"occurrences": 47,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 47
+},
+"sample": "memory manager address error.....................0"
+},
+{
+"id": "E115",
+"template": "memory manager store buffer parity...............<*>",
+"occurrences": 47,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 47
+},
+"sample": "memory manager store buffer parity...............0"
+},
+{
+"id": "E116",
+"template": "memory manager RMW buffer parity.................<*>",
+"occurrences": 47,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 47
+},
+"sample": "memory manager RMW buffer parity.................0"
+},
+{
+"id": "E113",
+"template": "memory manager refresh counter timeout...........<*>",
+"occurrences": 47,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 47
+},
+"sample": "memory manager refresh counter timeout...........0"
+},
+{
+"id": "E108",
+"template": "memory manager refresh contention................<*>",
+"occurrences": 47,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 47
+},
+"sample": "memory manager refresh contention................0"
+},
+{
+"id": "E96",
+"template": "state machine....................................<*>",
+"occurrences": 47,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 47
+},
+"sample": "state machine....................................0"
+},
+{
+"id": "E122",
+"template": "memory manager / command manager address parity..<*>",
+"occurrences": 47,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 47
+},
+"sample": "memory manager / command manager address parity..0"
+},
+{
+"id": "E103",
+"template": "regctl scancom interface.........................<*>",
+"occurrences": 47,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 47
+},
+"sample": "regctl scancom interface.........................0"
+},
+{
+"id": "E287",
+"template": "capture valid.........<*>",
+"occurrences": 47,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 47
+},
+"sample": "capture valid.........1"
+},
+{
+"id": "E282",
+"template": "symbol................<*>",
+"occurrences": 47,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 47
+},
+"sample": "symbol................15"
+},
+{
+"id": "E281",
+"template": "mask..................<*>",
+"occurrences": 47,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 47
+},
+"sample": "mask..................0x40"
+},
+{
+"id": "E283",
+"template": "miscompare............<*>",
+"occurrences": 47,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 47
+},
+"sample": "miscompare............0"
+},
+{
+"id": "E299",
+"template": "address parity error..<*>",
+"occurrences": 47,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 47
+},
+"sample": "address parity error..0"
+},
+{
+"id": "E290",
+"template": "correctable error.....<*>",
+"occurrences": 47,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 47
+},
+"sample": "correctable error.....1"
+},
+{
+"id": "E289",
+"template": "qw trapped............<*>",
+"occurrences": 47,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 47
+},
+"sample": "qw trapped............0"
+},
+{
+"id": "E288",
+"template": "chip select...........<*>",
+"occurrences": 47,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 47
+},
+"sample": "chip select...........0"
+},
+{
+"id": "E46",
+"template": "PrepareForService shutting down NodeCard(<*>, <*>, <*>, <*>, <*>) as part of Service Action <*>",
+"occurrences": 1522,
+"component": "HARDWARE",
+"level": "WARNING",
+"alert_label": "-",
+"alert_labels": {
+"-": 1522
+},
+"sample": "PrepareForService shutting down NodeCard(mLctn(R33-M1-ND), mCardSernum(203231503833343000000000594c31304b35303034303232), mLp(FF:F2:9F:16:BF:44:00:0D:60:E9:40:BB), mIp(10.3.0.80), mType(4)) as part of"
+},
+{
+"id": "E30",
+"template": "EndServiceAction is restarting the NodeCards in midplane <*> as part of Service Action <*>",
+"occurrences": 338,
+"component": "HARDWARE",
+"level": "WARNING",
+"alert_label": "-",
+"alert_labels": {
+"-": 338
+},
+"sample": "EndServiceAction is restarting the NodeCards in midplane R33-M1 as part of Service Action 219"
+},
+{
+"id": "E252",
+"template": "EndServiceAction <*> performed upon <*> by <*>",
+"occurrences": 237,
+"component": "HARDWARE",
+"level": "WARNING",
+"alert_label": "-",
+"alert_labels": {
+"-": 237
+},
+"sample": "EndServiceAction 219 performed upon R33-M1-ND by root"
+},
+{
+"id": "E259",
+"template": "Node card is not fully functional",
+"occurrences": 17364,
+"component": "DISCOVERY",
+"level": "WARNING",
+"alert_label": "-",
+"alert_labels": {
+"-": 17364
+},
+"sample": "Node card is not fully functional"
+},
+{
+"id": "E167",
+"template": "Can not get assembly information for node card",
+"occurrences": 17305,
+"component": "DISCOVERY",
+"level": "SEVERE",
+"alert_label": "-",
+"alert_labels": {
+"-": 17305
+},
+"sample": "Can not get assembly information for node card"
+},
+{
+"id": "E45",
+"template": "Node card VPD check: <*> node in processor card slot <*> do not match. VPD ecid <*>, found <*>",
+"occurrences": 21356,
+"component": "DISCOVERY",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 21356
+},
+"sample": "Node card VPD check: U01 node in processor card slot J14 do not match. VPD ecid 04DD8074DF2FFFFF020B1A911ECE, found 07521035D02FFFFF10071C0090EC"
+},
+{
+"id": "E129",
+"template": "machine check interrupt (bit=<*>): L2 DCU read error",
+"occurrences": 3,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "KERNMC",
+"alert_labels": {
+"KERNMC": 3
+},
+"sample": "machine check interrupt (bit=0x10): L2 DCU read error"
+},
+{
+"id": "E63",
+"template": "<*> torus sender <*> retransmission error(s) (dcr <*>) detected and corrected",
+"occurrences": 1145,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 1145
+},
+"sample": "1 torus sender y- retransmission error(s) (dcr 0x02f7) detected and corrected"
+},
+{
+"id": "E131",
+"template": "L3 correctable errors exceeds threshold (iar <*> lr <*>)",
+"occurrences": 20,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 20
+},
+"sample": "L3 correctable errors exceeds threshold (iar 0xf003da3c lr 0xf003de50)"
+},
+{
+"id": "E272",
+"template": "Starting SystemController",
+"occurrences": 71,
+"component": "CMCS",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 71
+},
+"sample": "Starting SystemController"
+},
+{
+"id": "E291",
+"template": "Controlling BG/L rows [ <*> ]",
+"occurrences": 70,
+"component": "CMCS",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 70
+},
+"sample": "Controlling BG/L rows [ 0 1 2 3 ]"
+},
+{
+"id": "E266",
+"template": "Running as background command",
+"occurrences": 70,
+"component": "CMCS",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 70
+},
+"sample": "Running as background command"
+},
+{
+"id": "E296",
+"template": "data storage interrupt",
+"occurrences": 63493,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "KERNSTOR",
+"alert_labels": {
+"KERNSTOR": 63491,
+"-": 2
+},
+"sample": "data storage interrupt"
+},
+{
+"id": "E268",
+"template": "exception syndrome register: <*>",
+"occurrences": 18013,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 18013
+},
+"sample": "exception syndrome register: 0x00800000"
+},
+{
+"id": "E130",
+"template": "machine check: i-fetch......................<*>",
+"occurrences": 18017,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 18017
+},
+"sample": "machine check: i-fetch......................0"
+},
+{
+"id": "E140",
+"template": "program interrupt: illegal instruction......<*>",
+"occurrences": 13920,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 13920
+},
+"sample": "program interrupt: illegal instruction......0"
+},
+{
+"id": "E135",
+"template": "program interrupt: privileged instruction...<*>",
+"occurrences": 9824,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 9824
+},
+"sample": "program interrupt: privileged instruction...0"
+},
+{
+"id": "E138",
+"template": "program interrupt: trap instruction.........<*>",
+"occurrences": 9824,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 9824
+},
+"sample": "program interrupt: trap instruction.........0"
+},
+{
+"id": "E128",
+"template": "floating point operation....................<*>",
+"occurrences": 9824,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 9824
+},
+"sample": "floating point operation....................0"
+},
+{
+"id": "E123",
+"template": "store operation.............................<*>",
+"occurrences": 9824,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 9824
+},
+"sample": "store operation.............................1"
+},
+{
+"id": "E176",
+"template": "data store interrupt caused by dcbf.........<*>",
+"occurrences": 9823,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 9823
+},
+"sample": "data store interrupt caused by dcbf.........0"
+},
+{
+"id": "E178",
+"template": "data store interrupt caused by icbi.........<*>",
+"occurrences": 9823,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 9823
+},
+"sample": "data store interrupt caused by icbi.........0"
+},
+{
+"id": "E124",
+"template": "auxiliary processor.........................<*>",
+"occurrences": 8419,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 8419
+},
+"sample": "auxiliary processor.........................0"
+},
+{
+"id": "E142",
+"template": "program interrupt: unimplemented operation..<*>",
+"occurrences": 8102,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 8102
+},
+"sample": "program interrupt: unimplemented operation..0"
+},
+{
+"id": "E127",
+"template": "byte ordering exception.....................<*>",
+"occurrences": 8102,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 8102
+},
+"sample": "byte ordering exception.....................0"
+},
+{
+"id": "E139",
+"template": "program interrupt: imprecise exception......<*>",
+"occurrences": 8102,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 8102
+},
+"sample": "program interrupt: imprecise exception......0"
+},
+{
+"id": "E156",
+"template": "program interrupt: fp cr update.............<*>",
+"occurrences": 8102,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 8102
+},
+"sample": "program interrupt: fp cr update.............0"
+},
+{
+"id": "E137",
+"template": "program interrupt: fp compare...............<*>",
+"occurrences": 8102,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 8102
+},
+"sample": "program interrupt: fp compare...............0"
+},
+{
+"id": "E170",
+"template": "program interrupt: fp cr field .............<*>",
+"occurrences": 8102,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 8102
+},
+"sample": "program interrupt: fp cr field .............0"
+},
+{
+"id": "E56",
+"template": "<*> torus processor sram reception error(s) (dcr <*>) detected and corrected",
+"occurrences": 66,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 66
+},
+"sample": "1 torus processor sram reception error(s) (dcr 0x02fc) detected and corrected"
+},
+{
+"id": "E27",
+"template": "external input interrupt (unit=<*> bit=<*>): torus sender <*> retransmission error was corrected",
+"occurrences": 1322,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 1322
+},
+"sample": "external input interrupt (unit=0x02 bit=0x0b): torus sender y+ retransmission error was corrected"
+},
+{
+"id": "E24",
+"template": "external input interrupt (unit=<*> bit=<*>): number of corrected SRAM errors has exceeded threshold",
+"occurrences": 39,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 39
+},
+"sample": "external input interrupt (unit=0x01 bit=0x09): number of corrected SRAM errors has exceeded threshold"
+},
+{
+"id": "E188",
+"template": "suppressing further interrupts of same type",
+"occurrences": 7694,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 7694
+},
+"sample": "suppressing further interrupts of same type"
+},
+{
+"id": "E219",
+"template": "Ido chip status changed: <*> ip=<*> v=<*> t=<*> status=<*> <*>",
+"occurrences": 11904,
+"component": "DISCOVERY",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 11904
+},
+"sample": "Ido chip status changed: FF:F2:9F:16:E7:14:00:0D:60:E9:18:EB ip=10.1.1.75 v=13 t=4 status=M Fri Jun 17 07:25:00 PDT 2005"
+},
+{
+"id": "E32",
+"template": "BGLMaster has been started: ./BGLMaster --consoleip <*> --consoleport <*> --configfile <*>",
+"occurrences": 6,
+"component": "BGLMASTER",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 6
+},
+"sample": "BGLMaster has been started: ./BGLMaster --consoleip 127.0.0.1 --consoleport 32035 --configfile bglmaster.init"
+},
+{
+"id": "E133",
+"template": "BglIdoChip table has <*> IDOs with the same IP address <*>",
+"occurrences": 9,
+"component": "DISCOVERY",
+"level": "SEVERE",
+"alert_label": "-",
+"alert_labels": {
+"-": 9
+},
+"sample": "BglIdoChip table has 2 IDOs with the same IP address (10.0.0.237)"
+},
+{
+"id": "E230",
+"template": "SerialNumber(<*>) IpAddress(<*>) Status(<*>)",
+"occurrences": 64,
+"component": "DISCOVERY",
+"level": "SEVERE",
+"alert_label": "-",
+"alert_labels": {
+"-": 64
+},
+"sample": "SerialNumber(000000000000000000000000fff29f16e842000d60e917bd) IpAddress(10.0.0.237) Status(A)"
+},
+{
+"id": "E297",
+"template": "NodeCard VPD is corrupt",
+"occurrences": 10,
+"component": "HARDWARE",
+"level": "SEVERE",
+"alert_label": "-",
+"alert_labels": {
+"-": 10
+},
+"sample": "NodeCard VPD is corrupt"
+},
+{
+"id": "E207",
+"template": "ciod: Unexpected eof at line <*> of node map file <*>",
+"occurrences": 328,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 328
+},
+"sample": "ciod: Unexpected eof at line 8193 of node map file /p/gb2/cabot/miranda/newmaps/8k_128x64x1_8x4x4.map"
+},
+{
+"id": "E87",
+"template": "ciod: Error creating node map from file <*>: No child processes",
+"occurrences": 320,
+"component": "APP",
+"level": "FATAL",
+"alert_label": "APPCHILD",
+"alert_labels": {
+"APPCHILD": 320
+},
+"sample": "ciod: Error creating node map from file /p/gb2/cabot/miranda/newmaps/8k_128x64x1_8x4x4.map: No child processes"
+},
+{
+"id": "E189",
+"template": "rror threshold, consider replacing the card",
+"occurrences": 22,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 22
+},
+"sample": "rror threshold, consider replacing the card"
+},
+{
+"id": "E17",
+"template": "ddr: Unable to steer rank=<*>, symbol=<*> - rank is already steering symbol <*>. Due to multiple symbols being over the correctable",
+"occurrences": 23,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 23
+},
+"sample": "ddr: Unable to steer rank=0, symbol=12 - rank is already steering symbol 14. Due to multiple symbols being over the correctable"
+},
+{
+"id": "E166",
+"template": "error threshold, consider replacing the card",
+"occurrences": 23,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 23
+},
+"sample": "error threshold, consider replacing the card"
+},
+{
+"id": "E201",
+"template": "ciod: Error loading <*>: program image too big, <*> > <*>",
+"occurrences": 1512,
+"component": "APP",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 1512
+},
+"sample": "ciod: Error loading /home/spelce1/SPPM_VERIFY/sppm/run/sppm: program image too big, 746264160 > 534511616"
+},
+{
+"id": "E81",
+"template": "critical input interrupt (unit=<*> bit=<*>): warning for tree <*> wire",
+"occurrences": 2245,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 2245
+},
+"sample": "critical input interrupt (unit=0x0b bit=0x17): warning for tree C1 wire"
+},
+{
+"id": "E278",
+"template": "job <*> timed out. Block freed.",
+"occurrences": 306,
+"component": "FATAL",
+"level": "Kill",
+"alert_label": "-",
+"alert_labels": {
+"-": 306
+},
+"sample": "job 20251 timed out. Block freed."
+},
+{
+"id": "E308",
+"template": "program interrupt",
+"occurrences": 3667,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 3662,
+"KERNPROG": 5
+},
+"sample": "program interrupt"
+},
+{
+"id": "E64",
+"template": "ciod: <*> coordinate <*> exceeds physical dimension <*> at line <*> of node map file <*>",
+"occurrences": 3512,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 3512
+},
+"sample": "ciod: X coordinate 8 exceeds physical dimension 8 at line 4097 of node map file /p/gb2/draeger/benchmark/dat16k_062205/map16k_bipartyz"
+},
+{
+"id": "E240",
+"template": "<*> floating point alignment exceptions",
+"occurrences": 267725,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 267725
+},
+"sample": "3 floating point alignment exceptions"
+},
+{
+"id": "E120",
+"template": "NodeCard temperature sensor chip <*> is not accessible",
+"occurrences": 5,
+"component": "HARDWARE",
+"level": "SEVERE",
+"alert_label": "-",
+"alert_labels": {
+"-": 5
+},
+"sample": "NodeCard temperature sensor chip U52 is not accessible"
+},
+{
+"id": "E221",
+"template": "NodeCard power module <*> is not accessible",
+"occurrences": 230,
+"component": "HARDWARE",
+"level": "SEVERE",
+"alert_label": "-",
+"alert_labels": {
+"-": 230
+},
+"sample": "NodeCard power module U67 is not accessible"
+},
+{
+"id": "E253",
+"template": "NodeCard VPD chip is not accessible",
+"occurrences": 1,
+"component": "HARDWARE",
+"level": "SEVERE",
+"alert_label": "-",
+"alert_labels": {
+"-": 1
+},
+"sample": "NodeCard VPD chip is not accessible"
+},
+{
+"id": "E3",
+"template": "Node card status: <*> is (are) active. Clock Mode is <*>. Clock Select is <*>. Phy JTAG Reset is <*>. ASIC JTAG Reset is <*>. TEMPERATURE MASK IS ACTIVE. No temperature error. Temperature Limit Error Latch is clear. PGOOD is <*>. PGOOD error latch is clear. MPGOOD is <*>. MPGOOD error latch is clear. The <*> volt rail is <*>. The <*> volt rail is <*>.",
+"occurrences": 1,
+"component": "DISCOVERY",
+"level": "ERROR",
+"alert_label": "-",
+"alert_labels": {
+"-": 1
+},
+"sample": "Node card status: ALERT 0, ALERT 1, ALERT 2, ALERT 3 is (are) active. Clock Mode is Low. Clock Select is Midplane. Phy JTAG Reset is asserted. ASIC JTAG Reset is not asserted. TEMPERATURE MASK IS ACTI"
+},
+{
+"id": "E311",
+"template": "Target=<*> Message=<*>",
+"occurrences": 10,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 10
+},
+"sample": "Target=ido://FF:F2:9F:16:E6:86:00:0D:60:E9:19:79/JTAG/14 Message=Pll failed to lock"
+},
+{
+"id": "E284",
+"template": "Target=<*> Message=<*> JtagId = <*>",
+"occurrences": 65,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 65
+},
+"sample": "Target=ido://FF:F2:9F:16:E8:1A:00:0D:60:E9:17:E5/JTAG/0 Message=Invalid JtagId = ffffffff"
+},
+{
+"id": "E55",
+"template": "MailboxMonitor::serviceMailboxes() lib_ido_error: <*> socket closed",
+"occurrences": 168,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "KERNSOCK",
+"alert_labels": {
+"KERNSOCK": 168
+},
+"sample": "MailboxMonitor::serviceMailboxes() lib_ido_error: -1019 socket closed"
+},
+{
+"id": "E73",
+"template": "MidplaneSwitchController::sendTrain() port disconnected: <*>",
+"occurrences": 24,
+"component": "LINKCARD",
+"level": "FATAL",
+"alert_label": "LINKDISC",
+"alert_labels": {
+"LINKDISC": 24
+},
+"sample": "MidplaneSwitchController::sendTrain() port disconnected: R07-M1-L1-U19-E"
+},
+{
+"id": "E79",
+"template": "critical input interrupt (unit=<*> bit=<*>): warning for torus <*> wire",
+"occurrences": 5437,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 5437
+},
+"sample": "critical input interrupt (unit=0x0b bit=0x0a): warning for torus z+ wire"
+},
+{
+"id": "E84",
+"template": "ciod: Error creating node map from file <*>: Bad file descriptor",
+"occurrences": 1936,
+"component": "APP",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 1936
+},
+"sample": "ciod: Error creating node map from file /p/gb2/welcome3/32k_128x256x1_8x4x4.map: Bad file descriptor"
+},
+{
+"id": "E119",
+"template": "<*> torus non-crc error(s) (dcr <*>) detected and corrected",
+"occurrences": 62,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 62
+},
+"sample": "7178 torus non-crc error(s) (dcr 0x02fd) detected and corrected"
+},
+{
+"id": "E305",
+"template": "shutdown complete",
+"occurrences": 99,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 99
+},
+"sample": "shutdown complete"
+},
+{
+"id": "E89",
+"template": "machine check interrupt (bit=<*>): Torus/Tree/GI read error <*>",
+"occurrences": 2,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "KERNMC",
+"alert_labels": {
+"KERNMC": 2
+},
+"sample": "machine check interrupt (bit=0x09): Torus/Tree/GI read error 0"
+},
+{
+"id": "E31",
+"template": "EndServiceAction is restarting the LinkCards in midplane <*> as part of Service Action <*>",
+"occurrences": 199,
+"component": "HARDWARE",
+"level": "WARNING",
+"alert_label": "-",
+"alert_labels": {
+"-": 199
+},
+"sample": "EndServiceAction is restarting the LinkCards in midplane R07-M1 as part of Service Action 236"
+},
+{
+"id": "E223",
+"template": "LinkCard power module <*> is not accessible",
+"occurrences": 319,
+"component": "HARDWARE",
+"level": "SEVERE",
+"alert_label": "-",
+"alert_labels": {
+"-": 319
+},
+"sample": "LinkCard power module U58 is not accessible"
+},
+{
+"id": "E261",
+"template": "NodeCard is not fully functional",
+"occurrences": 60,
+"component": "HARDWARE",
+"level": "SEVERE",
+"alert_label": "-",
+"alert_labels": {
+"-": 60
+},
+"sample": "NodeCard is not fully functional"
+},
+{
+"id": "E260",
+"template": "LinkCard is not fully functional",
+"occurrences": 248,
+"component": "HARDWARE",
+"level": "SEVERE",
+"alert_label": "-",
+"alert_labels": {
+"-": 248
+},
+"sample": "LinkCard is not fully functional"
+},
+{
+"id": "E232",
+"template": "this link card is not fully functional",
+"occurrences": 22,
+"component": "DISCOVERY",
+"level": "WARNING",
+"alert_label": "-",
+"alert_labels": {
+"-": 22
+},
+"sample": "this link card is not fully functional"
+},
+{
+"id": "E312",
+"template": "no ethernet link",
+"occurrences": 14,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "KERNNOETH",
+"alert_labels": {
+"KERNNOETH": 14
+},
+"sample": "no ethernet link"
+},
+{
+"id": "E258",
+"template": "rts: kernel terminated for reason <*>",
+"occurrences": 23338,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "KERNTERM",
+"alert_labels": {
+"KERNTERM": 23338
+},
+"sample": "rts: kernel terminated for reason 1004rts: bad message header: expecting type 1, type=3, cpu=0, index=0, total=1"
+},
+{
+"id": "E71",
+"template": "ciod: In packet from node <*> (<*>), message code <*> is not <*> or <*> (softheader=<*>)",
+"occurrences": 176,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 176
+},
+"sample": "ciod: In packet from node 495.0 (R02-M1-N0-C:J02-U11), message code 2 is not 3 or 4294967295 (softheader=002f01ef 00030000 00000001 00000000)"
+},
+{
+"id": "E111",
+"template": "ciod: Missing or invalid fields on line <*> of node map file <*>",
+"occurrences": 2048,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 2048
+},
+"sample": "ciod: Missing or invalid fields on line 1 of node map file /home/auselton/bgl/64mps.sequential.mapfile"
+},
+{
+"id": "E304",
+"template": "Power deactivated: <*>",
+"occurrences": 192,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "KERNPOW",
+"alert_labels": {
+"KERNPOW": 192
+},
+"sample": "Power deactivated: R05-M0-N4"
+},
+{
+"id": "E1",
+"template": "Problem reading the ethernet arl entries fro the service card: <*>: while executing I2C Operation caught <*>: Communication error: (<*> is in state = <*>, sequenceNumberIsOk = <*>, ExpectedSequenceNumber = <*>, Reply Sequence Number = <*>, timedOut = <*>, retries = <*>, timeout = <*>, Expected Op Command = <*>, Actual Op Reply = <*>, Expected Sync Command = <*>, Actual Sync Reply = <*>)",
+"occurrences": 4,
+"component": "DISCOVERY",
+"level": "SEVERE",
+"alert_label": "-",
+"alert_labels": {
+"-": 4
+},
+"sample": "Problem reading the ethernet arl entries fro the service card: java.lang.IllegalStateException: while executing I2C Operation caught java.lang.RuntimeException: Communication error: (DirectIDo for com"
+},
+{
+"id": "E303",
+"template": "parity error.......<*>",
+"occurrences": 1,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 1
+},
+"sample": "parity error.......0"
+},
+{
+"id": "E146",
+"template": "New ido chip inserted into the database: <*> ip=<*> v=<*> t=<*>",
+"occurrences": 3455,
+"component": "DISCOVERY",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 3455
+},
+"sample": "New ido chip inserted into the database: FF:F2:9F:16:EE:CF:00:0D:60:E9:11:30 ip=10.0.0.59 v=13 t=4"
+},
+{
+"id": "E57",
+"template": "MidplaneSwitchController::parityAlignment() pap failed: <*> status=<*>",
+"occurrences": 14,
+"component": "LINKCARD",
+"level": "FATAL",
+"alert_label": "LINKPAP",
+"alert_labels": {
+"LINKPAP": 14
+},
+"sample": "MidplaneSwitchController::parityAlignment() pap failed: R22-M0-L0-U22-D, status=00000000 00000000"
+},
+{
+"id": "E38",
+"template": "ciod: duplicate canonical-rank <*> to logical-rank <*> mapping at line <*> of node map file <*>",
+"occurrences": 512,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 512
+},
+"sample": "ciod: duplicate canonical-rank 31 to logical-rank 0 mapping at line 3 of node map file /p/gb2/pakin1/sweep3d-5x5x400-10mk-3mmi-1024pes-sweep/sweep.map"
+},
+{
+"id": "E74",
+"template": "ciod: Error creating node map from file <*>: Device or resource busy",
+"occurrences": 512,
+"component": "APP",
+"level": "FATAL",
+"alert_label": "APPBUSY",
+"alert_labels": {
+"APPBUSY": 512
+},
+"sample": "ciod: Error creating node map from file /p/gb2/pakin1/sweep3d-5x5x400-10mk-3mmi-1024pes-sweep/sweep.map: Device or resource busy"
+},
+{
+"id": "E77",
+"template": "ciod: Error creating node map from file <*>: Block device required",
+"occurrences": 1016,
+"component": "APP",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 1016
+},
+"sample": "ciod: Error creating node map from file /p/gb2/pakin1/sweep3d-5x5x400-10mk-3mmi-1024pes-xyzt/xyzt.map: Block device required"
+},
+{
+"id": "E88",
+"template": "ciod: Error creating node map from file <*>: Permission denied",
+"occurrences": 1272,
+"component": "APP",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 1272
+},
+"sample": "ciod: Error creating node map from file /p/gb2/pakin1/sweep3d-5x5x400-10mk-3mmi-1024pes-xyzt/xyzt.map: Permission denied"
+},
+{
+"id": "E318",
+"template": "<*>, max=<*>",
+"occurrences": 116,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 116
+},
+"sample": "04, max=366"
+},
+{
+"id": "E65",
+"template": "external input interrupt (unit=<*> bit=<*>): uncorrectable torus error",
+"occurrences": 10,
+"component": "APP",
+"level": "FATAL",
+"alert_label": "APPTORUS",
+"alert_labels": {
+"APPTORUS": 10
+},
+"sample": "external input interrupt (unit=0x02 bit=0x00): uncorrectable torus error"
+},
+{
+"id": "E209",
+"template": "Torus non-recoverable error DCRs follow.",
+"occurrences": 10,
+"component": "APP",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 10
+},
+"sample": "Torus non-recoverable error DCRs follow."
+},
+{
+"id": "E319",
+"template": "ax=<*>",
+"occurrences": 13,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 13
+},
+"sample": "ax=366"
+},
+{
+"id": "E50",
+"template": "ciod: Error loading <*>: invalid or missing program image, Exec format error",
+"occurrences": 22032,
+"component": "APP",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 22032
+},
+"sample": "ciod: Error loading /home/glosli/src/ddcMD/ddcMD1.1.14/bin/ddcMDbglV: invalid or missing program image, Exec format error"
+},
+{
+"id": "E320",
+"template": "x=<*>",
+"occurrences": 2,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 2
+},
+"sample": "x=366"
+},
+{
+"id": "E245",
+"template": "ciodb exited normally with exit code <*>",
+"occurrences": 2,
+"component": "BGLMASTER",
+"level": "FAILURE",
+"alert_label": "-",
+"alert_labels": {
+"-": 1,
+"MASNORM": 1
+},
+"sample": "ciodb exited normally with exit code 0"
+},
+{
+"id": "E307",
+"template": "Ido packet timeout",
+"occurrences": 4276,
+"component": "MMCS",
+"level": "ERROR",
+"alert_label": "-",
+"alert_labels": {
+"-": 4276
+},
+"sample": "Ido packet timeout"
+},
+{
+"id": "E85",
+"template": "Node card VPD check: missing <*>, VPD ecid <*> in processor card slot <*>",
+"occurrences": 887,
+"component": "DISCOVERY",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 887
+},
+"sample": "Node card VPD check: missing U01 node, VPD ecid 04C881D4DE2FFFFF020C1C6052EB in processor card slot J18"
+},
+{
+"id": "E41",
+"template": "DeclareServiceNetworkCharacteristics has been run but the DB is not empty",
+"occurrences": 1,
+"component": "SERV_NET",
+"level": "WARNING",
+"alert_label": "-",
+"alert_labels": {
+"-": 1
+},
+"sample": "DeclareServiceNetworkCharacteristics has been run but the DB is not empty"
+},
+{
+"id": "E23",
+"template": "DeclareServiceNetworkCharacteristics has been run with the force option but the DB is not empty",
+"occurrences": 1,
+"component": "SERV_NET",
+"level": "ERROR",
+"alert_label": "-",
+"alert_labels": {
+"-": 1
+},
+"sample": "DeclareServiceNetworkCharacteristics has been run with the force option but the DB is not empty"
+},
+{
+"id": "E263",
+"template": "Added <*> subnets and <*> addresses to DB",
+"occurrences": 1,
+"component": "SERV_NET",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 1
+},
+"sample": "Added 8 subnets and 409600 addresses to DB"
+},
+{
+"id": "E22",
+"template": "BGLMaster has been started: ./BGLMaster --consoleip <*> --consoleport <*> --configfile <*> --autorestart <*>",
+"occurrences": 59,
+"component": "BGLMASTER",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 59
+},
+"sample": "BGLMaster has been started: ./BGLMaster --consoleip 127.0.0.1 --consoleport 32035 --configfile bglmaster.init --autorestart y"
+},
+{
+"id": "E121",
+"template": "Found invalid node ecid in processor card slot <*>, ecid <*>",
+"occurrences": 5558,
+"component": "DISCOVERY",
+"level": "ERROR",
+"alert_label": "-",
+"alert_labels": {
+"-": 5558
+},
+"sample": "Found invalid node ecid in processor card slot J02, ecid 0000000000000000000000000000"
+},
+{
+"id": "E2",
+"template": "Node card status: <*> is (are) active. Clock Mode is <*>. Clock Select is <*>. Phy JTAG Reset is <*>. ASIC JTAG Reset is <*>. Temperature Mask is not active. No temperature error. Temperature Limit Error Latch is clear. PGOOD is <*>. PGOOD error latch is clear. MPGOOD is <*>. MPGOOD error latch is clear. The <*> volt rail is <*>. The <*> volt rail is <*>.",
+"occurrences": 171,
+"component": "DISCOVERY",
+"level": "ERROR",
+"alert_label": "-",
+"alert_labels": {
+"-": 171
+},
+"sample": "Node card status: ALERT 0, ALERT 1, ALERT 2, ALERT 3 is (are) active. Clock Mode is Low. Clock Select is Midplane. Phy JTAG Reset is asserted. ASIC JTAG Reset is not asserted. Temperature Mask is not "
+},
+{
+"id": "E224",
+"template": "idoproxy exited normally with exit code <*>",
+"occurrences": 1,
+"component": "BGLMASTER",
+"level": "FAILURE",
+"alert_label": "-",
+"alert_labels": {
+"-": 1
+},
+"sample": "idoproxy exited normally with exit code 0"
+},
+{
+"id": "E16",
+"template": "Problem communicating with service card, ido chip: <*>. java.io.IOException: Could not find EthernetSwitch on port:address <*>",
+"occurrences": 166,
+"component": "DISCOVERY",
+"level": "SEVERE",
+"alert_label": "-",
+"alert_labels": {
+"-": 166
+},
+"sample": "Problem communicating with service card, ido chip: 00000000:00000000:00000000:FFF29F15:1F48000D:60EAE0B7. java.io.IOException: Could not find EthernetSwitch on port:address 1:136"
+},
+{
+"id": "E100",
+"template": "Bad cable going into LinkCard (<*>) Jtag (<*>) Port (<*>) - <*> bad wires",
+"occurrences": 232,
+"component": "DISCOVERY",
+"level": "ERROR",
+"alert_label": "-",
+"alert_labels": {
+"-": 232
+},
+"sample": "Bad cable going into LinkCard (203937503438383700000000594C31314B34333237303248) Jtag (0) Port (C) - 1 bad wires"
+},
+{
+"id": "E52",
+"template": "Missing reverse cable: Cable <*> is present BUT the reverse cable <*> is missing",
+"occurrences": 522,
+"component": "DISCOVERY",
+"level": "ERROR",
+"alert_label": "-",
+"alert_labels": {
+"-": 522
+},
+"sample": "Missing reverse cable: Cable R23-M1-L1 1 F (J04) --> R43-M0-L1 1 C (J06) is present BUT the reverse cable R43-M0-L1 4 F (J12) --> R23-M1-L1 4 C (J14) is missing"
+},
+{
+"id": "E257",
+"template": "Error: unable to mount filesystem",
+"occurrences": 720,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "KERNMNT",
+"alert_labels": {
+"KERNMNT": 720
+},
+"sample": "Error: unable to mount filesystem"
+},
+{
+"id": "E211",
+"template": "Lustre mount FAILED : <*> : block_id : location",
+"occurrences": 5105,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "KERNMNTF",
+"alert_labels": {
+"KERNMNTF": 5105
+},
+"sample": "Lustre mount FAILED : bglio11 : block_id : location"
+},
+{
+"id": "E26",
+"template": "idoproxydb hit ASSERT condition: ASSERT expression=<*> Source file=<*> Source line=<*> Function=<*>",
+"occurrences": 84253,
+"component": "MMCS",
+"level": "ERROR",
+"alert_label": "-",
+"alert_labels": {
+"-": 84253
+},
+"sample": "idoproxydb hit ASSERT condition: ASSERT expression=0 Source file=idotransportmgr.cpp Source line=1043 Function=int IdoTransportMgr::SendPacket(IdoUdpMgr*, BglCtlPavTrace*)"
+},
+{
+"id": "E298",
+"template": "Microloader Assertion",
+"occurrences": 1504,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "KERNMICRO",
+"alert_labels": {
+"KERNMICRO": 1503,
+"-": 1
+},
+"sample": "Microloader Assertion"
+},
+{
+"id": "E21",
+"template": "ciod: Error reading message prefix after LOAD_MESSAGE on CioStream socket to <*>: Link has been severed",
+"occurrences": 15273,
+"component": "APP",
+"level": "FATAL",
+"alert_label": "APPSEV",
+"alert_labels": {
+"APPSEV": 15273
+},
+"sample": "ciod: Error reading message prefix after LOAD_MESSAGE on CioStream socket to 172.16.96.116:52716: Link has been severed"
+},
+{
+"id": "E61",
+"template": "MidplaneSwitchController::receiveTrain() iap failed: <*>, status=<*>",
+"occurrences": 166,
+"component": "LINKCARD",
+"level": "FATAL",
+"alert_label": "LINKIAP",
+"alert_labels": {
+"LINKIAP": 166
+},
+"sample": "MidplaneSwitchController::receiveTrain() iap failed: R72-M1-L1-U18-A, status=beeaabff ec000000"
+},
+{
+"id": "E125",
+"template": "rts tree/torus link training failed: wanted: <*> got: <*>",
+"occurrences": 605,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 605
+},
+"sample": "rts tree/torus link training failed: wanted: A C X+ X- Y+ Y- Z+ Z- got: A C X+ X- Y- Z+ Z-"
+},
+{
+"id": "E8",
+"template": "ddr: Unable to steer rank=<*>, symbol=<*> - rank is already steering symbol <*>. Due to multiple symbols being over the correctable error threshold, consider replacing the card",
+"occurrences": 197,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 197
+},
+"sample": "ddr: Unable to steer rank=0, symbol=5 - rank is already steering symbol 4. Due to multiple symbols being over the correctable error threshold, consider replacing the card"
+},
+{
+"id": "E226",
+"template": "ciodb exited abnormally due to signal: <*>",
+"occurrences": 23,
+"component": "BGLMASTER",
+"level": "FAILURE",
+"alert_label": "MASABNORM",
+"alert_labels": {
+"MASABNORM": 23
+},
+"sample": "ciodb exited abnormally due to signal: Aborted"
+},
+{
+"id": "E48",
+"template": "ciod: Error loading <*>: invalid or missing program image, Permission denied",
+"occurrences": 43040,
+"component": "APP",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 43040
+},
+"sample": "ciod: Error loading /bgl/apps/hwstab/RAPTOR/temp/raptor: invalid or missing program image, Permission denied"
+},
+{
+"id": "E228",
+"template": "ciod: generated <*> core files for program <*>",
+"occurrences": 62484,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 62484
+},
+"sample": "ciod: generated 64 core files for program /bgl/apps/scaletest/performance/IMB_2.3_243_64K/IMB-MPI1.gp2"
+},
+{
+"id": "E47",
+"template": "rts: bad message header: cpu <*> invalid (softheader=<*>) PSR0=<*> PSR1=<*> PRXF=<*> PIXF=<*>",
+"occurrences": 619,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 619
+},
+"sample": "rts: bad message header: cpu 127 invalid (softheader=7ffffc00 10022d68 00000000 00000000) PSR0=00000100 PSR1=00000000 PRXF=0002000a PIXF=00000007"
+},
+{
+"id": "E28",
+"template": "rts: bad message header: index <*> greater than total <*> (softheader=<*>) PSR0=<*> PSR1=<*> PRXF=<*> PIXF=<*>",
+"occurrences": 238,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 238
+},
+"sample": "rts: bad message header: index 0 greater than total 0 (softheader=00000002 00000001 00000000 00000000) PSR0=00000f00 PSR1=00000000 PRXF=00000002 PIXF=00000007"
+},
+{
+"id": "E25",
+"template": "rts: bad message header: expecting type <*> instead of type <*> (softheader=<*>) PSR0=<*> PSR1=<*> PRXF=<*> PIXF=<*>",
+"occurrences": 1146,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 1146
+},
+"sample": "rts: bad message header: expecting type 53 instead of type 1238 (softheader=000bb273 003604d6 00000001 00000000) PSR0=00000101 PSR1=00000000 PRXF=00020002 PIXF=00000007"
+},
+{
+"id": "E315",
+"template": "kernel panic",
+"occurrences": 18,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "KERNPAN",
+"alert_labels": {
+"KERNPAN": 18
+},
+"sample": "kernel panic"
+},
+{
+"id": "E53",
+"template": "external input interrupt (unit=<*> bit=<*>): 1M tree receiver <*> in resynch mode",
+"occurrences": 1,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 1
+},
+"sample": "external input interrupt (unit=0x05 bit=0x06): 1M tree receiver 2 in resynch mode"
+},
+{
+"id": "E14",
+"template": "mmcs_db_server has been started: ./mmcs_db_server --useDatabase <*> --dbproperties <*> --iolog <*> --reconnect-blocks <*> --shutdown-timeout <*>",
+"occurrences": 90,
+"component": "MMCS",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 90
+},
+"sample": "mmcs_db_server has been started: ./mmcs_db_server --useDatabase BGL --dbproperties serverdb.properties --iolog /bgl/BlueLight/logs/BGL --reconnect-blocks all --shutdown-timeout 30"
+},
+{
+"id": "E317",
+"template": "iar <*> dear <*>",
+"occurrences": 442966,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 442966
+},
+"sample": "iar 003a90fc dear 00c07208"
+},
+{
+"id": "E165",
+"template": "NFS Mount failed on <*>, slept <*> seconds, retrying (<*>)",
+"occurrences": 2670,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 2670
+},
+"sample": "NFS Mount failed on bglio848, slept 19 seconds, retrying (1)"
+},
+{
+"id": "E276",
+"template": "Lustre mount FAILED : <*> : point <*>",
+"occurrences": 26426,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "KERNMNTF",
+"alert_labels": {
+"KERNMNTF": 26426
+},
+"sample": "Lustre mount FAILED : bglio118 : point /p/gb1"
+},
+{
+"id": "E49",
+"template": "external input interrupt (unit=<*> bit=<*>): tree header with no target waiting",
+"occurrences": 1,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "KERNEXT",
+"alert_labels": {
+"KERNEXT": 1
+},
+"sample": "external input interrupt (unit=0x03 bit=0x01): tree header with no target waiting"
+},
+{
+"id": "E54",
+"template": "power module status fault detected on node card. status registers are: <*>",
+"occurrences": 4,
+"component": "MONITOR",
+"level": "FAILURE",
+"alert_label": "MONPOW",
+"alert_labels": {
+"MONPOW": 4
+},
+"sample": "power module status fault detected on node card. status registers are: 0/0/1/1"
+},
+{
+"id": "E316",
+"template": "program",
+"occurrences": 1,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 1
+},
+"sample": "program"
+},
+{
+"id": "E78",
+"template": "<*> torus receiver sram ecc error(s) (dcr <*>) detected and corrected",
+"occurrences": 5,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 5
+},
+"sample": "1 torus receiver sram ecc error(s) (dcr 0x02f3) detected and corrected"
+},
+{
+"id": "E4",
+"template": "Node card status: no ALERTs are active. Clock Mode is <*>. Clock Select is <*>. Phy JTAG Reset is <*>. ASIC JTAG Reset is <*>. Temperature Mask is <*>. No temperature error. Temperature Limit Error Latch is clear. PGOOD IS <*>. PGOOD ERROR LATCH IS <*>. MPGOOD IS <*>. MPGOOD ERROR LATCH IS <*>. The <*> volt rail is <*>. THE <*> VOLT RAIL IS <*>.",
+"occurrences": 3,
+"component": "DISCOVERY",
+"level": "ERROR",
+"alert_label": "-",
+"alert_labels": {
+"-": 3
+},
+"sample": "Node card status: no ALERTs are active. Clock Mode is Low. Clock Select is Midplane. Phy JTAG Reset is asserted. ASIC JTAG Reset is not asserted. Temperature Mask is not active. No temperature error. "
+},
+{
+"id": "E58",
+"template": "Error sending packet on tree network, packet at address <*> is not aligned",
+"occurrences": 5,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 5
+},
+"sample": "Error sending packet on tree network, packet at address 00088480 is not aligned"
+},
+{
+"id": "E75",
+"template": "data cache flush parity error detected. attempting to correct",
+"occurrences": 65,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 65
+},
+"sample": "data cache flush parity error detected. attempting to correct"
+},
+{
+"id": "E72",
+"template": "data cache search parity error detected. attempting to correct",
+"occurrences": 13941,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 13941
+},
+"sample": "data cache search parity error detected. attempting to correct"
+},
+{
+"id": "E295",
+"template": "L3 major internal error",
+"occurrences": 3,
+"component": "MMCS",
+"level": "FATAL",
+"alert_label": "MMCS",
+"alert_labels": {
+"MMCS": 3
+},
+"sample": "L3 major internal error"
+},
+{
+"id": "E18",
+"template": "Error receiving packet on tree network, expecting type <*> instead of type <*> (softheader=<*> <*> <*> <*>) PSR0=<*> PSR1=<*> PRXF=<*> PIXF=<*>",
+"occurrences": 6144,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "KERNREC",
+"alert_labels": {
+"KERNREC": 6144
+},
+"sample": "Error receiving packet on tree network, expecting type 57 instead of type 3 (softheader=0064588e 8aff0003 00000002 00000000) PSR0=00001f01 PSR1=00000000 PRXF=00000002 PIXF=00000007"
+},
+{
+"id": "E42",
+"template": "ddr: activating redundant bit steering for next allocation: rank=<*> symbol=<*>",
+"occurrences": 492,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 492
+},
+"sample": "ddr: activating redundant bit steering for next allocation: rank=0 symbol=33"
+},
+{
+"id": "E44",
+"template": "L1 DCACHE summary averages: #ofDirtyLines: <*> out of <*> #ofDirtyDblWord: <*> out of <*>",
+"occurrences": 3149,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 3149
+},
+"sample": "L1 DCACHE summary averages: #ofDirtyLines: 457 out of 1024 #ofDirtyDblWord: 1632 out of 4096"
+},
+{
+"id": "E225",
+"template": "No power module <*> found found on link card",
+"occurrences": 6,
+"component": "MONITOR",
+"level": "FAILURE",
+"alert_label": "MONPOW",
+"alert_labels": {
+"MONPOW": 6
+},
+"sample": "No power module U58 found found on link card"
+},
+{
+"id": "E254",
+"template": "Temperature Over Limit on link card",
+"occurrences": 972,
+"component": "MONITOR",
+"level": "FAILURE",
+"alert_label": "-",
+"alert_labels": {
+"-": 972
+},
+"sample": "Temperature Over Limit on link card"
+},
+{
+"id": "E244",
+"template": "Link PGOOD error latched on link card",
+"occurrences": 349,
+"component": "MONITOR",
+"level": "FAILURE",
+"alert_label": "-",
+"alert_labels": {
+"-": 349
+},
+"sample": "Link PGOOD error latched on link card"
+},
+{
+"id": "E15",
+"template": "BGLMaster has been started: ./BGLMaster --consoleip <*> --consoleport <*> --configfile <*> --autorestart <*> --db2profile <*> --dbproperties <*>",
+"occurrences": 31,
+"component": "BGLMASTER",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 31
+},
+"sample": "BGLMaster has been started: ./BGLMaster --consoleip 127.0.0.1 --consoleport 32035 --configfile bglmaster.init --autorestart y --db2profile /u/bgdb2cli/sqllib/db2profile --dbproperties db.properties"
+},
+{
+"id": "E19",
+"template": "critical input interrupt (unit=<*> bit=<*>): warning for torus <*> wire, suppressing further interrupts of same type",
+"occurrences": 2314,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 2314
+},
+"sample": "critical input interrupt (unit=0x0b bit=0x0a): warning for torus z+ wire, suppressing further interrupts of same type"
+},
+{
+"id": "E20",
+"template": "critical input interrupt (unit=<*> bit=<*>): warning for tree <*> wire, suppressing further interrupts of same type",
+"occurrences": 1232,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 1232
+},
+"sample": "critical input interrupt (unit=0x0b bit=0x17): warning for tree C1 wire, suppressing further interrupts of same type"
+},
+{
+"id": "E59",
+"template": "<*> tree receiver <*> in re-synch state event(s) (dcr <*>) detected over <*> seconds",
+"occurrences": 3148,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 3148
+},
+"sample": "2 tree receiver 0 in re-synch state event(s) (dcr 0x01bc) detected over 388 seconds"
+},
+{
+"id": "E40",
+"template": "<*> torus receiver <*> input pipe error(s) (dcr <*>) detected and corrected over <*> seconds",
+"occurrences": 3512,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 3512
+},
+"sample": "8 torus receiver z+ input pipe error(s) (dcr 0x02f0) detected and corrected over 389 seconds"
+},
+{
+"id": "E68",
+"template": "<*> ddr error(s) detected and corrected on rank <*>, symbol <*> over <*> seconds",
+"occurrences": 10436,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 10436
+},
+"sample": "1 ddr error(s) detected and corrected on rank 0, symbol 33 over 389 seconds"
+},
+{
+"id": "E92",
+"template": "total of <*> ddr error(s) detected and corrected over <*> seconds",
+"occurrences": 10415,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 10415
+},
+"sample": "total of 1 ddr error(s) detected and corrected over 389 seconds"
+},
+{
+"id": "E112",
+"template": "<*> L3 <*> error(s) (dcr <*>) detected and corrected over <*> seconds",
+"occurrences": 1514,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 1514
+},
+"sample": "1 L3 EDRAM error(s) (dcr 0x0157) detected and corrected over 13 seconds"
+},
+{
+"id": "E134",
+"template": "idoproxy communication failure: socket closed",
+"occurrences": 41,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "KERNSOCK",
+"alert_labels": {
+"KERNSOCK": 41
+},
+"sample": "idoproxy communication failure: socket closed"
+},
+{
+"id": "E270",
+"template": "General Purpose Registers:",
+"occurrences": 69,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 69
+},
+"sample": "General Purpose Registers:"
+},
+{
+"id": "E271",
+"template": "Special Purpose Registers:",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "Special Purpose Registers:"
+},
+{
+"id": "E302",
+"template": "msr=<*> dear=<*> esr=<*> fpscr=<*>",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "msr=0x00003000 dear=0x00000000 esr=0x00000000 fpscr=0x00000000"
+},
+{
+"id": "E309",
+"template": "dbcr0=<*> dbsr=<*> ccr0=<*>",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "dbcr0=0x00000000 dbsr=0x00000000 ccr0=0x00002000"
+},
+{
+"id": "E196",
+"template": "Floating Point Status and Control Register: <*>",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "Floating Point Status and Control Register: 0x00000000"
+},
+{
+"id": "E155",
+"template": "exception summary........................<*>",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "exception summary........................0"
+},
+{
+"id": "E185",
+"template": "enabled exception summary................<*>",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "enabled exception summary................0"
+},
+{
+"id": "E190",
+"template": "invalid operation exception summary......<*>",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "invalid operation exception summary......0"
+},
+{
+"id": "E150",
+"template": "underflow exception......................<*>",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "underflow exception......................0"
+},
+{
+"id": "E153",
+"template": "divide-by-zero exception.................<*>",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "divide-by-zero exception.................0"
+},
+{
+"id": "E163",
+"template": "inexact exception........................<*>",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "inexact exception........................0"
+},
+{
+"id": "E229",
+"template": "invalid (<*>)........................<*>",
+"occurrences": 272,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 272
+},
+"sample": "invalid (SNAN)...........................0"
+},
+{
+"id": "E157",
+"template": "fraction rounded.........................<*>",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "fraction rounded.........................0"
+},
+{
+"id": "E162",
+"template": "fraction inexact.........................<*>",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "fraction inexact.........................0"
+},
+{
+"id": "E206",
+"template": "quiet <*>................................<*>",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "quiet NaN................................0"
+},
+{
+"id": "E149",
+"template": "minus inf................................<*>",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "minus inf................................0"
+},
+{
+"id": "E182",
+"template": "minus normalized number..................<*>",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "minus normalized number..................0"
+},
+{
+"id": "E186",
+"template": "minus denormalized number................<*>",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "minus denormalized number................0"
+},
+{
+"id": "E148",
+"template": "plus zero................................<*>",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "plus zero................................0"
+},
+{
+"id": "E180",
+"template": "plus denormalized number.................<*>",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "plus denormalized number.................0"
+},
+{
+"id": "E179",
+"template": "plus normalized number...................<*>",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "plus normalized number...................0"
+},
+{
+"id": "E151",
+"template": "plus infinity............................<*>",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "plus infinity............................0"
+},
+{
+"id": "E141",
+"template": "reserved.................................<*>",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "reserved.................................0"
+},
+{
+"id": "E194",
+"template": "invalid operation exception (software)...<*>",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "invalid operation exception (software)...0"
+},
+{
+"id": "E195",
+"template": "invalid operation exception (sqrt).......<*>",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "invalid operation exception (sqrt).......0"
+},
+{
+"id": "E204",
+"template": "invalid operation exception (int cnvt)...<*>",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "invalid operation exception (int cnvt)...0"
+},
+{
+"id": "E192",
+"template": "enable invalid operation exceptions......<*>",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "enable invalid operation exceptions......0"
+},
+{
+"id": "E173",
+"template": "enable overflow exceptions...............<*>",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "enable overflow exceptions...............0"
+},
+{
+"id": "E175",
+"template": "enable underflow exceptions..............<*>",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "enable underflow exceptions..............0"
+},
+{
+"id": "E172",
+"template": "enable divide-by-zero exceptions.........<*>",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "enable divide-by-zero exceptions.........0"
+},
+{
+"id": "E187",
+"template": "enable inexact exceptions................<*>",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "enable inexact exceptions................0"
+},
+{
+"id": "E181",
+"template": "enable non-IEEE mode.....................<*>",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "enable non-IEEE mode.....................0"
+},
+{
+"id": "E152",
+"template": "round nearest............................<*>",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "round nearest............................0"
+},
+{
+"id": "E222",
+"template": "round toward zero...................<*>",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "round toward zero........................0"
+},
+{
+"id": "E184",
+"template": "round toward +infinity...................<*>",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "round toward +infinity...................0"
+},
+{
+"id": "E168",
+"template": "round toward -infinity...................<*>",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "round toward -infinity...................0"
+},
+{
+"id": "E277",
+"template": "Floating Point Registers:",
+"occurrences": 68,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 68
+},
+"sample": "Floating Point Registers:"
+},
+{
+"id": "E147",
+"template": "ciod: Received signal <*>, code=<*>, errno=<*>, address=<*>",
+"occurrences": 39457,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 39457
+},
+"sample": "ciod: Received signal 15, code=0, errno=0, address=0x000001b0"
+},
+{
+"id": "E101",
+"template": "PrepareForService is being done on this Midplane (<*>, <*>, <*>) by <*>",
+"occurrences": 48,
+"component": "HARDWARE",
+"level": "WARNING",
+"alert_label": "-",
+"alert_labels": {
+"-": 48
+},
+"sample": "PrepareForService is being done on this Midplane (mLctn(R36-M1), mCardSernum(203937503631353900000000594c31304b34333133303058), iWhichCardsToPwrOff(502)) by root"
+},
+{
+"id": "E66",
+"template": "Power Good signal deactivated: <*>. A service action may be required.",
+"occurrences": 94,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "KERNSERV",
+"alert_labels": {
+"KERNSERV": 94
+},
+"sample": "Power Good signal deactivated: R73-M1-N5. A service action may be required."
+},
+{
+"id": "E34",
+"template": "<*> torus sender <*> retransmission error(s) (dcr <*>) detected and corrected over <*> seconds",
+"occurrences": 1034,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 1034
+},
+"sample": "403136 torus sender z+ retransmission error(s) (dcr 0x02f8) detected and corrected over 43 seconds"
+},
+{
+"id": "E36",
+"template": "ciod: Error reading message prefix on CioStream socket to <*>, Link has been severed",
+"occurrences": 26546,
+"component": "APP",
+"level": "FATAL",
+"alert_label": "APPSEV",
+"alert_labels": {
+"APPSEV": 26546
+},
+"sample": "ciod: Error reading message prefix on CioStream socket to 172.16.96.116:43572, Link has been severed"
+},
+{
+"id": "E39",
+"template": "EndServiceAction is restarting the <*> cards in Midplane <*> as part of Service Action <*>",
+"occurrences": 51,
+"component": "HARDWARE",
+"level": "WARNING",
+"alert_label": "-",
+"alert_labels": {
+"-": 51
+},
+"sample": "EndServiceAction is restarting the Node cards in Midplane R36-M1 as part of Service Action 581"
+},
+{
+"id": "E29",
+"template": "ciod: Error reading message prefix on CioStream socket to <*>, Connection reset by peer",
+"occurrences": 2256,
+"component": "APP",
+"level": "FATAL",
+"alert_label": "APPRES",
+"alert_labels": {
+"APPRES": 2256
+},
+"sample": "ciod: Error reading message prefix on CioStream socket to 172.16.96.116:59217, Connection reset by peer"
+},
+{
+"id": "E7",
+"template": "<*> with VPD of <*>: IBM Part Number: <*>, Vendor: <*>, Vendor Serial Number: <*>, Assembly Revision: <*>, Code Revision: <*>, Manufacture Date: <*>, Manufacture Location: <*> is usable but not a supported version",
+"occurrences": 4,
+"component": "HARDWARE",
+"level": "WARNING",
+"alert_label": "-",
+"alert_labels": {
+"-": 4
+},
+"sample": "com.ibm.bgldevices.BulkPowerModule with VPD of com.ibm.bgldevices.BulkPowerModule$VpdReply: IBM Part Number: 53P5763, Vendor: Cherokee International, Vendor Serial Number: 4274124, Assembly Revision: "
+},
+{
+"id": "E62",
+"template": "monitor caught <*>: while executing <*> caught <*>: Broken pipe and is stopping",
+"occurrences": 190,
+"component": "MONITOR",
+"level": "FAILURE",
+"alert_label": "-",
+"alert_labels": {
+"-": 190
+},
+"sample": "monitor caught java.lang.IllegalStateException: while executing I2C Operation caught java.net.SocketException: Broken pipe and is stopping"
+},
+{
+"id": "E231",
+"template": "MACHINE CHECK PLB write IRQ (mc=<*> iar <*> lr <*>)",
+"occurrences": 1,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 1
+},
+"sample": "MACHINE CHECK PLB write IRQ (mc=1b08x iar 0x00000000 lr 0xc00f837c)"
+},
+{
+"id": "E213",
+"template": "MACHINE CHECK DCR read timeout (mc=<*> iar <*> lr <*>)",
+"occurrences": 14481,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 14481
+},
+"sample": "MACHINE CHECK DCR read timeout (mc=e08x iar 0x00000000 lr 0xc00045a4)"
+},
+{
+"id": "E37",
+"template": "ciod: Error reading message prefix on CioStream socket to <*>, Connection timed out",
+"occurrences": 1991,
+"component": "APP",
+"level": "FATAL",
+"alert_label": "APPTO",
+"alert_labels": {
+"APPTO": 1991
+},
+"sample": "ciod: Error reading message prefix on CioStream socket to 172.16.96.116:41739, Connection timed out"
+},
+{
+"id": "E51",
+"template": "machine check interrupt (bit=<*>): L2 dcache unit read return parity error",
+"occurrences": 8,
+"component": "KERNEL",
+"level": "FATAL",
+"alert_label": "KERNMC",
+"alert_labels": {
+"KERNMC": 8
+},
+"sample": "machine check interrupt (bit=0x10): L2 dcache unit read return parity error"
+},
+{
+"id": "E60",
+"template": "MidplaneSwitchController::clearPort() bll_clear_port failed: <*>",
+"occurrences": 2,
+"component": "LINKCARD",
+"level": "FATAL",
+"alert_label": "LINKBLL",
+"alert_labels": {
+"LINKBLL": 2
+},
+"sample": "MidplaneSwitchController::clearPort() bll_clear_port failed: R63-M0-L0-U19-A"
+},
+{
+"id": "E69",
+"template": "ciod: Error creating node map from file <*>: No such file or directory",
+"occurrences": 24,
+"component": "APP",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 24
+},
+"sample": "ciod: Error creating node map from file my_map.txt: No such file or directory"
+},
+{
+"id": "E76",
+"template": "ciod: Error creating node map from file <*>: Argument list too long",
+"occurrences": 8,
+"component": "APP",
+"level": "FATAL",
+"alert_label": "-",
+"alert_labels": {
+"-": 8
+},
+"sample": "ciod: Error creating node map from file my_map.txt: Argument list too long"
+},
+{
+"id": "E43",
+"template": "<*> torus receiver sram ecc error(s) (dcr <*>) detected and corrected over <*> seconds",
+"occurrences": 1,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 1
+},
+"sample": "1 torus receiver sram ecc error(s) (dcr 0x02f3) detected and corrected over 7082 seconds"
+},
+{
+"id": "E13",
+"template": "<*> microseconds spent in the rbs signal handler during <*> calls. <*> microseconds was the maximum time for a single instance of a correctable ddr.",
+"occurrences": 135092,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 135092
+},
+"sample": "0 microseconds spent in the rbs signal handler during 0 calls. 0 microseconds was the maximum time for a single instance of a correctable ddr."
+},
+{
+"id": "E10",
+"template": "<*> total interrupts. <*> critical input interrupts. <*> microseconds total spent on critical input interrupts, <*> microseconds max time in a critical input interrupt.",
+"occurrences": 135092,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 135092
+},
+"sample": "10732 total interrupts. 0 critical input interrupts. 0 microseconds total spent on critical input interrupts, 0 microseconds max time in a critical input interrupt."
+},
+{
+"id": "E6",
+"template": "instance of a correctable ddr. RAS KERNEL INFO <*> microseconds spent in the rbs signal handler during <*> calls. <*> microseconds was the maximum time for a single instance of a correctable ddr.",
+"occurrences": 4,
+"component": "a",
+"level": "single",
+"alert_label": "-",
+"alert_labels": {
+"-": 4
+},
+"sample": "instance of a correctable ddr. RAS KERNEL INFO 0 microseconds spent in the rbs signal handler during 0 calls. 0 microseconds was the maximum time for a single instance of a correctable ddr."
+},
+{
+"id": "E5",
+"template": "max time in a cr RAS KERNEL INFO <*> total interrupts. <*> critical input interrupts. <*> microseconds total spent on critical input interrupts, <*> microseconds max time in a critical input interrupt.",
+"occurrences": 4,
+"component": "0",
+"level": "microseconds",
+"alert_label": "-",
+"alert_labels": {
+"-": 4
+},
+"sample": "max time in a cr RAS KERNEL INFO 10760 total interrupts. 0 critical input interrupts. 0 microseconds total spent on critical input interrupts, 0 microseconds max time in a critical input interrupt."
+},
+{
+"id": "E11",
+"template": "external input interrupt (unit=<*> bit=<*>): number of corrected SRAM errors has exceeded threshold, suppressing further interrupts of same type",
+"occurrences": 57,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 57
+},
+"sample": "external input interrupt (unit=0x01 bit=0x09): number of corrected SRAM errors has exceeded threshold, suppressing further interrupts of same type"
+},
+{
+"id": "E12",
+"template": "Kernel detected <*> integer alignment exceptions (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*>",
+"occurrences": 22175,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 22175
+},
+"sample": "Kernel detected 50855390 integer alignment exceptions (50855383) iar 0x0023f108, dear 0x1feaa260 (50855384) iar 0x00265564, dear 0x1feaa1c0 (50855385) iar 0x00265574, dear 0x1feaa1e0 (50855386) iar 0x"
+},
+{
+"id": "E9",
+"template": "dear <*> (<*> RAS KERNEL INFO Kernel detected <*> integer alignment exceptions (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*>",
+"occurrences": 2,
+"component": "iar",
+"level": "0x00544eb8,",
+"alert_label": "-",
+"alert_labels": {
+"-": 2
+},
+"sample": "dear 0x01fc5640 (543 RAS KERNEL INFO Kernel detected 5438714 integer alignment exceptions (5438707) iar 0x00544ea8, dear 0x01fc5620 (5438708) iar 0x00544eb8, dear 0x01fc5640 (5438709) iar 0x00544ea8, "
+},
+{
+"id": "E33",
+"template": "<*> torus processor sram injection error(s) (dcr <*>) detected and corrected over <*> seconds",
+"occurrences": 1,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 1
+},
+"sample": "1 torus processor sram injection error(s) (dcr 0x02fb) detected and corrected over 9107 seconds"
+},
+{
+"id": "E136",
+"template": "ciod: LOGIN chdir(<*>) failed: Input/output error",
+"occurrences": 816,
+"component": "APP",
+"level": "FATAL",
+"alert_label": "APPOUT",
+"alert_labels": {
+"APPOUT": 816
+},
+"sample": "ciod: LOGIN chdir(/p/gb1/stella/RAPTOR/2183) failed: Input/output error"
+},
+{
+"id": "E91",
+"template": "ciod: for node <*>, incomplete data written to core file core.<*>",
+"occurrences": 38,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 38
+},
+"sample": "ciod: for node 29, incomplete data written to core file core.18677"
+},
+{
+"id": "E67",
+"template": "<*> torus non-crc error(s) (dcr <*>) detected and corrected over <*> seconds",
+"occurrences": 1,
+"component": "KERNEL",
+"level": "INFO",
+"alert_label": "-",
+"alert_labels": {
+"-": 1
+},
+"sample": "1 torus non-crc error(s) (dcr 0x02fd) detected and corrected over 30940 seconds"
+}
+],
+"openstack": [
+{
+"id": "E42",
+"template": "<*> \"GET <*> <*>\" status: <*> len: <*> time: <*>",
+"occurrences": 90475,
+"component": "nova.osapi_compute.wsgi.server",
+"level": "INFO"
+},
+{
+"id": "E37",
+"template": "[instance: <*>] Creating image",
+"occurrences": 2066,
+"component": "nova.virt.libvirt.driver",
+"level": "INFO"
+},
+{
+"id": "E25",
+"template": "[instance: <*>] VM Stopped (Lifecycle Event)",
+"occurrences": 2067,
+"component": "nova.compute.manager",
+"level": "INFO"
+},
+{
+"id": "E3",
+"template": "While synchronizing instance power states, found <*> instances in the database and <*> instances on the hypervisor.",
+"occurrences": 45,
+"component": "nova.compute.manager",
+"level": "WARNING"
+},
+{
+"id": "E23",
+"template": "[instance: <*>] VM Started (Lifecycle Event)",
+"occurrences": 2066,
+"component": "nova.compute.manager",
+"level": "INFO"
+},
+{
+"id": "E26",
+"template": "[instance: <*>] VM Paused (Lifecycle Event)",
+"occurrences": 2066,
+"component": "nova.compute.manager",
+"level": "INFO"
+},
+{
+"id": "E4",
+"template": "[instance: <*>] During sync_power_state the instance has a pending task (spawning). Skip.",
+"occurrences": 4049,
+"component": "nova.compute.manager",
+"level": "INFO"
+},
+{
+"id": "E44",
+"template": "image <*> at (<*>): checking",
+"occurrences": 12043,
+"component": "nova.virt.libvirt.imagecache",
+"level": "INFO"
+},
+{
+"id": "E5",
+"template": "image <*> at (<*>): in use: on this node <*> local, <*> on other nodes sharing this instance storage",
+"occurrences": 12043,
+"component": "nova.virt.libvirt.imagecache",
+"level": "INFO"
+},
+{
+"id": "E47",
+"template": "Active base files: <*>",
+"occurrences": 12035,
+"component": "nova.virt.libvirt.imagecache",
+"level": "INFO"
+},
+{
+"id": "E38",
+"template": "Creating event <*> for instance <*>",
+"occurrences": 2065,
+"component": "nova.api.openstack.compute.server_external_events",
+"level": "INFO"
+},
+{
+"id": "E41",
+"template": "<*> \"POST <*> <*>\" status: <*> len: <*> time: <*>",
+"occurrences": 6194,
+"component": "nova.osapi_compute.wsgi.server",
+"level": "INFO"
+},
+{
+"id": "E22",
+"template": "[instance: <*>] VM Resumed (Lifecycle Event)",
+"occurrences": 4132,
+"component": "nova.compute.manager",
+"level": "INFO"
+},
+{
+"id": "E18",
+"template": "[instance: <*>] Instance spawned successfully.",
+"occurrences": 2066,
+"component": "nova.virt.libvirt.driver",
+"level": "INFO"
+},
+{
+"id": "E9",
+"template": "[instance: <*>] Took <*> seconds to spawn the instance on the hypervisor.",
+"occurrences": 2066,
+"component": "nova.compute.manager",
+"level": "INFO"
+},
+{
+"id": "E21",
+"template": "[instance: <*>] Took <*> seconds to build instance.",
+"occurrences": 2066,
+"component": "nova.compute.manager",
+"level": "INFO"
+},
+{
+"id": "E39",
+"template": "<*> \"DELETE <*> <*>\" status: <*> len: <*> time: <*>",
+"occurrences": 2064,
+"component": "nova.osapi_compute.wsgi.server",
+"level": "INFO"
+},
+{
+"id": "E34",
+"template": "[instance: <*>] Terminating instance",
+"occurrences": 2064,
+"component": "nova.compute.manager",
+"level": "INFO"
+},
+{
+"id": "E17",
+"template": "[instance: <*>] Instance destroyed successfully.",
+"occurrences": 2064,
+"component": "nova.virt.libvirt.driver",
+"level": "INFO"
+},
+{
+"id": "E30",
+"template": "[instance: <*>] Deleting instance files <*>",
+"occurrences": 2064,
+"component": "nova.virt.libvirt.driver",
+"level": "INFO"
+},
+{
+"id": "E35",
+"template": "[instance: <*>] Deletion of <*> complete",
+"occurrences": 2064,
+"component": "nova.virt.libvirt.driver",
+"level": "INFO"
+},
+{
+"id": "E8",
+"template": "[instance: <*>] Took <*> seconds to destroy the instance on the hypervisor.",
+"occurrences": 2064,
+"component": "nova.compute.manager",
+"level": "INFO"
+},
+{
+"id": "E12",
+"template": "[instance: <*>] Took <*> seconds to deallocate network for instance.",
+"occurrences": 2065,
+"component": "nova.compute.manager",
+"level": "INFO"
+},
+{
+"id": "E15",
+"template": "HTTP exception thrown: No instances found for any event",
+"occurrences": 2064,
+"component": "nova.api.openstack.wsgi",
+"level": "INFO"
+},
+{
+"id": "E46",
+"template": "Unknown base file: <*>",
+"occurrences": 3059,
+"component": "nova.virt.libvirt.imagecache",
+"level": "WARNING"
+},
+{
+"id": "E43",
+"template": "Removable base files: <*>",
+"occurrences": 3059,
+"component": "nova.virt.libvirt.imagecache",
+"level": "INFO"
+},
+{
+"id": "E40",
+"template": "Removing base or swap file: <*>",
+"occurrences": 2064,
+"component": "nova.virt.libvirt.imagecache",
+"level": "INFO"
+},
+{
+"id": "E13",
+"template": "[instance: <*>] Attempting claim: memory <*> MB, disk <*> GB, vcpus <*> CPU",
+"occurrences": 2065,
+"component": "nova.compute.claims",
+"level": "INFO"
+},
+{
+"id": "E28",
+"template": "[instance: <*>] Total memory: <*> MB, used: <*> MB",
+"occurrences": 2065,
+"component": "nova.compute.claims",
+"level": "INFO"
+},
+{
+"id": "E29",
+"template": "[instance: <*>] memory limit: <*> MB, free: <*> MB",
+"occurrences": 2065,
+"component": "nova.compute.claims",
+"level": "INFO"
+},
+{
+"id": "E33",
+"template": "[instance: <*>] Total disk: <*> GB, used: <*> GB",
+"occurrences": 2065,
+"component": "nova.compute.claims",
+"level": "INFO"
+},
+{
+"id": "E11",
+"template": "[instance: <*>] disk limit not specified, defaulting to unlimited",
+"occurrences": 2065,
+"component": "nova.compute.claims",
+"level": "INFO"
+},
+{
+"id": "E27",
+"template": "[instance: <*>] Total vcpu: <*> VCPU, used: <*> VCPU",
+"occurrences": 2065,
+"component": "nova.compute.claims",
+"level": "INFO"
+},
+{
+"id": "E10",
+"template": "[instance: <*>] vcpu limit not specified, defaulting to unlimited",
+"occurrences": 2065,
+"component": "nova.compute.claims",
+"level": "INFO"
+},
+{
+"id": "E36",
+"template": "[instance: <*>] Claim successful",
+"occurrences": 2065,
+"component": "nova.compute.claims",
+"level": "INFO"
+},
+{
+"id": "E16",
+"template": "Auditing locally available compute resources for node <*>",
+"occurrences": 1739,
+"component": "nova.compute.resource_tracker",
+"level": "INFO"
+},
+{
+"id": "E20",
+"template": "Total usable vcpus: <*>, total allocated vcpus: <*>",
+"occurrences": 1739,
+"component": "nova.compute.resource_tracker",
+"level": "INFO"
+},
+{
+"id": "E2",
+"template": "Final resource view: name=<*> phys_ram=<*> used_ram=<*> phys_disk=<*> used_disk=<*> total_vcpus=<*> used_vcpus=<*> pci_stats=<*>",
+"occurrences": 1739,
+"component": "nova.compute.resource_tracker",
+"level": "INFO"
+},
+{
+"id": "E32",
+"template": "Compute_service record updated for <*>",
+"occurrences": 1739,
+"component": "nova.compute.resource_tracker",
+"level": "INFO"
+},
+{
+"id": "E19",
+"template": "Successfully synced instances from host '<*>'.",
+"occurrences": 502,
+"component": "nova.scheduler.host_manager",
+"level": "INFO"
+},
+{
+"id": "E7",
+"template": "The instance sync for host <*> did not match. Re-created its InstanceList.",
+"occurrences": 364,
+"component": "nova.scheduler.host_manager",
+"level": "INFO"
+},
+{
+"id": "E31",
+"template": "Base or swap file too young to remove: <*>",
+"occurrences": 995,
+"component": "nova.virt.libvirt.imagecache",
+"level": "INFO"
+},
+{
+"id": "E1",
+"template": "couldn't obtain the vcpu count from domain id: <*> exception: Requested operation is not valid: cpu affinity is not supported",
+"occurrences": 12,
+"component": "nova.virt.libvirt.driver",
+"level": "WARNING"
+},
+{
+"id": "E14",
+"template": "Running instance usage audit for host <*> from <*> to <*>. <*> instances.",
+"occurrences": 30,
+"component": "nova.compute.manager",
+"level": "INFO"
+},
+{
+"id": "E48",
+"template": "Error during <*>",
+"occurrences": 8,
+"component": "oslo_service.periodic_task",
+"level": "ERROR"
+},
+{
+"id": "E24",
+"template": "Bad response code while validating token: <*>",
+"occurrences": 2,
+"component": "keystonemiddleware.auth_token",
+"level": "ERROR"
+},
+{
+"id": "E45",
+"template": "Identity response: <*>",
+"occurrences": 2,
+"component": "keystonemiddleware.auth_token",
+"level": "WARNING"
+},
+{
+"id": "E6",
+"template": "Unable to validate token: Failed to fetch token data from identity server",
+"occurrences": 2,
+"component": "keystonemiddleware.auth_token",
+"level": "CRITICAL"
+}
+]
+}

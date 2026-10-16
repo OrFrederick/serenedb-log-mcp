@@ -1,0 +1,326 @@
+# Hand-labelled query set for issue #7 (retrieval over Loghub-2.0 templates).
+# Labeller: experimenter Claude (r7e). The same agent wrote queries, labels AND the synonym
+# dictionary -> labelling bias is real; see `bias:` notes and findings.md.
+# type: kw     = shares content words with the relevant templates (after stemming)
+#       para   = paraphrase, (nearly) no content-word overlap with the relevant templates
+#       mixed  = some overlap, but the key concept is paraphrased
+# relevant: Loghub-2.0 EventIds judged relevant by reading every template of the Dataset
+# (dumped in r7e_templates.json). Relevance = "an Engineer asking this would want to see Log Entries
+# of this template". Register-dump continuation lines (e.g. "tlb error.......<*>") are judged
+# relevant only when their text itself names the asked-about concept.
+bias:
+  - Labeller saw all templates before writing queries, so queries tend to target concepts present in the data.
+  - Paraphrase queries were written deliberately to avoid template words; real Engineers would mix both.
+  - The synonym dictionary (method b) was written by the same agent after reading the templates -> it is an optimistic upper bound for hand-written synonyms.
+  - Large relevant sets (e.g. memory, network) cap standard recall@10; we also report capped recall = hits/min(k,|rel|).
+BGL:
+  - id: b01
+    text: memory problems
+    type: mixed
+    relevant: [E94, E191, E95, E86, E17, E166, E189, E8, E42, E68, E92, E314, E13, E218, E112, E131, E214, E143, E216, E164, E126, E106, E117, E102, E110, E115, E116, E113, E108, E122, E275, E109, E83, E82, E90, E97, E295]
+    notes: DDR main memory, L3/EDRAM cache-memory and memory-manager errors. Excludes CPU L1 cache parity (separate query).
+  - id: b02
+    text: RAM errors
+    type: para
+    relevant: [E94, E191, E95, E86, E17, E166, E189, E8, E42, E68, E92, E314, E13, E126, E275]
+    notes: DDR only. No template contains "RAM". E314 "CE sym" = correctable-error symbol of DDR ECC.
+  - id: b03
+    text: ddr errors detected and corrected
+    type: kw
+    relevant: [E94, E191, E68, E92]
+  - id: b04
+    text: network issues
+    type: mixed
+    relevant: [E70, E63, E56, E27, E119, E79, E19, E81, E20, E99, E59, E40, E34, E78, E43, E33, E67, E65, E209, E89, E125, E58, E18, E49, E53, E312, E21, E36, E29, E37, E55, E134, E73, E61, E57, E60, E307]
+    notes: torus/tree interconnect, ethernet, CioStream/ido socket links, link-card port training. Only E58/E18 literally say "network".
+  - id: b05
+    text: torus link errors
+    type: kw
+    relevant: [E70, E63, E56, E27, E119, E79, E19, E40, E34, E78, E43, E33, E67, E65, E209, E89, E125]
+  - id: b06
+    text: interconnect fabric failure
+    type: para
+    relevant: [E65, E209, E125, E89, E18, E58, E49, E73, E61, E57, E60, E100, E52]
+    notes: uncorrectable / failed torus-tree-linkcard events and cabling faults; corrected-error counters excluded.
+  - id: b07
+    text: filesystem mount failures
+    type: kw
+    relevant: [E257, E211, E276, E165, E136]
+    notes: E136 "LOGIN chdir failed Input/output error" = home-dir on FS unusable.
+  - id: b08
+    text: storage cluster could not be attached
+    type: para
+    relevant: [E257, E211, E276, E165]
+  - id: b09
+    text: node crashed
+    type: para
+    relevant: [E315, E264, E258, E306, E286, E97, E129, E51, E89, E298]
+    notes: kernel panic, rts panic/terminated, machine-check interrupts, microloader assertion.
+  - id: b10
+    text: application crashed and dumped core
+    type: mixed
+    relevant: [E310, E228, E91, E147]
+  - id: b11
+    text: program could not be loaded
+    type: kw
+    relevant: [E35, E50, E48, E201]
+  - id: b12
+    text: job executable missing or in the wrong format
+    type: para
+    relevant: [E35, E50, E48, E201]
+  - id: b13
+    text: permission denied
+    type: kw
+    relevant: [E159, E88, E48]
+  - id: b14
+    text: user lacks access rights to start the job
+    type: para
+    relevant: [E159, E88, E48]
+  - id: b15
+    text: power supply problems
+    type: kw
+    relevant: [E304, E66, E54, E225, E221, E223, E244]
+    notes: E244 "Link PGOOD error" = power-good.
+  - id: b16
+    text: overheating
+    type: para
+    relevant: [E254, E120]
+  - id: b17
+    text: temperature over limit
+    type: kw
+    relevant: [E254, E120]
+  - id: b18
+    text: cache parity errors
+    type: kw
+    relevant: [E208, E238, E249, E255, E75, E72, E132, E144, E90, E303]
+  - id: b19
+    text: CPU instruction cache corruption
+    type: mixed
+    relevant: [E208, E238]
+  - id: b20
+    text: illegal instruction program exceptions
+    type: kw
+    relevant: [E140, E135, E138, E142, E139, E156, E137, E170, E308]
+  - id: b21
+    text: misaligned memory access by the application
+    type: para
+    relevant: [E237, E240, E12]
+    notes: templates say "alignment exceptions"; misalign vs align overlaps only partially after stemming.
+  - id: b22
+    text: communication with the I/O node lost
+    type: para
+    relevant: [E21, E36, E29, E37, E55, E134, E307]
+  - id: b23
+    text: connection timed out
+    type: kw
+    relevant: [E37, E307]
+  - id: b24
+    text: hardware maintenance service action
+    type: kw
+    relevant: [E46, E30, E252, E31, E39, E101, E66]
+  - id: b25
+    text: node card not fully functional
+    type: kw
+    relevant: [E259, E261, E260, E232, E167, E297, E253, E121, E45, E85]
+    notes: node/link card health and VPD/ecid problems
+  - id: b26
+    text: control system daemon restarted
+    type: para
+    relevant: [E280, E98, E32, E22, E15, E14, E272, E245, E224, E226]
+    notes: ciodb/idoproxydb/BGLMaster/mmcs_db_server/SystemController start/exit lines.
+  - id: b27
+    text: TLB miss interrupt
+    type: kw
+    relevant: [E285, E227]
+  - id: b28
+    text: machine check
+    type: kw
+    relevant: [E286, E97, E129, E89, E51, E265, E239, E130, E213, E231, E275, E243]
+  - id: b29
+    text: debugger died
+    type: kw
+    relevant: [E80]
+  - id: b30
+    text: faulty cabling between boards
+    type: para
+    relevant: [E100, E52]
+OpenStack:
+  - id: o01
+    text: instance took too long to start
+    type: mixed
+    relevant: [E9, E21]
+    notes: '"Took <*> seconds to spawn/build" - only "instance" and "took" overlap'
+  - id: o02
+    text: how many seconds to build the instance
+    type: kw
+    relevant: [E21, E9]
+  - id: o03
+    text: VM boot sequence
+    type: para
+    relevant: [E37, E23, E26, E22, E18, E9, E21, E4]
+  - id: o04
+    text: authentication errors
+    type: para
+    relevant: [E24, E45, E6]
+    notes: keystonemiddleware.auth_token; template texts say token/identity, never "authentication"
+  - id: o05
+    text: token validation failed
+    type: kw
+    relevant: [E6, E24]
+  - id: o06
+    text: identity service unreachable
+    type: mixed
+    relevant: [E6, E45, E24]
+  - id: o07
+    text: disk usage of the compute host
+    type: kw
+    relevant: [E33, E11, E2, E13]
+  - id: o08
+    text: RAM capacity on the hypervisor
+    type: para
+    relevant: [E28, E29, E13, E2]
+  - id: o09
+    text: resource claim for a new instance
+    type: kw
+    relevant: [E13, E28, E29, E33, E11, E27, E10, E36]
+  - id: o10
+    text: scheduler capacity check before placement
+    type: para
+    relevant: [E13, E28, E29, E33, E11, E27, E10, E36]
+  - id: o11
+    text: instance deletion
+    type: kw
+    relevant: [E34, E17, E30, E35, E8, E39, E12]
+  - id: o12
+    text: tear down a virtual machine
+    type: para
+    relevant: [E34, E17, E30, E35, E8, E39]
+  - id: o13
+    text: network cleanup time when removing a VM
+    type: mixed
+    relevant: [E12]
+  - id: o14
+    text: REST API request latency
+    type: para
+    relevant: [E42, E41, E39]
+  - id: o15
+    text: HTTP exception
+    type: kw
+    relevant: [E15]
+  - id: o16
+    text: image cache cleanup
+    type: kw
+    relevant: [E44, E5, E47, E46, E43, E40, E31]
+  - id: o17
+    text: unused images deleted from local storage
+    type: para
+    relevant: [E43, E40, E31, E46]
+  - id: o18
+    text: power state mismatch between database and hypervisor
+    type: kw
+    relevant: [E3, E4]
+  - id: o19
+    text: instance lifecycle events
+    type: kw
+    relevant: [E25, E23, E26, E22]
+  - id: o20
+    text: VM was paused or stopped
+    type: kw
+    relevant: [E26, E25]
+  - id: o21
+    text: CPU pinning not supported
+    type: para
+    relevant: [E1]
+  - id: o22
+    text: periodic task failure
+    type: kw
+    relevant: [E48]
+  - id: o23
+    text: errors and warnings
+    type: mixed
+    relevant: [E48, E24, E6, E1, E15, E46, E3, E45]
+    notes: by meaning; level is not part of the template text, so this is hard for every text method
+  - id: o24
+    text: host inventory out of sync
+    type: para
+    relevant: [E19, E7]
+  - id: o25
+    text: resource tracker audit
+    type: kw
+    relevant: [E16, E20, E2, E32]
+  - id: o26
+    text: usage accounting for billing
+    type: para
+    relevant: [E14]
+  - id: o27
+    text: neutron notifies nova about port plugged
+    type: para
+    relevant: [E38, E15]
+# HOLDOUT: written AFTER the synonym dictionary, models and RRF settings were frozen and the main
+# results were seen. Nothing was tuned on these. Same labeller -> same bias about template knowledge.
+holdout_BGL:
+  - id: hb1
+    text: bit flips in main memory
+    type: para
+    relevant: [E94, E191, E95, E86, E17, E166, E189, E8, E42, E68, E92, E314, E13, E126, E275]
+  - id: hb2
+    text: lost packets on the interconnect
+    type: para
+    relevant: [E63, E34, E27, E18, E58, E70, E40, E119, E67, E65, E209]
+  - id: hb3
+    text: home directory not reachable
+    type: para
+    relevant: [E118, E136, E159]
+  - id: hb4
+    text: segfault in user program
+    type: para
+    relevant: [E147, E310, E228, E296, E285]
+  - id: hb5
+    text: cooling failure
+    type: para
+    relevant: [E254]
+  - id: hb6
+    text: kernel died unexpectedly
+    type: mixed
+    relevant: [E315, E264, E258, E306, E298]
+  - id: hb7
+    text: voltage regulator fault
+    type: para
+    relevant: [E54, E244, E66, E304, E221, E223, E225]
+  - id: hb8
+    text: torus retransmission
+    type: kw
+    relevant: [E63, E34, E27]
+holdout_OpenStack:
+  - id: ho1
+    text: slow instance creation
+    type: mixed
+    relevant: [E9, E21]
+  - id: ho2
+    text: keystone token rejected
+    type: mixed
+    relevant: [E24, E6, E45]
+  - id: ho3
+    text: compute node running out of RAM
+    type: para
+    relevant: [E29, E28, E13, E2]
+  - id: ho4
+    text: VM shut down
+    type: para
+    relevant: [E25, E34, E17]
+  - id: ho5
+    text: stale cached disk images
+    type: para
+    relevant: [E46, E43, E31, E40]
+  - id: ho6
+    text: list servers API calls
+    type: mixed
+    relevant: [E42]
+  - id: ho7
+    text: hypervisor reports a different number of VMs than the database
+    type: mixed
+    relevant: [E3]
+  - id: ho8
+    text: claim successful
+    type: kw
+    relevant: [E36]

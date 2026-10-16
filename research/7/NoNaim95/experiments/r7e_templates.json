@@ -1,0 +1,5523 @@
+[
+{
+"dataset": "BGL",
+"event_id": "E208",
+"template": "instruction cache parity error corrected",
+"occurrences": 105924,
+"lines": 105924,
+"component": "KERNEL",
+"components": {
+"KERNEL": 105924
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "instruction cache parity error corrected"
+},
+{
+"dataset": "BGL",
+"event_id": "E93",
+"template": "MidplaneSwitchController performing bit sparing on <*> bit <*>",
+"occurrences": 964,
+"lines": 964,
+"component": "LINKCARD",
+"components": {
+"LINKCARD": 964
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "MidplaneSwitchController performing bit sparing on R27-M1-L3-U18-C bit 3"
+},
+{
+"dataset": "BGL",
+"event_id": "E310",
+"template": "generating core.<*>",
+"occurrences": 1706751,
+"lines": 1706751,
+"component": "KERNEL",
+"components": {
+"KERNEL": 1706751
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "generating core.304"
+},
+{
+"dataset": "BGL",
+"event_id": "E94",
+"template": "<*> ddr errors(s) detected and corrected on rank <*>, symbol <*> bit <*>",
+"occurrences": 33939,
+"lines": 33939,
+"component": "KERNEL",
+"components": {
+"KERNEL": 33939
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "1 ddr errors(s) detected and corrected on rank 0, symbol 0, bit 3"
+},
+{
+"dataset": "BGL",
+"event_id": "E218",
+"template": "<*> L3 <*> error(s) (dcr <*>) detected and corrected",
+"occurrences": 4978,
+"lines": 4978,
+"component": "KERNEL",
+"components": {
+"KERNEL": 4978
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "3450051 L3 EDRAM error(s) (dcr 0x0157) detected and corrected"
+},
+{
+"dataset": "BGL",
+"event_id": "E314",
+"template": "CE sym <*>, at <*>, mask <*>",
+"occurrences": 201206,
+"lines": 201206,
+"component": "KERNEL",
+"components": {
+"KERNEL": 201206
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "CE sym 0, at 0x0b8580c0, mask 0x10"
+},
+{
+"dataset": "BGL",
+"event_id": "E191",
+"template": "total of <*> ddr error(s) detected and corrected",
+"occurrences": 28485,
+"lines": 28485,
+"component": "KERNEL",
+"components": {
+"KERNEL": 28485
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "total of 1 ddr error(s) detected and corrected"
+},
+{
+"dataset": "BGL",
+"event_id": "E95",
+"template": "ddr: activating redundant bit steering: rank=<*> symbol=<*>",
+"occurrences": 1314,
+"lines": 1314,
+"component": "KERNEL",
+"components": {
+"KERNEL": 1314
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "ddr: activating redundant bit steering: rank=0 symbol=0"
+},
+{
+"dataset": "BGL",
+"event_id": "E86",
+"template": "ddr: excessive soft failures, consider replacing the card",
+"occurrences": 41,
+"lines": 41,
+"component": "KERNEL",
+"components": {
+"KERNEL": 41
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "ddr: excessive soft failures, consider replacing the card"
+},
+{
+"dataset": "BGL",
+"event_id": "E35",
+"template": "ciod: Error loading <*>: invalid or missing program image, No such file or directory",
+"occurrences": 47504,
+"lines": 47504,
+"component": "APP",
+"components": {
+"APP": 47504
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "ciod: Error loading /p/gb2/stella/RAPTOR/65641/raptor: invalid or missing program image, No such file or directory"
+},
+{
+"dataset": "BGL",
+"event_id": "E237",
+"template": "<*> double-hummer alignment exceptions",
+"occurrences": 295764,
+"lines": 295764,
+"component": "KERNEL",
+"components": {
+"KERNEL": 295764
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "1347195 double-hummer alignment exceptions"
+},
+{
+"dataset": "BGL",
+"event_id": "E99",
+"template": "<*> tree receiver <*> in re-synch state event(s) (dcr <*>) detected",
+"occurrences": 7847,
+"lines": 7847,
+"component": "KERNEL",
+"components": {
+"KERNEL": 7847
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "1 tree receiver 2 in re-synch state event(s) (dcr 0x019a) detected"
+},
+{
+"dataset": "BGL",
+"event_id": "E98",
+"template": "idoproxydb has been started: $Name: <*> $ Input parameters: <*>",
+"occurrences": 114,
+"lines": 114,
+"component": "MMCS",
+"components": {
+"MMCS": 114
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "idoproxydb has been started: $Name: DRV142_2005 $ Input parameters: -enableflush -loguserinfo db.properties BlueGene1"
+},
+{
+"dataset": "BGL",
+"event_id": "E280",
+"template": "ciodb has been restarted.",
+"occurrences": 129,
+"lines": 129,
+"component": "MMCS",
+"components": {
+"MMCS": 129
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "ciodb has been restarted."
+},
+{
+"dataset": "BGL",
+"event_id": "E118",
+"template": "ciod: LOGIN chdir(<*>) failed: No such file or directory",
+"occurrences": 43647,
+"lines": 43647,
+"component": "APP",
+"components": {
+"APP": 43647
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "ciod: LOGIN chdir(/p/gb2/draeger/benchmark/dat32k_060205) failed: No such file or directory"
+},
+{
+"dataset": "BGL",
+"event_id": "E285",
+"template": "data TLB error interrupt",
+"occurrences": 152734,
+"lines": 152734,
+"component": "KERNEL",
+"components": {
+"KERNEL": 152734
+},
+"level": "FATAL",
+"alert_tag": "KERNDTLB",
+"alert_frac": 1.0,
+"sample": "data TLB error interrupt"
+},
+{
+"dataset": "BGL",
+"event_id": "E301",
+"template": "instruction address: <*>",
+"occurrences": 51227,
+"lines": 51227,
+"component": "KERNEL",
+"components": {
+"KERNEL": 51227
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "instruction address: 0x0000df30"
+},
+{
+"dataset": "BGL",
+"event_id": "E286",
+"template": "machine check interrupt",
+"occurrences": 161,
+"lines": 161,
+"component": "KERNEL",
+"components": {
+"KERNEL": 161
+},
+"level": "FATAL",
+"alert_tag": "KERNMC",
+"alert_frac": 1.0,
+"sample": "machine check interrupt"
+},
+{
+"dataset": "BGL",
+"event_id": "E265",
+"template": "machine check status register: <*>",
+"occurrences": 246,
+"lines": 246,
+"component": "KERNEL",
+"components": {
+"KERNEL": 246
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "machine check status register: 0x81000000"
+},
+{
+"dataset": "BGL",
+"event_id": "E220",
+"template": "summary...........................<*>",
+"occurrences": 244,
+"lines": 244,
+"component": "KERNEL",
+"components": {
+"KERNEL": 244
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "summary...........................1"
+},
+{
+"dataset": "BGL",
+"event_id": "E234",
+"template": "instruction plb error.............<*>",
+"occurrences": 298,
+"lines": 298,
+"component": "KERNEL",
+"components": {
+"KERNEL": 298
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "instruction plb error.............0"
+},
+{
+"dataset": "BGL",
+"event_id": "E248",
+"template": "data read plb error...............<*>",
+"occurrences": 297,
+"lines": 297,
+"component": "KERNEL",
+"components": {
+"KERNEL": 297
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "data read plb error...............0"
+},
+{
+"dataset": "BGL",
+"event_id": "E246",
+"template": "data write plb error..............<*>",
+"occurrences": 296,
+"lines": 296,
+"component": "KERNEL",
+"components": {
+"KERNEL": 296
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "data write plb error..............0"
+},
+{
+"dataset": "BGL",
+"event_id": "E227",
+"template": "tlb error.........................<*>",
+"occurrences": 296,
+"lines": 296,
+"component": "KERNEL",
+"components": {
+"KERNEL": 296
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "tlb error.........................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E238",
+"template": "i-cache parity error..............<*>",
+"occurrences": 296,
+"lines": 296,
+"component": "KERNEL",
+"components": {
+"KERNEL": 296
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "i-cache parity error..............0"
+},
+{
+"dataset": "BGL",
+"event_id": "E249",
+"template": "d-cache search parity error.......<*>",
+"occurrences": 294,
+"lines": 294,
+"component": "KERNEL",
+"components": {
+"KERNEL": 294
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "d-cache search parity error.......0"
+},
+{
+"dataset": "BGL",
+"event_id": "E255",
+"template": "d-cache flush parity error.......<*>",
+"occurrences": 294,
+"lines": 294,
+"component": "KERNEL",
+"components": {
+"KERNEL": 294
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "d-cache flush parity error........1"
+},
+{
+"dataset": "BGL",
+"event_id": "E243",
+"template": "imprecise machine check...........<*>",
+"occurrences": 289,
+"lines": 289,
+"component": "KERNEL",
+"components": {
+"KERNEL": 289
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "imprecise machine check...........0"
+},
+{
+"dataset": "BGL",
+"event_id": "E294",
+"template": "machine state register: <*>",
+"occurrences": 8459,
+"lines": 8459,
+"component": "KERNEL",
+"components": {
+"KERNEL": 8459
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "machine state register: 0x0000f000"
+},
+{
+"dataset": "BGL",
+"event_id": "E235",
+"template": "wait state enable.................<*>",
+"occurrences": 6745,
+"lines": 6745,
+"component": "KERNEL",
+"components": {
+"KERNEL": 6745
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "wait state enable.................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E251",
+"template": "critical input interrupt enable...<*>",
+"occurrences": 6559,
+"lines": 6559,
+"component": "KERNEL",
+"components": {
+"KERNEL": 6559
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "critical input interrupt enable...0"
+},
+{
+"dataset": "BGL",
+"event_id": "E250",
+"template": "external input interrupt enable...<*>",
+"occurrences": 6556,
+"lines": 6556,
+"component": "KERNEL",
+"components": {
+"KERNEL": 6556
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "external input interrupt enable...1"
+},
+{
+"dataset": "BGL",
+"event_id": "E256",
+"template": "problem state (<*>=sup,<*>=usr).......<*>",
+"occurrences": 6546,
+"lines": 6546,
+"component": "KERNEL",
+"components": {
+"KERNEL": 6546
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "problem state (0=sup,1=usr).......1"
+},
+{
+"dataset": "BGL",
+"event_id": "E247",
+"template": "floating point instr. enabled.....<*>",
+"occurrences": 6541,
+"lines": 6541,
+"component": "KERNEL",
+"components": {
+"KERNEL": 6541
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "floating point instr. enabled.....1"
+},
+{
+"dataset": "BGL",
+"event_id": "E239",
+"template": "machine check enable..............<*>",
+"occurrences": 6538,
+"lines": 6538,
+"component": "KERNEL",
+"components": {
+"KERNEL": 6538
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "machine check enable..............1"
+},
+{
+"dataset": "BGL",
+"event_id": "E262",
+"template": "floating pt ex mode <*> enable......<*>",
+"occurrences": 13044,
+"lines": 13044,
+"component": "KERNEL",
+"components": {
+"KERNEL": 13044
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "floating pt ex mode 0 enable......0"
+},
+{
+"dataset": "BGL",
+"event_id": "E241",
+"template": "debug wait enable.................<*>",
+"occurrences": 6524,
+"lines": 6524,
+"component": "KERNEL",
+"components": {
+"KERNEL": 6524
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "debug wait enable.................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E236",
+"template": "debug interrupt enable............<*>",
+"occurrences": 6521,
+"lines": 6521,
+"component": "KERNEL",
+"components": {
+"KERNEL": 6521
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "debug interrupt enable............0"
+},
+{
+"dataset": "BGL",
+"event_id": "E233",
+"template": "instruction address space.........<*>",
+"occurrences": 6506,
+"lines": 6506,
+"component": "KERNEL",
+"components": {
+"KERNEL": 6506
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "instruction address space.........0"
+},
+{
+"dataset": "BGL",
+"event_id": "E242",
+"template": "data address space................<*>",
+"occurrences": 6503,
+"lines": 6503,
+"component": "KERNEL",
+"components": {
+"KERNEL": 6503
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "data address space................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E267",
+"template": "core configuration register: <*>",
+"occurrences": 6431,
+"lines": 6431,
+"component": "KERNEL",
+"components": {
+"KERNEL": 6431
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "core configuration register: 0x00002000"
+},
+{
+"dataset": "BGL",
+"event_id": "E174",
+"template": "disable store gathering..................<*>",
+"occurrences": 6495,
+"lines": 6495,
+"component": "KERNEL",
+"components": {
+"KERNEL": 6495
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "disable store gathering..................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E197",
+"template": "disable apu instruction broadcast........<*>",
+"occurrences": 2396,
+"lines": 2396,
+"component": "KERNEL",
+"components": {
+"KERNEL": 2396
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "disable apu instruction broadcast........0"
+},
+{
+"dataset": "BGL",
+"event_id": "E171",
+"template": "disable trace broadcast..................<*>",
+"occurrences": 2393,
+"lines": 2393,
+"component": "KERNEL",
+"components": {
+"KERNEL": 2393
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "disable trace broadcast..................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E203",
+"template": "guaranteed instruction cache block touch.<*>",
+"occurrences": 2390,
+"lines": 2390,
+"component": "KERNEL",
+"components": {
+"KERNEL": 2390
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "guaranteed instruction cache block touch.0"
+},
+{
+"dataset": "BGL",
+"event_id": "E205",
+"template": "guaranteed data cache block touch........<*>",
+"occurrences": 2389,
+"lines": 2389,
+"component": "KERNEL",
+"components": {
+"KERNEL": 2389
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "guaranteed data cache block touch........1"
+},
+{
+"dataset": "BGL",
+"event_id": "E183",
+"template": "force load/store alignment...............<*>",
+"occurrences": 2389,
+"lines": 2389,
+"component": "KERNEL",
+"components": {
+"KERNEL": 2389
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "force load/store alignment...............0"
+},
+{
+"dataset": "BGL",
+"event_id": "E169",
+"template": "icache prefetch depth....................<*>",
+"occurrences": 2389,
+"lines": 2389,
+"component": "KERNEL",
+"components": {
+"KERNEL": 2389
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "icache prefetch depth....................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E269",
+"template": "general purpose registers:",
+"occurrences": 2318,
+"lines": 2318,
+"component": "KERNEL",
+"components": {
+"KERNEL": 2318
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "general purpose registers:"
+},
+{
+"dataset": "BGL",
+"event_id": "E273",
+"template": "special purpose registers:",
+"occurrences": 2316,
+"lines": 2316,
+"component": "KERNEL",
+"components": {
+"KERNEL": 2316
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "special purpose registers:"
+},
+{
+"dataset": "BGL",
+"event_id": "E313",
+"template": "lr:<*> cr:<*> xer:<*> ctr:<*>",
+"occurrences": 2316,
+"lines": 2316,
+"component": "KERNEL",
+"components": {
+"KERNEL": 2316
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "lr:003625f0 cr:20000000 xer:00000002 ctr:0037f084"
+},
+{
+"dataset": "BGL",
+"event_id": "E264",
+"template": "rts panic! - stopping execution",
+"occurrences": 3983,
+"lines": 3983,
+"component": "KERNEL",
+"components": {
+"KERNEL": 3983
+},
+"level": "FATAL",
+"alert_tag": "KERNRTSP",
+"alert_frac": 1.0,
+"sample": "rts panic! - stopping execution"
+},
+{
+"dataset": "BGL",
+"event_id": "E70",
+"template": "<*> torus receiver <*> input pipe error(s) (dcr <*>) detected and corrected",
+"occurrences": 10487,
+"lines": 10487,
+"component": "KERNEL",
+"components": {
+"KERNEL": 10487
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "17 torus receiver x+ input pipe error(s) (dcr 0x02ec) detected and corrected"
+},
+{
+"dataset": "BGL",
+"event_id": "E306",
+"template": "rts internal error",
+"occurrences": 2187,
+"lines": 2187,
+"component": "KERNEL",
+"components": {
+"KERNEL": 2187
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "rts internal error"
+},
+{
+"dataset": "BGL",
+"event_id": "E279",
+"template": "ciod: Message code <*> is not <*> or <*>",
+"occurrences": 2278,
+"lines": 2278,
+"component": "KERNEL",
+"components": {
+"KERNEL": 2278
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "ciod: Message code 2 is not 3 or 4294967295"
+},
+{
+"dataset": "BGL",
+"event_id": "E80",
+"template": "ciod: pollControlDescriptors: Detected the debugger died.",
+"occurrences": 6443,
+"lines": 6443,
+"component": "KERNEL",
+"components": {
+"KERNEL": 6443
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "ciod: pollControlDescriptors: Detected the debugger died."
+},
+{
+"dataset": "BGL",
+"event_id": "E104",
+"template": "ciod: for node <*> read continuation request but ioState is <*>",
+"occurrences": 395,
+"lines": 395,
+"component": "KERNEL",
+"components": {
+"KERNEL": 395
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "ciod: for node 42, read continuation request but ioState is 0"
+},
+{
+"dataset": "BGL",
+"event_id": "E145",
+"template": "ciod: cpu <*> at treeaddr <*> sent unrecognized message <*>",
+"occurrences": 2569,
+"lines": 2569,
+"component": "KERNEL",
+"components": {
+"KERNEL": 2569
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "ciod: cpu 0 at treeaddr 926 sent unrecognized message 0xffffffff"
+},
+{
+"dataset": "BGL",
+"event_id": "E159",
+"template": "ciod: LOGIN chdir(<*>) failed: Permission denied",
+"occurrences": 440,
+"lines": 440,
+"component": "APP",
+"components": {
+"APP": 440
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "ciod: LOGIN chdir(/home/bertsch2/src/bgl_hello) failed: Permission denied"
+},
+{
+"dataset": "BGL",
+"event_id": "E97",
+"template": "machine check interrupt (bit=<*>): L3 major internal error",
+"occurrences": 57,
+"lines": 57,
+"component": "KERNEL",
+"components": {
+"KERNEL": 57
+},
+"level": "FATAL",
+"alert_tag": "KERNMC",
+"alert_frac": 1.0,
+"sample": "machine check interrupt (bit=0x06): L3 major internal error"
+},
+{
+"dataset": "BGL",
+"event_id": "E274",
+"template": "L3 global control register: <*>",
+"occurrences": 48,
+"lines": 48,
+"component": "KERNEL",
+"components": {
+"KERNEL": 48
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "L3 global control register: 0x001249f0"
+},
+{
+"dataset": "BGL",
+"event_id": "E158",
+"template": "start initialization.....................<*>",
+"occurrences": 48,
+"lines": 48,
+"component": "KERNEL",
+"components": {
+"KERNEL": 48
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "start initialization.....................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E161",
+"template": "start retagging..........................<*>",
+"occurrences": 48,
+"lines": 48,
+"component": "KERNEL",
+"components": {
+"KERNEL": 48
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "start retagging..........................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E154",
+"template": "start flushing...........................<*>",
+"occurrences": 48,
+"lines": 48,
+"component": "KERNEL",
+"components": {
+"KERNEL": 48
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "start flushing...........................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E160",
+"template": "start prefetching........................<*>",
+"occurrences": 48,
+"lines": 48,
+"component": "KERNEL",
+"components": {
+"KERNEL": 48
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "start prefetching........................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E177",
+"template": "disable speculative access...............<*>",
+"occurrences": 48,
+"lines": 48,
+"component": "KERNEL",
+"components": {
+"KERNEL": 48
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "disable speculative access...............0"
+},
+{
+"dataset": "BGL",
+"event_id": "E215",
+"template": "close EDRAM pages as soon as possible....<*>",
+"occurrences": 48,
+"lines": 48,
+"component": "KERNEL",
+"components": {
+"KERNEL": 48
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "close EDRAM pages as soon as possible....0"
+},
+{
+"dataset": "BGL",
+"event_id": "E200",
+"template": "size of scratchpad portion of L3.........<*> (<*>)",
+"occurrences": 48,
+"lines": 48,
+"component": "KERNEL",
+"components": {
+"KERNEL": 48
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "size of scratchpad portion of L3.........0 (0M)"
+},
+{
+"dataset": "BGL",
+"event_id": "E210",
+"template": "disable all access to cache directory....<*>",
+"occurrences": 48,
+"lines": 48,
+"component": "KERNEL",
+"components": {
+"KERNEL": 48
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "disable all access to cache directory....0"
+},
+{
+"dataset": "BGL",
+"event_id": "E198",
+"template": "write buffer commit threshold............<*>",
+"occurrences": 48,
+"lines": 48,
+"component": "KERNEL",
+"components": {
+"KERNEL": 48
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "write buffer commit threshold............2"
+},
+{
+"dataset": "BGL",
+"event_id": "E199",
+"template": "size of DDR we are caching...............<*> (<*>)",
+"occurrences": 48,
+"lines": 48,
+"component": "KERNEL",
+"components": {
+"KERNEL": 48
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "size of DDR we are caching...............1 (512M)"
+},
+{
+"dataset": "BGL",
+"event_id": "E212",
+"template": "prefetch depth for core <*>................<*>",
+"occurrences": 96,
+"lines": 96,
+"component": "KERNEL",
+"components": {
+"KERNEL": 96
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "prefetch depth for core 0................1"
+},
+{
+"dataset": "BGL",
+"event_id": "E202",
+"template": "max number of outstanding prefetches.....<*>",
+"occurrences": 48,
+"lines": 48,
+"component": "KERNEL",
+"components": {
+"KERNEL": 48
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "max number of outstanding prefetches.....7"
+},
+{
+"dataset": "BGL",
+"event_id": "E193",
+"template": "turn on hidden refreshes.................<*>",
+"occurrences": 48,
+"lines": 48,
+"component": "KERNEL",
+"components": {
+"KERNEL": 48
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "turn on hidden refreshes.................1"
+},
+{
+"dataset": "BGL",
+"event_id": "E217",
+"template": "disable write lines <*>..................<*>",
+"occurrences": 48,
+"lines": 48,
+"component": "KERNEL",
+"components": {
+"KERNEL": 48
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "disable write lines 2:4..................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E293",
+"template": "L3 ecc control register: <*>",
+"occurrences": 48,
+"lines": 48,
+"component": "KERNEL",
+"components": {
+"KERNEL": 48
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "L3 ecc control register: 00000000"
+},
+{
+"dataset": "BGL",
+"event_id": "E114",
+"template": "disable flagging of DDR UE's as major internal error.<*>",
+"occurrences": 47,
+"lines": 47,
+"component": "KERNEL",
+"components": {
+"KERNEL": 47
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "disable flagging of DDR UE's as major internal error.0"
+},
+{
+"dataset": "BGL",
+"event_id": "E300",
+"template": "L3 ecc status register: <*>",
+"occurrences": 47,
+"lines": 47,
+"component": "KERNEL",
+"components": {
+"KERNEL": 47
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "L3 ecc status register: 00200000"
+},
+{
+"dataset": "BGL",
+"event_id": "E214",
+"template": "correctable error detected in directory <*>",
+"occurrences": 94,
+"lines": 94,
+"component": "KERNEL",
+"components": {
+"KERNEL": 94
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "correctable error detected in directory 0......0"
+},
+{
+"dataset": "BGL",
+"event_id": "E143",
+"template": "uncorrectable error detected in directory <*>....<*>",
+"occurrences": 94,
+"lines": 94,
+"component": "KERNEL",
+"components": {
+"KERNEL": 94
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "uncorrectable error detected in directory 0....0"
+},
+{
+"dataset": "BGL",
+"event_id": "E216",
+"template": "correctable error detected in EDRAM bank <*>",
+"occurrences": 94,
+"lines": 94,
+"component": "KERNEL",
+"components": {
+"KERNEL": 94
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "correctable error detected in EDRAM bank 0.....0"
+},
+{
+"dataset": "BGL",
+"event_id": "E164",
+"template": "uncorrectable error detected in EDRAM bank <*>...<*>",
+"occurrences": 94,
+"lines": 94,
+"component": "KERNEL",
+"components": {
+"KERNEL": 94
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "uncorrectable error detected in EDRAM bank 0...0"
+},
+{
+"dataset": "BGL",
+"event_id": "E132",
+"template": "parity error in bank <*>.........................<*>",
+"occurrences": 94,
+"lines": 94,
+"component": "KERNEL",
+"components": {
+"KERNEL": 94
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "parity error in bank 0.........................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E126",
+"template": "uncorrectable error detected in external DDR...<*>",
+"occurrences": 47,
+"lines": 47,
+"component": "KERNEL",
+"components": {
+"KERNEL": 47
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "uncorrectable error detected in external DDR...1"
+},
+{
+"dataset": "BGL",
+"event_id": "E144",
+"template": "parity error in read queue <*>...................<*>",
+"occurrences": 94,
+"lines": 94,
+"component": "KERNEL",
+"components": {
+"KERNEL": 94
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "parity error in read queue 0...................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E83",
+"template": "number of correctable errors detected in L3 directories...<*>",
+"occurrences": 47,
+"lines": 47,
+"component": "KERNEL",
+"components": {
+"KERNEL": 47
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "number of correctable errors detected in L3 directories...0"
+},
+{
+"dataset": "BGL",
+"event_id": "E292",
+"template": "interrupt threshold...<*>",
+"occurrences": 94,
+"lines": 94,
+"component": "KERNEL",
+"components": {
+"KERNEL": 94
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "interrupt threshold...0"
+},
+{
+"dataset": "BGL",
+"event_id": "E82",
+"template": "number of correctable errors detected in L3 EDRAMs........<*>",
+"occurrences": 47,
+"lines": 47,
+"component": "KERNEL",
+"components": {
+"KERNEL": 47
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "number of correctable errors detected in L3 EDRAMs........0"
+},
+{
+"dataset": "BGL",
+"event_id": "E90",
+"template": "number of lines with parity errors written to L3 EDRAMs...<*>",
+"occurrences": 47,
+"lines": 47,
+"component": "KERNEL",
+"components": {
+"KERNEL": 47
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "number of lines with parity errors written to L3 EDRAMs...0"
+},
+{
+"dataset": "BGL",
+"event_id": "E275",
+"template": "DDR machine check register: <*> <*>",
+"occurrences": 47,
+"lines": 47,
+"component": "KERNEL",
+"components": {
+"KERNEL": 47
+},
+"level": "FATAL",
+"alert_tag": "KERNMC",
+"alert_frac": 1.0,
+"sample": "DDR machine check register: 0x00000000 0x00010000"
+},
+{
+"dataset": "BGL",
+"event_id": "E109",
+"template": "memory and bus summary...........................<*>",
+"occurrences": 47,
+"lines": 47,
+"component": "KERNEL",
+"components": {
+"KERNEL": 47
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "memory and bus summary...........................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E105",
+"template": "command manager unit summary.....................<*>",
+"occurrences": 47,
+"lines": 47,
+"component": "KERNEL",
+"components": {
+"KERNEL": 47
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "command manager unit summary.....................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E106",
+"template": "memory manager uncorrectable error...............<*>",
+"occurrences": 47,
+"lines": 47,
+"component": "KERNEL",
+"components": {
+"KERNEL": 47
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "memory manager uncorrectable error...............1"
+},
+{
+"dataset": "BGL",
+"event_id": "E107",
+"template": "memory manager strobe gate.......................<*>",
+"occurrences": 47,
+"lines": 47,
+"component": "KERNEL",
+"components": {
+"KERNEL": 47
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "memory manager strobe gate.......................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E117",
+"template": "memory manager address parity error..............<*>",
+"occurrences": 47,
+"lines": 47,
+"component": "KERNEL",
+"components": {
+"KERNEL": 47
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "memory manager address parity error..............0"
+},
+{
+"dataset": "BGL",
+"event_id": "E102",
+"template": "memory manager miscompare........................<*>",
+"occurrences": 47,
+"lines": 47,
+"component": "KERNEL",
+"components": {
+"KERNEL": 47
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "memory manager miscompare........................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E110",
+"template": "memory manager address error.....................<*>",
+"occurrences": 47,
+"lines": 47,
+"component": "KERNEL",
+"components": {
+"KERNEL": 47
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "memory manager address error.....................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E115",
+"template": "memory manager store buffer parity...............<*>",
+"occurrences": 47,
+"lines": 47,
+"component": "KERNEL",
+"components": {
+"KERNEL": 47
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "memory manager store buffer parity...............0"
+},
+{
+"dataset": "BGL",
+"event_id": "E116",
+"template": "memory manager RMW buffer parity.................<*>",
+"occurrences": 47,
+"lines": 47,
+"component": "KERNEL",
+"components": {
+"KERNEL": 47
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "memory manager RMW buffer parity.................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E113",
+"template": "memory manager refresh counter timeout...........<*>",
+"occurrences": 47,
+"lines": 47,
+"component": "KERNEL",
+"components": {
+"KERNEL": 47
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "memory manager refresh counter timeout...........0"
+},
+{
+"dataset": "BGL",
+"event_id": "E108",
+"template": "memory manager refresh contention................<*>",
+"occurrences": 47,
+"lines": 47,
+"component": "KERNEL",
+"components": {
+"KERNEL": 47
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "memory manager refresh contention................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E96",
+"template": "state machine....................................<*>",
+"occurrences": 47,
+"lines": 47,
+"component": "KERNEL",
+"components": {
+"KERNEL": 47
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "state machine....................................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E122",
+"template": "memory manager / command manager address parity..<*>",
+"occurrences": 47,
+"lines": 47,
+"component": "KERNEL",
+"components": {
+"KERNEL": 47
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "memory manager / command manager address parity..0"
+},
+{
+"dataset": "BGL",
+"event_id": "E103",
+"template": "regctl scancom interface.........................<*>",
+"occurrences": 47,
+"lines": 47,
+"component": "KERNEL",
+"components": {
+"KERNEL": 47
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "regctl scancom interface.........................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E287",
+"template": "capture valid.........<*>",
+"occurrences": 47,
+"lines": 47,
+"component": "KERNEL",
+"components": {
+"KERNEL": 47
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "capture valid.........1"
+},
+{
+"dataset": "BGL",
+"event_id": "E282",
+"template": "symbol................<*>",
+"occurrences": 47,
+"lines": 47,
+"component": "KERNEL",
+"components": {
+"KERNEL": 47
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "symbol................15"
+},
+{
+"dataset": "BGL",
+"event_id": "E281",
+"template": "mask..................<*>",
+"occurrences": 47,
+"lines": 47,
+"component": "KERNEL",
+"components": {
+"KERNEL": 47
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "mask..................0x40"
+},
+{
+"dataset": "BGL",
+"event_id": "E283",
+"template": "miscompare............<*>",
+"occurrences": 47,
+"lines": 47,
+"component": "KERNEL",
+"components": {
+"KERNEL": 47
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "miscompare............0"
+},
+{
+"dataset": "BGL",
+"event_id": "E299",
+"template": "address parity error..<*>",
+"occurrences": 47,
+"lines": 47,
+"component": "KERNEL",
+"components": {
+"KERNEL": 47
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "address parity error..0"
+},
+{
+"dataset": "BGL",
+"event_id": "E290",
+"template": "correctable error.....<*>",
+"occurrences": 47,
+"lines": 47,
+"component": "KERNEL",
+"components": {
+"KERNEL": 47
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "correctable error.....1"
+},
+{
+"dataset": "BGL",
+"event_id": "E289",
+"template": "qw trapped............<*>",
+"occurrences": 47,
+"lines": 47,
+"component": "KERNEL",
+"components": {
+"KERNEL": 47
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "qw trapped............0"
+},
+{
+"dataset": "BGL",
+"event_id": "E288",
+"template": "chip select...........<*>",
+"occurrences": 47,
+"lines": 47,
+"component": "KERNEL",
+"components": {
+"KERNEL": 47
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "chip select...........0"
+},
+{
+"dataset": "BGL",
+"event_id": "E46",
+"template": "PrepareForService shutting down NodeCard(<*>, <*>, <*>, <*>, <*>) as part of Service Action <*>",
+"occurrences": 1522,
+"lines": 1522,
+"component": "HARDWARE",
+"components": {
+"HARDWARE": 1522
+},
+"level": "WARNING",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "PrepareForService shutting down NodeCard(mLctn(R33-M1-ND), mCardSernum(203231503833343000000000594c31304b35303034303232), mLp(FF:F2:9F:16:BF:44:00:0D:60:E9:40:BB), mIp(10.3.0.80), mType(4)) as part of Service Action 219"
+},
+{
+"dataset": "BGL",
+"event_id": "E30",
+"template": "EndServiceAction is restarting the NodeCards in midplane <*> as part of Service Action <*>",
+"occurrences": 338,
+"lines": 338,
+"component": "HARDWARE",
+"components": {
+"HARDWARE": 338
+},
+"level": "WARNING",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "EndServiceAction is restarting the NodeCards in midplane R33-M1 as part of Service Action 219"
+},
+{
+"dataset": "BGL",
+"event_id": "E252",
+"template": "EndServiceAction <*> performed upon <*> by <*>",
+"occurrences": 237,
+"lines": 237,
+"component": "HARDWARE",
+"components": {
+"HARDWARE": 237
+},
+"level": "WARNING",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "EndServiceAction 219 performed upon R33-M1-ND by root"
+},
+{
+"dataset": "BGL",
+"event_id": "E259",
+"template": "Node card is not fully functional",
+"occurrences": 17364,
+"lines": 17364,
+"component": "DISCOVERY",
+"components": {
+"DISCOVERY": 17364
+},
+"level": "WARNING",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "Node card is not fully functional"
+},
+{
+"dataset": "BGL",
+"event_id": "E167",
+"template": "Can not get assembly information for node card",
+"occurrences": 17305,
+"lines": 17305,
+"component": "DISCOVERY",
+"components": {
+"DISCOVERY": 17305
+},
+"level": "SEVERE",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "Can not get assembly information for node card"
+},
+{
+"dataset": "BGL",
+"event_id": "E45",
+"template": "Node card VPD check: <*> node in processor card slot <*> do not match. VPD ecid <*>, found <*>",
+"occurrences": 21356,
+"lines": 21356,
+"component": "DISCOVERY",
+"components": {
+"DISCOVERY": 21356
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "Node card VPD check: U01 node in processor card slot J14 do not match. VPD ecid 04DD8074DF2FFFFF020B1A911ECE, found 07521035D02FFFFF10071C0090EC"
+},
+{
+"dataset": "BGL",
+"event_id": "E129",
+"template": "machine check interrupt (bit=<*>): L2 DCU read error",
+"occurrences": 3,
+"lines": 3,
+"component": "KERNEL",
+"components": {
+"KERNEL": 3
+},
+"level": "FATAL",
+"alert_tag": "KERNMC",
+"alert_frac": 1.0,
+"sample": "machine check interrupt (bit=0x10): L2 DCU read error"
+},
+{
+"dataset": "BGL",
+"event_id": "E63",
+"template": "<*> torus sender <*> retransmission error(s) (dcr <*>) detected and corrected",
+"occurrences": 1145,
+"lines": 1145,
+"component": "KERNEL",
+"components": {
+"KERNEL": 1145
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "1 torus sender y- retransmission error(s) (dcr 0x02f7) detected and corrected"
+},
+{
+"dataset": "BGL",
+"event_id": "E131",
+"template": "L3 correctable errors exceeds threshold (iar <*> lr <*>)",
+"occurrences": 20,
+"lines": 20,
+"component": "KERNEL",
+"components": {
+"KERNEL": 20
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "L3 correctable errors exceeds threshold (iar 0xf003da3c lr 0xf003de50)"
+},
+{
+"dataset": "BGL",
+"event_id": "E272",
+"template": "Starting SystemController",
+"occurrences": 71,
+"lines": 71,
+"component": "CMCS",
+"components": {
+"CMCS": 71
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "Starting SystemController"
+},
+{
+"dataset": "BGL",
+"event_id": "E291",
+"template": "Controlling BG/L rows [ <*> ]",
+"occurrences": 70,
+"lines": 70,
+"component": "CMCS",
+"components": {
+"CMCS": 70
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "Controlling BG/L rows [ 0 1 2 3 ]"
+},
+{
+"dataset": "BGL",
+"event_id": "E266",
+"template": "Running as background command",
+"occurrences": 70,
+"lines": 70,
+"component": "CMCS",
+"components": {
+"CMCS": 70
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "Running as background command"
+},
+{
+"dataset": "BGL",
+"event_id": "E296",
+"template": "data storage interrupt",
+"occurrences": 63493,
+"lines": 63493,
+"component": "KERNEL",
+"components": {
+"KERNEL": 63493
+},
+"level": "FATAL",
+"alert_tag": "KERNSTOR",
+"alert_frac": 1.0,
+"sample": "data storage interrupt"
+},
+{
+"dataset": "BGL",
+"event_id": "E268",
+"template": "exception syndrome register: <*>",
+"occurrences": 18013,
+"lines": 18013,
+"component": "KERNEL",
+"components": {
+"KERNEL": 18013
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "exception syndrome register: 0x00800000"
+},
+{
+"dataset": "BGL",
+"event_id": "E130",
+"template": "machine check: i-fetch......................<*>",
+"occurrences": 18017,
+"lines": 18017,
+"component": "KERNEL",
+"components": {
+"KERNEL": 18017
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "machine check: i-fetch......................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E140",
+"template": "program interrupt: illegal instruction......<*>",
+"occurrences": 13920,
+"lines": 13920,
+"component": "KERNEL",
+"components": {
+"KERNEL": 13920
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "program interrupt: illegal instruction......0"
+},
+{
+"dataset": "BGL",
+"event_id": "E135",
+"template": "program interrupt: privileged instruction...<*>",
+"occurrences": 9824,
+"lines": 9824,
+"component": "KERNEL",
+"components": {
+"KERNEL": 9824
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "program interrupt: privileged instruction...0"
+},
+{
+"dataset": "BGL",
+"event_id": "E138",
+"template": "program interrupt: trap instruction.........<*>",
+"occurrences": 9824,
+"lines": 9824,
+"component": "KERNEL",
+"components": {
+"KERNEL": 9824
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "program interrupt: trap instruction.........0"
+},
+{
+"dataset": "BGL",
+"event_id": "E128",
+"template": "floating point operation....................<*>",
+"occurrences": 9824,
+"lines": 9824,
+"component": "KERNEL",
+"components": {
+"KERNEL": 9824
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "floating point operation....................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E123",
+"template": "store operation.............................<*>",
+"occurrences": 9824,
+"lines": 9824,
+"component": "KERNEL",
+"components": {
+"KERNEL": 9824
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "store operation.............................1"
+},
+{
+"dataset": "BGL",
+"event_id": "E176",
+"template": "data store interrupt caused by dcbf.........<*>",
+"occurrences": 9823,
+"lines": 9823,
+"component": "KERNEL",
+"components": {
+"KERNEL": 9823
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "data store interrupt caused by dcbf.........0"
+},
+{
+"dataset": "BGL",
+"event_id": "E178",
+"template": "data store interrupt caused by icbi.........<*>",
+"occurrences": 9823,
+"lines": 9823,
+"component": "KERNEL",
+"components": {
+"KERNEL": 9823
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "data store interrupt caused by icbi.........0"
+},
+{
+"dataset": "BGL",
+"event_id": "E124",
+"template": "auxiliary processor.........................<*>",
+"occurrences": 8419,
+"lines": 8419,
+"component": "KERNEL",
+"components": {
+"KERNEL": 8419
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "auxiliary processor.........................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E142",
+"template": "program interrupt: unimplemented operation..<*>",
+"occurrences": 8102,
+"lines": 8102,
+"component": "KERNEL",
+"components": {
+"KERNEL": 8102
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "program interrupt: unimplemented operation..0"
+},
+{
+"dataset": "BGL",
+"event_id": "E127",
+"template": "byte ordering exception.....................<*>",
+"occurrences": 8102,
+"lines": 8102,
+"component": "KERNEL",
+"components": {
+"KERNEL": 8102
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "byte ordering exception.....................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E139",
+"template": "program interrupt: imprecise exception......<*>",
+"occurrences": 8102,
+"lines": 8102,
+"component": "KERNEL",
+"components": {
+"KERNEL": 8102
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "program interrupt: imprecise exception......0"
+},
+{
+"dataset": "BGL",
+"event_id": "E156",
+"template": "program interrupt: fp cr update.............<*>",
+"occurrences": 8102,
+"lines": 8102,
+"component": "KERNEL",
+"components": {
+"KERNEL": 8102
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "program interrupt: fp cr update.............0"
+},
+{
+"dataset": "BGL",
+"event_id": "E137",
+"template": "program interrupt: fp compare...............<*>",
+"occurrences": 8102,
+"lines": 8102,
+"component": "KERNEL",
+"components": {
+"KERNEL": 8102
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "program interrupt: fp compare...............0"
+},
+{
+"dataset": "BGL",
+"event_id": "E170",
+"template": "program interrupt: fp cr field .............<*>",
+"occurrences": 8102,
+"lines": 8102,
+"component": "KERNEL",
+"components": {
+"KERNEL": 8102
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "program interrupt: fp cr field .............0"
+},
+{
+"dataset": "BGL",
+"event_id": "E56",
+"template": "<*> torus processor sram reception error(s) (dcr <*>) detected and corrected",
+"occurrences": 66,
+"lines": 66,
+"component": "KERNEL",
+"components": {
+"KERNEL": 66
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "1 torus processor sram reception error(s) (dcr 0x02fc) detected and corrected"
+},
+{
+"dataset": "BGL",
+"event_id": "E27",
+"template": "external input interrupt (unit=<*> bit=<*>): torus sender <*> retransmission error was corrected",
+"occurrences": 1322,
+"lines": 1322,
+"component": "KERNEL",
+"components": {
+"KERNEL": 1322
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "external input interrupt (unit=0x02 bit=0x0b): torus sender y+ retransmission error was corrected"
+},
+{
+"dataset": "BGL",
+"event_id": "E24",
+"template": "external input interrupt (unit=<*> bit=<*>): number of corrected SRAM errors has exceeded threshold",
+"occurrences": 39,
+"lines": 39,
+"component": "KERNEL",
+"components": {
+"KERNEL": 39
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "external input interrupt (unit=0x01 bit=0x09): number of corrected SRAM errors has exceeded threshold"
+},
+{
+"dataset": "BGL",
+"event_id": "E188",
+"template": "suppressing further interrupts of same type",
+"occurrences": 7694,
+"lines": 7694,
+"component": "KERNEL",
+"components": {
+"KERNEL": 7694
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "suppressing further interrupts of same type"
+},
+{
+"dataset": "BGL",
+"event_id": "E219",
+"template": "Ido chip status changed: <*> ip=<*> v=<*> t=<*> status=<*> <*>",
+"occurrences": 11904,
+"lines": 11904,
+"component": "DISCOVERY",
+"components": {
+"DISCOVERY": 11904
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "Ido chip status changed: FF:F2:9F:16:E7:14:00:0D:60:E9:18:EB ip=10.1.1.75 v=13 t=4 status=M Fri Jun 17 07:25:00 PDT 2005"
+},
+{
+"dataset": "BGL",
+"event_id": "E32",
+"template": "BGLMaster has been started: ./BGLMaster --consoleip <*> --consoleport <*> --configfile <*>",
+"occurrences": 6,
+"lines": 6,
+"component": "BGLMASTER",
+"components": {
+"BGLMASTER": 6
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "BGLMaster has been started: ./BGLMaster --consoleip 127.0.0.1 --consoleport 32035 --configfile bglmaster.init"
+},
+{
+"dataset": "BGL",
+"event_id": "E133",
+"template": "BglIdoChip table has <*> IDOs with the same IP address <*>",
+"occurrences": 9,
+"lines": 9,
+"component": "DISCOVERY",
+"components": {
+"DISCOVERY": 9
+},
+"level": "SEVERE",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "BglIdoChip table has 2 IDOs with the same IP address (10.0.0.237)"
+},
+{
+"dataset": "BGL",
+"event_id": "E230",
+"template": "SerialNumber(<*>) IpAddress(<*>) Status(<*>)",
+"occurrences": 64,
+"lines": 64,
+"component": "DISCOVERY",
+"components": {
+"DISCOVERY": 64
+},
+"level": "SEVERE",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "SerialNumber(000000000000000000000000fff29f16e842000d60e917bd) IpAddress(10.0.0.237) Status(A)"
+},
+{
+"dataset": "BGL",
+"event_id": "E297",
+"template": "NodeCard VPD is corrupt",
+"occurrences": 10,
+"lines": 10,
+"component": "HARDWARE",
+"components": {
+"HARDWARE": 10
+},
+"level": "SEVERE",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "NodeCard VPD is corrupt"
+},
+{
+"dataset": "BGL",
+"event_id": "E207",
+"template": "ciod: Unexpected eof at line <*> of node map file <*>",
+"occurrences": 328,
+"lines": 328,
+"component": "KERNEL",
+"components": {
+"KERNEL": 328
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "ciod: Unexpected eof at line 8193 of node map file /p/gb2/cabot/miranda/newmaps/8k_128x64x1_8x4x4.map"
+},
+{
+"dataset": "BGL",
+"event_id": "E87",
+"template": "ciod: Error creating node map from file <*>: No child processes",
+"occurrences": 320,
+"lines": 320,
+"component": "APP",
+"components": {
+"APP": 320
+},
+"level": "FATAL",
+"alert_tag": "APPCHILD",
+"alert_frac": 1.0,
+"sample": "ciod: Error creating node map from file /p/gb2/cabot/miranda/newmaps/8k_128x64x1_8x4x4.map: No child processes"
+},
+{
+"dataset": "BGL",
+"event_id": "E189",
+"template": "rror threshold, consider replacing the card",
+"occurrences": 22,
+"lines": 22,
+"component": "KERNEL",
+"components": {
+"KERNEL": 22
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "rror threshold, consider replacing the card"
+},
+{
+"dataset": "BGL",
+"event_id": "E17",
+"template": "ddr: Unable to steer rank=<*>, symbol=<*> - rank is already steering symbol <*>. Due to multiple symbols being over the correctable",
+"occurrences": 23,
+"lines": 23,
+"component": "KERNEL",
+"components": {
+"KERNEL": 23
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "ddr: Unable to steer rank=0, symbol=12 - rank is already steering symbol 14. Due to multiple symbols being over the correctable"
+},
+{
+"dataset": "BGL",
+"event_id": "E166",
+"template": "error threshold, consider replacing the card",
+"occurrences": 23,
+"lines": 23,
+"component": "KERNEL",
+"components": {
+"KERNEL": 23
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "error threshold, consider replacing the card"
+},
+{
+"dataset": "BGL",
+"event_id": "E201",
+"template": "ciod: Error loading <*>: program image too big, <*> > <*>",
+"occurrences": 1512,
+"lines": 1512,
+"component": "APP",
+"components": {
+"APP": 1512
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "ciod: Error loading /home/spelce1/SPPM_VERIFY/sppm/run/sppm: program image too big, 746264160 > 534511616"
+},
+{
+"dataset": "BGL",
+"event_id": "E81",
+"template": "critical input interrupt (unit=<*> bit=<*>): warning for tree <*> wire",
+"occurrences": 2245,
+"lines": 2245,
+"component": "KERNEL",
+"components": {
+"KERNEL": 2245
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "critical input interrupt (unit=0x0b bit=0x17): warning for tree C1 wire"
+},
+{
+"dataset": "BGL",
+"event_id": "E278",
+"template": "job <*> timed out. Block freed.",
+"occurrences": 306,
+"lines": 306,
+"component": "FATAL",
+"components": {
+"FATAL": 306
+},
+"level": "Kill",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "job 20251 timed out. Block freed."
+},
+{
+"dataset": "BGL",
+"event_id": "E308",
+"template": "program interrupt",
+"occurrences": 3667,
+"lines": 3667,
+"component": "KERNEL",
+"components": {
+"KERNEL": 3667
+},
+"level": "INFO",
+"alert_tag": "KERNPROG",
+"alert_frac": 0.0014,
+"sample": "program interrupt"
+},
+{
+"dataset": "BGL",
+"event_id": "E64",
+"template": "ciod: <*> coordinate <*> exceeds physical dimension <*> at line <*> of node map file <*>",
+"occurrences": 3512,
+"lines": 3512,
+"component": "KERNEL",
+"components": {
+"KERNEL": 3512
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "ciod: X coordinate 8 exceeds physical dimension 8 at line 4097 of node map file /p/gb2/draeger/benchmark/dat16k_062205/map16k_bipartyz"
+},
+{
+"dataset": "BGL",
+"event_id": "E240",
+"template": "<*> floating point alignment exceptions",
+"occurrences": 267725,
+"lines": 267725,
+"component": "KERNEL",
+"components": {
+"KERNEL": 267725
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "3 floating point alignment exceptions"
+},
+{
+"dataset": "BGL",
+"event_id": "E120",
+"template": "NodeCard temperature sensor chip <*> is not accessible",
+"occurrences": 5,
+"lines": 5,
+"component": "HARDWARE",
+"components": {
+"HARDWARE": 5
+},
+"level": "SEVERE",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "NodeCard temperature sensor chip U52 is not accessible"
+},
+{
+"dataset": "BGL",
+"event_id": "E221",
+"template": "NodeCard power module <*> is not accessible",
+"occurrences": 230,
+"lines": 230,
+"component": "HARDWARE",
+"components": {
+"HARDWARE": 230
+},
+"level": "SEVERE",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "NodeCard power module U67 is not accessible"
+},
+{
+"dataset": "BGL",
+"event_id": "E253",
+"template": "NodeCard VPD chip is not accessible",
+"occurrences": 1,
+"lines": 1,
+"component": "HARDWARE",
+"components": {
+"HARDWARE": 1
+},
+"level": "SEVERE",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "NodeCard VPD chip is not accessible"
+},
+{
+"dataset": "BGL",
+"event_id": "E3",
+"template": "Node card status: <*> is (are) active. Clock Mode is <*>. Clock Select is <*>. Phy JTAG Reset is <*>. ASIC JTAG Reset is <*>. TEMPERATURE MASK IS ACTIVE. No temperature error. Temperature Limit Error Latch is clear. PGOOD is <*>. PGOOD error latch is clear. MPGOOD is <*>. MPGOOD error latch is clear. The <*> volt rail is <*>. The <*> volt rail is <*>.",
+"occurrences": 1,
+"lines": 1,
+"component": "DISCOVERY",
+"components": {
+"DISCOVERY": 1
+},
+"level": "ERROR",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "Node card status: ALERT 0, ALERT 1, ALERT 2, ALERT 3 is (are) active. Clock Mode is Low. Clock Select is Midplane. Phy JTAG Reset is asserted. ASIC JTAG Reset is not asserted. TEMPERATURE MASK IS ACTIVE. No temperature error. Temperature Limit Error Latch is clear. PGOOD is asserted. PGOOD error latch is clear. MPGOOD is OK. MPGOOD error latch is clear. The 2.5 volt rail is OK. The 1.5 volt rail is OK."
+},
+{
+"dataset": "BGL",
+"event_id": "E311",
+"template": "Target=<*> Message=<*>",
+"occurrences": 10,
+"lines": 10,
+"component": "KERNEL",
+"components": {
+"KERNEL": 10
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "Target=ido://FF:F2:9F:16:E6:86:00:0D:60:E9:19:79/JTAG/14 Message=Pll failed to lock"
+},
+{
+"dataset": "BGL",
+"event_id": "E284",
+"template": "Target=<*> Message=<*> JtagId = <*>",
+"occurrences": 65,
+"lines": 65,
+"component": "KERNEL",
+"components": {
+"KERNEL": 65
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "Target=ido://FF:F2:9F:16:E8:1A:00:0D:60:E9:17:E5/JTAG/0 Message=Invalid JtagId = ffffffff"
+},
+{
+"dataset": "BGL",
+"event_id": "E55",
+"template": "MailboxMonitor::serviceMailboxes() lib_ido_error: <*> socket closed",
+"occurrences": 168,
+"lines": 168,
+"component": "KERNEL",
+"components": {
+"KERNEL": 168
+},
+"level": "FATAL",
+"alert_tag": "KERNSOCK",
+"alert_frac": 1.0,
+"sample": "MailboxMonitor::serviceMailboxes() lib_ido_error: -1019 socket closed"
+},
+{
+"dataset": "BGL",
+"event_id": "E73",
+"template": "MidplaneSwitchController::sendTrain() port disconnected: <*>",
+"occurrences": 24,
+"lines": 24,
+"component": "LINKCARD",
+"components": {
+"LINKCARD": 24
+},
+"level": "FATAL",
+"alert_tag": "LINKDISC",
+"alert_frac": 1.0,
+"sample": "MidplaneSwitchController::sendTrain() port disconnected: R07-M1-L1-U19-E"
+},
+{
+"dataset": "BGL",
+"event_id": "E79",
+"template": "critical input interrupt (unit=<*> bit=<*>): warning for torus <*> wire",
+"occurrences": 5437,
+"lines": 5437,
+"component": "KERNEL",
+"components": {
+"KERNEL": 5437
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "critical input interrupt (unit=0x0b bit=0x0a): warning for torus z+ wire"
+},
+{
+"dataset": "BGL",
+"event_id": "E84",
+"template": "ciod: Error creating node map from file <*>: Bad file descriptor",
+"occurrences": 1936,
+"lines": 1936,
+"component": "APP",
+"components": {
+"APP": 1936
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "ciod: Error creating node map from file /p/gb2/welcome3/32k_128x256x1_8x4x4.map: Bad file descriptor"
+},
+{
+"dataset": "BGL",
+"event_id": "E119",
+"template": "<*> torus non-crc error(s) (dcr <*>) detected and corrected",
+"occurrences": 62,
+"lines": 62,
+"component": "KERNEL",
+"components": {
+"KERNEL": 62
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "7178 torus non-crc error(s) (dcr 0x02fd) detected and corrected"
+},
+{
+"dataset": "BGL",
+"event_id": "E305",
+"template": "shutdown complete",
+"occurrences": 99,
+"lines": 99,
+"component": "KERNEL",
+"components": {
+"KERNEL": 99
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "shutdown complete"
+},
+{
+"dataset": "BGL",
+"event_id": "E89",
+"template": "machine check interrupt (bit=<*>): Torus/Tree/GI read error <*>",
+"occurrences": 2,
+"lines": 2,
+"component": "KERNEL",
+"components": {
+"KERNEL": 2
+},
+"level": "FATAL",
+"alert_tag": "KERNMC",
+"alert_frac": 1.0,
+"sample": "machine check interrupt (bit=0x09): Torus/Tree/GI read error 0"
+},
+{
+"dataset": "BGL",
+"event_id": "E31",
+"template": "EndServiceAction is restarting the LinkCards in midplane <*> as part of Service Action <*>",
+"occurrences": 199,
+"lines": 199,
+"component": "HARDWARE",
+"components": {
+"HARDWARE": 199
+},
+"level": "WARNING",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "EndServiceAction is restarting the LinkCards in midplane R07-M1 as part of Service Action 236"
+},
+{
+"dataset": "BGL",
+"event_id": "E223",
+"template": "LinkCard power module <*> is not accessible",
+"occurrences": 319,
+"lines": 319,
+"component": "HARDWARE",
+"components": {
+"HARDWARE": 319
+},
+"level": "SEVERE",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "LinkCard power module U58 is not accessible"
+},
+{
+"dataset": "BGL",
+"event_id": "E261",
+"template": "NodeCard is not fully functional",
+"occurrences": 60,
+"lines": 60,
+"component": "HARDWARE",
+"components": {
+"HARDWARE": 60
+},
+"level": "SEVERE",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "NodeCard is not fully functional"
+},
+{
+"dataset": "BGL",
+"event_id": "E260",
+"template": "LinkCard is not fully functional",
+"occurrences": 248,
+"lines": 248,
+"component": "HARDWARE",
+"components": {
+"HARDWARE": 248
+},
+"level": "SEVERE",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "LinkCard is not fully functional"
+},
+{
+"dataset": "BGL",
+"event_id": "E232",
+"template": "this link card is not fully functional",
+"occurrences": 22,
+"lines": 22,
+"component": "DISCOVERY",
+"components": {
+"DISCOVERY": 22
+},
+"level": "WARNING",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "this link card is not fully functional"
+},
+{
+"dataset": "BGL",
+"event_id": "E312",
+"template": "no ethernet link",
+"occurrences": 14,
+"lines": 14,
+"component": "KERNEL",
+"components": {
+"KERNEL": 14
+},
+"level": "FATAL",
+"alert_tag": "KERNNOETH",
+"alert_frac": 1.0,
+"sample": "no ethernet link"
+},
+{
+"dataset": "BGL",
+"event_id": "E258",
+"template": "rts: kernel terminated for reason <*>",
+"occurrences": 23338,
+"lines": 23338,
+"component": "KERNEL",
+"components": {
+"KERNEL": 23338
+},
+"level": "FATAL",
+"alert_tag": "KERNTERM",
+"alert_frac": 1.0,
+"sample": "rts: kernel terminated for reason 1004rts: bad message header: expecting type 1, type=3, cpu=0, index=0, total=1"
+},
+{
+"dataset": "BGL",
+"event_id": "E71",
+"template": "ciod: In packet from node <*> (<*>), message code <*> is not <*> or <*> (softheader=<*>)",
+"occurrences": 176,
+"lines": 176,
+"component": "KERNEL",
+"components": {
+"KERNEL": 176
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "ciod: In packet from node 495.0 (R02-M1-N0-C:J02-U11), message code 2 is not 3 or 4294967295 (softheader=002f01ef 00030000 00000001 00000000)"
+},
+{
+"dataset": "BGL",
+"event_id": "E111",
+"template": "ciod: Missing or invalid fields on line <*> of node map file <*>",
+"occurrences": 2048,
+"lines": 2048,
+"component": "KERNEL",
+"components": {
+"KERNEL": 2048
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "ciod: Missing or invalid fields on line 1 of node map file /home/auselton/bgl/64mps.sequential.mapfile"
+},
+{
+"dataset": "BGL",
+"event_id": "E304",
+"template": "Power deactivated: <*>",
+"occurrences": 192,
+"lines": 192,
+"component": "KERNEL",
+"components": {
+"KERNEL": 192
+},
+"level": "FATAL",
+"alert_tag": "KERNPOW",
+"alert_frac": 1.0,
+"sample": "Power deactivated: R05-M0-N4"
+},
+{
+"dataset": "BGL",
+"event_id": "E1",
+"template": "Problem reading the ethernet arl entries fro the service card: <*>: while executing I2C Operation caught <*>: Communication error: (<*> is in state = <*>, sequenceNumberIsOk = <*>, ExpectedSequenceNumber = <*>, Reply Sequence Number = <*>, timedOut = <*>, retries = <*>, timeout = <*>, Expected Op Command = <*>, Actual Op Reply = <*>, Expected Sync Command = <*>, Actual Sync Reply = <*>)",
+"occurrences": 4,
+"lines": 4,
+"component": "DISCOVERY",
+"components": {
+"DISCOVERY": 4
+},
+"level": "SEVERE",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "Problem reading the ethernet arl entries fro the service card: java.lang.IllegalStateException: while executing I2C Operation caught java.lang.RuntimeException: Communication error: (DirectIDo for com.ibm.ido.DirectIDo object [FF:F2:9F:15:1F:36:00:0D:60:EA:E0:C9@/10.0.0.203:0 with image version 9 and card type 2] is in state = COMMUNICATION_ERROR, sequenceNumberIsOk = false, ExpectedSequenceNumber = 8888, Reply Sequence Number = 9890, timedOut = true, retries = 200, timeout = 1000, Expected Op Command = 2, Actual Op Reply = 2, Expected Sync Command = 32, Actual Sync Reply = 32)"
+},
+{
+"dataset": "BGL",
+"event_id": "E303",
+"template": "parity error.......<*>",
+"occurrences": 1,
+"lines": 1,
+"component": "KERNEL",
+"components": {
+"KERNEL": 1
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "parity error.......0"
+},
+{
+"dataset": "BGL",
+"event_id": "E146",
+"template": "New ido chip inserted into the database: <*> ip=<*> v=<*> t=<*>",
+"occurrences": 3455,
+"lines": 3455,
+"component": "DISCOVERY",
+"components": {
+"DISCOVERY": 3455
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "New ido chip inserted into the database: FF:F2:9F:16:EE:CF:00:0D:60:E9:11:30 ip=10.0.0.59 v=13 t=4"
+},
+{
+"dataset": "BGL",
+"event_id": "E57",
+"template": "MidplaneSwitchController::parityAlignment() pap failed: <*> status=<*>",
+"occurrences": 14,
+"lines": 14,
+"component": "LINKCARD",
+"components": {
+"LINKCARD": 14
+},
+"level": "FATAL",
+"alert_tag": "LINKPAP",
+"alert_frac": 1.0,
+"sample": "MidplaneSwitchController::parityAlignment() pap failed: R22-M0-L0-U22-D, status=00000000 00000000"
+},
+{
+"dataset": "BGL",
+"event_id": "E38",
+"template": "ciod: duplicate canonical-rank <*> to logical-rank <*> mapping at line <*> of node map file <*>",
+"occurrences": 512,
+"lines": 512,
+"component": "KERNEL",
+"components": {
+"KERNEL": 512
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "ciod: duplicate canonical-rank 31 to logical-rank 0 mapping at line 3 of node map file /p/gb2/pakin1/sweep3d-5x5x400-10mk-3mmi-1024pes-sweep/sweep.map"
+},
+{
+"dataset": "BGL",
+"event_id": "E74",
+"template": "ciod: Error creating node map from file <*>: Device or resource busy",
+"occurrences": 512,
+"lines": 512,
+"component": "APP",
+"components": {
+"APP": 512
+},
+"level": "FATAL",
+"alert_tag": "APPBUSY",
+"alert_frac": 1.0,
+"sample": "ciod: Error creating node map from file /p/gb2/pakin1/sweep3d-5x5x400-10mk-3mmi-1024pes-sweep/sweep.map: Device or resource busy"
+},
+{
+"dataset": "BGL",
+"event_id": "E77",
+"template": "ciod: Error creating node map from file <*>: Block device required",
+"occurrences": 1016,
+"lines": 1016,
+"component": "APP",
+"components": {
+"APP": 1016
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "ciod: Error creating node map from file /p/gb2/pakin1/sweep3d-5x5x400-10mk-3mmi-1024pes-xyzt/xyzt.map: Block device required"
+},
+{
+"dataset": "BGL",
+"event_id": "E88",
+"template": "ciod: Error creating node map from file <*>: Permission denied",
+"occurrences": 1272,
+"lines": 1272,
+"component": "APP",
+"components": {
+"APP": 1272
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "ciod: Error creating node map from file /p/gb2/pakin1/sweep3d-5x5x400-10mk-3mmi-1024pes-xyzt/xyzt.map: Permission denied"
+},
+{
+"dataset": "BGL",
+"event_id": "E318",
+"template": "<*>, max=<*>",
+"occurrences": 116,
+"lines": 116,
+"component": "KERNEL",
+"components": {
+"KERNEL": 116
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "04, max=366"
+},
+{
+"dataset": "BGL",
+"event_id": "E65",
+"template": "external input interrupt (unit=<*> bit=<*>): uncorrectable torus error",
+"occurrences": 10,
+"lines": 10,
+"component": "APP",
+"components": {
+"APP": 10
+},
+"level": "FATAL",
+"alert_tag": "APPTORUS",
+"alert_frac": 1.0,
+"sample": "external input interrupt (unit=0x02 bit=0x00): uncorrectable torus error"
+},
+{
+"dataset": "BGL",
+"event_id": "E209",
+"template": "Torus non-recoverable error DCRs follow.",
+"occurrences": 10,
+"lines": 10,
+"component": "APP",
+"components": {
+"APP": 10
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "Torus non-recoverable error DCRs follow."
+},
+{
+"dataset": "BGL",
+"event_id": "E319",
+"template": "ax=<*>",
+"occurrences": 13,
+"lines": 13,
+"component": "KERNEL",
+"components": {
+"KERNEL": 13
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "ax=366"
+},
+{
+"dataset": "BGL",
+"event_id": "E50",
+"template": "ciod: Error loading <*>: invalid or missing program image, Exec format error",
+"occurrences": 22032,
+"lines": 22032,
+"component": "APP",
+"components": {
+"APP": 22032
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "ciod: Error loading /home/glosli/src/ddcMD/ddcMD1.1.14/bin/ddcMDbglV: invalid or missing program image, Exec format error"
+},
+{
+"dataset": "BGL",
+"event_id": "E320",
+"template": "x=<*>",
+"occurrences": 2,
+"lines": 2,
+"component": "KERNEL",
+"components": {
+"KERNEL": 2
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "x=366"
+},
+{
+"dataset": "BGL",
+"event_id": "E245",
+"template": "ciodb exited normally with exit code <*>",
+"occurrences": 2,
+"lines": 2,
+"component": "BGLMASTER",
+"components": {
+"BGLMASTER": 2
+},
+"level": "FAILURE",
+"alert_tag": "MASNORM",
+"alert_frac": 0.5,
+"sample": "ciodb exited normally with exit code 0"
+},
+{
+"dataset": "BGL",
+"event_id": "E307",
+"template": "Ido packet timeout",
+"occurrences": 4276,
+"lines": 4276,
+"component": "MMCS",
+"components": {
+"MMCS": 4276
+},
+"level": "ERROR",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "Ido packet timeout"
+},
+{
+"dataset": "BGL",
+"event_id": "E85",
+"template": "Node card VPD check: missing <*>, VPD ecid <*> in processor card slot <*>",
+"occurrences": 887,
+"lines": 887,
+"component": "DISCOVERY",
+"components": {
+"DISCOVERY": 887
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "Node card VPD check: missing U01 node, VPD ecid 04C881D4DE2FFFFF020C1C6052EB in processor card slot J18"
+},
+{
+"dataset": "BGL",
+"event_id": "E41",
+"template": "DeclareServiceNetworkCharacteristics has been run but the DB is not empty",
+"occurrences": 1,
+"lines": 1,
+"component": "SERV_NET",
+"components": {
+"SERV_NET": 1
+},
+"level": "WARNING",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "DeclareServiceNetworkCharacteristics has been run but the DB is not empty"
+},
+{
+"dataset": "BGL",
+"event_id": "E23",
+"template": "DeclareServiceNetworkCharacteristics has been run with the force option but the DB is not empty",
+"occurrences": 1,
+"lines": 1,
+"component": "SERV_NET",
+"components": {
+"SERV_NET": 1
+},
+"level": "ERROR",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "DeclareServiceNetworkCharacteristics has been run with the force option but the DB is not empty"
+},
+{
+"dataset": "BGL",
+"event_id": "E263",
+"template": "Added <*> subnets and <*> addresses to DB",
+"occurrences": 1,
+"lines": 1,
+"component": "SERV_NET",
+"components": {
+"SERV_NET": 1
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "Added 8 subnets and 409600 addresses to DB"
+},
+{
+"dataset": "BGL",
+"event_id": "E22",
+"template": "BGLMaster has been started: ./BGLMaster --consoleip <*> --consoleport <*> --configfile <*> --autorestart <*>",
+"occurrences": 59,
+"lines": 59,
+"component": "BGLMASTER",
+"components": {
+"BGLMASTER": 59
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "BGLMaster has been started: ./BGLMaster --consoleip 127.0.0.1 --consoleport 32035 --configfile bglmaster.init --autorestart y"
+},
+{
+"dataset": "BGL",
+"event_id": "E121",
+"template": "Found invalid node ecid in processor card slot <*>, ecid <*>",
+"occurrences": 5558,
+"lines": 5558,
+"component": "DISCOVERY",
+"components": {
+"DISCOVERY": 5558
+},
+"level": "ERROR",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "Found invalid node ecid in processor card slot J02, ecid 0000000000000000000000000000"
+},
+{
+"dataset": "BGL",
+"event_id": "E2",
+"template": "Node card status: <*> is (are) active. Clock Mode is <*>. Clock Select is <*>. Phy JTAG Reset is <*>. ASIC JTAG Reset is <*>. Temperature Mask is not active. No temperature error. Temperature Limit Error Latch is clear. PGOOD is <*>. PGOOD error latch is clear. MPGOOD is <*>. MPGOOD error latch is clear. The <*> volt rail is <*>. The <*> volt rail is <*>.",
+"occurrences": 171,
+"lines": 171,
+"component": "DISCOVERY",
+"components": {
+"DISCOVERY": 171
+},
+"level": "ERROR",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "Node card status: ALERT 0, ALERT 1, ALERT 2, ALERT 3 is (are) active. Clock Mode is Low. Clock Select is Midplane. Phy JTAG Reset is asserted. ASIC JTAG Reset is not asserted. Temperature Mask is not active. No temperature error. Temperature Limit Error Latch is clear. PGOOD is asserted. PGOOD error latch is clear. MPGOOD is OK. MPGOOD error latch is clear. The 2.5 volt rail is OK. The 1.5 volt rail is OK."
+},
+{
+"dataset": "BGL",
+"event_id": "E224",
+"template": "idoproxy exited normally with exit code <*>",
+"occurrences": 1,
+"lines": 1,
+"component": "BGLMASTER",
+"components": {
+"BGLMASTER": 1
+},
+"level": "FAILURE",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "idoproxy exited normally with exit code 0"
+},
+{
+"dataset": "BGL",
+"event_id": "E16",
+"template": "Problem communicating with service card, ido chip: <*>. java.io.IOException: Could not find EthernetSwitch on port:address <*>",
+"occurrences": 166,
+"lines": 166,
+"component": "DISCOVERY",
+"components": {
+"DISCOVERY": 166
+},
+"level": "SEVERE",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "Problem communicating with service card, ido chip: 00000000:00000000:00000000:FFF29F15:1F48000D:60EAE0B7. java.io.IOException: Could not find EthernetSwitch on port:address 1:136"
+},
+{
+"dataset": "BGL",
+"event_id": "E100",
+"template": "Bad cable going into LinkCard (<*>) Jtag (<*>) Port (<*>) - <*> bad wires",
+"occurrences": 232,
+"lines": 232,
+"component": "DISCOVERY",
+"components": {
+"DISCOVERY": 232
+},
+"level": "ERROR",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "Bad cable going into LinkCard (203937503438383700000000594C31314B34333237303248) Jtag (0) Port (C) - 1 bad wires"
+},
+{
+"dataset": "BGL",
+"event_id": "E52",
+"template": "Missing reverse cable: Cable <*> is present BUT the reverse cable <*> is missing",
+"occurrences": 522,
+"lines": 522,
+"component": "DISCOVERY",
+"components": {
+"DISCOVERY": 522
+},
+"level": "ERROR",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "Missing reverse cable: Cable R23-M1-L1 1 F (J04) --> R43-M0-L1 1 C (J06) is present BUT the reverse cable R43-M0-L1 4 F (J12) --> R23-M1-L1 4 C (J14) is missing"
+},
+{
+"dataset": "BGL",
+"event_id": "E257",
+"template": "Error: unable to mount filesystem",
+"occurrences": 720,
+"lines": 720,
+"component": "KERNEL",
+"components": {
+"KERNEL": 720
+},
+"level": "FATAL",
+"alert_tag": "KERNMNT",
+"alert_frac": 1.0,
+"sample": "Error: unable to mount filesystem"
+},
+{
+"dataset": "BGL",
+"event_id": "E211",
+"template": "Lustre mount FAILED : <*> : block_id : location",
+"occurrences": 5105,
+"lines": 5105,
+"component": "KERNEL",
+"components": {
+"KERNEL": 5105
+},
+"level": "FATAL",
+"alert_tag": "KERNMNTF",
+"alert_frac": 1.0,
+"sample": "Lustre mount FAILED : bglio11 : block_id : location"
+},
+{
+"dataset": "BGL",
+"event_id": "E26",
+"template": "idoproxydb hit ASSERT condition: ASSERT expression=<*> Source file=<*> Source line=<*> Function=<*>",
+"occurrences": 84253,
+"lines": 84253,
+"component": "MMCS",
+"components": {
+"MMCS": 84253
+},
+"level": "ERROR",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "idoproxydb hit ASSERT condition: ASSERT expression=0 Source file=idotransportmgr.cpp Source line=1043 Function=int IdoTransportMgr::SendPacket(IdoUdpMgr*, BglCtlPavTrace*)"
+},
+{
+"dataset": "BGL",
+"event_id": "E298",
+"template": "Microloader Assertion",
+"occurrences": 1504,
+"lines": 1504,
+"component": "KERNEL",
+"components": {
+"KERNEL": 1504
+},
+"level": "FATAL",
+"alert_tag": "KERNMICRO",
+"alert_frac": 0.9993,
+"sample": "Microloader Assertion"
+},
+{
+"dataset": "BGL",
+"event_id": "E21",
+"template": "ciod: Error reading message prefix after LOAD_MESSAGE on CioStream socket to <*>: Link has been severed",
+"occurrences": 15273,
+"lines": 15273,
+"component": "APP",
+"components": {
+"APP": 15273
+},
+"level": "FATAL",
+"alert_tag": "APPSEV",
+"alert_frac": 1.0,
+"sample": "ciod: Error reading message prefix after LOAD_MESSAGE on CioStream socket to 172.16.96.116:52716: Link has been severed"
+},
+{
+"dataset": "BGL",
+"event_id": "E61",
+"template": "MidplaneSwitchController::receiveTrain() iap failed: <*>, status=<*>",
+"occurrences": 166,
+"lines": 166,
+"component": "LINKCARD",
+"components": {
+"LINKCARD": 166
+},
+"level": "FATAL",
+"alert_tag": "LINKIAP",
+"alert_frac": 1.0,
+"sample": "MidplaneSwitchController::receiveTrain() iap failed: R72-M1-L1-U18-A, status=beeaabff ec000000"
+},
+{
+"dataset": "BGL",
+"event_id": "E125",
+"template": "rts tree/torus link training failed: wanted: <*> got: <*>",
+"occurrences": 605,
+"lines": 605,
+"component": "KERNEL",
+"components": {
+"KERNEL": 605
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "rts tree/torus link training failed: wanted: A C X+ X- Y+ Y- Z+ Z- got: A C X+ X- Y- Z+ Z-"
+},
+{
+"dataset": "BGL",
+"event_id": "E8",
+"template": "ddr: Unable to steer rank=<*>, symbol=<*> - rank is already steering symbol <*>. Due to multiple symbols being over the correctable error threshold, consider replacing the card",
+"occurrences": 197,
+"lines": 197,
+"component": "KERNEL",
+"components": {
+"KERNEL": 197
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "ddr: Unable to steer rank=0, symbol=5 - rank is already steering symbol 4. Due to multiple symbols being over the correctable error threshold, consider replacing the card"
+},
+{
+"dataset": "BGL",
+"event_id": "E226",
+"template": "ciodb exited abnormally due to signal: <*>",
+"occurrences": 23,
+"lines": 23,
+"component": "BGLMASTER",
+"components": {
+"BGLMASTER": 23
+},
+"level": "FAILURE",
+"alert_tag": "MASABNORM",
+"alert_frac": 1.0,
+"sample": "ciodb exited abnormally due to signal: Aborted"
+},
+{
+"dataset": "BGL",
+"event_id": "E48",
+"template": "ciod: Error loading <*>: invalid or missing program image, Permission denied",
+"occurrences": 43040,
+"lines": 43040,
+"component": "APP",
+"components": {
+"APP": 43040
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "ciod: Error loading /bgl/apps/hwstab/RAPTOR/temp/raptor: invalid or missing program image, Permission denied"
+},
+{
+"dataset": "BGL",
+"event_id": "E228",
+"template": "ciod: generated <*> core files for program <*>",
+"occurrences": 62484,
+"lines": 62484,
+"component": "KERNEL",
+"components": {
+"KERNEL": 62484
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "ciod: generated 64 core files for program /bgl/apps/scaletest/performance/IMB_2.3_243_64K/IMB-MPI1.gp2"
+},
+{
+"dataset": "BGL",
+"event_id": "E47",
+"template": "rts: bad message header: cpu <*> invalid (softheader=<*>) PSR0=<*> PSR1=<*> PRXF=<*> PIXF=<*>",
+"occurrences": 619,
+"lines": 619,
+"component": "KERNEL",
+"components": {
+"KERNEL": 619
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "rts: bad message header: cpu 127 invalid (softheader=7ffffc00 10022d68 00000000 00000000) PSR0=00000100 PSR1=00000000 PRXF=0002000a PIXF=00000007"
+},
+{
+"dataset": "BGL",
+"event_id": "E28",
+"template": "rts: bad message header: index <*> greater than total <*> (softheader=<*>) PSR0=<*> PSR1=<*> PRXF=<*> PIXF=<*>",
+"occurrences": 238,
+"lines": 238,
+"component": "KERNEL",
+"components": {
+"KERNEL": 238
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "rts: bad message header: index 0 greater than total 0 (softheader=00000002 00000001 00000000 00000000) PSR0=00000f00 PSR1=00000000 PRXF=00000002 PIXF=00000007"
+},
+{
+"dataset": "BGL",
+"event_id": "E25",
+"template": "rts: bad message header: expecting type <*> instead of type <*> (softheader=<*>) PSR0=<*> PSR1=<*> PRXF=<*> PIXF=<*>",
+"occurrences": 1146,
+"lines": 1146,
+"component": "KERNEL",
+"components": {
+"KERNEL": 1146
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "rts: bad message header: expecting type 53 instead of type 1238 (softheader=000bb273 003604d6 00000001 00000000) PSR0=00000101 PSR1=00000000 PRXF=00020002 PIXF=00000007"
+},
+{
+"dataset": "BGL",
+"event_id": "E315",
+"template": "kernel panic",
+"occurrences": 18,
+"lines": 18,
+"component": "KERNEL",
+"components": {
+"KERNEL": 18
+},
+"level": "FATAL",
+"alert_tag": "KERNPAN",
+"alert_frac": 1.0,
+"sample": "kernel panic"
+},
+{
+"dataset": "BGL",
+"event_id": "E53",
+"template": "external input interrupt (unit=<*> bit=<*>): 1M tree receiver <*> in resynch mode",
+"occurrences": 1,
+"lines": 1,
+"component": "KERNEL",
+"components": {
+"KERNEL": 1
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "external input interrupt (unit=0x05 bit=0x06): 1M tree receiver 2 in resynch mode"
+},
+{
+"dataset": "BGL",
+"event_id": "E14",
+"template": "mmcs_db_server has been started: ./mmcs_db_server --useDatabase <*> --dbproperties <*> --iolog <*> --reconnect-blocks <*> --shutdown-timeout <*>",
+"occurrences": 90,
+"lines": 90,
+"component": "MMCS",
+"components": {
+"MMCS": 90
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "mmcs_db_server has been started: ./mmcs_db_server --useDatabase BGL --dbproperties serverdb.properties --iolog /bgl/BlueLight/logs/BGL --reconnect-blocks all --shutdown-timeout 30"
+},
+{
+"dataset": "BGL",
+"event_id": "E317",
+"template": "iar <*> dear <*>",
+"occurrences": 442966,
+"lines": 442966,
+"component": "KERNEL",
+"components": {
+"KERNEL": 442966
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "iar 003a90fc dear 00c07208"
+},
+{
+"dataset": "BGL",
+"event_id": "E165",
+"template": "NFS Mount failed on <*>, slept <*> seconds, retrying (<*>)",
+"occurrences": 2670,
+"lines": 2670,
+"component": "KERNEL",
+"components": {
+"KERNEL": 2670
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "NFS Mount failed on bglio848, slept 19 seconds, retrying (1)"
+},
+{
+"dataset": "BGL",
+"event_id": "E276",
+"template": "Lustre mount FAILED : <*> : point <*>",
+"occurrences": 26426,
+"lines": 26426,
+"component": "KERNEL",
+"components": {
+"KERNEL": 26426
+},
+"level": "FATAL",
+"alert_tag": "KERNMNTF",
+"alert_frac": 1.0,
+"sample": "Lustre mount FAILED : bglio118 : point /p/gb1"
+},
+{
+"dataset": "BGL",
+"event_id": "E49",
+"template": "external input interrupt (unit=<*> bit=<*>): tree header with no target waiting",
+"occurrences": 1,
+"lines": 1,
+"component": "KERNEL",
+"components": {
+"KERNEL": 1
+},
+"level": "FATAL",
+"alert_tag": "KERNEXT",
+"alert_frac": 1.0,
+"sample": "external input interrupt (unit=0x03 bit=0x01): tree header with no target waiting"
+},
+{
+"dataset": "BGL",
+"event_id": "E54",
+"template": "power module status fault detected on node card. status registers are: <*>",
+"occurrences": 4,
+"lines": 4,
+"component": "MONITOR",
+"components": {
+"MONITOR": 4
+},
+"level": "FAILURE",
+"alert_tag": "MONPOW",
+"alert_frac": 1.0,
+"sample": "power module status fault detected on node card. status registers are: 0/0/1/1"
+},
+{
+"dataset": "BGL",
+"event_id": "E316",
+"template": "program",
+"occurrences": 1,
+"lines": 1,
+"component": "KERNEL",
+"components": {
+"KERNEL": 1
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "program"
+},
+{
+"dataset": "BGL",
+"event_id": "E78",
+"template": "<*> torus receiver sram ecc error(s) (dcr <*>) detected and corrected",
+"occurrences": 5,
+"lines": 5,
+"component": "KERNEL",
+"components": {
+"KERNEL": 5
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "1 torus receiver sram ecc error(s) (dcr 0x02f3) detected and corrected"
+},
+{
+"dataset": "BGL",
+"event_id": "E4",
+"template": "Node card status: no ALERTs are active. Clock Mode is <*>. Clock Select is <*>. Phy JTAG Reset is <*>. ASIC JTAG Reset is <*>. Temperature Mask is <*>. No temperature error. Temperature Limit Error Latch is clear. PGOOD IS <*>. PGOOD ERROR LATCH IS <*>. MPGOOD IS <*>. MPGOOD ERROR LATCH IS <*>. The <*> volt rail is <*>. THE <*> VOLT RAIL IS <*>.",
+"occurrences": 3,
+"lines": 3,
+"component": "DISCOVERY",
+"components": {
+"DISCOVERY": 3
+},
+"level": "ERROR",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "Node card status: no ALERTs are active. Clock Mode is Low. Clock Select is Midplane. Phy JTAG Reset is asserted. ASIC JTAG Reset is not asserted. Temperature Mask is not active. No temperature error. Temperature Limit Error Latch is clear. PGOOD IS NOT ASSERTED. PGOOD ERROR LATCH IS ACTIVE. MPGOOD IS NOT OK. MPGOOD ERROR LATCH IS ACTIVE. The 2.5 volt rail is OK. THE 1.5 VOLT RAIL IS NOT OK."
+},
+{
+"dataset": "BGL",
+"event_id": "E58",
+"template": "Error sending packet on tree network, packet at address <*> is not aligned",
+"occurrences": 5,
+"lines": 5,
+"component": "KERNEL",
+"components": {
+"KERNEL": 5
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "Error sending packet on tree network, packet at address 00088480 is not aligned"
+},
+{
+"dataset": "BGL",
+"event_id": "E75",
+"template": "data cache flush parity error detected. attempting to correct",
+"occurrences": 65,
+"lines": 65,
+"component": "KERNEL",
+"components": {
+"KERNEL": 65
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "data cache flush parity error detected. attempting to correct"
+},
+{
+"dataset": "BGL",
+"event_id": "E72",
+"template": "data cache search parity error detected. attempting to correct",
+"occurrences": 13941,
+"lines": 13941,
+"component": "KERNEL",
+"components": {
+"KERNEL": 13941
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "data cache search parity error detected. attempting to correct"
+},
+{
+"dataset": "BGL",
+"event_id": "E295",
+"template": "L3 major internal error",
+"occurrences": 3,
+"lines": 3,
+"component": "MMCS",
+"components": {
+"MMCS": 3
+},
+"level": "FATAL",
+"alert_tag": "MMCS",
+"alert_frac": 1.0,
+"sample": "L3 major internal error"
+},
+{
+"dataset": "BGL",
+"event_id": "E18",
+"template": "Error receiving packet on tree network, expecting type <*> instead of type <*> (softheader=<*> <*> <*> <*>) PSR0=<*> PSR1=<*> PRXF=<*> PIXF=<*>",
+"occurrences": 6144,
+"lines": 6144,
+"component": "KERNEL",
+"components": {
+"KERNEL": 6144
+},
+"level": "FATAL",
+"alert_tag": "KERNREC",
+"alert_frac": 1.0,
+"sample": "Error receiving packet on tree network, expecting type 57 instead of type 3 (softheader=0064588e 8aff0003 00000002 00000000) PSR0=00001f01 PSR1=00000000 PRXF=00000002 PIXF=00000007"
+},
+{
+"dataset": "BGL",
+"event_id": "E42",
+"template": "ddr: activating redundant bit steering for next allocation: rank=<*> symbol=<*>",
+"occurrences": 492,
+"lines": 492,
+"component": "KERNEL",
+"components": {
+"KERNEL": 492
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "ddr: activating redundant bit steering for next allocation: rank=0 symbol=33"
+},
+{
+"dataset": "BGL",
+"event_id": "E44",
+"template": "L1 DCACHE summary averages: #ofDirtyLines: <*> out of <*> #ofDirtyDblWord: <*> out of <*>",
+"occurrences": 3149,
+"lines": 3149,
+"component": "KERNEL",
+"components": {
+"KERNEL": 3149
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "L1 DCACHE summary averages: #ofDirtyLines: 457 out of 1024 #ofDirtyDblWord: 1632 out of 4096"
+},
+{
+"dataset": "BGL",
+"event_id": "E225",
+"template": "No power module <*> found found on link card",
+"occurrences": 6,
+"lines": 6,
+"component": "MONITOR",
+"components": {
+"MONITOR": 6
+},
+"level": "FAILURE",
+"alert_tag": "MONPOW",
+"alert_frac": 1.0,
+"sample": "No power module U58 found found on link card"
+},
+{
+"dataset": "BGL",
+"event_id": "E254",
+"template": "Temperature Over Limit on link card",
+"occurrences": 972,
+"lines": 972,
+"component": "MONITOR",
+"components": {
+"MONITOR": 972
+},
+"level": "FAILURE",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "Temperature Over Limit on link card"
+},
+{
+"dataset": "BGL",
+"event_id": "E244",
+"template": "Link PGOOD error latched on link card",
+"occurrences": 349,
+"lines": 349,
+"component": "MONITOR",
+"components": {
+"MONITOR": 349
+},
+"level": "FAILURE",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "Link PGOOD error latched on link card"
+},
+{
+"dataset": "BGL",
+"event_id": "E15",
+"template": "BGLMaster has been started: ./BGLMaster --consoleip <*> --consoleport <*> --configfile <*> --autorestart <*> --db2profile <*> --dbproperties <*>",
+"occurrences": 31,
+"lines": 31,
+"component": "BGLMASTER",
+"components": {
+"BGLMASTER": 31
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "BGLMaster has been started: ./BGLMaster --consoleip 127.0.0.1 --consoleport 32035 --configfile bglmaster.init --autorestart y --db2profile /u/bgdb2cli/sqllib/db2profile --dbproperties db.properties"
+},
+{
+"dataset": "BGL",
+"event_id": "E19",
+"template": "critical input interrupt (unit=<*> bit=<*>): warning for torus <*> wire, suppressing further interrupts of same type",
+"occurrences": 2314,
+"lines": 2314,
+"component": "KERNEL",
+"components": {
+"KERNEL": 2314
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "critical input interrupt (unit=0x0b bit=0x0a): warning for torus z+ wire, suppressing further interrupts of same type"
+},
+{
+"dataset": "BGL",
+"event_id": "E20",
+"template": "critical input interrupt (unit=<*> bit=<*>): warning for tree <*> wire, suppressing further interrupts of same type",
+"occurrences": 1232,
+"lines": 1232,
+"component": "KERNEL",
+"components": {
+"KERNEL": 1232
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "critical input interrupt (unit=0x0b bit=0x17): warning for tree C1 wire, suppressing further interrupts of same type"
+},
+{
+"dataset": "BGL",
+"event_id": "E59",
+"template": "<*> tree receiver <*> in re-synch state event(s) (dcr <*>) detected over <*> seconds",
+"occurrences": 3148,
+"lines": 3148,
+"component": "KERNEL",
+"components": {
+"KERNEL": 3148
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "2 tree receiver 0 in re-synch state event(s) (dcr 0x01bc) detected over 388 seconds"
+},
+{
+"dataset": "BGL",
+"event_id": "E40",
+"template": "<*> torus receiver <*> input pipe error(s) (dcr <*>) detected and corrected over <*> seconds",
+"occurrences": 3512,
+"lines": 3512,
+"component": "KERNEL",
+"components": {
+"KERNEL": 3512
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "8 torus receiver z+ input pipe error(s) (dcr 0x02f0) detected and corrected over 389 seconds"
+},
+{
+"dataset": "BGL",
+"event_id": "E68",
+"template": "<*> ddr error(s) detected and corrected on rank <*>, symbol <*> over <*> seconds",
+"occurrences": 10436,
+"lines": 10436,
+"component": "KERNEL",
+"components": {
+"KERNEL": 10436
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "1 ddr error(s) detected and corrected on rank 0, symbol 33 over 389 seconds"
+},
+{
+"dataset": "BGL",
+"event_id": "E92",
+"template": "total of <*> ddr error(s) detected and corrected over <*> seconds",
+"occurrences": 10415,
+"lines": 10415,
+"component": "KERNEL",
+"components": {
+"KERNEL": 10415
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "total of 1 ddr error(s) detected and corrected over 389 seconds"
+},
+{
+"dataset": "BGL",
+"event_id": "E112",
+"template": "<*> L3 <*> error(s) (dcr <*>) detected and corrected over <*> seconds",
+"occurrences": 1514,
+"lines": 1514,
+"component": "KERNEL",
+"components": {
+"KERNEL": 1514
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "1 L3 EDRAM error(s) (dcr 0x0157) detected and corrected over 13 seconds"
+},
+{
+"dataset": "BGL",
+"event_id": "E134",
+"template": "idoproxy communication failure: socket closed",
+"occurrences": 41,
+"lines": 41,
+"component": "KERNEL",
+"components": {
+"KERNEL": 41
+},
+"level": "FATAL",
+"alert_tag": "KERNSOCK",
+"alert_frac": 1.0,
+"sample": "idoproxy communication failure: socket closed"
+},
+{
+"dataset": "BGL",
+"event_id": "E270",
+"template": "General Purpose Registers:",
+"occurrences": 69,
+"lines": 69,
+"component": "KERNEL",
+"components": {
+"KERNEL": 69
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "General Purpose Registers:"
+},
+{
+"dataset": "BGL",
+"event_id": "E271",
+"template": "Special Purpose Registers:",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "Special Purpose Registers:"
+},
+{
+"dataset": "BGL",
+"event_id": "E302",
+"template": "msr=<*> dear=<*> esr=<*> fpscr=<*>",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "msr=0x00003000 dear=0x00000000 esr=0x00000000 fpscr=0x00000000"
+},
+{
+"dataset": "BGL",
+"event_id": "E309",
+"template": "dbcr0=<*> dbsr=<*> ccr0=<*>",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "dbcr0=0x00000000 dbsr=0x00000000 ccr0=0x00002000"
+},
+{
+"dataset": "BGL",
+"event_id": "E196",
+"template": "Floating Point Status and Control Register: <*>",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "Floating Point Status and Control Register: 0x00000000"
+},
+{
+"dataset": "BGL",
+"event_id": "E155",
+"template": "exception summary........................<*>",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "exception summary........................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E185",
+"template": "enabled exception summary................<*>",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "enabled exception summary................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E190",
+"template": "invalid operation exception summary......<*>",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "invalid operation exception summary......0"
+},
+{
+"dataset": "BGL",
+"event_id": "E150",
+"template": "underflow exception......................<*>",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "underflow exception......................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E153",
+"template": "divide-by-zero exception.................<*>",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "divide-by-zero exception.................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E163",
+"template": "inexact exception........................<*>",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "inexact exception........................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E229",
+"template": "invalid (<*>)........................<*>",
+"occurrences": 272,
+"lines": 272,
+"component": "KERNEL",
+"components": {
+"KERNEL": 272
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "invalid (SNAN)...........................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E157",
+"template": "fraction rounded.........................<*>",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "fraction rounded.........................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E162",
+"template": "fraction inexact.........................<*>",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "fraction inexact.........................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E206",
+"template": "quiet <*>................................<*>",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "quiet NaN................................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E149",
+"template": "minus inf................................<*>",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "minus inf................................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E182",
+"template": "minus normalized number..................<*>",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "minus normalized number..................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E186",
+"template": "minus denormalized number................<*>",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "minus denormalized number................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E148",
+"template": "plus zero................................<*>",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "plus zero................................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E180",
+"template": "plus denormalized number.................<*>",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "plus denormalized number.................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E179",
+"template": "plus normalized number...................<*>",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "plus normalized number...................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E151",
+"template": "plus infinity............................<*>",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "plus infinity............................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E141",
+"template": "reserved.................................<*>",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "reserved.................................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E194",
+"template": "invalid operation exception (software)...<*>",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "invalid operation exception (software)...0"
+},
+{
+"dataset": "BGL",
+"event_id": "E195",
+"template": "invalid operation exception (sqrt).......<*>",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "invalid operation exception (sqrt).......0"
+},
+{
+"dataset": "BGL",
+"event_id": "E204",
+"template": "invalid operation exception (int cnvt)...<*>",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "invalid operation exception (int cnvt)...0"
+},
+{
+"dataset": "BGL",
+"event_id": "E192",
+"template": "enable invalid operation exceptions......<*>",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "enable invalid operation exceptions......0"
+},
+{
+"dataset": "BGL",
+"event_id": "E173",
+"template": "enable overflow exceptions...............<*>",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "enable overflow exceptions...............0"
+},
+{
+"dataset": "BGL",
+"event_id": "E175",
+"template": "enable underflow exceptions..............<*>",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "enable underflow exceptions..............0"
+},
+{
+"dataset": "BGL",
+"event_id": "E172",
+"template": "enable divide-by-zero exceptions.........<*>",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "enable divide-by-zero exceptions.........0"
+},
+{
+"dataset": "BGL",
+"event_id": "E187",
+"template": "enable inexact exceptions................<*>",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "enable inexact exceptions................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E181",
+"template": "enable non-IEEE mode.....................<*>",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "enable non-IEEE mode.....................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E152",
+"template": "round nearest............................<*>",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "round nearest............................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E222",
+"template": "round toward zero...................<*>",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "round toward zero........................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E184",
+"template": "round toward +infinity...................<*>",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "round toward +infinity...................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E168",
+"template": "round toward -infinity...................<*>",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "round toward -infinity...................0"
+},
+{
+"dataset": "BGL",
+"event_id": "E277",
+"template": "Floating Point Registers:",
+"occurrences": 68,
+"lines": 68,
+"component": "KERNEL",
+"components": {
+"KERNEL": 68
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "Floating Point Registers:"
+},
+{
+"dataset": "BGL",
+"event_id": "E147",
+"template": "ciod: Received signal <*>, code=<*>, errno=<*>, address=<*>",
+"occurrences": 39457,
+"lines": 39457,
+"component": "KERNEL",
+"components": {
+"KERNEL": 39457
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "ciod: Received signal 15, code=0, errno=0, address=0x000001b0"
+},
+{
+"dataset": "BGL",
+"event_id": "E101",
+"template": "PrepareForService is being done on this Midplane (<*>, <*>, <*>) by <*>",
+"occurrences": 48,
+"lines": 48,
+"component": "HARDWARE",
+"components": {
+"HARDWARE": 48
+},
+"level": "WARNING",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "PrepareForService is being done on this Midplane (mLctn(R36-M1), mCardSernum(203937503631353900000000594c31304b34333133303058), iWhichCardsToPwrOff(502)) by root"
+},
+{
+"dataset": "BGL",
+"event_id": "E66",
+"template": "Power Good signal deactivated: <*>. A service action may be required.",
+"occurrences": 94,
+"lines": 94,
+"component": "KERNEL",
+"components": {
+"KERNEL": 94
+},
+"level": "FATAL",
+"alert_tag": "KERNSERV",
+"alert_frac": 1.0,
+"sample": "Power Good signal deactivated: R73-M1-N5. A service action may be required."
+},
+{
+"dataset": "BGL",
+"event_id": "E34",
+"template": "<*> torus sender <*> retransmission error(s) (dcr <*>) detected and corrected over <*> seconds",
+"occurrences": 1034,
+"lines": 1034,
+"component": "KERNEL",
+"components": {
+"KERNEL": 1034
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "403136 torus sender z+ retransmission error(s) (dcr 0x02f8) detected and corrected over 43 seconds"
+},
+{
+"dataset": "BGL",
+"event_id": "E36",
+"template": "ciod: Error reading message prefix on CioStream socket to <*>, Link has been severed",
+"occurrences": 26546,
+"lines": 26546,
+"component": "APP",
+"components": {
+"APP": 26546
+},
+"level": "FATAL",
+"alert_tag": "APPSEV",
+"alert_frac": 1.0,
+"sample": "ciod: Error reading message prefix on CioStream socket to 172.16.96.116:43572, Link has been severed"
+},
+{
+"dataset": "BGL",
+"event_id": "E39",
+"template": "EndServiceAction is restarting the <*> cards in Midplane <*> as part of Service Action <*>",
+"occurrences": 51,
+"lines": 51,
+"component": "HARDWARE",
+"components": {
+"HARDWARE": 51
+},
+"level": "WARNING",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "EndServiceAction is restarting the Node cards in Midplane R36-M1 as part of Service Action 581"
+},
+{
+"dataset": "BGL",
+"event_id": "E29",
+"template": "ciod: Error reading message prefix on CioStream socket to <*>, Connection reset by peer",
+"occurrences": 2256,
+"lines": 2256,
+"component": "APP",
+"components": {
+"APP": 2256
+},
+"level": "FATAL",
+"alert_tag": "APPRES",
+"alert_frac": 1.0,
+"sample": "ciod: Error reading message prefix on CioStream socket to 172.16.96.116:59217, Connection reset by peer"
+},
+{
+"dataset": "BGL",
+"event_id": "E7",
+"template": "<*> with VPD of <*>: IBM Part Number: <*>, Vendor: <*>, Vendor Serial Number: <*>, Assembly Revision: <*>, Code Revision: <*>, Manufacture Date: <*>, Manufacture Location: <*> is usable but not a supported version",
+"occurrences": 4,
+"lines": 4,
+"component": "HARDWARE",
+"components": {
+"HARDWARE": 4
+},
+"level": "WARNING",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "com.ibm.bgldevices.BulkPowerModule with VPD of com.ibm.bgldevices.BulkPowerModule$VpdReply: IBM Part Number: 53P5763, Vendor: Cherokee International, Vendor Serial Number: 4274124, Assembly Revision: "
+},
+{
+"dataset": "BGL",
+"event_id": "E62",
+"template": "monitor caught <*>: while executing <*> caught <*>: Broken pipe and is stopping",
+"occurrences": 190,
+"lines": 190,
+"component": "MONITOR",
+"components": {
+"MONITOR": 190
+},
+"level": "FAILURE",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "monitor caught java.lang.IllegalStateException: while executing I2C Operation caught java.net.SocketException: Broken pipe and is stopping"
+},
+{
+"dataset": "BGL",
+"event_id": "E231",
+"template": "MACHINE CHECK PLB write IRQ (mc=<*> iar <*> lr <*>)",
+"occurrences": 1,
+"lines": 1,
+"component": "KERNEL",
+"components": {
+"KERNEL": 1
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "MACHINE CHECK PLB write IRQ (mc=1b08x iar 0x00000000 lr 0xc00f837c)"
+},
+{
+"dataset": "BGL",
+"event_id": "E213",
+"template": "MACHINE CHECK DCR read timeout (mc=<*> iar <*> lr <*>)",
+"occurrences": 14481,
+"lines": 14481,
+"component": "KERNEL",
+"components": {
+"KERNEL": 14481
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "MACHINE CHECK DCR read timeout (mc=e08x iar 0x00000000 lr 0xc00045a4)"
+},
+{
+"dataset": "BGL",
+"event_id": "E37",
+"template": "ciod: Error reading message prefix on CioStream socket to <*>, Connection timed out",
+"occurrences": 1991,
+"lines": 1991,
+"component": "APP",
+"components": {
+"APP": 1991
+},
+"level": "FATAL",
+"alert_tag": "APPTO",
+"alert_frac": 1.0,
+"sample": "ciod: Error reading message prefix on CioStream socket to 172.16.96.116:41739, Connection timed out"
+},
+{
+"dataset": "BGL",
+"event_id": "E51",
+"template": "machine check interrupt (bit=<*>): L2 dcache unit read return parity error",
+"occurrences": 8,
+"lines": 8,
+"component": "KERNEL",
+"components": {
+"KERNEL": 8
+},
+"level": "FATAL",
+"alert_tag": "KERNMC",
+"alert_frac": 1.0,
+"sample": "machine check interrupt (bit=0x10): L2 dcache unit read return parity error"
+},
+{
+"dataset": "BGL",
+"event_id": "E60",
+"template": "MidplaneSwitchController::clearPort() bll_clear_port failed: <*>",
+"occurrences": 2,
+"lines": 2,
+"component": "LINKCARD",
+"components": {
+"LINKCARD": 2
+},
+"level": "FATAL",
+"alert_tag": "LINKBLL",
+"alert_frac": 1.0,
+"sample": "MidplaneSwitchController::clearPort() bll_clear_port failed: R63-M0-L0-U19-A"
+},
+{
+"dataset": "BGL",
+"event_id": "E69",
+"template": "ciod: Error creating node map from file <*>: No such file or directory",
+"occurrences": 24,
+"lines": 24,
+"component": "APP",
+"components": {
+"APP": 24
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "ciod: Error creating node map from file my_map.txt: No such file or directory"
+},
+{
+"dataset": "BGL",
+"event_id": "E76",
+"template": "ciod: Error creating node map from file <*>: Argument list too long",
+"occurrences": 8,
+"lines": 8,
+"component": "APP",
+"components": {
+"APP": 8
+},
+"level": "FATAL",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "ciod: Error creating node map from file my_map.txt: Argument list too long"
+},
+{
+"dataset": "BGL",
+"event_id": "E43",
+"template": "<*> torus receiver sram ecc error(s) (dcr <*>) detected and corrected over <*> seconds",
+"occurrences": 1,
+"lines": 1,
+"component": "KERNEL",
+"components": {
+"KERNEL": 1
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "1 torus receiver sram ecc error(s) (dcr 0x02f3) detected and corrected over 7082 seconds"
+},
+{
+"dataset": "BGL",
+"event_id": "E13",
+"template": "<*> microseconds spent in the rbs signal handler during <*> calls. <*> microseconds was the maximum time for a single instance of a correctable ddr.",
+"occurrences": 135092,
+"lines": 135092,
+"component": "KERNEL",
+"components": {
+"KERNEL": 135092
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "0 microseconds spent in the rbs signal handler during 0 calls. 0 microseconds was the maximum time for a single instance of a correctable ddr."
+},
+{
+"dataset": "BGL",
+"event_id": "E10",
+"template": "<*> total interrupts. <*> critical input interrupts. <*> microseconds total spent on critical input interrupts, <*> microseconds max time in a critical input interrupt.",
+"occurrences": 135092,
+"lines": 135092,
+"component": "KERNEL",
+"components": {
+"KERNEL": 135092
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "10732 total interrupts. 0 critical input interrupts. 0 microseconds total spent on critical input interrupts, 0 microseconds max time in a critical input interrupt."
+},
+{
+"dataset": "BGL",
+"event_id": "E6",
+"template": "instance of a correctable ddr. RAS KERNEL INFO <*> microseconds spent in the rbs signal handler during <*> calls. <*> microseconds was the maximum time for a single instance of a correctable ddr.",
+"occurrences": 4,
+"lines": 4,
+"component": "a",
+"components": {
+"a": 4
+},
+"level": "single",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "instance of a correctable ddr. RAS KERNEL INFO 0 microseconds spent in the rbs signal handler during 0 calls. 0 microseconds was the maximum time for a single instance of a correctable ddr."
+},
+{
+"dataset": "BGL",
+"event_id": "E5",
+"template": "max time in a cr RAS KERNEL INFO <*> total interrupts. <*> critical input interrupts. <*> microseconds total spent on critical input interrupts, <*> microseconds max time in a critical input interrupt.",
+"occurrences": 4,
+"lines": 4,
+"component": "0",
+"components": {
+"0": 4
+},
+"level": "microseconds",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "max time in a cr RAS KERNEL INFO 10760 total interrupts. 0 critical input interrupts. 0 microseconds total spent on critical input interrupts, 0 microseconds max time in a critical input interrupt."
+},
+{
+"dataset": "BGL",
+"event_id": "E11",
+"template": "external input interrupt (unit=<*> bit=<*>): number of corrected SRAM errors has exceeded threshold, suppressing further interrupts of same type",
+"occurrences": 57,
+"lines": 57,
+"component": "KERNEL",
+"components": {
+"KERNEL": 57
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "external input interrupt (unit=0x01 bit=0x09): number of corrected SRAM errors has exceeded threshold, suppressing further interrupts of same type"
+},
+{
+"dataset": "BGL",
+"event_id": "E12",
+"template": "Kernel detected <*> integer alignment exceptions (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*>",
+"occurrences": 22175,
+"lines": 22175,
+"component": "KERNEL",
+"components": {
+"KERNEL": 22175
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "Kernel detected 50855390 integer alignment exceptions (50855383) iar 0x0023f108, dear 0x1feaa260 (50855384) iar 0x00265564, dear 0x1feaa1c0 (50855385) iar 0x00265574, dear 0x1feaa1e0 (50855386) iar 0x00265578, dear 0x1feaa200 (50855387) iar 0x00265588, dear 0x1feaa220 (50855388) iar 0x0026558c, dear 0x1feaa240 (50855389) iar 0x00265594, dear 0x1feaa260 (50855390) iar 0x00265598, dear 0x1feaa280"
+},
+{
+"dataset": "BGL",
+"event_id": "E9",
+"template": "dear <*> (<*> RAS KERNEL INFO Kernel detected <*> integer alignment exceptions (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*> (<*>) iar <*>, dear <*>",
+"occurrences": 2,
+"lines": 2,
+"component": "iar",
+"components": {
+"iar": 2
+},
+"level": "0x00544eb8,",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "dear 0x01fc5640 (543 RAS KERNEL INFO Kernel detected 5438714 integer alignment exceptions (5438707) iar 0x00544ea8, dear 0x01fc5620 (5438708) iar 0x00544eb8, dear 0x01fc5640 (5438709) iar 0x00544ea8, dear 0x01fc5660 (5438710) iar 0x00544eb8, dear 0x01fc5680 (5438711) iar 0x00544ee0, dear 0x01fc56a0 (5438712) iar 0x00544ef0, dear 0x01fc56c0 (5438713) iar 0x00544ee0, dear 0x01fc56e0 (5438714) iar 0x00544ef0, dear 0x01fc5700"
+},
+{
+"dataset": "BGL",
+"event_id": "E33",
+"template": "<*> torus processor sram injection error(s) (dcr <*>) detected and corrected over <*> seconds",
+"occurrences": 1,
+"lines": 1,
+"component": "KERNEL",
+"components": {
+"KERNEL": 1
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "1 torus processor sram injection error(s) (dcr 0x02fb) detected and corrected over 9107 seconds"
+},
+{
+"dataset": "BGL",
+"event_id": "E136",
+"template": "ciod: LOGIN chdir(<*>) failed: Input/output error",
+"occurrences": 816,
+"lines": 816,
+"component": "APP",
+"components": {
+"APP": 816
+},
+"level": "FATAL",
+"alert_tag": "APPOUT",
+"alert_frac": 1.0,
+"sample": "ciod: LOGIN chdir(/p/gb1/stella/RAPTOR/2183) failed: Input/output error"
+},
+{
+"dataset": "BGL",
+"event_id": "E91",
+"template": "ciod: for node <*>, incomplete data written to core file core.<*>",
+"occurrences": 38,
+"lines": 38,
+"component": "KERNEL",
+"components": {
+"KERNEL": 38
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "ciod: for node 29, incomplete data written to core file core.18677"
+},
+{
+"dataset": "BGL",
+"event_id": "E67",
+"template": "<*> torus non-crc error(s) (dcr <*>) detected and corrected over <*> seconds",
+"occurrences": 1,
+"lines": 1,
+"component": "KERNEL",
+"components": {
+"KERNEL": 1
+},
+"level": "INFO",
+"alert_tag": "-",
+"alert_frac": 0.0,
+"sample": "1 torus non-crc error(s) (dcr 0x02fd) detected and corrected over 30940 seconds"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E42",
+"template": "<*> \"GET <*> <*>\" status: <*> len: <*> time: <*>",
+"occurrences": 90475,
+"lines": 90475,
+"component": "nova.osapi_compute.wsgi.server",
+"components": {
+"nova.osapi_compute.wsgi.server": 70072,
+"nova.metadata.wsgi.server": 20403
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "10.11.10.1 \"GET /v2/54fadb412c4e40cdbaed9335e4c35a9e/servers/detail HTTP/1.1\" status: 200 len: 1583 time: 0.1919448"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E37",
+"template": "[instance: <*>] Creating image",
+"occurrences": 2066,
+"lines": 2066,
+"component": "nova.virt.libvirt.driver",
+"components": {
+"nova.virt.libvirt.driver": 2066
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "[instance: 3edec1e4-9678-4a3a-a21b-a145a4ee5e61] Creating image"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E25",
+"template": "[instance: <*>] VM Stopped (Lifecycle Event)",
+"occurrences": 2067,
+"lines": 2067,
+"component": "nova.compute.manager",
+"components": {
+"nova.compute.manager": 2067
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "[instance: 2b590f10-49fd-4ec9-ae41-19596c2f4b25] VM Stopped (Lifecycle Event)"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E3",
+"template": "While synchronizing instance power states, found <*> instances in the database and <*> instances on the hypervisor.",
+"occurrences": 45,
+"lines": 45,
+"component": "nova.compute.manager",
+"components": {
+"nova.compute.manager": 45
+},
+"level": "WARNING",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "While synchronizing instance power states, found 1 instances in the database and 0 instances on the hypervisor."
+},
+{
+"dataset": "OpenStack",
+"event_id": "E23",
+"template": "[instance: <*>] VM Started (Lifecycle Event)",
+"occurrences": 2066,
+"lines": 2066,
+"component": "nova.compute.manager",
+"components": {
+"nova.compute.manager": 2066
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "[instance: 3edec1e4-9678-4a3a-a21b-a145a4ee5e61] VM Started (Lifecycle Event)"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E26",
+"template": "[instance: <*>] VM Paused (Lifecycle Event)",
+"occurrences": 2066,
+"lines": 2066,
+"component": "nova.compute.manager",
+"components": {
+"nova.compute.manager": 2066
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "[instance: 3edec1e4-9678-4a3a-a21b-a145a4ee5e61] VM Paused (Lifecycle Event)"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E4",
+"template": "[instance: <*>] During sync_power_state the instance has a pending task (spawning). Skip.",
+"occurrences": 4049,
+"lines": 4049,
+"component": "nova.compute.manager",
+"components": {
+"nova.compute.manager": 4049
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "[instance: 3edec1e4-9678-4a3a-a21b-a145a4ee5e61] During sync_power_state the instance has a pending task (spawning). Skip."
+},
+{
+"dataset": "OpenStack",
+"event_id": "E44",
+"template": "image <*> at (<*>): checking",
+"occurrences": 12043,
+"lines": 12043,
+"component": "nova.virt.libvirt.imagecache",
+"components": {
+"nova.virt.libvirt.imagecache": 12043
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "image 0673dd71-34c5-4fbb-86c4-40623fbe45b4 at (/var/lib/nova/instances/_base/a489c868f0c37da93b76227c91bb03908ac0e742): checking"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E5",
+"template": "image <*> at (<*>): in use: on this node <*> local, <*> on other nodes sharing this instance storage",
+"occurrences": 12043,
+"lines": 12043,
+"component": "nova.virt.libvirt.imagecache",
+"components": {
+"nova.virt.libvirt.imagecache": 12043
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "image 0673dd71-34c5-4fbb-86c4-40623fbe45b4 at (/var/lib/nova/instances/_base/a489c868f0c37da93b76227c91bb03908ac0e742): in use: on this node 1 local, 0 on other nodes sharing this instance storage"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E47",
+"template": "Active base files: <*>",
+"occurrences": 12035,
+"lines": 12035,
+"component": "nova.virt.libvirt.imagecache",
+"components": {
+"nova.virt.libvirt.imagecache": 12035
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "Active base files: /var/lib/nova/instances/_base/a489c868f0c37da93b76227c91bb03908ac0e742"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E38",
+"template": "Creating event <*> for instance <*>",
+"occurrences": 2065,
+"lines": 2065,
+"component": "nova.api.openstack.compute.server_external_events",
+"components": {
+"nova.api.openstack.compute.server_external_events": 2065
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "Creating event network-vif-plugged:95fcdc5e-3159-4e86-968a-13a2a06e9e89 for instance 3edec1e4-9678-4a3a-a21b-a145a4ee5e61"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E41",
+"template": "<*> \"POST <*> <*>\" status: <*> len: <*> time: <*>",
+"occurrences": 6194,
+"lines": 6194,
+"component": "nova.osapi_compute.wsgi.server",
+"components": {
+"nova.osapi_compute.wsgi.server": 6194
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "10.11.10.1 \"POST /v2/e9746973ac574c6b8a9e8857f56a7608/os-server-external-events HTTP/1.1\" status: 200 len: 380 time: 0.0929029"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E22",
+"template": "[instance: <*>] VM Resumed (Lifecycle Event)",
+"occurrences": 4132,
+"lines": 4132,
+"component": "nova.compute.manager",
+"components": {
+"nova.compute.manager": 4132
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "[instance: 3edec1e4-9678-4a3a-a21b-a145a4ee5e61] VM Resumed (Lifecycle Event)"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E18",
+"template": "[instance: <*>] Instance spawned successfully.",
+"occurrences": 2066,
+"lines": 2066,
+"component": "nova.virt.libvirt.driver",
+"components": {
+"nova.virt.libvirt.driver": 2066
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "[instance: 3edec1e4-9678-4a3a-a21b-a145a4ee5e61] Instance spawned successfully."
+},
+{
+"dataset": "OpenStack",
+"event_id": "E9",
+"template": "[instance: <*>] Took <*> seconds to spawn the instance on the hypervisor.",
+"occurrences": 2066,
+"lines": 2066,
+"component": "nova.compute.manager",
+"components": {
+"nova.compute.manager": 2066
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "[instance: 3edec1e4-9678-4a3a-a21b-a145a4ee5e61] Took 20.58 seconds to spawn the instance on the hypervisor."
+},
+{
+"dataset": "OpenStack",
+"event_id": "E21",
+"template": "[instance: <*>] Took <*> seconds to build instance.",
+"occurrences": 2066,
+"lines": 2066,
+"component": "nova.compute.manager",
+"components": {
+"nova.compute.manager": 2066
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "[instance: 3edec1e4-9678-4a3a-a21b-a145a4ee5e61] Took 21.38 seconds to build instance."
+},
+{
+"dataset": "OpenStack",
+"event_id": "E39",
+"template": "<*> \"DELETE <*> <*>\" status: <*> len: <*> time: <*>",
+"occurrences": 2064,
+"lines": 2064,
+"component": "nova.osapi_compute.wsgi.server",
+"components": {
+"nova.osapi_compute.wsgi.server": 2064
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "10.11.10.1 \"DELETE /v2/54fadb412c4e40cdbaed9335e4c35a9e/servers/3edec1e4-9678-4a3a-a21b-a145a4ee5e61 HTTP/1.1\" status: 204 len: 203 time: 0.2484462"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E34",
+"template": "[instance: <*>] Terminating instance",
+"occurrences": 2064,
+"lines": 2064,
+"component": "nova.compute.manager",
+"components": {
+"nova.compute.manager": 2064
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "[instance: 3edec1e4-9678-4a3a-a21b-a145a4ee5e61] Terminating instance"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E17",
+"template": "[instance: <*>] Instance destroyed successfully.",
+"occurrences": 2064,
+"lines": 2064,
+"component": "nova.virt.libvirt.driver",
+"components": {
+"nova.virt.libvirt.driver": 2064
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "[instance: 3edec1e4-9678-4a3a-a21b-a145a4ee5e61] Instance destroyed successfully."
+},
+{
+"dataset": "OpenStack",
+"event_id": "E30",
+"template": "[instance: <*>] Deleting instance files <*>",
+"occurrences": 2064,
+"lines": 2064,
+"component": "nova.virt.libvirt.driver",
+"components": {
+"nova.virt.libvirt.driver": 2064
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "[instance: 3edec1e4-9678-4a3a-a21b-a145a4ee5e61] Deleting instance files /var/lib/nova/instances/3edec1e4-9678-4a3a-a21b-a145a4ee5e61_del"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E35",
+"template": "[instance: <*>] Deletion of <*> complete",
+"occurrences": 2064,
+"lines": 2064,
+"component": "nova.virt.libvirt.driver",
+"components": {
+"nova.virt.libvirt.driver": 2064
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "[instance: 3edec1e4-9678-4a3a-a21b-a145a4ee5e61] Deletion of /var/lib/nova/instances/3edec1e4-9678-4a3a-a21b-a145a4ee5e61_del complete"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E8",
+"template": "[instance: <*>] Took <*> seconds to destroy the instance on the hypervisor.",
+"occurrences": 2064,
+"lines": 2064,
+"component": "nova.compute.manager",
+"components": {
+"nova.compute.manager": 2064
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "[instance: 3edec1e4-9678-4a3a-a21b-a145a4ee5e61] Took 0.99 seconds to destroy the instance on the hypervisor."
+},
+{
+"dataset": "OpenStack",
+"event_id": "E12",
+"template": "[instance: <*>] Took <*> seconds to deallocate network for instance.",
+"occurrences": 2065,
+"lines": 2065,
+"component": "nova.compute.manager",
+"components": {
+"nova.compute.manager": 2065
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "[instance: 3edec1e4-9678-4a3a-a21b-a145a4ee5e61] Took 0.47 seconds to deallocate network for instance."
+},
+{
+"dataset": "OpenStack",
+"event_id": "E15",
+"template": "HTTP exception thrown: No instances found for any event",
+"occurrences": 2064,
+"lines": 2064,
+"component": "nova.api.openstack.wsgi",
+"components": {
+"nova.api.openstack.wsgi": 2064
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "HTTP exception thrown: No instances found for any event"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E46",
+"template": "Unknown base file: <*>",
+"occurrences": 3059,
+"lines": 3059,
+"component": "nova.virt.libvirt.imagecache",
+"components": {
+"nova.virt.libvirt.imagecache": 3059
+},
+"level": "WARNING",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "Unknown base file: /var/lib/nova/instances/_base/a489c868f0c37da93b76227c91bb03908ac0e742"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E43",
+"template": "Removable base files: <*>",
+"occurrences": 3059,
+"lines": 3059,
+"component": "nova.virt.libvirt.imagecache",
+"components": {
+"nova.virt.libvirt.imagecache": 3059
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "Removable base files: /var/lib/nova/instances/_base/a489c868f0c37da93b76227c91bb03908ac0e742"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E40",
+"template": "Removing base or swap file: <*>",
+"occurrences": 2064,
+"lines": 2064,
+"component": "nova.virt.libvirt.imagecache",
+"components": {
+"nova.virt.libvirt.imagecache": 2064
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "Removing base or swap file: /var/lib/nova/instances/_base/a489c868f0c37da93b76227c91bb03908ac0e742"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E13",
+"template": "[instance: <*>] Attempting claim: memory <*> MB, disk <*> GB, vcpus <*> CPU",
+"occurrences": 2065,
+"lines": 2065,
+"component": "nova.compute.claims",
+"components": {
+"nova.compute.claims": 2065
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "[instance: 3416d0fa-6f0f-41ce-9c0a-59ae9a735da8] Attempting claim: memory 2048 MB, disk 20 GB, vcpus 1 CPU"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E28",
+"template": "[instance: <*>] Total memory: <*> MB, used: <*> MB",
+"occurrences": 2065,
+"lines": 2065,
+"component": "nova.compute.claims",
+"components": {
+"nova.compute.claims": 2065
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "[instance: 3416d0fa-6f0f-41ce-9c0a-59ae9a735da8] Total memory: 64172 MB, used: 512.00 MB"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E29",
+"template": "[instance: <*>] memory limit: <*> MB, free: <*> MB",
+"occurrences": 2065,
+"lines": 2065,
+"component": "nova.compute.claims",
+"components": {
+"nova.compute.claims": 2065
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "[instance: 3416d0fa-6f0f-41ce-9c0a-59ae9a735da8] memory limit: 96258.00 MB, free: 95746.00 MB"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E33",
+"template": "[instance: <*>] Total disk: <*> GB, used: <*> GB",
+"occurrences": 2065,
+"lines": 2065,
+"component": "nova.compute.claims",
+"components": {
+"nova.compute.claims": 2065
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "[instance: 3416d0fa-6f0f-41ce-9c0a-59ae9a735da8] Total disk: 15 GB, used: 0.00 GB"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E11",
+"template": "[instance: <*>] disk limit not specified, defaulting to unlimited",
+"occurrences": 2065,
+"lines": 2065,
+"component": "nova.compute.claims",
+"components": {
+"nova.compute.claims": 2065
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "[instance: 3416d0fa-6f0f-41ce-9c0a-59ae9a735da8] disk limit not specified, defaulting to unlimited"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E27",
+"template": "[instance: <*>] Total vcpu: <*> VCPU, used: <*> VCPU",
+"occurrences": 2065,
+"lines": 2065,
+"component": "nova.compute.claims",
+"components": {
+"nova.compute.claims": 2065
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "[instance: 3416d0fa-6f0f-41ce-9c0a-59ae9a735da8] Total vcpu: 16 VCPU, used: 0.00 VCPU"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E10",
+"template": "[instance: <*>] vcpu limit not specified, defaulting to unlimited",
+"occurrences": 2065,
+"lines": 2065,
+"component": "nova.compute.claims",
+"components": {
+"nova.compute.claims": 2065
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "[instance: 3416d0fa-6f0f-41ce-9c0a-59ae9a735da8] vcpu limit not specified, defaulting to unlimited"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E36",
+"template": "[instance: <*>] Claim successful",
+"occurrences": 2065,
+"lines": 2065,
+"component": "nova.compute.claims",
+"components": {
+"nova.compute.claims": 2065
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "[instance: 3416d0fa-6f0f-41ce-9c0a-59ae9a735da8] Claim successful"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E16",
+"template": "Auditing locally available compute resources for node <*>",
+"occurrences": 1739,
+"lines": 1739,
+"component": "nova.compute.resource_tracker",
+"components": {
+"nova.compute.resource_tracker": 1739
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "Auditing locally available compute resources for node cp-1.slowvm1.tcloud-pg0.utah.cloudlab.us"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E20",
+"template": "Total usable vcpus: <*>, total allocated vcpus: <*>",
+"occurrences": 1739,
+"lines": 1739,
+"component": "nova.compute.resource_tracker",
+"components": {
+"nova.compute.resource_tracker": 1739
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "Total usable vcpus: 16, total allocated vcpus: 1"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E2",
+"template": "Final resource view: name=<*> phys_ram=<*> used_ram=<*> phys_disk=<*> used_disk=<*> total_vcpus=<*> used_vcpus=<*> pci_stats=<*>",
+"occurrences": 1739,
+"lines": 1739,
+"component": "nova.compute.resource_tracker",
+"components": {
+"nova.compute.resource_tracker": 1739
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "Final resource view: name=cp-1.slowvm1.tcloud-pg0.utah.cloudlab.us phys_ram=64172MB used_ram=2560MB phys_disk=15GB used_disk=20GB total_vcpus=16 used_vcpus=1 pci_stats=[]"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E32",
+"template": "Compute_service record updated for <*>",
+"occurrences": 1739,
+"lines": 1739,
+"component": "nova.compute.resource_tracker",
+"components": {
+"nova.compute.resource_tracker": 1739
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "Compute_service record updated for cp-1.slowvm1.tcloud-pg0.utah.cloudlab.us:cp-1.slowvm1.tcloud-pg0.utah.cloudlab.us"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E19",
+"template": "Successfully synced instances from host '<*>'.",
+"occurrences": 502,
+"lines": 502,
+"component": "nova.scheduler.host_manager",
+"components": {
+"nova.scheduler.host_manager": 502
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "Successfully synced instances from host 'cp-1.slowvm1.tcloud-pg0.utah.cloudlab.us'."
+},
+{
+"dataset": "OpenStack",
+"event_id": "E7",
+"template": "The instance sync for host <*> did not match. Re-created its InstanceList.",
+"occurrences": 364,
+"lines": 364,
+"component": "nova.scheduler.host_manager",
+"components": {
+"nova.scheduler.host_manager": 364
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "The instance sync for host 'cp-1.slowvm1.tcloud-pg0.utah.cloudlab.us' did not match. Re-created its InstanceList."
+},
+{
+"dataset": "OpenStack",
+"event_id": "E31",
+"template": "Base or swap file too young to remove: <*>",
+"occurrences": 995,
+"lines": 995,
+"component": "nova.virt.libvirt.imagecache",
+"components": {
+"nova.virt.libvirt.imagecache": 995
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "Base or swap file too young to remove: /var/lib/nova/instances/_base/a489c868f0c37da93b76227c91bb03908ac0e742"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E1",
+"template": "couldn't obtain the vcpu count from domain id: <*> exception: Requested operation is not valid: cpu affinity is not supported",
+"occurrences": 12,
+"lines": 12,
+"component": "nova.virt.libvirt.driver",
+"components": {
+"nova.virt.libvirt.driver": 12
+},
+"level": "WARNING",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "couldn't obtain the vcpu count from domain id: b93203d4-c79b-41fe-8090-5f2b89b0d081, exception: Requested operation is not valid: cpu affinity is not supported"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E14",
+"template": "Running instance usage audit for host <*> from <*> to <*>. <*> instances.",
+"occurrences": 30,
+"lines": 30,
+"component": "nova.compute.manager",
+"components": {
+"nova.compute.manager": 30
+},
+"level": "INFO",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "Running instance usage audit for host cp-1.slowvm1.tcloud-pg0.utah.cloudlab.us from 2017-05-15 01:00:00 to 2017-05-15 02:00:00. 88 instances."
+},
+{
+"dataset": "OpenStack",
+"event_id": "E48",
+"template": "Error during <*>",
+"occurrences": 8,
+"lines": 8,
+"component": "oslo_service.periodic_task",
+"components": {
+"oslo_service.periodic_task": 8
+},
+"level": "ERROR",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "Error during ComputeManager._run_image_cache_manager_pass"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E24",
+"template": "Bad response code while validating token: <*>",
+"occurrences": 2,
+"lines": 2,
+"component": "keystonemiddleware.auth_token",
+"components": {
+"keystonemiddleware.auth_token": 2
+},
+"level": "ERROR",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "Bad response code while validating token: 503"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E45",
+"template": "Identity response: <*>",
+"occurrences": 2,
+"lines": 2,
+"component": "keystonemiddleware.auth_token",
+"components": {
+"keystonemiddleware.auth_token": 2
+},
+"level": "WARNING",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "Identity response: <!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">"
+},
+{
+"dataset": "OpenStack",
+"event_id": "E6",
+"template": "Unable to validate token: Failed to fetch token data from identity server",
+"occurrences": 2,
+"lines": 2,
+"component": "keystonemiddleware.auth_token",
+"components": {
+"keystonemiddleware.auth_token": 2
+},
+"level": "CRITICAL",
+"alert_tag": null,
+"alert_frac": null,
+"sample": "Unable to validate token: Failed to fetch token data from identity server"
+}
+]

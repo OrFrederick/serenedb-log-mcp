@@ -1,0 +1,1269 @@
+{
+"model": "claude-haiku-5-5",
+"summary": {
+"main": {
+"cR@5": 0.979,
+"cR@10": 0.965,
+"P@5": 0.681,
+"MRR": 0.98,
+"n": 57
+},
+"holdout": {
+"cR@5": 0.956,
+"cR@10": 0.963,
+"P@5": 0.6,
+"MRR": 1.0,
+"n": 16
+},
+"cost_usd": 0.1373
+},
+"runs": [
+{
+"split": "main",
+"ds": "BGL",
+"id": "b01",
+"type": "mixed",
+"ranked": [
+"E94",
+"E68",
+"E126",
+"E86",
+"E95",
+"E191",
+"E92",
+"E218",
+"E106",
+"E8"
+]
+},
+{
+"split": "main",
+"ds": "BGL",
+"id": "b02",
+"type": "para",
+"ranked": [
+"E94",
+"E68",
+"E92",
+"E191",
+"E95",
+"E42",
+"E86",
+"E8",
+"E126",
+"E17"
+]
+},
+{
+"split": "main",
+"ds": "BGL",
+"id": "b03",
+"type": "kw",
+"ranked": [
+"E68",
+"E94",
+"E191",
+"E92",
+"E95",
+"E42",
+"E86",
+"E8",
+"E17"
+]
+},
+{
+"split": "main",
+"ds": "BGL",
+"id": "b04",
+"type": "mixed",
+"ranked": [
+"E312",
+"E73",
+"E125",
+"E209",
+"E65",
+"E100",
+"E63",
+"E59",
+"E70",
+"E52"
+]
+},
+{
+"split": "main",
+"ds": "BGL",
+"id": "b05",
+"type": "kw",
+"ranked": [
+"E63",
+"E34",
+"E70",
+"E40",
+"E119",
+"E67",
+"E79",
+"E19",
+"E27",
+"E125"
+]
+},
+{
+"split": "main",
+"ds": "BGL",
+"id": "b06",
+"type": "para",
+"ranked": [
+"E209",
+"E65",
+"E125",
+"E73",
+"E61",
+"E57",
+"E60",
+"E89",
+"E100",
+"E232"
+]
+},
+{
+"split": "main",
+"ds": "BGL",
+"id": "b07",
+"type": "kw",
+"ranked": [
+"E257",
+"E211",
+"E276",
+"E165",
+"E136",
+"E118",
+"E159",
+"E35",
+"E48",
+"E50"
+]
+},
+{
+"split": "main",
+"ds": "BGL",
+"id": "b08",
+"type": "para",
+"ranked": [
+"E211",
+"E276",
+"E257",
+"E165",
+"E118",
+"E159",
+"E136",
+"E312",
+"E69",
+"E35"
+]
+},
+{
+"split": "main",
+"ds": "BGL",
+"id": "b09",
+"type": "para",
+"ranked": [
+"E315",
+"E264",
+"E258",
+"E306",
+"E286",
+"E130",
+"E89",
+"E296",
+"E261",
+"E285"
+]
+},
+{
+"split": "main",
+"ds": "BGL",
+"id": "b10",
+"type": "mixed",
+"ranked": [
+"E310",
+"E228",
+"E147",
+"E91",
+"E258",
+"E140",
+"E296",
+"E123",
+"E128",
+"E138"
+]
+},
+{
+"split": "main",
+"ds": "BGL",
+"id": "b11",
+"type": "kw",
+"ranked": [
+"E35",
+"E50",
+"E48",
+"E201",
+"E118",
+"E159",
+"E136",
+"E21",
+"E36",
+"E29"
+]
+},
+{
+"split": "main",
+"ds": "BGL",
+"id": "b12",
+"type": "para",
+"ranked": [
+"E35",
+"E50",
+"E48",
+"E201",
+"E118",
+"E159",
+"E136"
+]
+},
+{
+"split": "main",
+"ds": "BGL",
+"id": "b13",
+"type": "kw",
+"ranked": [
+"E159",
+"E48",
+"E88",
+"E118",
+"E136",
+"E35",
+"E69",
+"E50"
+]
+},
+{
+"split": "main",
+"ds": "BGL",
+"id": "b14",
+"type": "para",
+"ranked": [
+"E48",
+"E159",
+"E88",
+"E118",
+"E136",
+"E35",
+"E69",
+"E50",
+"E201",
+"E74"
+]
+},
+{
+"split": "main",
+"ds": "BGL",
+"id": "b15",
+"type": "kw",
+"ranked": [
+"E54",
+"E221",
+"E223",
+"E225",
+"E304",
+"E66",
+"E244",
+"E3",
+"E2",
+"E4"
+]
+},
+{
+"split": "main",
+"ds": "BGL",
+"id": "b16",
+"type": "para",
+"ranked": [
+"E254",
+"E120",
+"E3",
+"E2",
+"E54",
+"E66",
+"E304",
+"E244",
+"E261",
+"E260"
+]
+},
+{
+"split": "main",
+"ds": "BGL",
+"id": "b17",
+"type": "kw",
+"ranked": [
+"E254",
+"E120",
+"E3",
+"E2",
+"E4",
+"E54",
+"E66",
+"E304",
+"E244",
+"E221"
+]
+},
+{
+"split": "main",
+"ds": "BGL",
+"id": "b18",
+"type": "kw",
+"ranked": [
+"E238",
+"E208",
+"E249",
+"E72",
+"E255",
+"E75",
+"E51",
+"E129",
+"E44",
+"E90"
+]
+},
+{
+"split": "main",
+"ds": "BGL",
+"id": "b19",
+"type": "mixed",
+"ranked": [
+"E238",
+"E208",
+"E130",
+"E286",
+"E265",
+"E301",
+"E243",
+"E203",
+"E169",
+"E233"
+]
+},
+{
+"split": "main",
+"ds": "BGL",
+"id": "b20",
+"type": "kw",
+"ranked": [
+"E140",
+"E142",
+"E135",
+"E138",
+"E308",
+"E139",
+"E156",
+"E137",
+"E170",
+"E127"
+]
+},
+{
+"split": "main",
+"ds": "BGL",
+"id": "b21",
+"type": "para",
+"ranked": [
+"E12",
+"E9",
+"E240",
+"E237",
+"E183",
+"E317",
+"E302",
+"E296",
+"E285",
+"E301"
+]
+},
+{
+"split": "main",
+"ds": "BGL",
+"id": "b22",
+"type": "para",
+"ranked": [
+"E36",
+"E21",
+"E29",
+"E37",
+"E134",
+"E55",
+"E307",
+"E62",
+"E59",
+"E125"
+]
+},
+{
+"split": "main",
+"ds": "BGL",
+"id": "b23",
+"type": "kw",
+"ranked": [
+"E37",
+"E307",
+"E29",
+"E36",
+"E21",
+"E278",
+"E134",
+"E55",
+"E62",
+"E1"
+]
+},
+{
+"split": "main",
+"ds": "BGL",
+"id": "b24",
+"type": "kw",
+"ranked": [
+"E46",
+"E101",
+"E30",
+"E31",
+"E39",
+"E252",
+"E66",
+"E304",
+"E297",
+"E253"
+]
+},
+{
+"split": "main",
+"ds": "BGL",
+"id": "b25",
+"type": "kw",
+"ranked": [
+"E259",
+"E261",
+"E2",
+"E4",
+"E3",
+"E54",
+"E120",
+"E221",
+"E253",
+"E297"
+]
+},
+{
+"split": "main",
+"ds": "BGL",
+"id": "b26",
+"type": "para",
+"ranked": [
+"E280",
+"E226",
+"E245",
+"E14",
+"E32",
+"E22",
+"E15",
+"E98",
+"E224",
+"E272"
+]
+},
+{
+"split": "main",
+"ds": "BGL",
+"id": "b27",
+"type": "kw",
+"ranked": [
+"E285",
+"E227",
+"E286",
+"E265",
+"E296",
+"E243",
+"E130",
+"E301",
+"E268",
+"E308"
+]
+},
+{
+"split": "main",
+"ds": "BGL",
+"id": "b28",
+"type": "kw",
+"ranked": [
+"E286",
+"E265",
+"E130",
+"E89",
+"E129",
+"E51",
+"E97",
+"E231",
+"E213",
+"E243"
+]
+},
+{
+"split": "main",
+"ds": "BGL",
+"id": "b29",
+"type": "kw",
+"ranked": [
+"E80",
+"E147",
+"E228",
+"E91",
+"E309",
+"E241",
+"E236",
+"E226"
+]
+},
+{
+"split": "main",
+"ds": "BGL",
+"id": "b30",
+"type": "para",
+"ranked": [
+"E100",
+"E52",
+"E73",
+"E61",
+"E57",
+"E60",
+"E125",
+"E232",
+"E260",
+"E93"
+]
+},
+{
+"split": "main",
+"ds": "OpenStack",
+"id": "o01",
+"type": "mixed",
+"ranked": [
+"E21",
+"E9",
+"E37",
+"E18",
+"E13",
+"E36",
+"E38",
+"E41",
+"E23",
+"E4"
+]
+},
+{
+"split": "main",
+"ds": "OpenStack",
+"id": "o02",
+"type": "kw",
+"ranked": [
+"E21",
+"E9",
+"E18",
+"E13",
+"E36",
+"E37",
+"E23"
+]
+},
+{
+"split": "main",
+"ds": "OpenStack",
+"id": "o03",
+"type": "para",
+"ranked": [
+"E13",
+"E36",
+"E37",
+"E18",
+"E9",
+"E21",
+"E23",
+"E41",
+"E22",
+"E4"
+]
+},
+{
+"split": "main",
+"ds": "OpenStack",
+"id": "o04",
+"type": "para",
+"ranked": [
+"E6",
+"E24",
+"E45"
+]
+},
+{
+"split": "main",
+"ds": "OpenStack",
+"id": "o05",
+"type": "kw",
+"ranked": [
+"E6",
+"E24",
+"E45",
+"E15",
+"E42",
+"E41"
+]
+},
+{
+"split": "main",
+"ds": "OpenStack",
+"id": "o06",
+"type": "mixed",
+"ranked": [
+"E6",
+"E24",
+"E45",
+"E48",
+"E42",
+"E41"
+]
+},
+{
+"split": "main",
+"ds": "OpenStack",
+"id": "o07",
+"type": "kw",
+"ranked": [
+"E33",
+"E2",
+"E13",
+"E11",
+"E16",
+"E47",
+"E43",
+"E40",
+"E37",
+"E31"
+]
+},
+{
+"split": "main",
+"ds": "OpenStack",
+"id": "o08",
+"type": "para",
+"ranked": [
+"E2",
+"E28",
+"E29",
+"E16",
+"E13",
+"E36",
+"E32"
+]
+},
+{
+"split": "main",
+"ds": "OpenStack",
+"id": "o09",
+"type": "kw",
+"ranked": [
+"E13",
+"E36",
+"E28",
+"E29",
+"E33",
+"E27",
+"E11",
+"E10",
+"E2",
+"E20"
+]
+},
+{
+"split": "main",
+"ds": "OpenStack",
+"id": "o10",
+"type": "para",
+"ranked": [
+"E13",
+"E29",
+"E28",
+"E33",
+"E27",
+"E36",
+"E2",
+"E20",
+"E7",
+"E19"
+]
+},
+{
+"split": "main",
+"ds": "OpenStack",
+"id": "o11",
+"type": "kw",
+"ranked": [
+"E34",
+"E17",
+"E8",
+"E30",
+"E35",
+"E12",
+"E39",
+"E15"
+]
+},
+{
+"split": "main",
+"ds": "OpenStack",
+"id": "o12",
+"type": "para",
+"ranked": [
+"E34",
+"E17",
+"E35",
+"E30",
+"E8",
+"E12",
+"E39",
+"E25"
+]
+},
+{
+"split": "main",
+"ds": "OpenStack",
+"id": "o13",
+"type": "mixed",
+"ranked": [
+"E12",
+"E8",
+"E34",
+"E39",
+"E17",
+"E35",
+"E30"
+]
+},
+{
+"split": "main",
+"ds": "OpenStack",
+"id": "o14",
+"type": "para",
+"ranked": [
+"E42",
+"E41",
+"E39",
+"E38",
+"E15",
+"E24",
+"E45",
+"E6",
+"E48",
+"E21"
+]
+},
+{
+"split": "main",
+"ds": "OpenStack",
+"id": "o15",
+"type": "kw",
+"ranked": [
+"E15",
+"E42",
+"E41",
+"E39",
+"E38",
+"E24",
+"E45",
+"E6",
+"E48"
+]
+},
+{
+"split": "main",
+"ds": "OpenStack",
+"id": "o16",
+"type": "kw",
+"ranked": [
+"E40",
+"E43",
+"E31",
+"E46",
+"E47",
+"E5",
+"E44",
+"E48"
+]
+},
+{
+"split": "main",
+"ds": "OpenStack",
+"id": "o17",
+"type": "para",
+"ranked": [
+"E40",
+"E43",
+"E31",
+"E46",
+"E47",
+"E44",
+"E5"
+]
+},
+{
+"split": "main",
+"ds": "OpenStack",
+"id": "o18",
+"type": "kw",
+"ranked": [
+"E3",
+"E4",
+"E25",
+"E23",
+"E26",
+"E22",
+"E7",
+"E19",
+"E17",
+"E48"
+]
+},
+{
+"split": "main",
+"ds": "OpenStack",
+"id": "o19",
+"type": "kw",
+"ranked": [
+"E23",
+"E25",
+"E26",
+"E22",
+"E34",
+"E18",
+"E17",
+"E35",
+"E9",
+"E21"
+]
+},
+{
+"split": "main",
+"ds": "OpenStack",
+"id": "o20",
+"type": "kw",
+"ranked": [
+"E25",
+"E26",
+"E22",
+"E23",
+"E3",
+"E4",
+"E17",
+"E34",
+"E7",
+"E19"
+]
+},
+{
+"split": "main",
+"ds": "OpenStack",
+"id": "o21",
+"type": "para",
+"ranked": [
+"E1",
+"E20",
+"E27",
+"E2",
+"E16",
+"E10",
+"E13",
+"E36",
+"E32",
+"E48"
+]
+},
+{
+"split": "main",
+"ds": "OpenStack",
+"id": "o22",
+"type": "kw",
+"ranked": [
+"E48",
+"E3",
+"E14",
+"E16",
+"E44",
+"E47",
+"E43",
+"E46",
+"E19",
+"E7"
+]
+},
+{
+"split": "main",
+"ds": "OpenStack",
+"id": "o23",
+"type": "mixed",
+"ranked": [
+"E4",
+"E3",
+"E6",
+"E24",
+"E45",
+"E48",
+"E46",
+"E1",
+"E7",
+"E15"
+]
+},
+{
+"split": "main",
+"ds": "OpenStack",
+"id": "o24",
+"type": "para",
+"ranked": [
+"E7",
+"E19",
+"E3",
+"E2",
+"E16",
+"E32",
+"E20",
+"E14",
+"E48",
+"E1"
+]
+},
+{
+"split": "main",
+"ds": "OpenStack",
+"id": "o25",
+"type": "kw",
+"ranked": [
+"E16",
+"E2",
+"E20",
+"E32",
+"E28",
+"E27",
+"E33",
+"E29",
+"E14",
+"E1"
+]
+},
+{
+"split": "main",
+"ds": "OpenStack",
+"id": "o26",
+"type": "para",
+"ranked": [
+"E14",
+"E2",
+"E20",
+"E13",
+"E18",
+"E35",
+"E17",
+"E36",
+"E41",
+"E39"
+]
+},
+{
+"split": "main",
+"ds": "OpenStack",
+"id": "o27",
+"type": "para",
+"ranked": [
+"E38",
+"E41",
+"E15",
+"E18",
+"E9",
+"E21"
+]
+},
+{
+"split": "holdout",
+"ds": "BGL",
+"id": "hb1",
+"type": "para",
+"ranked": [
+"E94",
+"E68",
+"E92",
+"E191",
+"E95",
+"E42",
+"E8",
+"E17",
+"E86",
+"E126"
+]
+},
+{
+"split": "holdout",
+"ds": "BGL",
+"id": "hb2",
+"type": "para",
+"ranked": [
+"E63",
+"E34",
+"E70",
+"E40",
+"E119",
+"E56",
+"E73",
+"E209",
+"E59",
+"E100"
+]
+},
+{
+"split": "holdout",
+"ds": "BGL",
+"id": "hb3",
+"type": "para",
+"ranked": [
+"E118",
+"E159",
+"E136",
+"E165",
+"E257",
+"E211",
+"E276"
+]
+},
+{
+"split": "holdout",
+"ds": "BGL",
+"id": "hb4",
+"type": "para",
+"ranked": [
+"E147",
+"E228",
+"E310",
+"E296",
+"E285",
+"E227",
+"E308",
+"E91",
+"E12",
+"E301"
+]
+},
+{
+"split": "holdout",
+"ds": "BGL",
+"id": "hb5",
+"type": "para",
+"ranked": [
+"E254",
+"E120",
+"E3",
+"E2",
+"E4",
+"E54",
+"E66",
+"E304",
+"E221",
+"E223"
+]
+},
+{
+"split": "holdout",
+"ds": "BGL",
+"id": "hb6",
+"type": "mixed",
+"ranked": [
+"E315",
+"E258",
+"E264",
+"E306",
+"E286",
+"E296",
+"E268",
+"E301",
+"E302",
+"E265"
+]
+},
+{
+"split": "holdout",
+"ds": "BGL",
+"id": "hb7",
+"type": "para",
+"ranked": [
+"E54",
+"E66",
+"E225",
+"E221",
+"E223",
+"E244",
+"E3",
+"E2",
+"E4",
+"E304"
+]
+},
+{
+"split": "holdout",
+"ds": "BGL",
+"id": "hb8",
+"type": "kw",
+"ranked": [
+"E63",
+"E34",
+"E27",
+"E70",
+"E40",
+"E119",
+"E67",
+"E79",
+"E19",
+"E125"
+]
+},
+{
+"split": "holdout",
+"ds": "OpenStack",
+"id": "ho1",
+"type": "mixed",
+"ranked": [
+"E9",
+"E21",
+"E37",
+"E41",
+"E13",
+"E36",
+"E18",
+"E4",
+"E29",
+"E38"
+]
+},
+{
+"split": "holdout",
+"ds": "OpenStack",
+"id": "ho2",
+"type": "mixed",
+"ranked": [
+"E24",
+"E6",
+"E45"
+]
+},
+{
+"split": "holdout",
+"ds": "OpenStack",
+"id": "ho3",
+"type": "para",
+"ranked": [
+"E2",
+"E16",
+"E20",
+"E1",
+"E13",
+"E28",
+"E29",
+"E33",
+"E27",
+"E36"
+]
+},
+{
+"split": "holdout",
+"ds": "OpenStack",
+"id": "ho4",
+"type": "para",
+"ranked": [
+"E25",
+"E17",
+"E34",
+"E8",
+"E39",
+"E35",
+"E30",
+"E12",
+"E26",
+"E3"
+]
+},
+{
+"split": "holdout",
+"ds": "OpenStack",
+"id": "ho5",
+"type": "para",
+"ranked": [
+"E43",
+"E40",
+"E31",
+"E46",
+"E5",
+"E47",
+"E44",
+"E37"
+]
+},
+{
+"split": "holdout",
+"ds": "OpenStack",
+"id": "ho6",
+"type": "mixed",
+"ranked": [
+"E42"
+]
+},
+{
+"split": "holdout",
+"ds": "OpenStack",
+"id": "ho7",
+"type": "mixed",
+"ranked": [
+"E3",
+"E7",
+"E19",
+"E4",
+"E17",
+"E25",
+"E23",
+"E26",
+"E22",
+"E14"
+]
+},
+{
+"split": "holdout",
+"ds": "OpenStack",
+"id": "ho8",
+"type": "kw",
+"ranked": [
+"E36",
+"E13",
+"E28",
+"E33",
+"E27",
+"E29",
+"E11",
+"E10",
+"E2",
+"E16"
+]
+}
+]
+}

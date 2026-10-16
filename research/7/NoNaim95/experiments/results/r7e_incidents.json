@@ -1,0 +1,107 @@
+{
+ "random_baseline_P1": 0.033,
+ "full|jaccard": {
+  "P1": 0.723,
+  "P3": 0.674,
+  "MRR": 0.769
+ },
+ "full|tfidf_bag_cosine": {
+  "P1": 0.739,
+  "P3": 0.696,
+  "MRR": 0.774
+ },
+ "full|embed_signature_bge_small": {
+  "P1": 0.853,
+  "P3": 0.801,
+  "MRR": 0.896
+ },
+ "full|jaccard_top8": {
+  "P1": 0.739,
+  "P3": 0.688,
+  "MRR": 0.774
+ },
+ "full|embed_templates_only_top8": {
+  "P1": 0.734,
+  "P3": 0.708,
+  "MRR": 0.79
+ },
+ "full|structured(jaccard+comp+log nodes+log dur, no embeddings)": {
+  "P1": 0.81,
+  "P3": 0.759,
+  "MRR": 0.859
+ },
+ "full|embed_meta_only(no templates)": {
+  "P1": 0.451,
+  "P3": 0.395,
+  "MRR": 0.556
+ },
+ "ctx|jaccard": {
+  "P1": 0.245,
+  "P3": 0.228,
+  "MRR": 0.289
+ },
+ "ctx|tfidf_bag_cosine": {
+  "P1": 0.255,
+  "P3": 0.243,
+  "MRR": 0.296
+ },
+ "ctx|embed_signature_bge_small": {
+  "P1": 0.538,
+  "P3": 0.484,
+  "MRR": 0.636
+ },
+ "ctx|jaccard_top8": {
+  "P1": 0.234,
+  "P3": 0.236,
+  "MRR": 0.282
+ },
+ "ctx|embed_templates_only_top8": {
+  "P1": 0.239,
+  "P3": 0.243,
+  "MRR": 0.303
+ },
+ "ctx|structured(jaccard+comp+log nodes+log dur, no embeddings)": {
+  "P1": 0.533,
+  "P3": 0.471,
+  "MRR": 0.626
+ },
+ "ctx|embed_meta_only(no templates)": {
+  "P1": 0.451,
+  "P3": 0.395,
+  "MRR": 0.556
+ },
+ "n_bursts": 184,
+ "tags": {
+  "APPCHILD": 3,
+  "APPREAD": 7,
+  "APPRES": 8,
+  "APPSEV": 8,
+  "APPTO": 3,
+  "APPTORUS": 4,
+  "KERNCON": 8,
+  "KERNDTLB": 8,
+  "KERNMC": 8,
+  "KERNMICRO": 5,
+  "KERNMNT": 5,
+  "KERNMNTF": 8,
+  "KERNNOETH": 8,
+  "KERNPAN": 8,
+  "KERNPOW": 8,
+  "KERNPROG": 4,
+  "KERNREC": 8,
+  "KERNRTSP": 8,
+  "KERNSERV": 3,
+  "KERNSOCK": 8,
+  "KERNSTOR": 5,
+  "KERNTERM": 8,
+  "LINKDISC": 4,
+  "LINKIAP": 8,
+  "LINKPAP": 5,
+  "MASABNORM": 8,
+  "MASNORM": 8,
+  "MONPOW": 8
+ },
+ "burst_sql_s": 0.29,
+ "example_signature_text": "components KERNEL, APP; 256 nodes over 0.1 minutes; ciod: Unexpected eof at line of node map file; ciod: Error creating node map from file : No child processes",
+ "unk_share_full": 0.0813
+}

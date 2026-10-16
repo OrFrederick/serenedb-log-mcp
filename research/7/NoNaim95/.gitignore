@@ -1,0 +1,3 @@
+experiments/emb/*
+!experiments/emb/sentence-transformers__all-MiniLM-L6-v2*
+__pycache__/

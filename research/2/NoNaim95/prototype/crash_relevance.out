@@ -1,0 +1,56 @@
+# crash_relevance.py (uses crash_discriminate.main with the variants below)
+# 23:12:06Z crash_discriminate.py, 10 rounds, seed 42
+# I: BM25 selected, ORDER BY s DESC (single key), LIMIT 20
+#    SELECT line_no, ts, node, component, level, message, BM25(r2p_bgl_idx.tableoid) s FROM r2p_bgl_idx WHERE message @@ websearch_to_tsquery(%s) ORDER BY s DESC LIMIT %s  params=('error', 20)
+# J: BM25 not selected, ORDER BY BM25 DESC, line_no (two keys), LIMIT 20
+#    SELECT line_no, ts, node, component, level, message FROM r2p_bgl_idx WHERE message @@ websearch_to_tsquery(%s) ORDER BY BM25(r2p_bgl_idx.tableoid) DESC, line_no LIMIT %s  params=('error', 20)
+# G: control: BM25 selected, ORDER BY s DESC, line_no, LIMIT 20
+#    SELECT line_no, ts, node, component, level, message, BM25(r2p_bgl_idx.tableoid) s FROM r2p_bgl_idx WHERE message @@ websearch_to_tsquery(%s) ORDER BY s DESC, line_no LIMIT %s  params=('error', 20)
+# K: tool shape sort=newest, ORDER BY ts DESC, line_no DESC, LIMIT 20
+#    SELECT line_no, ts, node, component, level, message FROM r2p_bgl_idx WHERE message @@ websearch_to_tsquery(%s) ORDER BY ts DESC, line_no DESC LIMIT %s  params=('error', 20)
+# start state: 2026-10-16T23:09:50.024853007Z  SIGSEGV lines so far: 46
+23:12:11Z round 1 G OK        0.63s server-up | rows=20 first=191415
+23:12:15Z round 1 J OK        0.77s server-up | rows=20 first=191415
+23:12:18Z round 1 K OK        0.49s server-up | rows=20 first=4747955
+23:12:21Z round 1 I OK        0.59s server-up | rows=20 first=1108468
+23:12:24Z round 2 K OK        0.59s server-up | rows=20 first=4747955
+23:12:28Z round 2 G OK        0.58s server-up | rows=20 first=191415
+23:12:31Z round 2 I OK        0.48s server-up | rows=20 first=1108468
+23:12:34Z round 2 J OK        0.77s server-up | rows=20 first=191415
+23:12:40Z round 3 J CONNLOST  3.18s SERVER-RESTARTED | consuming input failed: server closed the connection unexpectedly
+23:12:43Z round 3 K OK        0.45s server-up | rows=20 first=4747955
+23:12:46Z round 3 G OK        0.58s server-up | rows=20 first=191415
+23:12:49Z round 3 I OK        0.38s server-up | rows=20 first=1108468
+23:12:52Z round 4 J OK        0.53s server-up | rows=20 first=191415
+23:12:56Z round 4 G OK        0.78s server-up | rows=20 first=191415
+23:12:59Z round 4 I OK        0.42s server-up | rows=20 first=1108468
+23:13:02Z round 4 K OK        0.59s server-up | rows=20 first=4747955
+23:13:07Z round 5 J CONNLOST  3.24s SERVER-RESTARTED | consuming input failed: server closed the connection unexpectedly
+23:13:12Z round 5 G CONNLOST  2.81s SERVER-RESTARTED | consuming input failed: server closed the connection unexpectedly
+23:13:15Z round 5 K OK        0.64s server-up | rows=20 first=4747955
+23:13:18Z round 5 I OK        0.49s server-up | rows=20 first=1108468
+23:13:22Z round 6 J OK        0.72s server-up | rows=20 first=191415
+23:13:25Z round 6 K OK        0.49s server-up | rows=20 first=4747955
+23:13:31Z round 6 G CONNLOST  3.34s SERVER-RESTARTED | consuming input failed: server closed the connection unexpectedly
+23:13:34Z round 6 I OK        0.58s server-up | rows=20 first=2484727
+23:13:38Z round 7 G OK        0.68s server-up | rows=20 first=191415
+23:13:44Z round 7 J CONNLOST  3.31s SERVER-RESTARTED | consuming input failed: server closed the connection unexpectedly
+23:13:47Z round 7 I OK        0.69s server-up | rows=20 first=1108468
+23:13:50Z round 7 K OK        0.50s server-up | rows=20 first=4747955
+23:13:53Z round 8 J OK        0.61s server-up | rows=20 first=191415
+23:13:56Z round 8 K OK        0.59s server-up | rows=20 first=4747955
+23:13:59Z round 8 I OK        0.48s server-up | rows=20 first=1108468
+23:14:04Z round 8 G CONNLOST  3.22s SERVER-RESTARTED | consuming input failed: server closed the connection unexpectedly
+23:14:07Z round 9 I OK        0.64s server-up | rows=20 first=1108468
+23:14:10Z round 9 G OK        0.63s server-up | rows=20 first=191415
+23:14:13Z round 9 J OK        0.69s server-up | rows=20 first=191415
+23:14:19Z round 9 K CONNLOST  3.23s SERVER-RESTARTED | consuming input failed: server closed the connection unexpectedly
+23:14:24Z round 10 G CONNLOST  2.76s SERVER-RESTARTED | consuming input failed: server closed the connection unexpectedly
+23:14:27Z round 10 K OK        0.50s server-up | rows=20 first=4747955
+23:14:30Z round 10 I OK        0.53s server-up | rows=20 first=1108468
+23:14:35Z round 10 J CONNLOST  3.18s SERVER-RESTARTED | consuming input failed: server closed the connection unexpectedly
+# end state: 2026-10-16T23:14:32.650363698Z  SIGSEGV lines: 64
+# I: 0/10 crashed  BM25 selected, ORDER BY s DESC (single key), LIMIT 20
+# J: 4/10 crashed  BM25 not selected, ORDER BY BM25 DESC, line_no (two keys), LIMIT 20
+# G: 4/10 crashed  control: BM25 selected, ORDER BY s DESC, line_no, LIMIT 20
+# K: 1/10 crashed  tool shape sort=newest, ORDER BY ts DESC, line_no DESC, LIMIT 20

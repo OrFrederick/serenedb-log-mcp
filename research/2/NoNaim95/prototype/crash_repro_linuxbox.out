@@ -1,0 +1,64 @@
+# 23:02:23Z host linuxbox x86_64, image serenedb/serenedb:latest
+# version: PostgreSQL 18.3 (SereneDB 26.10.1)
+# start state: 2026-10-16T22:50:26.2811609Z  SIGSEGV lines in container log so far: 4
+## run 1  23:02:26Z  state: 2026-10-16T22:50:26.2811609Z
+23:02:30Z r1 v1 OK       0.44s server-up        (waited  0.5s) literal LIMIT 20, server binding | rows= 20 [(191415, 1.9294766)]
+23:02:35Z r1 v2 CONNLOST   0.61s SERVER-RESTARTED (waited  0.6s) bound LIMIT %s, server binding (psycopg default) | consuming input failed: server closed the connection unexpectedly
+23:02:38Z r1 v3 OK       0.57s server-up        (waited  0.6s) bound LIMIT %s, ClientCursor | rows= 20 [(191415, 1.9294766)]
+23:02:44Z r1 v4 CONNLOST   0.71s SERVER-RESTARTED (waited  0.6s) bound LIMIT %s, ORDER BY line_no only (no BM25), server binding | consuming input failed: server closed the connection unexpectedly
+23:02:47Z r1 v5 OK       0.57s server-up        (waited  0.5s) bound @@ %s + BM25 order + bound LIMIT, prepare=True | rows=  5 [(2484727,)]
+23:02:50Z r1 v6 OK       0.51s server-up        (waited  0.5s) same, binary=True | rows=  5 [(1108468,)]
+23:02:53Z r1 v7 OK       0.52s server-up        (waited  0.6s) same, default | rows=  5 [(1108468,)]
+23:02:56Z r1 v8 OK       0.57s server-up        (waited  0.7s) count with bound ts_between(...)::score(NULL) | rows=  1 [(234664,)]
+23:03:00Z r1 v9 OK       0.46s server-up        (waited  0.6s) count with bound ts_between, prepare=True | rows=  1 [(234664,)]
+## run 2  23:03:00Z  state: 2026-10-16T23:02:41.400858476Z
+23:03:04Z r2 v1 OK       0.77s server-up        (waited  0.7s) literal LIMIT 20, server binding | rows= 20 [(191415, 1.9294766)]
+23:03:07Z r2 v2 OK       0.42s server-up        (waited  0.5s) bound LIMIT %s, server binding (psycopg default) | rows= 20 [(191415, 1.9294766)]
+23:03:10Z r2 v3 OK       0.42s server-up        (waited  0.5s) bound LIMIT %s, ClientCursor | rows= 20 [(191415, 1.9294766)]
+23:03:13Z r2 v4 OK       0.58s server-up        (waited  0.7s) bound LIMIT %s, ORDER BY line_no only (no BM25), server binding | rows= 20 [(1,)]
+23:03:16Z r2 v5 OK       0.39s server-up        (waited  0.3s) bound @@ %s + BM25 order + bound LIMIT, prepare=True | rows=  5 [(1108468,)]
+23:03:19Z r2 v6 OK       0.25s server-up        (waited  0.6s) same, binary=True | rows=  5 [(2484727,)]
+23:03:22Z r2 v7 OK       0.46s server-up        (waited  0.7s) same, default | rows=  5 [(2484727,)]
+23:03:25Z r2 v8 OK       0.47s server-up        (waited  0.4s) count with bound ts_between(...)::score(NULL) | rows=  1 [(234664,)]
+23:03:28Z r2 v9 OK       0.57s server-up        (waited  0.5s) count with bound ts_between, prepare=True | rows=  1 [(234664,)]
+## run 3  23:03:28Z  state: 2026-10-16T23:02:41.400858476Z
+23:03:35Z r3 v1 CONNLOST   0.67s SERVER-RESTARTED (waited  0.5s) literal LIMIT 20, server binding | consuming input failed: server closed the connection unexpectedly
+23:03:41Z r3 v2 CONNLOST   0.56s SERVER-RESTARTED (waited  0.7s) bound LIMIT %s, server binding (psycopg default) | consuming input failed: server closed the connection unexpectedly
+23:03:44Z r3 v3 OK       0.37s server-up        (waited  0.6s) bound LIMIT %s, ClientCursor | rows= 20 [(191415, 1.9294766)]
+23:03:47Z r3 v4 OK       0.51s server-up        (waited  0.4s) bound LIMIT %s, ORDER BY line_no only (no BM25), server binding | rows= 20 [(1,)]
+23:03:50Z r3 v5 OK       0.67s server-up        (waited  0.6s) bound @@ %s + BM25 order + bound LIMIT, prepare=True | rows=  5 [(1108468,)]
+23:03:53Z r3 v6 OK       0.41s server-up        (waited  0.7s) same, binary=True | rows=  5 [(2484727,)]
+23:03:56Z r3 v7 OK       0.41s server-up        (waited  0.6s) same, default | rows=  5 [(2484727,)]
+23:03:59Z r3 v8 OK       0.46s server-up        (waited  0.4s) count with bound ts_between(...)::score(NULL) | rows=  1 [(234664,)]
+23:04:02Z r3 v9 OK       0.68s server-up        (waited  0.4s) count with bound ts_between, prepare=True | rows=  1 [(234664,)]
+## run 4  23:04:02Z  state: 2026-10-16T23:03:38.050948782Z
+23:04:08Z r4 v1 CONNLOST   0.67s SERVER-RESTARTED (waited  0.4s) literal LIMIT 20, server binding | consuming input failed: server closed the connection unexpectedly
+23:04:13Z r4 v2 CONNLOST   0.37s SERVER-RESTARTED (waited  0.4s) bound LIMIT %s, server binding (psycopg default) | consuming input failed: server closed the connection unexpectedly
+23:04:17Z r4 v3 OK       0.58s server-up        (waited  0.7s) bound LIMIT %s, ClientCursor | rows= 20 [(191415, 1.9294766)]
+23:04:20Z r4 v4 OK       0.48s server-up        (waited  0.5s) bound LIMIT %s, ORDER BY line_no only (no BM25), server binding | rows= 20 [(1,)]
+23:04:24Z r4 v5 OK       0.62s server-up        (waited  0.7s) bound @@ %s + BM25 order + bound LIMIT, prepare=True | rows=  5 [(1108468,)]
+23:04:27Z r4 v6 OK       0.42s server-up        (waited  0.5s) same, binary=True | rows=  5 [(1108468,)]
+23:04:30Z r4 v7 OK       0.25s server-up        (waited  0.6s) same, default | rows=  5 [(1108468,)]
+23:04:33Z r4 v8 OK       0.41s server-up        (waited  0.5s) count with bound ts_between(...)::score(NULL) | rows=  1 [(234664,)]
+23:04:35Z r4 v9 OK       0.68s server-up        (waited  0.5s) count with bound ts_between, prepare=True | rows=  1 [(234664,)]
+## run 5  23:04:35Z  state: 2026-10-16T23:04:10.755608952Z
+23:04:42Z r5 v1 CONNLOST   0.67s SERVER-RESTARTED (waited  0.6s) literal LIMIT 20, server binding | consuming input failed: server closed the connection unexpectedly
+23:04:44Z r5 v2 OK       0.23s server-up        (waited  0.2s) bound LIMIT %s, server binding (psycopg default) | rows= 20 [(191415, 1.9294766)]
+23:04:49Z r5 v3 CONNLOST   0.61s SERVER-RESTARTED (waited  0.4s) bound LIMIT %s, ClientCursor | consuming input failed: server closed the connection unexpectedly
+23:04:52Z r5 v4 OK       0.48s server-up        (waited  0.5s) bound LIMIT %s, ORDER BY line_no only (no BM25), server binding | rows= 20 [(1,)]
+23:04:55Z r5 v5 OK       0.67s server-up        (waited  0.6s) bound @@ %s + BM25 order + bound LIMIT, prepare=True | rows=  5 [(2484727,)]
+23:04:59Z r5 v6 OK       0.47s server-up        (waited  0.5s) same, binary=True | rows=  5 [(2484727,)]
+23:05:02Z r5 v7 OK       0.68s server-up        (waited  0.5s) same, default | rows=  5 [(2484727,)]
+23:05:06Z r5 v8 OK       0.64s server-up        (waited  0.5s) count with bound ts_between(...)::score(NULL) | rows=  1 [(234664,)]
+23:05:09Z r5 v9 OK       0.74s server-up        (waited  0.6s) count with bound ts_between, prepare=True | rows=  1 [(234664,)]
+## run 6  23:05:09Z  state: 2026-10-16T23:04:46.274752355Z
+23:05:13Z r6 v1 OK       0.52s server-up        (waited  0.5s) literal LIMIT 20, server binding | rows= 20 [(191415, 1.9294766)]
+23:05:16Z r6 v2 OK       0.53s server-up        (waited  0.7s) bound LIMIT %s, server binding (psycopg default) | rows= 20 [(191415, 1.9294766)]
+23:05:19Z r6 v3 OK       0.47s server-up        (waited  0.4s) bound LIMIT %s, ClientCursor | rows= 20 [(191415, 1.9294766)]
+23:05:22Z r6 v4 OK       0.59s server-up        (waited  0.4s) bound LIMIT %s, ORDER BY line_no only (no BM25), server binding | rows= 20 [(1,)]
+23:05:26Z r6 v5 OK       0.72s server-up        (waited  0.5s) bound @@ %s + BM25 order + bound LIMIT, prepare=True | rows=  5 [(1108468,)]
+23:05:29Z r6 v6 OK       0.52s server-up        (waited  0.6s) same, binary=True | rows=  5 [(2484727,)]
+23:05:32Z r6 v7 OK       0.52s server-up        (waited  0.5s) same, default | rows=  5 [(1108468,)]
+23:05:35Z r6 v8 OK       0.47s server-up        (waited  0.6s) count with bound ts_between(...)::score(NULL) | rows=  1 [(234664,)]
+23:05:38Z r6 v9 OK       0.62s server-up        (waited  0.6s) count with bound ts_between, prepare=True | rows=  1 [(234664,)]
+# end state: 2026-10-16T23:04:46.274752355Z  SIGSEGV lines in container log: 20  crashes detected in this script: 8

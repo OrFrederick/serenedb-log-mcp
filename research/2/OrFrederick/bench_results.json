@@ -1,0 +1,1211 @@
+{
+ "search_bm25_window_total": {
+  "cold_ms": 186,
+  "warm_median_ms": 73,
+  "rows": 20,
+  "sample": [
+   [
+    "194200",
+    "2005-06-08 20:21:20.145620",
+    "R35-M1-N0-I:J18-U11",
+    "APP",
+    "FATAL",
+    "503.8088",
+    "ciod: failed to read message prefix on \u00abcontrol stream\u00bb (CioStream \u00absocket\u00bb to 172.16.96.116:38010",
+    "5983"
+   ],
+   [
+    "14738",
+    "2005-06-04 00:24:32.398284",
+    "R23-M1-N8-I:J18-U11",
+    "APP",
+    "FATAL",
+    "465.8088",
+    "ciod: failed to read message prefix on \u00abcontrol stream\u00bb (CioStream \u00absocket\u00bb to 172.16.96.116:33399",
+    "5983"
+   ],
+   [
+    "826075",
+    "2005-06-16 14:50:36.324561",
+    "R37-M0-N0-I:J18-U11",
+    "APP",
+    "FATAL",
+    "409.8088",
+    "ciod: failed to read message prefix on \u00abcontrol stream\u00bb (CioStream \u00absocket\u00bb to 172.16.96.116:50197",
+    "5983"
+   ],
+   [
+    "379061",
+    "2005-06-13 10:34:24.145960",
+    "R22-M0-N0-I:J18-U01",
+    "APP",
+    "FATAL",
+    "171.8088",
+    "ciod: failed to read message prefix on \u00abcontrol stream\u00bb (CioStream \u00absocket\u00bb to 172.16.96.116:60885",
+    "5983"
+   ],
+   [
+    "849933",
+    "2005-06-20 01:40:59.137108",
+    "R16-M1-N4-I:J18-U11",
+    "APP",
+    "FATAL",
+    "19.808804",
+    "ciod: failed to read message prefix on \u00abcontrol stream\u00bb (CioStream \u00absocket\u00bb to 172.16.96.116:57500",
+    "5983"
+   ]
+  ],
+  "sql": "SELECT line_no, ts, node, component, level, BM25(r2_bgl_fts.tableoid) AS score,\n       ts_highlight(r2_bgl_fts.content, 'StartSel=\u00ab, StopSel=\u00bb, MaxWords=40') AS snippet,\n       count(*) OVER () AS total_matches\nFROM r2_bgl_fts\nWHERE content @@ websearch_to_tsquery(%(q)s)\n  AND ts >= %(start)s AND ts < %(end)s\nORDER BY score DESC, ts LIMIT %(limit)s",
+  "params": {
+   "q": "\"control stream\" socket",
+   "start": "2005-06-01",
+   "end": "2006-02-01",
+   "limit": "20"
+  }
+ },
+ "search_bm25_no_total": {
+  "cold_ms": 71,
+  "warm_median_ms": 62,
+  "rows": 20,
+  "sample": [
+   [
+    "194200",
+    "2005-06-08 20:21:20.145620",
+    "R35-M1-N0-I:J18-U11",
+    "APP",
+    "FATAL",
+    "503.8088",
+    "ciod: failed to read message prefix on \u00abcontrol stream\u00bb (CioStream \u00absocket\u00bb to 172.16.96.116:38010"
+   ],
+   [
+    "14738",
+    "2005-06-04 00:24:32.398284",
+    "R23-M1-N8-I:J18-U11",
+    "APP",
+    "FATAL",
+    "465.8088",
+    "ciod: failed to read message prefix on \u00abcontrol stream\u00bb (CioStream \u00absocket\u00bb to 172.16.96.116:33399"
+   ],
+   [
+    "826075",
+    "2005-06-16 14:50:36.324561",
+    "R37-M0-N0-I:J18-U11",
+    "APP",
+    "FATAL",
+    "409.8088",
+    "ciod: failed to read message prefix on \u00abcontrol stream\u00bb (CioStream \u00absocket\u00bb to 172.16.96.116:50197"
+   ],
+   [
+    "379061",
+    "2005-06-13 10:34:24.145960",
+    "R22-M0-N0-I:J18-U01",
+    "APP",
+    "FATAL",
+    "171.8088",
+    "ciod: failed to read message prefix on \u00abcontrol stream\u00bb (CioStream \u00absocket\u00bb to 172.16.96.116:60885"
+   ],
+   [
+    "849933",
+    "2005-06-20 01:40:59.137108",
+    "R16-M1-N4-I:J18-U11",
+    "APP",
+    "FATAL",
+    "19.808804",
+    "ciod: failed to read message prefix on \u00abcontrol stream\u00bb (CioStream \u00absocket\u00bb to 172.16.96.116:57500"
+   ]
+  ],
+  "sql": "SELECT line_no, ts, node, component, level, BM25(r2_bgl_fts.tableoid) AS score,\n       ts_highlight(r2_bgl_fts.content, 'StartSel=\u00ab, StopSel=\u00bb, MaxWords=40') AS snippet\nFROM r2_bgl_fts\nWHERE content @@ websearch_to_tsquery(%(q)s) AND ts >= %(start)s AND ts < %(end)s\nORDER BY score DESC, ts LIMIT %(limit)s",
+  "params": {
+   "q": "\"control stream\" socket",
+   "start": "2005-06-01",
+   "end": "2006-02-01",
+   "limit": "20"
+  }
+ },
+ "search_separate_count": {
+  "cold_ms": 6,
+  "warm_median_ms": 5,
+  "rows": 1,
+  "sample": [
+   [
+    "5983"
+   ]
+  ],
+  "sql": "SELECT count(*) FROM r2_bgl_fts WHERE content @@ websearch_to_tsquery(%(q)s) AND ts >= %(start)s AND ts < %(end)s",
+  "params": {
+   "q": "\"control stream\" socket",
+   "start": "2005-06-01",
+   "end": "2006-02-01"
+  }
+ },
+ "search_broad_window_total": {
+  "cold_ms": 74,
+  "warm_median_ms": 34,
+  "rows": 20,
+  "sample": [
+   [
+    "378756",
+    "2005-06-13 02:23:33.967396",
+    "1.2758957",
+    "557845"
+   ],
+   [
+    "1233531",
+    "2005-06-30 13:19:29.218926",
+    "1.2758957",
+    "557845"
+   ],
+   [
+    "34901",
+    "2005-06-05 04:23:03.840635",
+    "1.2758957",
+    "557845"
+   ],
+   [
+    "3070389",
+    "2005-08-19 23:27:53.121673",
+    "1.2758957",
+    "557845"
+   ],
+   [
+    "33899",
+    "2005-06-05 01:55:00.653763",
+    "1.2758957",
+    "557845"
+   ]
+  ],
+  "sql": "SELECT line_no, ts, BM25(r2_bgl_fts.tableoid) AS score, count(*) OVER () AS total_matches\nFROM r2_bgl_fts WHERE content @@ websearch_to_tsquery(%(q)s) ORDER BY score DESC LIMIT 20",
+  "params": {
+   "q": "error"
+  }
+ },
+ "search_broad_separate_count": {
+  "cold_ms": 2,
+  "warm_median_ms": 2,
+  "rows": 1,
+  "sample": [
+   [
+    "557845"
+   ]
+  ],
+  "sql": "SELECT count(*) FROM r2_bgl_fts WHERE content @@ websearch_to_tsquery(%(q)s)",
+  "params": {
+   "q": "error"
+  }
+ },
+ "search_broad_no_total": {
+  "cold_ms": 5,
+  "warm_median_ms": 5,
+  "rows": 20,
+  "sample": [
+   [
+    "378756",
+    "2005-06-13 02:23:33.967396",
+    "1.2758957"
+   ],
+   [
+    "378802",
+    "2005-06-13 04:47:28.447648",
+    "1.2758957"
+   ],
+   [
+    "1089898",
+    "2005-06-26 15:43:08.298939",
+    "1.2758957"
+   ],
+   [
+    "1233531",
+    "2005-06-30 13:19:29.218926",
+    "1.2758957"
+   ],
+   [
+    "2908750",
+    "2005-07-31 02:54:04.333335",
+    "1.2758957"
+   ]
+  ],
+  "sql": "SELECT line_no, ts, BM25(r2_bgl_fts.tableoid) AS score FROM r2_bgl_fts\nWHERE content @@ websearch_to_tsquery(%(q)s) ORDER BY score DESC LIMIT 20",
+  "params": {
+   "q": "error"
+  }
+ },
+ "search_time_order_filters": {
+  "cold_ms": 85,
+  "warm_median_ms": 59,
+  "rows": 20,
+  "sample": [
+   [
+    "33900",
+    "2005-06-05 01:55:00.797380",
+    "R11-M0-NB-C:J07-U11",
+    "KERNEL",
+    "FATAL",
+    "i-cache parity error..............0",
+    "1568"
+   ],
+   [
+    "33901",
+    "2005-06-05 01:55:00.943157",
+    "R11-M0-NB-C:J07-U11",
+    "KERNEL",
+    "FATAL",
+    "d-cache search parity error.......0",
+    "1568"
+   ],
+   [
+    "33902",
+    "2005-06-05 01:55:01.134066",
+    "R11-M0-NB-C:J07-U11",
+    "KERNEL",
+    "FATAL",
+    "d-cache flush parity error........1",
+    "1568"
+   ],
+   [
+    "158431",
+    "2005-06-07 05:32:56.626092",
+    "R17-M0-N1-C:J03-U01",
+    "KERNEL",
+    "FATAL",
+    "machine check interrupt (bit=0x1d): L2 dcache unit data parity error",
+    "1568"
+   ],
+   [
+    "158439",
+    "2005-06-07 05:32:58.148654",
+    "R17-M0-N1-C:J03-U01",
+    "KERNEL",
+    "FATAL",
+    "i-cache parity error..............0",
+    "1568"
+   ]
+  ],
+  "sql": "SELECT line_no, ts, node, component, level, content, count(*) OVER () AS total_matches\nFROM r2_bgl_fts\nWHERE content @@ websearch_to_tsquery(%(q)s) AND component = %(component)s AND list_contains(%(levels)s::text[], level)\n  AND ts >= %(start)s AND ts < %(end)s\nORDER BY ts LIMIT %(limit)s",
+  "params": {
+   "q": "parity",
+   "component": "KERNEL",
+   "levels": "['FATAL', 'ERROR']",
+   "start": "2005-06-01",
+   "end": "2006-02-01",
+   "limit": "20"
+  }
+ },
+ "search_fuzzy": {
+  "cold_ms": 191,
+  "warm_median_ms": 131,
+  "rows": 10,
+  "sample": [
+   [
+    "1",
+    "2005-06-03 15:42:50.363779",
+    "<b>instruction</b> cache parity error corrected",
+    "202310"
+   ],
+   [
+    "2",
+    "2005-06-03 15:42:50.527847",
+    "<b>instruction</b> cache parity error corrected",
+    "202310"
+   ],
+   [
+    "3",
+    "2005-06-03 15:42:50.675872",
+    "<b>instruction</b> cache parity error corrected",
+    "202310"
+   ],
+   [
+    "4",
+    "2005-06-03 15:42:50.823719",
+    "<b>instruction</b> cache parity error corrected",
+    "202310"
+   ],
+   [
+    "5",
+    "2005-06-03 15:42:50.982731",
+    "<b>instruction</b> cache parity error corrected",
+    "202310"
+   ]
+  ],
+  "sql": "SELECT line_no, ts, ts_highlight(r2_bgl_fts.content) AS snippet, count(*) OVER () AS total_matches\nFROM r2_bgl_fts WHERE content @@ ts_levenshtein(%(term)s, %(dist)s) ORDER BY ts LIMIT 10",
+  "params": {
+   "term": "instrucion",
+   "dist": "1"
+  }
+ },
+ "search_phrase_slop": {
+  "cold_ms": 8,
+  "warm_median_ms": 6,
+  "rows": 1,
+  "sample": [
+   [
+    "295"
+   ]
+  ],
+  "sql": "SELECT count(*) FROM r2_bgl_fts WHERE content @@ ts_phrase(%(p)s)",
+  "params": {
+   "p": "machine check interrupt"
+  }
+ },
+ "os_search": {
+  "cold_ms": 29,
+  "warm_median_ms": 14,
+  "rows": 10,
+  "sample": [
+   [
+    "189461",
+    "2017-05-14 19:39:36.041000",
+    "nova.virt.libvirt.imagecache",
+    "WARNING",
+    "None",
+    "req-addc1839-2ed5-4778-b57e-5854eb7b8b09",
+    "<b>Unknown base file</b>: /var/lib/nova/instances/_base/a489c868f0c37da93b76227c91bb03908ac0e742",
+    "3059"
+   ],
+   [
+    "189551",
+    "2017-05-14 19:40:16.170000",
+    "nova.virt.libvirt.imagecache",
+    "WARNING",
+    "None",
+    "req-addc1839-2ed5-4778-b57e-5854eb7b8b09",
+    "<b>Unknown base file</b>: /var/lib/nova/instances/_base/a489c868f0c37da93b76227c91bb03908ac0e742",
+    "3059"
+   ],
+   [
+    "189648",
+    "2017-05-14 19:41:00.280000",
+    "nova.virt.libvirt.imagecache",
+    "WARNING",
+    "None",
+    "req-addc1839-2ed5-4778-b57e-5854eb7b8b09",
+    "<b>Unknown base file</b>: /var/lib/nova/instances/_base/a489c868f0c37da93b76227c91bb03908ac0e742",
+    "3059"
+   ],
+   [
+    "189740",
+    "2017-05-14 19:41:41.539000",
+    "nova.virt.libvirt.imagecache",
+    "WARNING",
+    "None",
+    "req-addc1839-2ed5-4778-b57e-5854eb7b8b09",
+    "<b>Unknown base file</b>: /var/lib/nova/instances/_base/a489c868f0c37da93b76227c91bb03908ac0e742",
+    "3059"
+   ],
+   [
+    "189822",
+    "2017-05-14 19:42:20.913000",
+    "nova.virt.libvirt.imagecache",
+    "WARNING",
+    "None",
+    "req-addc1839-2ed5-4778-b57e-5854eb7b8b09",
+    "<b>Unknown base file</b>: /var/lib/nova/instances/_base/a489c868f0c37da93b76227c91bb03908ac0e742",
+    "3059"
+   ]
+  ],
+  "sql": "SELECT line_no, ts, component, level, instance_id, request_id, ts_highlight(r2_os_fts.content) AS snippet,\n       count(*) OVER () AS total_matches\nFROM r2_os_fts WHERE content @@ websearch_to_tsquery(%(q)s) ORDER BY BM25(r2_os_fts.tableoid) DESC, ts LIMIT 10",
+  "params": {
+   "q": "\"Unknown base file\""
+  }
+ },
+ "context_same_node_by_time": {
+  "cold_ms": 6,
+  "warm_median_ms": 4,
+  "rows": 4,
+  "sample": [
+   [
+    "827110",
+    "2005-06-16 14:54:54.704624",
+    "R31-M0-N4-I:J18-U11",
+    "FATAL",
+    "ciod: failed to read message prefix on control stream (CioStream socket to 172.16.96.116:51355"
+   ],
+   [
+    "826598",
+    "2005-06-16 14:52:06.493329",
+    "R31-M0-N4-I:J18-U11",
+    "FATAL",
+    "ciod: failed to read message prefix on control stream (CioStream socket to 172.16.96.116:50724"
+   ],
+   [
+    "826091",
+    "2005-06-16 14:50:37.595301",
+    "R31-M0-N4-I:J18-U11",
+    "FATAL",
+    "ciod: failed to read message prefix on control stream (CioStream socket to 172.16.96.116:50131"
+   ],
+   [
+    "827617",
+    "2005-06-16 15:02:51.555777",
+    "R31-M0-N4-I:J18-U11",
+    "FATAL",
+    "ciod: failed to read message prefix on control stream (CioStream socket to 172.16.96.116:52169"
+   ]
+  ],
+  "sql": "WITH a AS (SELECT ts, node FROM bgl WHERE line_no = %(line)s)\n(SELECT b.line_no, b.ts, b.node, b.level, b.content FROM bgl b, a WHERE b.node = a.node AND b.ts <= a.ts AND b.ts >= a.ts - %(win)s::interval ORDER BY b.ts DESC, b.line_no DESC LIMIT %(n)s)\nUNION ALL\n(SELECT b.line_no, b.ts, b.node, b.level, b.content FROM bgl b, a WHERE b.node = a.node AND b.ts > a.ts AND b.ts <= a.ts + %(win)s::interval ORDER BY b.ts, b.line_no LIMIT %(n)s)",
+  "params": {
+   "line": "827110",
+   "win": "1 hour",
+   "n": "10"
+  }
+ },
+ "context_same_node_via_index": {
+  "cold_ms": 29,
+  "warm_median_ms": 16,
+  "rows": 4,
+  "sample": [
+   [
+    "827110",
+    "2005-06-16 14:54:54.704624",
+    "FATAL",
+    "ciod: failed to read message prefix on control stream (CioStream socket to 172.16.96.116:51355"
+   ],
+   [
+    "826598",
+    "2005-06-16 14:52:06.493329",
+    "FATAL",
+    "ciod: failed to read message prefix on control stream (CioStream socket to 172.16.96.116:50724"
+   ],
+   [
+    "826091",
+    "2005-06-16 14:50:37.595301",
+    "FATAL",
+    "ciod: failed to read message prefix on control stream (CioStream socket to 172.16.96.116:50131"
+   ],
+   [
+    "827617",
+    "2005-06-16 15:02:51.555777",
+    "FATAL",
+    "ciod: failed to read message prefix on control stream (CioStream socket to 172.16.96.116:52169"
+   ]
+  ],
+  "sql": "WITH a AS (SELECT ts, node FROM r2_bgl_fts WHERE line_no = %(line)s)\n(SELECT b.line_no, b.ts, b.level, b.content FROM r2_bgl_fts b, a WHERE b.node = a.node AND b.ts <= a.ts AND b.ts >= a.ts - %(win)s::interval ORDER BY b.ts DESC LIMIT %(n)s)\nUNION ALL\n(SELECT b.line_no, b.ts, b.level, b.content FROM r2_bgl_fts b, a WHERE b.node = a.node AND b.ts > a.ts AND b.ts <= a.ts + %(win)s::interval ORDER BY b.ts LIMIT %(n)s)",
+  "params": {
+   "line": "827110",
+   "win": "1 hour",
+   "n": "10"
+  }
+ },
+ "context_global_by_line": {
+  "cold_ms": 5,
+  "warm_median_ms": 4,
+  "rows": 11,
+  "sample": [
+   [
+    "827105",
+    "2005-06-16 14:54:54.531378",
+    "R36-M0-N8-I:J18-U01",
+    "APP",
+    "FATAL",
+    "ciod: failed to read message prefix on control stream (CioStream socket to 172.16.96.116:51290"
+   ],
+   [
+    "827106",
+    "2005-06-16 14:54:54.565138",
+    "R36-M0-NC-I:J18-U11",
+    "APP",
+    "FATAL",
+    "ciod: failed to read message prefix on control stream (CioStream socket to 172.16.96.116:51287"
+   ],
+   [
+    "827107",
+    "2005-06-16 14:54:54.598182",
+    "R36-M0-NC-I:J18-U01",
+    "APP",
+    "FATAL",
+    "ciod: failed to read message prefix on control stream (CioStream socket to 172.16.96.116:51288"
+   ],
+   [
+    "827108",
+    "2005-06-16 14:54:54.631720",
+    "R36-M0-N0-I:J18-U11",
+    "APP",
+    "FATAL",
+    "ciod: failed to read message prefix on control stream (CioStream socket to 172.16.96.116:51293"
+   ],
+   [
+    "827109",
+    "2005-06-16 14:54:54.670890",
+    "R36-M0-N0-I:J18-U01",
+    "APP",
+    "FATAL",
+    "ciod: failed to read message prefix on control stream (CioStream socket to 172.16.96.116:51294"
+   ]
+  ],
+  "sql": "SELECT line_no, ts, node, component, level, content FROM bgl\nWHERE line_no BETWEEN %(line)s - %(n)s AND %(line)s + %(n)s ORDER BY line_no",
+  "params": {
+   "line": "827110",
+   "n": "5"
+  }
+ },
+ "context_os_request": {
+  "cold_ms": 8,
+  "warm_median_ms": 7,
+  "rows": 50,
+  "sample": [
+   [
+    "189401",
+    "2017-05-14 19:39:09.660000",
+    "nova.compute.manager",
+    "WARNING",
+    "While synchronizing instance power states, found 1 instances in the database and 0 instances on the hypervisor."
+   ],
+   [
+    "189411",
+    "2017-05-14 19:39:15.195000",
+    "nova.virt.libvirt.imagecache",
+    "INFO",
+    "image 0673dd71-34c5-4fbb-86c4-40623fbe45b4 at (/var/lib/nova/instances/_base/a489c868f0c37da93b76227c91bb03908ac0e742): checking"
+   ],
+   [
+    "189412",
+    "2017-05-14 19:39:15.196000",
+    "nova.virt.libvirt.imagecache",
+    "INFO",
+    "image 0673dd71-34c5-4fbb-86c4-40623fbe45b4 at (/var/lib/nova/instances/_base/a489c868f0c37da93b76227c91bb03908ac0e742): in use: on this node 1 local, 0 on other nodes sharing this instance storage"
+   ],
+   [
+    "189414",
+    "2017-05-14 19:39:15.381000",
+    "nova.virt.libvirt.imagecache",
+    "INFO",
+    "Active base files: /var/lib/nova/instances/_base/a489c868f0c37da93b76227c91bb03908ac0e742"
+   ],
+   [
+    "189422",
+    "2017-05-14 19:39:20.436000",
+    "nova.virt.libvirt.imagecache",
+    "INFO",
+    "image 0673dd71-34c5-4fbb-86c4-40623fbe45b4 at (/var/lib/nova/instances/_base/a489c868f0c37da93b76227c91bb03908ac0e742): checking"
+   ]
+  ],
+  "sql": "SELECT line_no, ts, component, level, content FROM openstack WHERE request_id = %(rid)s ORDER BY ts, line_no LIMIT 50",
+  "params": {
+   "rid": "req-addc1839-2ed5-4778-b57e-5854eb7b8b09"
+  }
+ },
+ "context_os_instance": {
+  "cold_ms": 4,
+  "warm_median_ms": 2,
+  "rows": 25,
+  "sample": [
+   [
+    "1827",
+    "2017-05-16 00:13:37.116000",
+    "nova.compute.claims",
+    "INFO",
+    "req-6f9ecdfe-481c-4535-9bdc-45d86085d739",
+    "[instance: c62f4f25-982c-4ea2-b5e4-93000edfcfbf] Attempting claim: memory 2048 MB, disk 20 GB, vcpus 1 CPU",
+    "25"
+   ],
+   [
+    "1828",
+    "2017-05-16 00:13:37.117000",
+    "nova.compute.claims",
+    "INFO",
+    "req-6f9ecdfe-481c-4535-9bdc-45d86085d739",
+    "[instance: c62f4f25-982c-4ea2-b5e4-93000edfcfbf] Total memory: 64172 MB, used: 512.00 MB",
+    "25"
+   ],
+   [
+    "1829",
+    "2017-05-16 00:13:37.117000",
+    "nova.compute.claims",
+    "INFO",
+    "req-6f9ecdfe-481c-4535-9bdc-45d86085d739",
+    "[instance: c62f4f25-982c-4ea2-b5e4-93000edfcfbf] memory limit: 96258.00 MB, free: 95746.00 MB",
+    "25"
+   ],
+   [
+    "1830",
+    "2017-05-16 00:13:37.118000",
+    "nova.compute.claims",
+    "INFO",
+    "req-6f9ecdfe-481c-4535-9bdc-45d86085d739",
+    "[instance: c62f4f25-982c-4ea2-b5e4-93000edfcfbf] Total disk: 15 GB, used: 0.00 GB",
+    "25"
+   ],
+   [
+    "1831",
+    "2017-05-16 00:13:37.118000",
+    "nova.compute.claims",
+    "INFO",
+    "req-6f9ecdfe-481c-4535-9bdc-45d86085d739",
+    "[instance: c62f4f25-982c-4ea2-b5e4-93000edfcfbf] disk limit not specified, defaulting to unlimited",
+    "25"
+   ]
+  ],
+  "sql": "SELECT line_no, ts, component, level, request_id, content, count(*) OVER () AS total FROM openstack\nWHERE instance_id = %(iid)s ORDER BY ts, line_no LIMIT 50",
+  "params": {
+   "iid": "c62f4f25-982c-4ea2-b5e4-93000edfcfbf"
+  }
+ },
+ "count_by_component_all": {
+  "cold_ms": 18,
+  "warm_median_ms": 21,
+  "rows": 14,
+  "sample": [
+   [
+    "KERNEL",
+    "4324651",
+    "284344"
+   ],
+   [
+    "APP",
+    "228536",
+    "63845"
+   ],
+   [
+    "DISCOVERY",
+    "97172",
+    "0"
+   ],
+   [
+    "MMCS",
+    "88930",
+    "3"
+   ],
+   [
+    "HARDWARE",
+    "5148",
+    "0"
+   ]
+  ],
+  "sql": "SELECT component AS key, count(*) AS n, count(*) FILTER (WHERE alert_label <> '-') AS alert_n\nFROM bgl GROUP BY 1 ORDER BY n DESC",
+  "params": {}
+ },
+ "count_by_rack_query": {
+  "cold_ms": 19,
+  "warm_median_ms": 15,
+  "rows": 10,
+  "sample": [
+   [
+    "R02",
+    "78822",
+    "10",
+    "2005-06-03 15:42:50.363779",
+    "2005-12-23 16:18:46.333026"
+   ],
+   [
+    "R37",
+    "35236",
+    "8",
+    "2005-06-05 23:39:54.506303",
+    "2005-12-27 07:22:08.240205"
+   ],
+   [
+    "R63",
+    "3688",
+    "11",
+    "2005-08-06 10:07:19.222982",
+    "2005-12-28 12:12:42.921908"
+   ],
+   [
+    "R20",
+    "1573",
+    "9",
+    "2005-06-09 01:51:07.748346",
+    "2005-12-24 08:04:26.451067"
+   ],
+   [
+    "R67",
+    "355",
+    "8",
+    "2005-08-08 00:58:37.663693",
+    "2005-12-24 06:34:34.720556"
+   ]
+  ],
+  "sql": "SELECT rack AS key, count(*) AS n, count(DISTINCT node) AS distinct_nodes, min(ts) AS first_seen, max(ts) AS last_seen\nFROM r2_bgl_fts WHERE content @@ websearch_to_tsquery(%(q)s) GROUP BY 1 ORDER BY n DESC LIMIT %(top)s",
+  "params": {
+   "q": "parity",
+   "top": "10"
+  }
+ },
+ "count_by_node_level": {
+  "cold_ms": 28,
+  "warm_median_ms": 24,
+  "rows": 10,
+  "sample": [
+   [
+    "R30-M0-N9-C:J16-U01",
+    "152229"
+   ],
+   [
+    "R71-M0-N4-C:J14-U01",
+    "1567"
+   ],
+   [
+    "R12-M0-N0-C:J12-U01",
+    "1385"
+   ],
+   [
+    "R03-M1-NF-C:J07-U01",
+    "966"
+   ],
+   [
+    "R36-M1-N0-C:J16-U11",
+    "585"
+   ]
+  ],
+  "sql": "SELECT node AS key, count(*) AS n FROM bgl WHERE list_contains(%(levels)s::text[], level) GROUP BY 1 ORDER BY n DESC LIMIT %(top)s",
+  "params": {
+   "levels": "['FATAL', 'FAILURE']",
+   "top": "10"
+  }
+ },
+ "count_by_with_other_bucket": {
+  "cold_ms": 50,
+  "warm_median_ms": 30,
+  "rows": 11,
+  "sample": [
+   [
+    "R30-M0-N9-C:J16-U01",
+    "152229",
+    "1",
+    "2005-06-11 17:17:44.605961",
+    "2005-06-13 04:47:31.679821"
+   ],
+   [
+    "R71-M0-N4-C:J14-U01",
+    "1567",
+    "1",
+    "2005-08-09 08:39:08.809277",
+    "2005-12-04 11:15:39.465485"
+   ],
+   [
+    "R12-M0-N0-C:J12-U01",
+    "1385",
+    "1",
+    "2005-06-13 17:43:12.981203",
+    "2005-12-06 05:39:10.333403"
+   ],
+   [
+    "R03-M1-NF-C:J07-U01",
+    "966",
+    "1",
+    "2005-06-13 17:39:10.714585",
+    "2005-11-27 20:03:52.253188"
+   ],
+   [
+    "R36-M1-N0-C:J16-U11",
+    "585",
+    "1",
+    "2005-11-17 04:22:14.198241",
+    "2005-11-17 05:19:29.819253"
+   ]
+  ],
+  "sql": "WITH g AS (SELECT node AS k, count(*) AS n, min(ts) AS first_seen, max(ts) AS last_seen FROM bgl\n           WHERE list_contains(%(levels)s::text[], level) GROUP BY 1),\nr AS (SELECT *, row_number() OVER (ORDER BY n DESC, k) AS rk FROM g)\nSELECT CASE WHEN rk <= %(top)s THEN k ELSE '(other)' END AS bucket_key, sum(n) AS n,\n       count(*) AS groups_in_bucket, min(first_seen) AS first_seen, max(last_seen) AS last_seen\nFROM r GROUP BY 1 ORDER BY (bucket_key = '(other)'), n DESC",
+  "params": {
+   "levels": "['FATAL', 'FAILURE']",
+   "top": "10"
+  }
+ },
+ "count_by_dataset_whole_corpus": {
+  "cold_ms": 12,
+  "warm_median_ms": 13,
+  "rows": 15,
+  "sample": [
+   [
+    "bgl",
+    "INFO",
+    "3735813"
+   ],
+   [
+    "bgl",
+    "FATAL",
+    "855195"
+   ],
+   [
+    "bgl",
+    "ERROR",
+    "112355"
+   ],
+   [
+    "bgl",
+    "WARNING",
+    "23357"
+   ],
+   [
+    "bgl",
+    "SEVERE",
+    "19213"
+   ]
+  ],
+  "sql": "SELECT 'bgl' AS dataset, level, count(*) AS n FROM bgl GROUP BY ALL\nUNION ALL SELECT 'openstack', level, count(*) FROM openstack GROUP BY ALL ORDER BY dataset, n DESC",
+  "params": {}
+ },
+ "trend_day_query": {
+  "cold_ms": 19,
+  "warm_median_ms": 20,
+  "rows": 194,
+  "sample": [
+   [
+    "2005-06-03 00:00:00",
+    "4865",
+    "1"
+   ],
+   [
+    "2005-06-04 00:00:00",
+    "2",
+    "2"
+   ],
+   [
+    "2005-06-05 00:00:00",
+    "4",
+    "2"
+   ],
+   [
+    "2005-06-06 00:00:00",
+    "16072",
+    "2"
+   ],
+   [
+    "2005-06-07 00:00:00",
+    "1677",
+    "3"
+   ]
+  ],
+  "sql": "SELECT time_bucket(%(bucket)s::interval, ts) AS bucket, count(*) AS n, count(DISTINCT node) AS nodes\nFROM r2_bgl_fts WHERE content @@ websearch_to_tsquery(%(q)s) AND ts >= %(start)s AND ts < %(end)s\nGROUP BY 1 ORDER BY 1",
+  "params": {
+   "bucket": "1 day",
+   "q": "parity",
+   "start": "2005-06-01",
+   "end": "2006-02-01"
+  }
+ },
+ "trend_week_component_split": {
+  "cold_ms": 25,
+  "warm_median_ms": 17,
+  "rows": 93,
+  "sample": [
+   [
+    "2005-05-30 00:00:00",
+    "KERNEL",
+    "3854"
+   ],
+   [
+    "2005-05-30 00:00:00",
+    "APP",
+    "2408"
+   ],
+   [
+    "2005-06-06 00:00:00",
+    "KERNEL",
+    "152521"
+   ],
+   [
+    "2005-06-06 00:00:00",
+    "APP",
+    "2240"
+   ],
+   [
+    "2005-06-13 00:00:00",
+    "KERNEL",
+    "377594"
+   ]
+  ],
+  "sql": "SELECT time_bucket(%(bucket)s::interval, ts) AS bucket, component, count(*) AS n\nFROM bgl WHERE list_contains(%(levels)s::text[], level) GROUP BY ALL ORDER BY 1, 3 DESC",
+  "params": {
+   "bucket": "7 days",
+   "levels": "['FATAL', 'FAILURE']"
+  }
+ },
+ "trend_zero_fill": {
+  "cold_ms": 49,
+  "warm_median_ms": 6,
+  "rows": 30,
+  "sample": [
+   [
+    "2005-09-01 00:00:00",
+    "4"
+   ],
+   [
+    "2005-09-02 00:00:00",
+    "11"
+   ],
+   [
+    "2005-09-03 00:00:00",
+    "3"
+   ],
+   [
+    "2005-09-04 00:00:00",
+    "0"
+   ],
+   [
+    "2005-09-05 00:00:00",
+    "0"
+   ]
+  ],
+  "sql": "WITH b AS (SELECT unnest(generate_series(%(start)s::timestamp, %(end)s::timestamp - INTERVAL '1 second', %(bucket)s::interval)) AS bucket),\nc AS (SELECT time_bucket(%(bucket)s::interval, ts, %(start)s::timestamp) AS bucket, count(*) AS n FROM r2_bgl_fts\n      WHERE content @@ websearch_to_tsquery(%(q)s) AND ts >= %(start)s AND ts < %(end)s GROUP BY 1)\nSELECT b.bucket, coalesce(c.n, 0) AS n FROM b LEFT JOIN c USING (bucket) ORDER BY 1",
+  "params": {
+   "bucket": "1 day",
+   "q": "parity",
+   "start": "2005-09-01",
+   "end": "2005-10-01"
+  }
+ },
+ "compare_periods_component": {
+  "cold_ms": 4,
+  "warm_median_ms": 5,
+  "rows": 5,
+  "sample": [
+   [
+    "KERNEL",
+    "22479",
+    "28909"
+   ],
+   [
+    "APP",
+    "46961",
+    "52757"
+   ],
+   [
+    "LINKCARD",
+    "12",
+    "152"
+   ],
+   [
+    "MONITOR",
+    "0",
+    "3"
+   ],
+   [
+    "BGLMASTER",
+    "25",
+    "0"
+   ]
+  ],
+  "sql": "SELECT component AS key,\n  count(*) FILTER (WHERE ts >= %(a0)s AND ts < %(a1)s) AS baseline_n,\n  count(*) FILTER (WHERE ts >= %(b0)s AND ts < %(b1)s) AS current_n\nFROM bgl WHERE list_contains(%(levels)s::text[], level) AND ((ts >= %(a0)s AND ts < %(a1)s) OR (ts >= %(b0)s AND ts < %(b1)s))\nGROUP BY 1 ORDER BY current_n - baseline_n DESC LIMIT %(top)s",
+  "params": {
+   "a0": "2005-08-01",
+   "a1": "2005-09-01",
+   "b0": "2005-09-01",
+   "b1": "2005-10-01",
+   "levels": "['FATAL', 'FAILURE']",
+   "top": "10"
+  }
+ },
+ "top_patterns_regex_mask": {
+  "cold_ms": 172,
+  "warm_median_ms": 132,
+  "rows": 10,
+  "sample": [
+   [
+    "data TLB error interrupt",
+    "152734",
+    "541",
+    "17742"
+   ],
+   [
+    "idoproxydb hit ASSERT condition: ASSERT expression=<*> Source file=idotransportmgr.cpp Source line=<*> Function=int IdoTransportMgr::SendPacket(IdoUdpMgr*, BglCtlPavTrace*)",
+    "84168",
+    "1",
+    "2935903"
+   ],
+   [
+    "data storage interrupt",
+    "63491",
+    "22529",
+    "382963"
+   ],
+   [
+    "instruction address: <*>",
+    "47563",
+    "22791",
+    "29727"
+   ],
+   [
+    "ciod: Error loading <*> invalid or missing program image, No such file or directory",
+    "43480",
+    "1024",
+    "4988"
+   ]
+  ],
+  "sql": "SELECT regexp_replace(content, '(0x[0-9a-fA-F]+|[0-9a-f]{8,}|[0-9]+(\\.[0-9]+)*|/[^ ]*)', '<*>', 'g') AS pattern,\n       count(*) AS n, count(DISTINCT node) AS nodes, min(line_no) AS example_line\nFROM bgl WHERE list_contains(%(levels)s::text[], level) AND ts >= %(start)s AND ts < %(end)s\nGROUP BY 1 ORDER BY n DESC LIMIT %(top)s",
+  "params": {
+   "levels": "['FATAL', 'FAILURE', 'ERROR', 'SEVERE']",
+   "start": "2005-06-01",
+   "end": "2006-02-01",
+   "top": "10"
+  }
+ },
+ "top_patterns_regex_mask_os": {
+  "cold_ms": 10,
+  "warm_median_ms": 8,
+  "rows": 10,
+  "sample": [
+   [
+    "Unknown base file: /var/lib/nova/instances/_base/a<*>c<*>f<*>c<*>da<*>b<*>c<*>bb<*>ac<*>e<*>",
+    "3059"
+   ],
+   [
+    "While synchronizing instance power states, found <*> instances in the database and <*> instances on the hypervisor.",
+    "45"
+   ],
+   [
+    "couldn't obtain the vcpu count from domain id: <*>, exception: Requested operation is not valid: cpu affinity is not supported",
+    "12"
+   ],
+   [
+    "Error during ComputeManager._run_image_cache_manager_pass",
+    "8"
+   ],
+   [
+    "    task(self, context)",
+    "8"
+   ]
+  ],
+  "sql": "SELECT regexp_replace(content, '([0-9a-f]{8}-[0-9a-f-]{27}|req-[0-9a-f-]+|[0-9]+(\\.[0-9]+)*)', '<*>', 'g') AS pattern,\n       count(*) AS n FROM openstack WHERE level IN ('ERROR','WARNING') GROUP BY 1 ORDER BY n DESC LIMIT 10",
+  "params": {}
+ },
+ "latency_by_path": {
+  "cold_ms": 12,
+  "warm_median_ms": 11,
+  "rows": 10,
+  "sample": [
+   [
+    "/v2/54fadb412c4e40cdbaed9335e4c35a9e/servers/detail",
+    "GET",
+    "67363",
+    "0.2646",
+    "0.3649",
+    "0.4358",
+    "1.2952"
+   ],
+   [
+    "/v2/e9746973ac574c6b8a9e8857f56a7608/os-server-external-events",
+    "POST",
+    "4129",
+    "0.0925",
+    "0.1056",
+    "0.2566",
+    "2.1446"
+   ],
+   [
+    "/openstack/2013-10-17/vendor_data.json",
+    "GET",
+    "4071",
+    "0.2203",
+    "0.3271",
+    "0.3981",
+    "2.2387"
+   ],
+   [
+    "/openstack/2013-10-17/meta_data.json",
+    "GET",
+    "3322",
+    "0.2109",
+    "0.2755",
+    "0.4018",
+    "0.7884"
+   ],
+   [
+    "/v2/54fadb412c4e40cdbaed9335e4c35a9e/servers/{id}",
+    "GET",
+    "2066",
+    "0.1959",
+    "0.3372",
+    "0.3836",
+    "0.7209"
+   ]
+  ],
+  "sql": "SELECT regexp_replace(http_path, '[0-9a-f]{8}-[0-9a-f-]{27}', '{id}', 'g') AS key, http_method, count(*) AS n,\n  round(quantile_cont(latency_s, 0.5), 4) AS p50, round(quantile_cont(latency_s, 0.95), 4) AS p95,\n  round(quantile_cont(latency_s, 0.99), 4) AS p99, round(max(latency_s), 4) AS max_s\nFROM openstack WHERE latency_s IS NOT NULL GROUP BY ALL ORDER BY n DESC LIMIT 10",
+  "params": {}
+ },
+ "latency_by_source_file": {
+  "cold_ms": 6,
+  "warm_median_ms": 6,
+  "rows": 3,
+  "sample": [
+   [
+    "openstack_abnormal.log",
+    "9416",
+    "[0.2594349, 0.377117075, 0.5092079050000002]"
+   ],
+   [
+    "openstack_normal1.log",
+    "26624",
+    "[0.2589625, 0.379883865, 0.510783864]"
+   ],
+   [
+    "openstack_normal2.log",
+    "62693",
+    "[0.2598479, 0.3833627599999999, 0.5174496120000001]"
+   ]
+  ],
+  "sql": "SELECT source_file AS key, count(*) AS n, quantile_cont(latency_s, [0.5, 0.95, 0.99]) AS p\nFROM openstack WHERE latency_s IS NOT NULL GROUP BY 1 ORDER BY 1",
+  "params": {}
+ },
+ "latency_trend": {
+  "cold_ms": 4,
+  "warm_median_ms": 4,
+  "rows": 5,
+  "sample": [
+   [
+    "2017-05-14 19:00:00",
+    "1424",
+    "0.387704135"
+   ],
+   [
+    "2017-05-14 20:00:00",
+    "4099",
+    "0.3746236799999999"
+   ],
+   [
+    "2017-05-14 21:00:00",
+    "3893",
+    "0.37692042"
+   ],
+   [
+    "2017-05-16 00:00:00",
+    "4052",
+    "0.3838130499999999"
+   ],
+   [
+    "2017-05-16 01:00:00",
+    "4197",
+    "0.3763824799999999"
+   ]
+  ],
+  "sql": "SELECT time_bucket(INTERVAL '1 hour', ts) AS bucket, count(*) AS n, quantile_cont(latency_s, 0.95) AS p95\nFROM openstack WHERE latency_s IS NOT NULL GROUP BY 1 ORDER BY 1 LIMIT 5",
+  "params": {}
+ },
+ "instance_lifecycle_spawn_time": {
+  "cold_ms": 11,
+  "warm_median_ms": 10,
+  "rows": 5,
+  "sample": [
+   [
+    "a445709b-6ad0-40ec-8860-bec60b6ca0c2",
+    "25",
+    "0:01:14.561000",
+    "50.72"
+   ],
+   [
+    "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+    "25",
+    "0:01:05.406000",
+    "41.81"
+   ],
+   [
+    "1643649d-2f42-4303-bfcd-7798baec19f9",
+    "25",
+    "0:00:54.406000",
+    "31.27"
+   ],
+   [
+    "ae651dff-c7ad-43d6-ac96-bbcd820ccca8",
+    "25",
+    "0:00:52.909000",
+    "29.46"
+   ],
+   [
+    "d7d68893-c44f-4e7c-8d4b-0e7801d62776",
+    "25",
+    "0:00:49.689000",
+    "26.69"
+   ]
+  ],
+  "sql": "SELECT instance_id, count(*) AS n, max(ts) - min(ts) AS span,\n  max(TRY_CAST(regexp_extract(content, 'Took ([0-9.]+) seconds to spawn', 1) AS DOUBLE)) AS spawn_s\nFROM openstack WHERE instance_id IS NOT NULL GROUP BY 1 ORDER BY spawn_s DESC NULLS LAST LIMIT 5",
+  "params": {}
+ }
+}

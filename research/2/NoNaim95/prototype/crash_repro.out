@@ -1,0 +1,9 @@
+CRASH?   1.05s  literal LIMIT 20, server binding: consuming input failed: server closed the connection unexpectedly
+CRASH?   0.00s  bound LIMIT %s, server binding (psycopg default): connection failed: connection to server at "127.0.0.1", port 7890 failed: could not receive data fro
+CRASH?   0.00s  bound LIMIT %s, ClientCursor: connection failed: connection to server at "127.0.0.1", port 7890 failed: could not receive data fro
+CRASH?   0.00s  bound LIMIT %s, ORDER BY line_no only (no BM25), server binding: connection failed: connection to server at "127.0.0.1", port 7890 failed: server closed the connecti
+OK       0.10s [(2993479,), (2993482,)]                 bound @@ %s + BM25 order + bound LIMIT, prepare=True
+OK       0.04s [(1108468,), (1108473,)]                 same, binary=True
+OK       0.01s [(1108468,), (1108473,)]                 same, default
+OK       0.10s [(234664,)]                              count with bound ts_between(...)::score(NULL)
+OK       0.01s [(234664,)]                              count with bound ts_between, prepare=True

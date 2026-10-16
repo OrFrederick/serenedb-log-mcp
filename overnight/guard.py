@@ -104,6 +104,8 @@ def check_git(args, cwd):
             dst = t.split(":")[-1].lstrip("+")
             if dst in ("main", "refs/heads/main") or t.startswith(":main"):
                 block("direct push to main; merge through a reviewed PR (gh pr merge)")
+        if any(a in ("--all", "--mirror", "--prune") for a in rest):
+            block("git push --all/--mirror/--prune; push one named branch")
         if "--delete" in rest and "main" in refs:
             block("deleting main")
         if any(a in ("--force", "-f") or (a.startswith("-") and not a.startswith("--") and "f" in a) for a in rest):
@@ -114,14 +116,38 @@ def check_git(args, cwd):
         block("deleting main")
 
 
+def re_repo_root(endpoint):
+    parts = [p for p in endpoint.strip("/").split("/") if p]
+    return len(parts) == 3 and parts[0] == "repos"
+
+
+GIT_OPTS_WITH_VALUE = ("-C", "-c", "--git-dir", "--work-tree", "--namespace", "--exec-path", "--config-env")
+
+
 def check_gh(args):
     if len(args) >= 2 and args[0] in ("repo", "release", "issue", "label") and args[1] == "delete":
         block(f"gh {args[0]} delete")
     if len(args) >= 2 and args[0] == "repo" and args[1] in ("edit", "rename", "archive"):
         block(f"gh repo {args[1]}")
-    if args and args[0] == "api" and any(a.upper() in ("-XDELETE", "DELETE") for a in args):
-        if not any("/git/refs/heads/" in a and "main" not in a for a in args):
-            block("gh api DELETE")
+    if args and args[0] == "api":
+        endpoint = next((a for a in args[1:] if not a.startswith("-") and "/" in a), "")
+        method = "GET"
+        for i, a in enumerate(args):
+            if a in ("-X", "--method") and i + 1 < len(args):
+                method = args[i + 1].upper()
+            elif a.startswith("-X") and len(a) > 2:
+                method = a[2:].upper()
+            elif a.startswith("--method="):
+                method = a.split("=", 1)[1].upper()
+        if "protection" in endpoint or endpoint.rstrip("/").endswith("refs/heads/main"):
+            if method != "GET":
+                block("gh api write to main ref or branch protection")
+        if method == "DELETE":
+            ok = "/git/refs/heads/" in endpoint and not endpoint.rstrip("/").endswith("/main")
+            if not ok:
+                block("gh api DELETE")
+        if method in ("PATCH", "PUT") and re_repo_root(endpoint):
+            block("gh api change to repository settings")
 
 
 def main():
@@ -133,6 +159,11 @@ def main():
         sys.exit(0)
     command = (data.get("tool_input") or {}).get("command", "")
     cwd = data.get("cwd") or os.getcwd()
+    check_command(command, cwd)
+    sys.exit(0)
+
+
+def check_command(command, cwd):
     for seg in segments(command):
         while seg and ("=" in seg[0] and not seg[0].startswith("-")):
             seg = seg[1:]  # strip VAR=value prefixes
@@ -141,20 +172,33 @@ def main():
         if not seg:
             continue
         prog = os.path.basename(seg[0])
+        if prog in ("bash", "sh", "zsh", "dash") and "-c" in seg[1:]:
+            i = seg.index("-c")
+            if i + 1 < len(seg):
+                check_command(seg[i + 1], cwd)
+        if prog == "eval":
+            check_command(" ".join(seg[1:]), cwd)
+        if prog == "find" and "-delete" in seg:
+            roots = [a for a in seg[1:] if not a.startswith("-") and not a.startswith("(")][:1] or ["."]
+            full = os.path.join(cwd, os.path.expanduser(roots[0]))
+            if not under_allowed_root(full) and os.path.realpath(full) != os.path.realpath(REPO):
+                block(f"find -delete outside the repo and caches: {roots[0]}")
         if prog == "sudo":
             block("sudo")
         if prog == "rm":
             check_rm(seg[1:], cwd)
         if prog == "git":
             args, git_cwd = seg[1:], cwd
-            while len(args) >= 2 and args[0] in ("-C", "-c"):
-                if args[0] == "-C":
-                    git_cwd = os.path.join(git_cwd, os.path.expanduser(args[1]))
-                args = args[2:]
+            while args and args[0].startswith("-"):
+                if args[0] in GIT_OPTS_WITH_VALUE and len(args) >= 2:
+                    if args[0] == "-C":
+                        git_cwd = os.path.join(git_cwd, os.path.expanduser(args[1]))
+                    args = args[2:]
+                else:
+                    args = args[1:]
             check_git(args, git_cwd)
         if prog == "gh":
             check_gh(seg[1:])
-    sys.exit(0)
 
 
 if __name__ == "__main__":

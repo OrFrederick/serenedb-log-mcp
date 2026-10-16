@@ -10,6 +10,7 @@ MODEL="${OVERNIGHT_MODEL:-opus}"
 EFFORT="${OVERNIGHT_EFFORT:-xhigh}"
 WAIT_IDLE_S=600        # sleep after Claude reports WAITING
 WAIT_LIMIT_FALLBACK_S=1800
+STALL_S=2700           # kill a run whose log is silent this long, then resume
 HANDOFF_ARG="${1:-}"
 
 red() { printf '\033[31m%s\033[0m\n' "$*"; }
@@ -77,7 +78,7 @@ else ylw "WARN: no running serenedb container seen; Claude may start one"; fi
 USER_SETTINGS="$HOME/.claude/settings.json"
 if [ -f "$USER_SETTINGS" ]; then BASE="$(cat "$USER_SETTINGS")"; else BASE='{}'; fi
 jq --arg guard "$REPO/overnight/guard.py" '
-  del(.permissions.ask) | del(.permissions.defaultMode) | del(.model) | .enableAllProjectMcpServers = true
+  del(.permissions.ask) | del(.permissions.defaultMode) | del(.model) | .enabledMcpjsonServers = ["serenedb-docs"]
   | .hooks = {PreToolUse: [{matcher: "Bash", hooks: [{type: "command", command: ("python3 " + $guard), timeout: 10}]}]}
 ' <<<"$BASE" > "$STATE/settings.json" || fail "could not build settings from $USER_SETTINGS"
 grn "settings: $STATE/settings.json (ask rules stripped, guard hook on)"
@@ -104,7 +105,7 @@ echo "== checks passed; starting loop (Ctrl-C to stop) =="
 caffeinate -dimsu -w $$ &
 
 export OVERNIGHT_REPO="$REPO" OVERNIGHT_ROLE="$ROLE" OVERNIGHT_LOGIN="$LOGIN"
-export CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0     # keep -p alive while background subagents/watchers run
+export CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=2700000   # -p waits up to 45 min for background work, never forever
 export CLAUDE_CODE_RESUME_INTERRUPTED_TURN=1
 
 kickoff() {
@@ -117,6 +118,22 @@ EOF
 }
 CONTINUE_MSG="Continue the overnight run per overnight/PROMPT.md. Re-read $STATE/notes.md and GitHub state before acting. End your turn with the OVERNIGHT_STATUS line."
 
+# Run claude in the background and kill it if its stream-json log stays silent for STALL_S.
+run_claude() {
+  local runlog="$1" msg="$2"; shift 2
+  claude -p "$msg" "$@" "${COMMON[@]}" >"$runlog" 2>"$runlog.err" &
+  local pid=$!
+  while kill -0 "$pid" 2>/dev/null; do
+    sleep 60
+    local last; last=$(stat -f %m "$runlog" 2>/dev/null || date +%s)
+    if [ $(( $(date +%s) - last )) -gt "$STALL_S" ]; then
+      log "watchdog: no output for ${STALL_S}s, killing pid $pid"
+      kill -INT "$pid" 2>/dev/null; sleep 30; kill -TERM "$pid" 2>/dev/null; sleep 10; kill -KILL "$pid" 2>/dev/null
+    fi
+  done
+  wait "$pid"
+}
+
 restarts=0; fails=0
 while true; do
   if [ -f "$STATE/DONE" ]; then log "DONE marker found; exiting"; break; fi
@@ -124,10 +141,10 @@ while true; do
   RUNLOG="$LOGDIR/run-$(date +%Y%m%dT%H%M%S).jsonl"
   if [ -s "$SID_FILE" ]; then
     SID="$(cat "$SID_FILE")"; log "resume session $SID"
-    claude -p "$CONTINUE_MSG" --resume "$SID" "${COMMON[@]}" >"$RUNLOG" 2>"$RUNLOG.err"; rc=$?
+    run_claude "$RUNLOG" "$CONTINUE_MSG" --resume "$SID"; rc=$?
   else
     SID="$(uuidgen | tr 'A-Z' 'a-z')"; echo "$SID" >"$SID_FILE"; log "new session $SID (restart $restarts)"
-    claude -p "$(kickoff "$restarts")" --session-id "$SID" "${COMMON[@]}" >"$RUNLOG" 2>"$RUNLOG.err"; rc=$?
+    run_claude "$RUNLOG" "$(kickoff "$restarts")" --session-id "$SID"; rc=$?
   fi
   restarts=$((restarts + 1))
 

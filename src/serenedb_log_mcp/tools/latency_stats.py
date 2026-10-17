@@ -75,7 +75,7 @@ DEFAULT_BUCKET = "hour"
 
 _UNITS = {"api": "API requests", "spawn": "instances", "build": "instances"}
 _WHAT = {
-    "api": "the time: of each nova-api request Log Entry (latency_s), in seconds",
+    "api": "the time of each nova-api request Log Entry (latency_s), in seconds",
     "spawn": "nova's own 'Took N seconds to spawn the instance on the hypervisor', one value per instance",
     "build": "nova's own 'Took N seconds to build instance', one value per instance",
 }
@@ -168,19 +168,23 @@ _endpoints: dict[str, tuple[str, ...]] = {}
 _endpoints_lock = threading.Lock()
 
 
-def _known_endpoints(rel: Relation, role: Role) -> tuple[str, ...]:
-    """The endpoints of the Dataset, once per table and process."""
+def _known_endpoints(rel: Relation, role: Role) -> tuple[tuple[str, ...], QueryResult | None]:
+    """The endpoints of the Dataset, once per table and process, and the query a cache miss ran.
+
+    The query goes into the Evidence like every other statement of the call; a cache hit runs none.
+    """
     with _endpoints_lock:
         cached = _endpoints.get(rel.table_name)
     if cached is not None:
-        return cached
+        return cached, None
     column = rel.column("endpoint")
     statement = sql.SQL("SELECT DISTINCT {c} FROM {t} WHERE {c} IS NOT NULL ORDER BY 1").format(
         c=column, t=rel.table
     )
-    found = tuple(str(row[0]) for row in fetch_all(statement.as_string(None), role=role).rows)
+    result = fetch_all(statement.as_string(None), role=role)
+    found = tuple(str(row[0]) for row in result.rows)
     with _endpoints_lock:
-        return _endpoints.setdefault(rel.table_name, found)
+        return _endpoints.setdefault(rel.table_name, found), result
 
 
 # SQL pieces ------------------------------------------------------------------------------------------
@@ -358,16 +362,19 @@ def _bucket_cte(
         )
     return _q(
         "WITH samples AS ({}), buckets AS ({}), "
-        "reference AS (SELECT median(p95) AS base_p95, median(p99) AS base_p99, count(*) AS base_buckets "
-        "FROM ({}) AS reference_buckets WHERE n >= {}), "
+        "reference AS (SELECT median(p95) FILTER (WHERE n >= {}) AS base_p95, "
+        "median(p99) FILTER (WHERE n >= {}) AS base_p99, count(*) FILTER (WHERE n >= {}) AS base_buckets, "
+        "coalesce(sum(n), 0) AS base_samples FROM ({}) AS reference_buckets), "
         "scored AS (SELECT b.bucket, b.n, b.p50, b.p95, b.p99, b.mx, "
         "b.p95 / nullif(r.base_p95, 0) AS p95_ratio, b.p99 / nullif(r.base_p99, 0) AS p99_ratio, "
         "coalesce(b.n >= {} AND (b.p95 >= {} * r.base_p95 OR b.p99 >= {} * r.base_p99), false) AS rise "
         "FROM buckets AS b CROSS JOIN reference AS r)",
         samples,
         buckets,
-        reference_input,
         _bound(MIN_BUCKET_SAMPLES),
+        _bound(MIN_BUCKET_SAMPLES),
+        _bound(MIN_BUCKET_SAMPLES),
+        reference_input,
         _bound(MIN_BUCKET_SAMPLES),
         _bound(rise_factor),
         _bound(rise_factor),
@@ -401,7 +408,8 @@ def _degradation(
     summary_q = _q(
         "{} SELECT count(*), sum(n), "
         "(SELECT round(base_p95, {}) FROM reference), (SELECT round(base_p99, {}) FROM reference), "
-        "(SELECT base_buckets FROM reference), count(*) FILTER (WHERE rise), "
+        "(SELECT base_buckets FROM reference), (SELECT base_samples FROM reference), "
+        "count(*) FILTER (WHERE rise), "
         "min(bucket) FILTER (WHERE rise), max(bucket) FILTER (WHERE rise) FROM scored",
         cte,
         sql.Literal(DIGITS),
@@ -411,7 +419,9 @@ def _degradation(
         count.text, rows.text, list(count.params), limit, role=role, rows_params=[*rows.params, limit]
     )
     totals = fetch_all(summary_q.text, summary_q.params, role=role)
-    buckets, samples, base_p95, base_p99, base_buckets, rising, first_rise, last_rise = totals.rows[0]
+    buckets, samples, base_p95, base_p99, base_buckets, base_samples, rising, first_rise, last_rise = (
+        totals.rows[0]
+    )
     unit = _UNITS[view.metric]
     summary = {
         "metric": view.metric,
@@ -422,6 +432,7 @@ def _degradation(
         "baseline_p95_s": base_p95,
         "baseline_p99_s": base_p99,
         "baseline_buckets": int(base_buckets or 0),
+        "baseline_samples": int(base_samples or 0),
         "baseline": "the baseline period" if baseline is not None else "the Data Scope",
         "rise_factor": rise_factor,
         "min_bucket_samples": MIN_BUCKET_SAMPLES,
@@ -436,7 +447,12 @@ def _degradation(
         f"holds at least {MIN_BUCKET_SAMPLES} {unit} and its p95 or p99 is at least {rise_factor:g} "
         "times the baseline. Buckets without samples are left out.",
     ]
-    if base_p95 is None:
+    if base_p95 is None and baseline is not None and not base_samples:
+        notes.append(
+            f"No baseline: the baseline period holds no {unit}, so no bucket can rise. Choose a baseline "
+            "period inside the OpenStack time range (call describe_corpus for it)."
+        )
+    elif base_p95 is None:
         notes.append(
             f"No baseline: no bucket of {summary['baseline']} holds {MIN_BUCKET_SAMPLES} or more {unit}, "
             "so no bucket can rise. Use a wider bucket or a longer time range."
@@ -728,7 +744,10 @@ def register(server: MCPServer) -> None:
                 corpus_end = {DATASET: end.rows[0][0]}
         canonical = None
         if endpoint is not None and endpoint.strip():
-            canonical = validate_choice("endpoint", canonical_endpoint(endpoint), _known_endpoints(rel, role))
+            known, lookup = _known_endpoints(rel, role)
+            if lookup is not None:
+                parts.append(lookup)
+            canonical = validate_choice("endpoint", canonical_endpoint(endpoint), known)
         applied: dict[str, Any] = {"metric": view.metric, "group_by": view.group_by, "endpoint": canonical}
         if view.group_by == "bucket":
             applied |= {

@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
+
 import pytest
 from psycopg import sql
 
@@ -9,7 +12,9 @@ from serenedb_log_mcp import config
 from serenedb_log_mcp.config import ROLES, load_settings
 from serenedb_log_mcp.corpus import datasets
 from serenedb_log_mcp.corpus.datasets import (
+    DATASET_NAMES,
     DATASETS,
+    DatasetName,
     UnknownColumnError,
     UnknownDatasetError,
     relation,
@@ -182,9 +187,33 @@ def test_each_dataset_says_how_to_read_its_timestamps() -> None:
     assert "UTC" in DATASETS["openstack"].time_note
 
 
+def test_each_dataset_names_the_time_zone_of_ts() -> None:
+    # Machine-readable, so the Data Scope and tool descriptions need not hard-code it (#48).
+    assert DATASETS["bgl"].ts_zone == "America/Los_Angeles"
+    assert DATASETS["openstack"].ts_zone == "UTC"
+
+
+@pytest.mark.parametrize("name", DATASET_NAMES)
+def test_the_time_zone_of_ts_is_a_known_iana_zone(name: DatasetName) -> None:
+    assert ZoneInfo(DATASETS[name].ts_zone).key == DATASETS[name].ts_zone
+
+
+def test_the_bgl_zone_has_daylight_saving_time_over_the_corpus() -> None:
+    zone = ZoneInfo(DATASETS["bgl"].ts_zone)
+
+    assert datetime(2005, 6, 3, 15, 42, tzinfo=zone).utcoffset() == timedelta(hours=-7)
+    assert datetime(2006, 1, 4, 8, 0, tzinfo=zone).utcoffset() == timedelta(hours=-8)
+
+
+def test_ts_is_local_tells_a_local_ts_from_a_utc_one() -> None:
+    assert DATASETS["bgl"].ts_is_local is True
+    assert DATASETS["openstack"].ts_is_local is False
+
+
 def test_the_ownership_table_is_flagged_as_a_stub() -> None:
     assert datasets.OWNERSHIP_IS_STUB is True
     assert "TODO(organiser)" in datasets.OWNERSHIP_NOTE
+    assert datasets.OWNERSHIP_STUB_SOURCE == "stub"
 
 
 def test_the_registry_lists_every_canonical_table_and_index_name() -> None:

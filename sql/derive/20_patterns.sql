@@ -88,6 +88,9 @@ FROM texts;
 -- The Pattern columns of the Log Entries. pattern_key is the alert category for BGL alert lines
 -- (set by 10_entries.sql) and the template_id everywhere else: it is replaced only where it is
 -- NULL or still holds the template_id of an earlier run, so a re-run never touches an alert line.
+-- Only rows whose Pattern changes are written: in a full derive the tables are new and have no
+-- index yet (1.7 s for BGL), but when the step runs on its own, every written row also goes
+-- through the inverted index (205 s for BGL on SereneDB 26.10.1, with other sessions stalled).
 UPDATE ${slm}.bgl_entry AS e
 SET template_id = d.template_id,
     family_id = d.family_id,
@@ -96,7 +99,9 @@ SET template_id = d.template_id,
         ELSE e.pattern_key
     END
 FROM ${slm}.pattern_dict AS d
-WHERE d.dataset = 'bgl' AND d.message = e.message;
+WHERE d.dataset = 'bgl' AND d.message = e.message
+  AND (e.template_id IS DISTINCT FROM d.template_id OR e.family_id IS DISTINCT FROM d.family_id
+       OR e.pattern_key IS NULL);
 
 UPDATE ${slm}.bgl_entry AS e
 SET template_id = d.template_id,
@@ -106,7 +111,9 @@ SET template_id = d.template_id,
         ELSE e.pattern_key
     END
 FROM ${slm}.pattern_dict AS d
-WHERE d.dataset = 'bgl' AND d.message IS NULL AND e.message IS NULL;
+WHERE d.dataset = 'bgl' AND d.message IS NULL AND e.message IS NULL
+  AND (e.template_id IS DISTINCT FROM d.template_id OR e.family_id IS DISTINCT FROM d.family_id
+       OR e.pattern_key IS NULL);
 
 UPDATE ${slm}.os_entry AS e
 SET template_id = d.template_id,
@@ -116,7 +123,9 @@ SET template_id = d.template_id,
         ELSE e.pattern_key
     END
 FROM ${slm}.pattern_dict AS d
-WHERE d.dataset = 'openstack' AND d.message = e.message;
+WHERE d.dataset = 'openstack' AND d.message = e.message
+  AND (e.template_id IS DISTINCT FROM d.template_id OR e.family_id IS DISTINCT FROM d.family_id
+       OR e.pattern_key IS NULL);
 
 UPDATE ${slm}.os_entry AS e
 SET template_id = d.template_id,
@@ -126,7 +135,9 @@ SET template_id = d.template_id,
         ELSE e.pattern_key
     END
 FROM ${slm}.pattern_dict AS d
-WHERE d.dataset = 'openstack' AND d.message IS NULL AND e.message IS NULL;
+WHERE d.dataset = 'openstack' AND d.message IS NULL AND e.message IS NULL
+  AND (e.template_id IS DISTINCT FROM d.template_id OR e.family_id IS DISTINCT FROM d.family_id
+       OR e.pattern_key IS NULL);
 
 -- One row per Pattern: the catalogue behind list_patterns (T14). component and level are the most
 -- frequent ones among its Log Entries (ties: the first by name); first_seen and last_seen use ts

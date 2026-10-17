@@ -194,3 +194,15 @@ def test_placeholder_names_may_contain_digits() -> None:
     assert derive.render("SELECT ${tier1}", {"tier1": "1"}) == "SELECT 1"
     with pytest.raises(derive.DeriveError, match=r"\$\{x2\}"):
         derive.render("SELECT ${x2}", {"tier1": "1"})
+
+
+def test_the_updates_touch_only_log_entries_whose_pattern_changes() -> None:
+    # An UPDATE through an existing inverted index costs about 120 times more (205 s against 1.7 s
+    # for BGL) and stalls the shared server, so a re-run must leave unchanged rows alone.
+    updates = [s for s in derive.split_statements(PATTERNS_SQL.read_text()) if s.startswith("UPDATE")]
+
+    assert len(updates) == 4
+    for update in updates:
+        assert "e.template_id IS DISTINCT FROM d.template_id" in update
+        assert "e.family_id IS DISTINCT FROM d.family_id" in update
+        assert "e.pattern_key IS NULL" in update

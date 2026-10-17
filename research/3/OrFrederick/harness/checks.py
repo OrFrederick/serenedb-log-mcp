@@ -71,6 +71,9 @@ def _args_match(got: dict, want: dict) -> bool:
 
 
 # ---------- citations and numbers ----------
+_EMBEDDED_NUM_RE = re.compile(r"\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?")
+
+
 def _evidence_numbers(ev: dict) -> set[float]:
     nums: set[float] = set()
 
@@ -79,6 +82,11 @@ def _evidence_numbers(ev: dict) -> set[float]:
             return
         if isinstance(x, (int, float)):
             nums.add(float(x))
+        elif isinstance(x, str):
+            # Text cells (e.g. search_logs log content) carry measurements as plain text, not as
+            # separate structured fields: "Total memory: 64172 MB" or "status: 503 len: 323".
+            for tok in _EMBEDDED_NUM_RE.findall(x):
+                nums.add(_to_float(tok))
         elif isinstance(x, (list, tuple)):
             for y in x:
                 walk(y)

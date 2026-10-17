@@ -20,7 +20,10 @@ dev = [
     "jsonschema>=4.23",
     "mypy>=1.15",
     "pytest>=8.3",
+    # pyyaml: the eval question set (eval/questions.yaml, T17).
+    "pyyaml>=6.0",
     "ruff>=0.11",
+    "types-pyyaml>=6.0",
 ]
 
 [build-system]
@@ -30,7 +33,7 @@ build-backend = "uv_build"
 [tool.ruff]
 line-length = 110
 target-version = "py312"
-src = ["src", "scripts", "tests"]
+src = ["src", "scripts", "eval", "tests"]
 # overnight/ is the unattended-run harness, not part of the product.
 extend-exclude = ["overnight"]
 
@@ -41,8 +44,8 @@ select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF", "PT"]
 python_version = "3.12"
 strict = true
 plugins = ["pydantic.mypy"]
-files = ["src", "scripts"]
-mypy_path = ["src"]
+files = ["src", "scripts", "eval"]
+mypy_path = ["src", "eval"]
 
 [tool.pydantic-mypy]
 init_forbid_extra = true
@@ -51,7 +54,7 @@ warn_required_dynamic_aliases = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["scripts", "tests/support", "tests/golden"]
+pythonpath = ["scripts", "eval", "tests/support", "tests/golden"]
 # The db and corpus markers are defined in tests/conftest.py.
 # importlib mode lets two test files share a name in different directories.
 addopts = ["-ra", "--strict-markers", "--import-mode=importlib", "-p", "pytester"]

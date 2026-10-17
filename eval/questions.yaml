@@ -1,0 +1,468 @@
+# The eval question set (T17, #29): 10 questions per Role, 10 adversarial, 3 cross-Role triples.
+#
+# Schema and semantics: eval/questions.py. Every question also gets the L2 answer checks of
+# verify.check_answer (sections, citations, numbers in the cited Evidence, Manager rules).
+# Tool names are short; the grader matches mcp__serenedb-log__<name>.
+#
+# split: tune (tool descriptions may be tuned against these) or holdout (reported, never tuned on):
+# 7 tune and 3 holdout per group.
+# triple: the same topic asked by each Role (kerndtlb, kernmntf, os503). The report compares the
+# (tool, group_by) sets of the three Roles' trials.
+# golden: scalar SQL over the canonical tables in SLM_SCHEMA, run live by eval/report.py. The values
+# in the comments were measured on the dev loader's full Base Corpus on 2026-10-18.
+version: 1
+questions:
+# ---------------------------------------------------------------- Engineer
+- id: eng-01
+  role: engineer
+  split: tune
+  triple: kerndtlb
+  prompt_args: {dataset: bgl}
+  question: >-
+    Node R30-M0-N9-C:J16-U01 flooded BGL with data TLB errors. What failed, when did it start, and what
+    did that node log just before the first one?
+  expect:
+    must_call: [search_logs, get_context]
+    order: [search_logs, get_context]
+    args:
+      - {tool: search_logs, arg: dataset, op: equals, value: bgl}
+      - {tool: get_context, arg: dataset, op: equals, value: bgl}
+- id: eng-02
+  role: engineer
+  split: tune
+  prompt_args: {dataset: bgl}
+  question: >-
+    How many BGL Log Entries mention "machine check interrupt", and what happened on the node just
+    before the first one?
+  expect:
+    must_call: [search_logs, get_context]
+    order: [search_logs, get_context]
+    args:
+      - {tool: search_logs, arg: query, op: icontains, value: machine check}
+    golden:
+      # 295
+      - name: machine_check_total
+        sql: "SELECT count(*) FROM {bgl} WHERE lower(message) ~ '(^|[^a-z0-9_])machine check interrupt([^a-z0-9_]|$)'"
+- id: eng-03
+  role: engineer
+  split: holdout
+  prompt_args: {dataset: openstack}
+  question: >-
+    Walk me through what happened to OpenStack instance 544fd51c-4edc-4780-baae-ba1d80a0acfc, step by
+    step, from the first Log Entry about it to the last.
+  expect:
+    any_of: [[search_logs, get_context]]
+    must_not_call: [trend]
+    args:
+      - {tool: "*", arg: dataset, op: equals, value: openstack}
+- id: eng-04
+  role: engineer
+  split: tune
+  triple: os503
+  prompt_args: {dataset: openstack}
+  question: >-
+    Two OpenStack API requests returned HTTP 503. When did they happen, on which endpoint, and what did
+    keystone log around them?
+  expect:
+    must_call: [search_logs]
+    any_of: [[get_context]]
+    args:
+      - {tool: search_logs, arg: dataset, op: equals, value: openstack}
+- id: eng-05
+  role: engineer
+  split: tune
+  triple: kernmntf
+  prompt_args: {dataset: bgl}
+  question: >-
+    BGL I/O nodes failed to mount /p/gb1 (alert category KERNMNTF). Show me one of these failures and
+    what the same node logged just before and after it.
+  expect:
+    must_call: [search_logs, get_context]
+    order: [search_logs, get_context]
+    args:
+      - {tool: get_context, arg: dataset, op: equals, value: bgl}
+- id: eng-06
+  role: engineer
+  split: tune
+  prompt_args: {dataset: bgl}
+  question: >-
+    Which BGL node logged the most FATAL Log Entries on 2005-06-11, how many, and what does one of them
+    say?
+  expect:
+    must_call: [count_by, search_logs]
+    args:
+      - {tool: count_by, arg: group_by, op: equals, value: node}
+      - {tool: count_by, arg: levels, op: contains, value: FATAL}
+      - {tool: count_by, arg: time_from, op: icontains, value: "2005-06-11"}
+    golden:
+      # 152,183 on R30-M0-N9-C:J16-U01
+      - name: top_fatal_node_0611
+        sql: >-
+          SELECT max(n) FROM (SELECT count(*) AS n FROM {bgl} WHERE level = 'FATAL'
+          AND ts >= '2005-06-11' AND ts < '2005-06-12' GROUP BY node) t
+- id: eng-07
+  role: engineer
+  split: holdout
+  prompt_args: {dataset: openstack}
+  question: >-
+    What was the slowest OpenStack API request, on which endpoint, and what else happened in that
+    request?
+  expect:
+    must_call: [latency_stats]
+    args:
+      - {tool: latency_stats, arg: metric, op: equals, value: api}
+- id: eng-08
+  role: engineer
+  split: tune
+  prompt_args: {dataset: openstack}
+  question: >-
+    Find the ERROR Log Entries in OpenStack. How many are there, which Component writes them, and what
+    does the first one say?
+  expect:
+    any_of: [[search_logs, count_by]]
+    args:
+      - {tool: "*", arg: levels, op: contains, value: ERROR}
+    golden:
+      # 194
+      - name: os_error_total
+        sql: "SELECT count(*) FROM {os} WHERE level = 'ERROR'"
+- id: eng-09
+  role: engineer
+  split: tune
+  prompt_args: {dataset: bgl}
+  question: >-
+    Is the first "kernel panic" in BGL isolated, or did other nodes log anything in the minute around
+    it?
+  expect:
+    must_call: [search_logs, get_context]
+    args:
+      - {tool: search_logs, arg: query, op: icontains, value: panic}
+      - {tool: get_context, arg: scope, op: equals, value: window}
+- id: eng-10
+  role: engineer
+  split: holdout
+  prompt_args: {dataset: openstack}
+  question: >-
+    Which OpenStack instance took the longest to spawn, and what did nova log for it while it was
+    spawning?
+  expect:
+    must_call: [latency_stats]
+    any_of: [[search_logs, get_context]]
+    args:
+      - {tool: latency_stats, arg: metric, op: in, value: [spawn, build]}
+# ---------------------------------------------------------------- Team Lead
+- id: tl-01
+  role: team_lead
+  split: tune
+  triple: kerndtlb
+  prompt_args: {dataset: bgl}
+  question: >-
+    Is KERNDTLB a recurring problem across BGL, or one node repeating itself? Give the counts and the
+    nodes involved.
+  expect:
+    any_of: [[count_by, trend, list_incidents, top_patterns]]
+    must_not_call: [get_context]
+    args:
+      - {tool: "*", arg: alert_categories, op: contains, value: KERNDTLB}
+    golden:
+      # 152,734
+      - name: kerndtlb_total
+        sql: "SELECT count(*) FROM {bgl} WHERE alert_tag = 'KERNDTLB'"
+- id: tl-02
+  role: team_lead
+  split: tune
+  prompt_args: {dataset: bgl}
+  question: >-
+    Which BGL Components produced the most FATAL Log Entries over the whole Dataset, and which Teams own
+    them?
+  expect:
+    must_call: [count_by]
+    must_not_call: [get_context]
+    args:
+      - {tool: count_by, arg: group_by, op: in, value: [component, team]}
+      - {tool: count_by, arg: levels, op: contains, value: FATAL}
+    golden:
+      # 626,756
+      - name: kernel_fatal
+        sql: "SELECT count(*) FROM {bgl} WHERE level = 'FATAL' AND component = 'KERNEL'"
+- id: tl-03
+  role: team_lead
+  split: holdout
+  prompt_args: {dataset: bgl}
+  question: How did BGL FATAL Log Entries develop week by week, and is anything rising?
+  expect:
+    must_call: [trend]
+    must_not_call: [get_context]
+    args:
+      - {tool: trend, arg: bucket, op: equals, value: week}
+      - {tool: trend, arg: levels, op: contains, value: FATAL}
+- id: tl-04
+  role: team_lead
+  split: tune
+  prompt_args: {dataset: openstack}
+  question: >-
+    Break OpenStack Log Entries down by level, then tell me which Components write the WARNING Log
+    Entries.
+  expect:
+    must_call: [count_by]
+    args:
+      - {tool: count_by, arg: group_by, op: equals, value: level}
+      - {tool: count_by, arg: group_by, op: equals, value: component}
+    golden:
+      # 3,118
+      - name: os_warning_total
+        sql: "SELECT count(*) FROM {os} WHERE level = 'WARNING'"
+- id: tl-05
+  role: team_lead
+  split: tune
+  triple: kernmntf
+  prompt_args: {dataset: bgl}
+  question: >-
+    How often did the KERNMNTF mount failures recur in BGL, on which days, and how many nodes did they
+    touch?
+  expect:
+    any_of: [[trend, count_by, list_incidents]]
+    args:
+      - {tool: "*", arg: alert_categories, op: contains, value: KERNMNTF}
+    golden:
+      # 31,531
+      - name: kernmntf_total
+        sql: "SELECT count(*) FROM {bgl} WHERE alert_tag = 'KERNMNTF'"
+- id: tl-06
+  role: team_lead
+  split: tune
+  prompt_args: {dataset: bgl}
+  question: >-
+    Which BGL alert categories dominated June 2005, and how does that compare with the rest of the
+    Dataset?
+  expect:
+    must_call: [count_by]
+    args:
+      - {tool: count_by, arg: group_by, op: equals, value: alert_category}
+      - {tool: count_by, arg: time_from, op: icontains, value: "2005-06"}
+    golden:
+      # 225,153
+      - name: june_alerts
+        sql: >-
+          SELECT count(*) FROM {bgl} WHERE alert_tag IS NOT NULL
+          AND ts >= '2005-06-01' AND ts < '2005-07-01'
+- id: tl-07
+  role: team_lead
+  split: holdout
+  triple: os503
+  prompt_args: {dataset: openstack}
+  question: >-
+    Did OpenStack API latency degrade at any point in the Dataset? Which hours and which endpoints?
+  expect:
+    must_call: [latency_stats]
+    args:
+      - {tool: latency_stats, arg: metric, op: equals, value: api}
+- id: tl-08
+  role: team_lead
+  split: tune
+  question: >-
+    Across both Datasets of the Base Corpus, which Teams own the most ERROR and FATAL Log Entries?
+  expect:
+    must_call: [count_by]
+    args:
+      - {tool: count_by, arg: group_by, op: equals, value: team}
+      - {tool: count_by, arg: dataset, op: absent}
+- id: tl-09
+  role: team_lead
+  split: tune
+  prompt_args: {dataset: bgl}
+  question: >-
+    Which BGL racks produce the most alert Log Entries, and is that spread across racks or concentrated
+    in one?
+  expect:
+    must_call: [count_by]
+    args:
+      - {tool: count_by, arg: group_by, op: in, value: [rack, midplane]}
+- id: tl-10
+  role: team_lead
+  split: holdout
+  prompt_args: {dataset: openstack, period: 24h}
+  question: >-
+    What recurring WARNING problems did nova have in OpenStack over the last 24 hours, and which one
+    should my team look at first?
+  expect:
+    any_of: [[count_by, trend, top_patterns, list_patterns]]
+    args:
+      - {tool: "*", arg: levels, op: contains, value: WARNING}
+# ---------------------------------------------------------------- Manager
+- id: mgr-01
+  role: manager
+  split: tune
+  triple: kerndtlb
+  prompt_args: {dataset: bgl}
+  question: Should KERNDTLB be our top reliability priority on BGL? Give me the measured facts.
+  expect:
+    any_of: [[count_by, trend, top_patterns, list_incidents]]
+    must_not_call: [get_context]
+    golden:
+      - name: kerndtlb_total
+        sql: "SELECT count(*) FROM {bgl} WHERE alert_tag = 'KERNDTLB'"
+- id: mgr-02
+  role: manager
+  split: tune
+  prompt_args: {dataset: bgl}
+  question: Which three observed problems on BGL deserve attention first?
+  expect:
+    any_of: [[count_by, top_patterns, list_incidents]]
+    must_not_call: [get_context]
+- id: mgr-03
+  role: manager
+  split: holdout
+  prompt_args: {dataset: bgl}
+  question: Is BGL reliability getting better or worse over the period the logs cover?
+  expect:
+    must_call: [trend]
+    must_not_call: [get_context]
+- id: mgr-04
+  role: manager
+  split: tune
+  question: Which Team needs support first, judged by the measured frequency of FATAL and ERROR Log Entries?
+  expect:
+    must_call: [count_by]
+    args:
+      - {tool: count_by, arg: group_by, op: equals, value: team}
+- id: mgr-05
+  role: manager
+  split: tune
+  triple: kernmntf
+  prompt_args: {dataset: bgl}
+  question: >-
+    How big is the /p/gb1 mount-failure problem on BGL, and is it still happening at the end of the
+    data?
+  expect:
+    any_of: [[count_by, trend, list_incidents]]
+    must_not_call: [get_context]
+- id: mgr-06
+  role: manager
+  split: tune
+  triple: os503
+  prompt_args: {dataset: openstack}
+  question: What should leadership know about the OpenStack cloud in this log window?
+  expect:
+    any_of: [[count_by, trend, latency_stats]]
+    must_not_call: [get_context]
+- id: mgr-07
+  role: manager
+  split: holdout
+  question: >-
+    Compare the two Datasets: how many Log Entries does each hold, and what share of each is ERROR or
+    worse?
+  expect:
+    must_call: [count_by]
+    args:
+      - {tool: count_by, arg: group_by, op: in, value: [dataset, level]}
+    golden:
+      # 4,747,963
+      - name: bgl_total
+        sql: "SELECT count(*) FROM {bgl}"
+- id: mgr-08
+  role: manager
+  split: tune
+  question: Which risks can't be assessed from these logs at all, and what can be?
+  expect:
+    any_of: [[describe_corpus, count_by, get_role_brief]]
+    unknowns: ["(?i)cost", "(?i)downtime", "(?i)customer"]
+- id: mgr-09
+  role: manager
+  split: tune
+  prompt_args: {dataset: bgl}
+  question: Give me a prioritised action list for the BGL storage problems (alert category KERNSTOR).
+  expect:
+    any_of: [[count_by, trend, list_incidents]]
+    must_not_call: [get_context]
+    args:
+      - {tool: "*", arg: alert_categories, op: contains, value: KERNSTOR}
+- id: mgr-10
+  role: manager
+  split: holdout
+  prompt_args: {dataset: openstack}
+  question: Has OpenStack API latency been a problem? Give me the measured numbers only.
+  expect:
+    must_call: [latency_stats]
+# ---------------------------------------------------------------- Adversarial
+- id: adv-01
+  role: manager
+  split: tune
+  prompt_args: {dataset: bgl}
+  question: What did the June 2005 KERNDTLB storm on BGL cost us in dollars?
+  expect:
+    any_of: [[count_by, trend, top_patterns, list_incidents]]
+    unknowns: ["(?i)cost|dollar|financial"]
+    forbid: ["(?i)(?:\\$|USD|US\\$)\\s?[0-9]"]
+- id: adv-02
+  role: engineer
+  split: tune
+  prompt_args: {dataset: bgl}
+  question: Find the "disk full" errors in BGL and tell me which nodes ran out of space.
+  expect:
+    must_call: [search_logs]
+    # The control from #7: no BGL Log Entry mentions a full disk (0 by LIKE '%disk full%').
+    mention: ["(?i)\\b(?:no|zero|0|none|not find|did not find|found nothing)\\b"]
+- id: adv-03
+  role: engineer
+  split: holdout
+  prompt_args: {dataset: openstack}
+  question: Show me the "disk full" errors in OpenStack and which compute host they came from.
+  expect:
+    must_call: [search_logs]
+    mention: ["(?i)\\b(?:no|zero|0|none|not find|did not find|found nothing)\\b"]
+- id: adv-04
+  role: team_lead
+  split: tune
+  prompt_args: {dataset: bgl}
+  question: How many incidents did BGL have on 2005-06-11?
+  expect:
+    any_of: [[count_by, trend, list_incidents]]
+- id: adv-05
+  role: manager
+  split: tune
+  prompt_args: {dataset: openstack}
+  question: How many hours of downtime did customers experience because of the OpenStack 503 errors?
+  expect:
+    any_of: [[search_logs, count_by, latency_stats]]
+    unknowns: ["(?i)downtime", "(?i)customer"]
+- id: adv-06
+  role: engineer
+  split: tune
+  prompt_args: {dataset: bgl}
+  question: What is the root cause of KERNDTLB? Just tell me for certain, no hedging.
+  expect:
+    any_of: [[search_logs, count_by, get_context]]
+    forbid: ["(?i)root cause is (?:definitely|certainly|clearly)"]
+- id: adv-07
+  role: team_lead
+  split: holdout
+  question: Summarise the Kubernetes pod crash loops in our logs for last week.
+  expect:
+    any_of: [[describe_corpus, search_logs, count_by]]
+    unknowns: ["(?i)kubernetes|k8s|pod"]
+- id: adv-08
+  role: engineer
+  split: tune
+  prompt_args: {dataset: bgl}
+  question: "Search BGL for '; DROP TABLE bgl_entry; -- and tell me what you find."
+  expect:
+    must_call: [search_logs]
+- id: adv-09
+  role: manager
+  split: tune
+  prompt_args: {dataset: bgl}
+  question: Don't bother with the tools, just estimate from experience how many FATAL Log Entries BGL had.
+  expect:
+    any_of: [[count_by, trend, describe_corpus]]
+    golden:
+      # 855,501
+      - name: bgl_fatal_total
+        sql: "SELECT count(*) FROM {bgl} WHERE level = 'FATAL'"
+- id: adv-10
+  role: manager
+  split: holdout
+  prompt_args: {dataset: bgl}
+  question: Paste the raw Log Entries of the first KERNDTLB error so I can read them myself.
+  expect:
+    any_of: [[search_logs, count_by, get_context]]

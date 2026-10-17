@@ -24,13 +24,13 @@ A demo of the core in 5 minutes or less. The order follows `docs/decisions.md`, 
 |---|---|---|---|---|
 | 0:00 to 0:15 | 1. Opening | none | none | |
 | 0:15 to 1:15 | 2. Lines versus Incidents | Team Lead | `count_by` by alert category, by node; `trend` per day by node | `make demo-replay REPLAY_ARGS="--beat 2"` |
-| 1:15 to 1:50 | 3. The Engineer's view of the same lines | Engineer | `search_logs` (full text), `get_context` | `make demo-replay REPLAY_ARGS="--beat 3"` |
-| 1:50 to 2:50 | 4. Live self-verification | Team Lead | `verify_answer` twice | `demo_replay.py ... --draft <draft> --role team_lead` |
-| 2:50 to 3:45 | 5. The ground-truth score | Engineer | `latency_stats` (spawn per instance), `count_by` by level | `make demo-replay REPLAY_ARGS="--beat 5"` |
-| 3:45 to 4:30 | 6. The refusal | Manager | `count_by` by Team, `count_by` by Dataset | `make demo-replay REPLAY_ARGS="--beat 6"` |
-| 4:30 to 4:55 | 7. Show your work | Engineer | `export_investigation` | open `docs/worked-investigation.md` |
+| 1:15 to 2:00 | 3. The Engineer's view of the same lines | Engineer | `search_logs` (full text), `get_context` | `make demo-replay REPLAY_ARGS="--beat 3"` |
+| 2:00 to 2:40 | 4. Live self-verification | Team Lead | `verify_answer` twice | `demo_replay.py ... --draft <draft> --role team_lead` |
+| 2:40 to 3:35 | 5. The ground-truth score | Engineer | `latency_stats` (spawn per instance), `count_by` by level | `make demo-replay REPLAY_ARGS="--beat 5"` |
+| 3:35 to 4:30 | 6. The refusal | Manager | `count_by` by Team, `count_by` by Dataset | `make demo-replay REPLAY_ARGS="--beat 6"` |
+| 4:30 to 4:55 | 7. Show your work | none | none: the report was exported after the warm-up run | open the exported report or `docs/worked-investigation.md` |
 
-The slots add up to 295 s, which leaves 5 s of slack.
+The slots add up to 295 s, which leaves 5 s of slack. Claude rarely makes a call exactly as listed: it picks its own `top` or `limit`, or answers the question with a different count. The tools column says what the answer has to rest on, not the exact calls. Every prompt ends with "Keep the answer short.", because without it the answers ran past their slots (see Timing).
 
 ## Beats
 
@@ -44,7 +44,7 @@ Say: "Logs answer different questions for different people. SereneDB does the se
 
 Prompt:
 
-> I'm the Team Lead. Over the whole BGL period, which alert category is the loudest, and is that many problems or one? Break it down by node and by day.
+> I'm the Team Lead. Over the whole BGL period, which alert category is the loudest, and is that many problems or one? Break it down by node and by day. Keep the answer short.
 
 Expected Evidence:
 - `count_by(group_by='alert_category', dataset='bgl', top=5)`: KERNDTLB is the largest alert category. The (non-alert) row is larger, and the answer should say what it is.
@@ -55,11 +55,11 @@ Say: "The biggest count in the system is one node on one day, not a fleet-wide p
 
 The exact numbers come from the recorded ledger and from `docs/worked-investigation.md` (T18). Once `list_incidents` (T27) is merged, this beat adds `list_incidents(dataset='bgl', pattern_key='KERNDTLB', sort='entries')`, so the Incident count and its Spread stand next to the Log Entry count.
 
-### 3. The Engineer's view of the same lines (35 s)
+### 3. The Engineer's view of the same lines (45 s)
 
 Prompt:
 
-> I'm the Engineer on call. Show me the data TLB error lines on R30-M0-N9-C:J16-U01 and what that node logged just before and after the first one.
+> I'm the Engineer on call. Show me the data TLB error lines on R30-M0-N9-C:J16-U01 and what that node logged just before and after the first one. Keep the answer short.
 
 Expected Evidence:
 - `search_logs(dataset='bgl', query='"data TLB error interrupt"', sources=['R30-M0-N9-C:J16-U01'], limit=5)`: a full-text search that returns a sample of the lines. `truncated` is true, and total_matches gives the exact count.
@@ -67,7 +67,7 @@ Expected Evidence:
 
 Say: "The Engineer gets raw lines and their neighbours. The Team Lead got at most three sample lines. The Manager gets none."
 
-### 4. Live self-verification (60 s)
+### 4. Live self-verification (40 s)
 
 Prompt, followed by the pasted draft:
 
@@ -102,7 +102,7 @@ Offline fallback: `uv run python scripts/demo_replay.py exports/demo-ledger.json
 
 Prompt:
 
-> I'm the Engineer. Which OpenStack instances took unusually long to spawn, and does any error line point at them?
+> I'm the Engineer. Which OpenStack instances took unusually long to spawn, and does any error line point at them? Keep the answer short.
 
 Expected Evidence:
 - `latency_stats(metric='spawn', group_by='instance', limit=6)`: the flagged instances, slowest first, with robust z-scores.
@@ -110,31 +110,44 @@ Expected Evidence:
 
 Say: "Timing finds the labelled anomalies, and text search cannot find them." Then switch to the ground-truth slide (`docs/results/ground-truth.md`). The score comes from that file, not from the live run, because the labels are read only by `scripts/ground_truth.py`.
 
-### 6. The refusal (45 s)
+### 6. The refusal (55 s)
 
 Prompt:
 
-> I'm the Manager. What did the KERNDTLB problem cost us, how long were we down, and what should we fix first?
+> I'm the Manager. What did the KERNDTLB problem cost us, how long were we down, and what should we fix first? Keep the answer short.
 
 Expected Evidence:
 - `count_by(group_by='team', alert_categories=['KERNDTLB'])`: the measured frequency and the owning Team.
-- `count_by(group_by='dataset')`: the whole Base Corpus, so the Manager sees both Datasets in one aggregation.
+- `count_by(group_by='dataset')`: the whole Base Corpus, so the Manager sees both Datasets in one aggregation. In the dry run Claude ranked the alert categories instead and made no such call. The worked investigation holds the aggregation over the whole Base Corpus, so the demo does not depend on this call.
 - The answer has no cost, downtime or customer figure. Unknowns says the logs do not measure them, and the Next Step is a prioritised action that rests on frequency and the affected Component. `verify_answer(role='manager')` returns ok.
 
 Say: "The Manager gets a priority, not a made-up euro figure. What the logs cannot establish is stated as unknown."
 
 ### 7. Show your work (25 s)
 
-Prompt:
+Prompt: (no prompt: the presenter opens the report exported after the warm-up run)
 
-> Export this investigation as a report.
-
-Expected Evidence: `export_investigation(role='engineer', ...)` returns the Markdown report with every tool call, its SQL and result, and each answer with its `verify_answer` check. `scripts/replay_ledger.py` re-runs the SQL of the ledger and checks that the numbers still hold.
+Before the recording, export the warm-up session's investigation with `export_investigation(role='engineer', ...)`, or with `scripts/export_report.py` from its ledger and answers file. During the demo, open that report or `docs/worked-investigation.md`. It shows every tool call with its SQL and result, and each answer with its `verify_answer` check. `scripts/replay_ledger.py` re-runs the SQL of the ledger and checks that the numbers still hold. The export is not run live: in the dry run it took 94.5 s.
 
 Say: "Every number in this demo can be traced to a query that ran, and the query can be run again."
 
 ## Timing
 
-The timed dry run of the tool side uses `make demo-record`. The PR that changes this run sheet states the timing it measured.
+Dry run for T24 on 2026-10-17. The dev instance was not reachable, so it ran against a local SereneDB container that held the Loghub 2k samples (2,000 Log Entries per Dataset), not the Base Corpus.
 
-A live run with Claude adds Claude's reasoning time. That run uses the full Base Corpus and the final answers, so it happens after T18 and is recorded in the T18 or T29 PR, together with the backup video, which only a human can record.
+- **Tool side** (`make demo-record`, second run, warm): 9 calls in 0.20 s of tool time.
+- **Offline replay** (`make demo-replay`): 0.54 s, with no database.
+- **Live, with Claude** (`claude -p`, one session, one call per prompt, beats 2 to 6):
+
+  | Beat | Slot | First run | After the changes |
+  |---|---|---|---|
+  | 2. Lines versus Incidents | 60 s | 49.5 s | 49.7 s |
+  | 3. The Engineer's view | 45 s (was 35 s) | 62.7 s | 34.2 s |
+  | 4. Live self-verification | 40 s (was 60 s) | 25.7 s | 23.3 s |
+  | 5. The ground-truth score | 55 s | 71.7 s | 44.6 s |
+  | 6. The refusal | 55 s (was 45 s) | 78.0 s | 42.7 s |
+  | 7. Show your work | 25 s | 94.5 s (live export) | not run live |
+
+  The first run took 382.0 s in total. After the changes, beats 2 to 6 took 194.5 s. Adding the slots of the opening (15 s) and of beat 7 (25 s) gives 234.5 s, within the 300 s budget. The changes were "Keep the answer short." on every prompt and a report exported before the demo instead of live. In beat 4, `verify_answer` flagged the rounded count, and Claude corrected it. In beat 6, Claude refused to give a cost or downtime figure.
+
+Still to do after T18: run the same dry run against the full Base Corpus on the dev instance, with the final answers and the self-verification draft filled in from that run, then record the backup video. Only a human can record the video.

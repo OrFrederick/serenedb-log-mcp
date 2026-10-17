@@ -20,7 +20,7 @@ beats:
     seconds: 60
     prompt: >-
       I'm the Team Lead. Over the whole BGL period, which alert category is the loudest, and is that
-      many problems or one? Break it down by node and by day.
+      many problems or one? Break it down by node and by day. Keep the answer short.
     expected: >-
       count_by puts KERNDTLB at the top of the alert categories; count_by per node and the daily trend
       show nearly all of its Log Entries on one node on one day.
@@ -34,10 +34,10 @@ beats:
 
   - title: The Engineer's view of the same lines
     role: engineer
-    seconds: 35
+    seconds: 45
     prompt: >-
       I'm the Engineer on call. Show me the data TLB error lines on R30-M0-N9-C:J16-U01 and what that
-      node logged just before and after the first one.
+      node logged just before and after the first one. Keep the answer short.
     expected: >-
       A full-text search_logs returns a sample of the lines with the exact total_matches; get_context
       on the first hit shows the node's neighbouring Log Entries.
@@ -53,7 +53,7 @@ beats:
 
   - title: Live self-verification
     role: team_lead
-    seconds: 60
+    seconds: 40
     prompt: >-
       Check this draft against the Evidence before I send it to my team.
     expected: >-
@@ -65,7 +65,7 @@ beats:
     seconds: 55
     prompt: >-
       I'm the Engineer. Which OpenStack instances took unusually long to spawn, and does any error
-      line point at them?
+      line point at them? Keep the answer short.
     expected: >-
       latency_stats flags the slow spawns by robust z-score; count_by per level on a labelled instance
       shows only INFO lines, so no error text points at it.
@@ -80,10 +80,10 @@ beats:
 
   - title: The refusal
     role: manager
-    seconds: 45
+    seconds: 55
     prompt: >-
       I'm the Manager. What did the KERNDTLB problem cost us, how long were we down, and what should we
-      fix first?
+      fix first? Keep the answer short.
     expected: >-
       Measured frequency and the owning Team only; Unknowns says that cost, downtime and customer
       impact are not measured by these logs; verify_answer returns ok.
@@ -95,7 +95,7 @@ beats:
 
   - title: Show your work
     seconds: 25
-    prompt: Export this investigation as a report.
+    prompt: "(no prompt: the presenter opens the report exported after the warm-up run)"
     expected: >-
-      export_investigation returns the Markdown report with every tool call, its SQL and result, and
-      each answer with its verify_answer check.
+      The export_investigation report of the warm-up session: every tool call with its SQL and result,
+      and each answer with its verify_answer check. A live export took 94.5 s in the T24 dry run.

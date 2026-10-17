@@ -114,6 +114,19 @@ def test_one_beat_shows_only_that_beat(
     assert "outside the beats" not in out
 
 
+def test_a_record_with_other_arguments_is_shown_in_its_beat_and_marked(
+    tmp_path: Path, beats_file: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    search = {**records()[0], "arguments": {**records()[0]["arguments"], "query": "TLB"}}
+    ledger_file = write_ledger(tmp_path / "live.jsonl", [search])
+
+    assert demo_replay.main([str(ledger_file), "--beats", str(beats_file), "--beat", "1"]) == 0
+
+    out = capsys.readouterr().out
+    assert "[E1] search_logs" in out
+    assert "(made with other arguments than the run sheet's call)" in out
+
+
 def test_pause_waits_before_every_beat(ledger_file: Path, beats_file: Path) -> None:
     prompts: list[str] = []
 

@@ -128,14 +128,38 @@ def test_records_match_the_calls_in_order_by_tool_role_and_named_arguments() -> 
     assert [r["evidence_id"] for r in leftover] == ["E1", "E4"]
 
 
-def test_a_call_without_a_record_is_missing() -> None:
+def test_a_call_without_a_record_of_its_tool_and_role_is_missing() -> None:
     beat = Beat(title="b", role=Role.TEAM_LEAD, seconds=10, prompt="p", expected="e", calls=[SEARCH])
 
-    matches, leftover = match_beats(_beats(beat), [_record("E1", "search_logs", "team_lead", query="y")])
+    matches, leftover = match_beats(_beats(beat), [_record("E1", "search_logs", "engineer", query="x")])
 
     assert matches[0].records == []
     assert matches[0].missing == [SEARCH]
     assert len(leftover) == 1
+
+
+def test_other_arguments_match_loosely_after_every_exact_match() -> None:
+    first = Beat(title="a", role=Role.ENGINEER, seconds=10, prompt="p", expected="e", calls=[SEARCH])
+    second = Beat(
+        title="b",
+        role=Role.ENGINEER,
+        seconds=10,
+        prompt="p",
+        expected="e",
+        calls=[Call(tool="search_logs", arguments={"dataset": "bgl", "query": "z"})],
+    )
+    records = [
+        _record("E1", "search_logs", "engineer", dataset="bgl", query="y", limit=10),
+        _record("E2", "search_logs", "engineer", dataset="bgl", query="z", limit=10),
+    ]
+
+    matches, leftover = match_beats(_beats(first, second), records)
+
+    assert [r["evidence_id"] for r in matches[0].records] == ["E1"]
+    assert matches[0].loose == {"E1"}
+    assert [r["evidence_id"] for r in matches[1].records] == ["E2"]
+    assert matches[1].loose == set()
+    assert leftover == []
 
 
 def test_a_call_may_name_its_own_role() -> None:

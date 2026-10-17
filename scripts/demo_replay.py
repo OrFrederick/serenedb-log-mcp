@@ -9,7 +9,8 @@ the agent got, so the demo can go on when SereneDB or the network is not there:
 
 - With `--beats`, beat by beat: the title, the prompt as typed, the Evidence to expect, then every
   recorded tool call of the beat with its arguments, Data Scope, totals, query time and first rows.
-  Without it, every record of the ledger in order. `--beat N` shows one beat (1-based).
+  Without it, every record of the ledger in order. A live session's ledger maps by tool and Role
+  where its arguments differ from the run sheet, and says so. `--beat N` shows one beat (1-based).
 - With `--answers`, every answer of an answers file (the format of `export_investigation`), each
   checked offline with the checks `verify_answer` runs.
 - With `--draft` and `--role`, one draft answer checked the same way: the self-verification beat.
@@ -31,7 +32,7 @@ from pathlib import Path
 from typing import Any
 
 from serenedb_log_mcp.config import Role
-from serenedb_log_mcp.demo import Beat, BeatsFileError, Call, load_beats, match_beats
+from serenedb_log_mcp.demo import BeatMatch, BeatsFileError, load_beats, match_beats
 from serenedb_log_mcp.export import AnswersFileError, load_investigation
 from serenedb_log_mcp.ledger import Ledger, LedgerError
 from serenedb_log_mcp.roles.shaping import RAW_LINE_COLUMN, RAW_LINE_TOOLS, TEAM_LEAD_SAMPLE_ROWS
@@ -143,18 +144,19 @@ def record_lines(record: Mapping[str, Any], rows: int) -> list[str]:
 # Beats, answers and drafts ---------------------------------------------------------------------------
 
 
-def beat_lines(
-    number: int, beat: Beat, records: list[dict[str, Any]], missing: list[Call], rows: int
-) -> list[str]:
+def beat_lines(number: int, match: BeatMatch, rows: int) -> list[str]:
+    beat = match.beat
     who = f", {beat.role.value}" if beat.role else ""
     lines = [
         f"== Beat {number}: {beat.title} ({beat.seconds} s{who})",
         f"Prompt: {beat.prompt}",
         f"Expect: {beat.expected}",
     ]
-    for record in records:
+    for record in match.records:
         lines += record_lines(record, rows)
-    for call in missing:
+        if record.get("evidence_id") in match.loose:
+            lines.append("  (made with other arguments than the run sheet's call)")
+    for call in match.missing:
         lines.append(f"  not in the ledger: {call.tool} {_cell(call.arguments)}")
     if not beat.calls:
         lines.append("  (no recorded tool call in this beat)")
@@ -204,7 +206,7 @@ def main(argv: Sequence[str] | None = None, wait: Callable[[str], Any] = input) 
                 continue
             if args.pause:
                 wait(f"[Enter] beat {number}: {match.beat.title} ")
-            print("\n".join(beat_lines(number, match.beat, match.records, match.missing, args.rows)))
+            print("\n".join(beat_lines(number, match, args.rows)))
         if leftover and args.beat is None:
             print(f"== Evidence outside the beats ({len(leftover)} records)")
             for record in leftover:

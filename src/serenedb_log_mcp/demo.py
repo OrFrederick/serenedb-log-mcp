@@ -171,6 +171,8 @@ class BeatMatch:
     beat: Beat
     records: list[dict[str, Any]] = field(default_factory=list)
     missing: list[Call] = field(default_factory=list)
+    loose: set[str] = field(default_factory=set)
+    """Evidence ids of records that match a call by tool and Role only, not by its arguments."""
 
 
 def match_beats(
@@ -181,7 +183,11 @@ def match_beats(
     A record matches a call when tool and Role are the same and every argument the call names has the
     same value in the record (a recorded call also carries the defaults it ran with). `$entry_id`
     matches any value. Each record is used once, the earliest unused one first, so a ledger recorded
-    by `demo_record.py` maps back exactly and a ledger from a live session maps as far as it agrees.
+    by `demo_record.py` maps back exactly.
+
+    A live session rarely makes a call exactly as scripted (it picks its own `top` or `limit`), so a
+    second pass gives each call still missing the earliest unused record with the same tool and Role,
+    and lists its Evidence id in `loose`. Records left after both passes are returned as left over.
     """
     unused = [dict(record) for record in records]
     matches: list[BeatMatch] = []
@@ -195,7 +201,23 @@ def match_beats(
             unused.remove(found)
             match.records.append(found)
         matches.append(match)
+    for match in matches:
+        for call in list(match.missing):
+            role = match.beat.role_of(call).value
+            found = next((r for r in unused if r.get("tool") == call.tool and r.get("role") == role), None)
+            if found is None:
+                continue
+            unused.remove(found)
+            match.missing.remove(call)
+            match.records.append(found)
+            match.loose.add(str(found.get("evidence_id")))
+        match.records.sort(key=_ledger_order)
     return matches, unused
+
+
+def _ledger_order(record: Mapping[str, Any]) -> int:
+    evidence_id = str(record.get("evidence_id") or "")
+    return int(evidence_id[1:]) if evidence_id[1:].isdigit() else 0
 
 
 def _matches(role: Role, call: Call, record: Mapping[str, Any]) -> bool:

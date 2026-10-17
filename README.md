@@ -6,7 +6,7 @@ It is our entry for the SereneDB challenge "Making Sense of Logs: The Right Insi
 
 - [How it works](#how-it-works)
 - [Setup](#setup): SereneDB, data, loading, derive
-- [Connect Claude](#connect-claude): Claude Code, Claude Desktop
+- [Connect Claude](#connect-claude): Claude Code, Claude Desktop; [Configuration](#configuration)
 - [Use it](#use-it)
 - [Tools](#tools) and the full [tool reference](docs/tools.md)
 - [Results](#results)
@@ -28,7 +28,7 @@ The three Roles ask different questions and get different Evidence, not just lon
 The workflow, from raw files to an answer:
 
 ```
-loader (organisers' loader: TODO(organiser); until then scripts/dev_loader.py)
+loader (the organisers' loader once it arrives; until then scripts/dev_loader.py)
    -> raw tables in SLM_RAW_SCHEMA (default public)
    -> sql/adapters/<adapter>.sql           the only loader-specific SQL
    -> scripts/derive.py, sql/derive/*.sql  canonical tables, Pattern dictionary, OpenStack
@@ -54,7 +54,7 @@ Principles that run through every tool:
 
 ### Prerequisites
 
-- [Docker](https://docs.docker.com/get-docker/), to run SereneDB locally (or access to an existing SereneDB).
+- [Docker](https://docs.docker.com/get-docker/), to run SereneDB locally. Not needed if you use an existing SereneDB, such as the organisers' instance: then set `DATABASE_URL` (step 2).
 - [uv](https://docs.astral.sh/uv/getting-started/installation/). It installs Python 3.13 (`.python-version`) and every dependency; you do not need Python yourself.
 - `make` and `git`.
 - [Claude Code](https://docs.claude.com/en/docs/claude-code/overview) or [Claude Desktop](https://claude.ai/download).
@@ -97,9 +97,9 @@ Downloads BGL and OpenStack (Loghub, [Zenodo 8196385](https://zenodo.org/records
 
 ### 4. Load the Base Corpus
 
-#### With the organisers' loader: TODO(organiser)
+#### With the organisers' loader (not available yet)
 
-The brief says the organisers supply a loader, a schema and an Ownership Table. **We have not received them yet.** When they arrive (ticket T25), this section will say how to run the supplied loader into `SLM_RAW_SCHEMA`, and step 5 becomes `make derive ADAPTER=official`. Until then `sql/adapters/official.sql` is a stub that lists the columns it must produce, and `make derive ADAPTER=official` stops with a message instead of running.
+`TODO(organiser)`: the brief says the organisers supply a loader, a schema and an Ownership Table. **We have not received them yet.** When they arrive (ticket T25), this section will say how to run the supplied loader into `SLM_RAW_SCHEMA`, and step 5 becomes `make derive ADAPTER=official`. Until then `sql/adapters/official.sql` is a stub that lists the columns it must produce, and `make derive ADAPTER=official` stops with a message instead of running.
 
 #### Fallback: the dev loader
 
@@ -121,14 +121,15 @@ Patterns come in two tiers: Tier 1 matches the Loghub-2.0 templates and needs th
 
 ### Quick variant: the 2,000-line samples
 
-To try the server in a few minutes, without the full download, load the Loghub 2k samples instead of steps 3 to 5:
+To try the server in a few minutes, without the full download, load the Loghub 2k samples instead of steps 3 to 5. Give the sample its own schemas, so it never mixes with a full load in `public` and `slm`:
 
 ```bash
-make load-sample                 # downloads the two 2k samples on first use, about 5 s
+export SLM_RAW_SCHEMA=sample_raw SLM_SCHEMA=sample
+make load-sample                 # downloads the two 2k samples on first use; about 5 to 10 s
 SLM_PATTERN_TIER1=0 make derive  # about 3 s
 ```
 
-The answers then describe 2,000 lines per Dataset, not the Base Corpus. `make load-sample` refuses to overwrite a table with more than 2,000 rows, so it cannot replace a full load by accident. To keep the sample apart from a full load, give it its own schemas: `export SLM_RAW_SCHEMA=sample_raw SLM_SCHEMA=sample` before both commands and before starting Claude.
+`make load-sample` prints one line per table, `sample_raw.bgl: 2000 rows in ...` and `sample_raw.openstack: 2000 rows in ...`, and `make derive` ends with a report that starts with `sample.bgl_entry: 2,000 rows` and `sample.os_entry: 2,000 rows`. Start Claude from the same shell, so the server sees the same `SLM_SCHEMA`; Claude then reports 2,000 BGL Log Entries, not the Base Corpus. Without the `export`, the sample goes into `public` and `slm`; `make load-sample` refuses to overwrite a table with more than 2,000 rows, so it can never replace a full load by accident.
 
 ## Connect Claude
 
@@ -142,24 +143,31 @@ The repository's [`.mcp.json`](.mcp.json) registers `serenedb-log` (stdio, `uv r
 claude
 ```
 
-Approve the project MCP servers when Claude Code asks. `/mcp` then lists `serenedb-log` as connected with its tools. Claude Code passes its environment to the server, so export `DATABASE_URL`, `SLM_SCHEMA` and the other variables before you start `claude` if you changed them.
+Interactive Claude Code asks once whether to trust the project's MCP servers; approve them. `/mcp` then lists `serenedb-log` as connected with 8 tools. Claude Code passes its environment to the server, so export `DATABASE_URL`, `SLM_SCHEMA` and the other variables before you start `claude` if you changed them.
 
-To register the server for use outside the repository, give uv the absolute path of the checkout:
+To use the server from any directory, register it in your user scope and give uv the absolute path of the checkout (without `--scope user` it is registered for the current directory only):
 
 ```bash
-claude mcp add serenedb-log \
+claude mcp add --scope user serenedb-log \
   -e DATABASE_URL="host=localhost port=7890 dbname=postgres user=postgres" \
   -- uv --directory /absolute/path/to/serenedb-log-mcp run serenedb-log-mcp
 ```
 
-Headless, for scripts and checks:
+Headless, for scripts and a quick check, from the repository root. First the tool list, without calling any tool:
+
+```bash
+claude -p "List the exact names of the serenedb-log tools, one per line. Do not call them." \
+  --mcp-config .mcp.json --strict-mcp-config
+```
+
+It should print 8 names, from `mcp__serenedb-log__count_by` to `mcp__serenedb-log__trend` (the [Tools](#tools) table). Then a question that calls a tool:
 
 ```bash
 claude -p "As the engineer: how many BGL Log Entries are there? Cite the Evidence." \
   --mcp-config .mcp.json --strict-mcp-config --allowedTools mcp__serenedb-log
 ```
 
-(`--allowedTools` takes several values, so put the prompt before it.)
+The answer cites an Evidence id such as `[E1]`. Headless mode cannot ask you to approve a tool call, so `--allowedTools mcp__serenedb-log` is required for the server's tools to run; without it Claude sees the tools but every call is denied. The flag takes several values, so put the prompt before it. `.mcp.json` also starts the SereneDB docs server over the internet; it is not needed for the log tools, and if it cannot connect the log tools still work.
 
 ### Claude Desktop
 

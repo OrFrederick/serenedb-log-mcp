@@ -45,6 +45,8 @@ SYNTHETIC_BGL: tuple[tuple[int, str, int, datetime, str, str, str, str], ...] = 
      "INFO", "winter message"),
     (900_010, "MASABNORM", 1121213733, datetime(2005, 7, 12, 17, 15, 33, 769604), "NULL", "BGLMASTER",
      "FAILURE", "mmcs_server exited abnormally due to signal: Aborted"),
+    (900_011, "-", 1123189879, datetime(2005, 8, 4, 14, 11, 19, 32342), "R76", "HARDWARE", "WARNING",
+     "PrepareForService is being done on this rack (R76) by root"),
 )  # fmt: skip
 
 # The 2k OpenStack sample is one file; the full corpus has three. Split it the same way, so the

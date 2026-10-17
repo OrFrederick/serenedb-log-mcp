@@ -13,7 +13,7 @@ from psycopg import sql
 import derive
 
 CANONICAL_TABLES = ("bgl_entry", "os_entry", "ownership")
-SYNTHETIC_BGL_ROWS = 10  # tests/db/conftest.py adds them to the 2,000-line BGL sample
+SYNTHETIC_BGL_ROWS = 11  # tests/db/conftest.py adds them to the 2,000-line BGL sample
 
 
 class Schemas(Protocol):
@@ -109,6 +109,7 @@ def test_derive_prints_the_topology_report(
         ("R63-M0-N0", "R63", "R63-M0", "R63-M0-N0"),
         ("R27-M1-L3-U18-C", "R27", "R27-M1", None),
         ("R63-M0", "R63", "R63-M0", None),
+        ("R76", "R76", None, None),
         ("NULL", None, None, None),
         ("UNKNOWN_LOCATION", None, None, None),
     ],

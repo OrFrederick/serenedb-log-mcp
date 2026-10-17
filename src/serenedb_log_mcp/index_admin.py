@@ -25,11 +25,18 @@ change the database, and they do it here, on a write connection of their own:
 
 `build_ms` is what the trade-off needs: the time from `CREATE INDEX` until the index is usable
 (`create_ms` + `refresh_ms`), without the slice count, the marker and the verification.
+
+A remote Dataset (T20, text_bench) is a view over one remote Parquet file. The same partial index
+works over the view (verified on SereneDB 26.10.1), with three differences: the slice must first fit
+the Dataset's scan span (so even the slice count stays a pruned read), the refresh is `REINDEX
+INDEX` (`VACUUM (REFRESH_TABLE)` takes tables only), and the index is a snapshot of the file taken
+at build time, which the notes say. The cap is the Dataset's `max_index_rows`.
 """
 
 from __future__ import annotations
 
 import contextlib
+import dataclasses
 import threading
 import time
 from collections.abc import Sequence
@@ -44,7 +51,13 @@ from psycopg import sql
 from serenedb_log_mcp.config import Settings, get_settings
 from serenedb_log_mcp.corpus import agent_indexes
 from serenedb_log_mcp.corpus.agent_indexes import AgentIndex, new_name
-from serenedb_log_mcp.corpus.datasets import ENTRY_TABLES, Relation, relation
+from serenedb_log_mcp.corpus.datasets import (
+    DEFAULT_MAX_INDEX_ROWS,
+    ENTRY_TABLES,
+    Relation,
+    check_remote_slice,
+    relation,
+)
 from serenedb_log_mcp.db import QueryResult, fetch_all, open_connection
 from serenedb_log_mcp.scope import ScopeError
 
@@ -59,20 +72,24 @@ __all__ = [
     "existing_agent_indexes",
 ]
 
-MAX_SLICE_ROWS = 1_000_000
-"""Most Log Entries one agent index may hold. A full BGL index (4.7M rows) took 3 to 15 s to build
-(#2), so a capped slice builds in a few seconds and never loads the shared server for long."""
+MAX_SLICE_ROWS = DEFAULT_MAX_INDEX_ROWS
+"""Most Log Entries one agent index over a Base Corpus Dataset may hold (`Dataset.max_index_rows`). A
+full BGL index (4.7M rows) took 3 to 15 s to build (#2), so a capped slice builds in a few seconds and
+never loads the shared server for long. text_bench allows 5,000,000 (about 16 s to build)."""
 BUILD_TIMEOUT_S = 300.0
 """A build still running after this is cancelled (if SereneDB acts on the cancel)."""
 
-CATALOG_SQL = """SELECT c.relname, d.description, i.tablename
+CATALOG_SQL = """SELECT c.relname, d.description,
+       coalesce(i.tablename, regexp_extract(pg_get_indexdef(c.oid), ' ON [^ .]+[.]([^ ]+) USING ', 1))
 FROM pg_class AS c
 JOIN pg_namespace AS n ON n.oid = c.relnamespace
-JOIN pg_indexes AS i ON i.schemaname = n.nspname AND i.indexname = c.relname
+LEFT JOIN pg_indexes AS i ON i.schemaname = n.nspname AND i.indexname = c.relname
 LEFT JOIN pg_description AS d ON d.objoid = c.oid
-WHERE n.nspname = %s
+WHERE n.nspname = %s AND c.relkind = 'i'
 ORDER BY c.relname"""
-"""Every index in the schema with its comment and table; agent indexes are picked out in Python."""
+"""Every index in the schema with its comment and table (or view); agent indexes are picked out in
+Python. pg_indexes lists no index over a view on SereneDB 26.10.1 (and pg_index has indrelid 0 for
+one), so the view's name comes from the index definition."""
 
 _lock = threading.Lock()
 
@@ -153,7 +170,9 @@ def _count_index(schema: str, name: str) -> QueryResult:
 
 def _catalog(schema: str) -> tuple[QueryResult, list[CatalogIndex]]:
     result = fetch_all(CATALOG_SQL, [schema])
-    found = [CatalogIndex(schema, str(name), comment, str(table)) for name, comment, table in result.rows]
+    found = [
+        CatalogIndex(schema, str(name), comment, str(table or "")) for name, comment, table in result.rows
+    ]
     return result, found
 
 
@@ -232,21 +251,27 @@ def create_agent_index(
     """Build (or reuse) the agent index of `dataset` over [start, end) and register it for routing.
 
     Every statement runs as `DATABASE_URL`, whatever the asking Role (see the module docstring).
-    Raises ScopeError for an empty slice or one above `max_rows` (default `MAX_SLICE_ROWS`, read at
-    call time) and ToolError when another slice of the Dataset is already indexed or the build fails.
+    Raises ScopeError for an empty slice, one above `max_rows` (default: the Dataset's
+    `max_index_rows`, else `MAX_SLICE_ROWS`, read at call time) or, for a remote Dataset, one
+    longer than its scan span; and ToolError when another slice of the Dataset is already
+    indexed or the build fails.
     """
     settings = settings if settings is not None else get_settings()
     rel = relation(dataset, settings=settings)
+    check_remote_slice(rel.dataset, start, end)  # before the count, so even that stays a pruned read
     schema = rel.schema
     counted = _count_slice(rel, start, end)
     rows = int(counted.rows[0][0])
-    _check_slice(rows, rel.dataset.name, start, end, MAX_SLICE_ROWS if max_rows is None else max_rows)
+    cap = max_rows if max_rows is not None else rel.dataset.max_index_rows or MAX_SLICE_ROWS
+    _check_slice(rows, rel.dataset.name, start, end, cap)
     with _lock:
         listing, found = _catalog(schema)
         existing = next((i for i in _adopt(schema, found) if i.dataset == rel.dataset.name), None)
         if existing is not None:
             if existing.time_from == start and existing.time_to == end:
-                result = QueryResult.combine(counted, listing, total=0, rows=[])
+                result = _with_snapshot_note(
+                    QueryResult.combine(counted, listing, total=0, rows=[]), existing
+                )
                 return IndexReport(existing, "reused", result)
             raise ToolError(
                 f"{existing.dataset} already has the agent index {existing.qualified_name} over "
@@ -261,7 +286,16 @@ def create_agent_index(
             refresh_ms, verified = _publish(session, rel, index)
         agent_indexes.register(index)
     result = QueryResult.combine(counted, listing, session.result(), *verified, total=0, rows=[])
-    return IndexReport(index, "built", result, create_ms=create_ms, refresh_ms=refresh_ms)
+    return IndexReport(
+        index, "built", _with_snapshot_note(result, index), create_ms=create_ms, refresh_ms=refresh_ms
+    )
+
+
+def _with_snapshot_note(result: QueryResult, index: AgentIndex) -> QueryResult:
+    """For an index over a remote Dataset, the note that it is a snapshot refreshed by REINDEX."""
+    if index.dataset not in agent_indexes.REMOTE_DATASETS:
+        return result
+    return dataclasses.replace(result, notes=[*result.notes, index.snapshot_note()])
 
 
 def _check_slice(rows: int, dataset: str, start: datetime, end: datetime, max_rows: int) -> None:
@@ -318,8 +352,16 @@ def _build(session: _WriteSession, rel: Relation, index: AgentIndex) -> float:
 
 
 def _publish(session: _WriteSession, rel: Relation, index: AgentIndex) -> tuple[float, list[QueryResult]]:
-    """Refresh until the index holds the whole slice (two tries); drop it again otherwise."""
-    refresh = sql.SQL("VACUUM (REFRESH_TABLE) {}").format(rel.table)
+    """Refresh until the index holds the whole slice (two tries); drop it again otherwise.
+
+    A base table is refreshed with VACUUM (REFRESH_TABLE); an index over a view (a remote Dataset)
+    with REINDEX INDEX, because VACUUM takes tables only.
+    """
+    refresh = (
+        sql.SQL("REINDEX INDEX {}").format(sql.Identifier(index.schema, index.name))
+        if rel.dataset.remote is not None
+        else sql.SQL("VACUUM (REFRESH_TABLE) {}").format(rel.table)
+    )
     refresh_ms = 0.0
     verified: list[QueryResult] = []
     try:

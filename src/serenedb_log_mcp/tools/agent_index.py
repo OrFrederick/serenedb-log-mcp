@@ -14,7 +14,7 @@ from mcp.server.mcpserver import MCPServer
 from mcp_types import ToolAnnotations
 from pydantic import Field
 
-from serenedb_log_mcp.corpus.datasets import DATASET_NAMES, DatasetName
+from serenedb_log_mcp.corpus.datasets import DATASET_NAMES, DATASETS, DatasetName
 from serenedb_log_mcp.corpus.facts import dataset_facts
 from serenedb_log_mcp.evidence import DataScope, RoleParam
 from serenedb_log_mcp.index_admin import MAX_SLICE_ROWS, IndexReport, create_agent_index, drop_agent_index
@@ -50,7 +50,10 @@ def register(server: MCPServer) -> None:
     @evidence_tool(server, title="Build an agent index over one time slice", annotations=BUILDS)
     def create_index(
         role: RoleParam,
-        dataset: Annotated[DatasetName, Field(description="'bgl' or 'openstack': the Dataset to index.")],
+        dataset: Annotated[
+            DatasetName,
+            Field(description="'bgl', 'openstack' or 'text_bench' (remote Parquet): the Dataset to index."),
+        ],
         time_from: Annotated[
             str,
             Field(
@@ -80,6 +83,9 @@ def register(server: MCPServer) -> None:
         Not read-only: it adds an index to the database. At most one agent
         index per Dataset and at most 1,000,000 Log Entries per slice; asking for the same slice
         again reuses the index. Call drop_index when you are done with the slice.
+        text_bench (a billion remote Log Entries, no full index) needs one for any full-text call:
+        a slice of at most 60 seconds and 5,000,000 Log Entries (about 8 seconds of it); the index
+        is a snapshot of the remote file, refreshed by REINDEX.
         Inputs: role, dataset, time_from, and optional time_to.
         Outputs: the Evidence envelope. rows: one row with columns index (the name to pass to
         drop_index), dataset, time_from, time_to, rows (Log Entries in the slice), build_ms
@@ -180,7 +186,7 @@ def _created(report: IndexReport, scope: DataScope) -> ToolOutcome:
         columns=CREATE_COLUMNS,
         rows=[list(values.values())],
         total_matches=1,
-        summary={**values, "qualified_name": index.qualified_name, "max_rows": MAX_SLICE_ROWS},
+        summary={**values, "qualified_name": index.qualified_name, "max_rows": _max_rows(index.dataset)},
         notes=[
             first,
             "count_by, trend and search_logs calls whose Data Scope lies inside this slice now read this "
@@ -190,6 +196,11 @@ def _created(report: IndexReport, scope: DataScope) -> ToolOutcome:
             "one agent index per Dataset.",
         ],
     )
+
+
+def _max_rows(dataset: str) -> int:
+    """The agent index cap of `dataset`, read at call time like `create_agent_index` reads it."""
+    return DATASETS[dataset].max_index_rows or MAX_SLICE_ROWS  # type: ignore[index]
 
 
 def _values(report: IndexReport, columns: tuple[str, ...], **times: float) -> dict[str, Any]:

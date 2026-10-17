@@ -21,7 +21,7 @@ from serenedb_log_mcp import index_admin
 from serenedb_log_mcp.config import load_settings
 from serenedb_log_mcp.corpus import agent_indexes
 from serenedb_log_mcp.corpus.agent_indexes import AgentIndex
-from serenedb_log_mcp.corpus.datasets import BGL_COLUMNS, relation
+from serenedb_log_mcp.corpus.datasets import BGL_COLUMNS, TB_COLUMNS, relation
 from serenedb_log_mcp.db import QueryResult
 from serenedb_log_mcp.scope import ScopeError
 
@@ -343,3 +343,75 @@ def test_existing_agent_indexes_lists_only_marked_ones_without_adopting_them(
 
     assert index_admin.existing_agent_indexes(settings=SLM) == [WAVE]
     assert agent_indexes.registered_all() == []
+
+
+# ----------------------------------------------------------------- text_bench (T20)
+
+TB_START, TB_END = datetime(2025, 9, 23, 0, 10), datetime(2025, 9, 23, 0, 10, 8)
+TB_NAME = "agent_idx_text_bench_0a1b2c3d"
+TB_ROWS = 4_500_000
+
+
+def test_the_text_bench_index_is_a_partial_index_over_the_view_with_every_column() -> None:
+    rel = relation("text_bench", settings=SLM)
+    text = index_admin.create_statement(rel, TB_NAME, TB_START, TB_END).as_string(None)
+
+    assert text.startswith(f'CREATE INDEX "{TB_NAME}" ON "slm"."tb_entry" USING inverted (')
+    assert '"message" "slm"."log_text"' in text
+    for column in TB_COLUMNS:
+        assert f'"{column}"' in text
+    assert "WHERE \"ts\" >= '2025-09-23 00:10:00'::timestamp AND \"ts\" < '2025-09-23 00:10:08'" in text
+
+
+def test_a_text_bench_build_refreshes_with_reindex_and_notes_the_snapshot(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    conn = FakeConnection()
+    use(monkeypatch, FakeDatabase(slice_rows=TB_ROWS, verify=(TB_ROWS,)), conn)
+
+    report = index_admin.create_agent_index("text_bench", TB_START, TB_END, settings=SLM)
+
+    kinds = [statement.split()[0] for statement in conn.executed]
+    # VACUUM (REFRESH_TABLE) works on tables only; an index over a view is refreshed by REINDEX.
+    assert kinds == ["BEGIN", "CREATE", "COMMENT", "COMMIT", "REINDEX"]
+    assert conn.executed[4] == f'REINDEX INDEX "slm"."{TB_NAME}"'
+    assert report.index.dataset == "text_bench"
+    assert report.index.rows == TB_ROWS
+    assert any("snapshot" in note and "REINDEX INDEX" in note for note in report.result.notes)
+
+
+def test_text_bench_allows_five_million_log_entries_per_agent_index(monkeypatch: pytest.MonkeyPatch) -> None:
+    use(monkeypatch, FakeDatabase(slice_rows=5_000_001), FakeConnection())
+
+    with pytest.raises(ScopeError, match="5,000,000"):
+        index_admin.create_agent_index("text_bench", TB_START, TB_END, settings=SLM)
+
+
+def test_a_text_bench_slice_longer_than_the_scan_span_is_refused_before_counting(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    database = FakeDatabase(slice_rows=TB_ROWS)
+    opened = use(monkeypatch, database, FakeConnection())
+
+    with pytest.raises(ScopeError, match="60 seconds"):
+        index_admin.create_agent_index("text_bench", TB_START, datetime(2025, 9, 23, 0, 20), settings=SLM)
+
+    assert database.asked == []
+    assert opened == []
+
+
+def test_an_agent_index_over_the_text_bench_view_is_adopted_from_the_catalog(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    built = AgentIndex("slm", TB_NAME, "text_bench", TB_START, TB_END, TB_ROWS)
+    use(monkeypatch, FakeDatabase(catalog=[(TB_NAME, built.marker(), "tb_entry")]), FakeConnection())
+
+    assert index_admin.existing_agent_indexes(settings=SLM) == [built]
+
+
+def test_the_catalog_lists_indexes_over_views_too() -> None:
+    # pg_indexes lists no index over a view on SereneDB 26.10.1, and pg_index has indrelid 0 for one,
+    # so the catalog reads pg_class and takes the view's name from pg_get_indexdef.
+    assert "c.relkind = 'i'" in index_admin.CATALOG_SQL
+    assert "LEFT JOIN pg_indexes" in index_admin.CATALOG_SQL
+    assert "pg_get_indexdef" in index_admin.CATALOG_SQL

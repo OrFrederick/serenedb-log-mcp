@@ -2,6 +2,9 @@
 
 import json
 import logging
+from collections.abc import Iterator
+from dataclasses import replace
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -13,6 +16,9 @@ from mcp_types import CallToolResult
 from sample_tool import SAMPLE_ROWS, SAMPLE_SQL, FakeQueryResult, register_sample_tools, sample_outcome
 
 from serenedb_log_mcp.config import load_settings, set_settings
+from serenedb_log_mcp.corpus import agent_indexes
+from serenedb_log_mcp.corpus.agent_indexes import AgentIndex
+from serenedb_log_mcp.corpus.datasets import relation
 from serenedb_log_mcp.evidence import DataScope, Evidence, Role, RoleParam
 from serenedb_log_mcp.ledger import Ledger, get_ledger
 from serenedb_log_mcp.toolkit import (
@@ -586,3 +592,62 @@ def test_a_tool_may_count_a_different_unit_than_the_database_layer() -> None:
     assert data["returned"] == 3
     assert data["truncated"] is True
     assert data["summary"]["entries_total"] == 348_460
+
+
+# ----------------------------------------------------------------- which index answered (T19)
+
+WAVE = AgentIndex(
+    schema="slm",
+    name="agent_idx_bgl_0a1b2c3d",
+    dataset="bgl",
+    time_from=datetime(2005, 8, 22),
+    time_to=datetime(2005, 9, 19),
+    rows=310_868,
+)
+INSIDE_WAVE = DataScope(datasets=["bgl"], time_from="2005-08-29T00:00:00", time_to="2005-09-05T00:00:00")
+
+
+@pytest.fixture
+def wave_server() -> Iterator[MCPServer]:
+    """A server whose tool resolves the BGL relation for a Data Scope inside WAVE's slice."""
+    agent_indexes.clear()
+    agent_indexes.register(WAVE)
+    server = MCPServer(name="routing-test")
+
+    @evidence_tool(server, title="Routing probe")
+    def probe(role: RoleParam, full_text: bool = True) -> ToolOutcome:
+        """Resolve the BGL relation and read its index (full_text) or only its table.
+
+        Outputs: the Evidence envelope of the sample tool.
+        """
+        rel = relation("bgl", role, INSIDE_WAVE)
+        _ = rel.index if full_text else rel.table
+        return replace(sample_outcome(), scope=INSIDE_WAVE)
+
+    yield server
+    agent_indexes.clear()
+
+
+def probe(server: MCPServer, **arguments: Any) -> dict[str, Any]:
+    result = anyio.run(lambda: server.call_tool("probe", {"role": "engineer", **arguments}))
+    assert isinstance(result, CallToolResult)
+    return envelope(result)
+
+
+def test_evidence_answered_by_an_agent_index_names_it_in_the_scope_and_the_notes(
+    wave_server: MCPServer,
+) -> None:
+    evidence = probe(wave_server)
+
+    assert evidence["data_scope"]["agent_indexes"] == {"bgl": "slm.agent_idx_bgl_0a1b2c3d"}
+    assert WAVE.routing_note() in evidence["notes"]
+    stored = get_ledger().get(evidence["evidence_id"])
+    assert stored is not None
+    assert stored["data_scope"]["agent_indexes"] == {"bgl": "slm.agent_idx_bgl_0a1b2c3d"}
+
+
+def test_evidence_that_never_read_the_agent_index_does_not_claim_it(wave_server: MCPServer) -> None:
+    evidence = probe(wave_server, full_text=False)
+
+    assert evidence["data_scope"]["agent_indexes"] is None
+    assert not any("agent index" in note for note in evidence["notes"])

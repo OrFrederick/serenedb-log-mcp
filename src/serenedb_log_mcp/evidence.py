@@ -104,6 +104,13 @@ class DataScope(BaseModel):
         default_factory=ScopeFilters,
         description="The filters the calculation applied, including the shared pattern_ids and family_id.",
     )
+    agent_indexes: dict[str, str] | None = Field(
+        default=None,
+        description="Per Dataset, the agent index that answered the full-text matching instead of the "
+        "Dataset's full index, for example {'bgl': 'slm.agent_idx_bgl_0a1b2c3d'}: create_index built it "
+        "over a time slice that contains this Data Scope, so the counts are the same. null when every "
+        "Dataset used its full index.",
+    )
 
 
 class Evidence(BaseModel):

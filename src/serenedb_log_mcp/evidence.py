@@ -33,9 +33,10 @@ EVIDENCE_ID_PATTERN = r"^E[1-9][0-9]*$"
 
 ROLE_DESCRIPTION = (
     "Who is asking: 'engineer' investigates one failure and needs example Log Entries and nearby "
-    "events; 'team_lead' needs recurring problems with counts and trends per Component and Team; "
-    "'manager' needs measured frequency and affected Components only, with no raw Log Entries. "
-    "The Role shapes the defaults, the returned fields and the suggested Next Step."
+    "events; 'team_lead' needs recurring problems with counts and trends per Component and Team, and "
+    "receives at most 3 sample Log Entries from a search; 'manager' needs measured frequency and "
+    "affected Components only, and receives no raw Log Entries (totals and facets, no rows). Every "
+    "result carries the answer_frame for this Role; get_role_brief(role) has the full playbook."
 )
 
 RoleParam = Annotated[Role, Field(description=ROLE_DESCRIPTION)]
@@ -99,6 +100,19 @@ class DataScope(BaseModel):
         default=None,
         description="What a relative time_input was resolved against, for example 'bgl corpus end "
         "2006-01-04T00:00:00'. Relative times resolve against the corpus end date, not today.",
+    )
+    time_zone: str | None = Field(
+        default=None,
+        description="The clock of time_from, time_to, resolved_against and every time the tool "
+        "computed (buckets, first and last seen, baseline periods), for example 'UTC'; null when "
+        "the tool reports each Dataset's ts as logged (BGL's ts is US Pacific local time).",
+    )
+    time_columns: dict[str, str] | None = Field(
+        default=None,
+        description="Per Dataset, the column the time range, buckets and baselines were computed on, "
+        "for example {'bgl': 'epoch_utc', 'openstack': 'ts'}: BGL's ts is local time, so its time "
+        "arithmetic runs on epoch_utc, while OpenStack's ts is UTC. null when the tool did no time "
+        "arithmetic of its own.",
     )
     filters: ScopeFilters = Field(
         default_factory=ScopeFilters,

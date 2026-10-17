@@ -7,10 +7,13 @@ the SQL with its bound parameters and the answer, then a closing "What the data 
 establish" section. It is pure: it reads the records it is given and writes nothing, so
 `export_investigation` stays read-only and `scripts/export_report.py` writes the same text to disk.
 
-Which Evidence goes under which answer: the records produced for that answer's Role (in ledger
-order), plus the records the answer cites that were produced for another Role. A record is shown in
-full once, under the first answer it belongs to; a later answer that cites it gets a reference.
-Records of the selection that no answer claims go into "Other Evidence".
+Which Evidence goes under which answer (`_owners`): a record an answer cites is shown in full under
+the first answer that cites it, whichever Role produced it; a later answer that cites it gets a
+reference. A record of the selection that no answer cites goes under an answer of the Role it was
+produced for: the first such answer that cites a record from later in the ledger, else the last
+such answer, since tool calls come before the answer they are made for. So when one Role answers
+twice, each answer keeps its own Evidence. Records left over (no answer of their Role) go into
+"Other Evidence".
 
 The audience Role decides the tables: for `manager`, raw-line rows (`roles.is_raw_line`) are left out
 of every table while counts, summary, SQL and Data Scope stay; for `engineer` and `team_lead`,
@@ -100,19 +103,20 @@ def render_investigation(
         check_answer(a.role, a.answer, list(by_id.values()), incident_tools=incident_tools) for a in answers
     ]
 
+    cited_by = [[i for i in report.cited_evidence if i in by_id] for report in checks]
+    owner = _owners(answers, cited_by, selected, by_id, position)
     shown_under: dict[str, str] = {}
     body: list[str] = []
-    for number, (answer, report) in enumerate(zip(answers, checks, strict=True), start=1):
-        heading = f"{number}. {ROLE_TITLES[answer.role]}"
-        own = [i for i in selected if by_id[i].get("role") == answer.role.value and i not in shown_under]
-        cited = [i for i in report.cited_evidence if i in by_id]
+    for index, (answer, report) in enumerate(zip(answers, checks, strict=True)):
+        heading = f"{index + 1}. {ROLE_TITLES[answer.role]}"
+        cited = cited_by[index]
         notes += [
             f"{heading} cites {i}, which is not in the Evidence Ledger."
             for i in report.cited_evidence
             if i not in by_id
         ]
-        full = sorted({*own, *(i for i in cited if i not in shown_under)}, key=position.__getitem__)
-        earlier = [i for i in cited if i in shown_under]
+        full = sorted((i for i, k in owner.items() if k == index), key=position.__getitem__)
+        earlier = [i for i in cited if owner[i] < index]
         body += _answer_section(
             heading, answer, report, [by_id[i] for i in full], earlier, by_id, shown_under, audience
         )
@@ -130,6 +134,28 @@ def render_investigation(
     head = _header(audience, title, answers, shown, bool(leftover))
     markdown = "\n".join([*head, *body]).rstrip("\n") + "\n"
     return Report(markdown=markdown, evidence_ids=shown, notes=notes)
+
+
+def _owners(
+    answers: Sequence[Answer],
+    cited_by: Sequence[list[str]],
+    selected: Sequence[str],
+    by_id: Mapping[str, Record],
+    position: Mapping[str, int],
+) -> dict[str, int]:
+    """The index of the answer each record is shown in full under (see the module docstring)."""
+    owner: dict[str, int] = {}
+    for index, cited in enumerate(cited_by):
+        for i in cited:
+            owner.setdefault(i, index)
+    last_cited = [max((position[i] for i in cited), default=-1) for cited in cited_by]
+    for i in selected:
+        if i in owner:
+            continue
+        same_role = [k for k, a in enumerate(answers) if a.role.value == by_id[i].get("role")]
+        if same_role:
+            owner[i] = next((k for k in same_role if last_cited[k] >= position[i]), same_role[-1])
+    return owner
 
 
 # Sections -----------------------------------------------------------------------------------------------

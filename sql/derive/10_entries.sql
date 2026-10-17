@@ -1,4 +1,4 @@
--- Canonical Log Entry tables (T4, plan section 2.2), built from the adapter's temporary views
+-- Canonical Log Entry tables (T4, plan section 2.2), built from the adapter's temporary tables
 -- (temp.main.bgl_adapted, temp.main.os_adapted) with the derived columns every tool needs, so no
 -- tool runs a regex at query time (#2).
 -- template_id and family_id stay NULL until the Pattern dictionary step (T9) fills them.
@@ -33,7 +33,9 @@ FROM temp.main.bgl_adapted;
 -- {tenant}, numeric segments as {n} (applied twice so adjacent numeric segments are masked too).
 -- instance_ref is the instance UUID from "[instance: <uuid>]", else from "/servers/<uuid>", else
 -- from "for instance <uuid>" (the network-vif-plugged events), so the API calls and events of an
--- instance can be joined to its compute lines (#1).
+-- instance can be joined to its compute lines (#1). TRY_CAST turns a malformed number (the
+-- regex accepts "1.2.3") into NULL for that row instead of failing the whole table; the derive
+-- report's coverage counts show it.
 CREATE OR REPLACE TABLE ${slm}.os_entry AS
 WITH parsed AS (
     SELECT
@@ -73,8 +75,8 @@ SELECT
         '[0-9a-f]{32}', '{tenant}', 'g'),
         '/[0-9]+(/|$)', '/{n}\1', 'g'),
         '/[0-9]+(/|$)', '/{n}\1', 'g')          AS endpoint,
-    CAST(status AS INTEGER)                     AS http_status,
-    CAST(seconds AS DOUBLE)                     AS latency_s,
+    TRY_CAST(status AS INTEGER)                 AS http_status,
+    TRY_CAST(seconds AS DOUBLE)                 AS latency_s,
     message,
     CAST(NULL AS VARCHAR)                       AS template_id,
     CAST(NULL AS VARCHAR)                       AS family_id,

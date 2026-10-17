@@ -6,7 +6,7 @@ Usage (see `make help`):
 
 Runs, in this order and inside SLM_SCHEMA:
     1. sql/adapters/<adapter>.sql   the only loader-specific SQL: raw tables -> two temporary
-                                    adapter views, checked against ADAPTER_VIEWS
+                                    adapter tables, checked against ADAPTER_TABLES
     2. sql/seed/*.sql               in name order: the stub Ownership Table (TODO(organiser))
     3. sql/derive/*.sql             in name order: canonical tables, ..., inverted indexes last
 
@@ -45,24 +45,35 @@ PLACEHOLDER_RE = re.compile(r"\$\{([a-z_]+)\}")
 VERSION_RE = re.compile(r"SereneDB v?(\d+(?:\.\d+)*)")
 
 
-# The contract between sql/adapters/<adapter>.sql and the derive steps: the temporary views every
-# adapter creates (temp.main.<view>) and their exact columns (documented in
-# sql/adapters/official.sql). Temporary, so nothing outlives the derive session that depends on
-# the raw tables.
-ADAPTER_VIEWS: dict[str, tuple[str, ...]] = {
-    "bgl_adapted": ("entry_id", "ts", "epoch_utc", "node", "component", "level", "alert_tag", "message"),
+# The contract between sql/adapters/<adapter>.sql and the derive steps: the temporary tables every
+# adapter creates (temp.main.<table>) with their exact columns and types, as DESCRIBE reports them
+# (documented in sql/adapters/official.sql). Temporary tables die with the derive session and hold
+# no dependency on the raw tables, so they never block a reload of them. Views would not do:
+# a persistent view blocks DROP TABLE on the raw table (DependentObjectsStillExist), and a
+# temporary view over a table cannot be read on SereneDB 26.09.1.3 (InsufficientPrivilege).
+ADAPTER_TABLES: dict[str, tuple[tuple[str, str], ...]] = {
+    "bgl_adapted": (
+        ("entry_id", "BIGINT"),
+        ("ts", "TIMESTAMP"),
+        ("epoch_utc", "DOUBLE"),
+        ("node", "VARCHAR"),
+        ("component", "VARCHAR"),
+        ("level", "VARCHAR"),
+        ("alert_tag", "VARCHAR"),
+        ("message", "VARCHAR"),
+    ),
     "os_adapted": (
-        "entry_id",
-        "ts",
-        "epoch_utc",
-        "source_id",
-        "log_file",
-        "pid",
-        "component",
-        "level",
-        "request_id",
-        "instance_id",
-        "message",
+        ("entry_id", "BIGINT"),
+        ("ts", "TIMESTAMP"),
+        ("epoch_utc", "DOUBLE"),
+        ("source_id", "VARCHAR"),
+        ("log_file", "VARCHAR"),
+        ("pid", "BIGINT"),
+        ("component", "VARCHAR"),
+        ("level", "VARCHAR"),
+        ("request_id", "VARCHAR"),
+        ("instance_id", "VARCHAR"),
+        ("message", "VARCHAR"),
     ),
 }
 
@@ -156,6 +167,16 @@ def _quoted(schema: str) -> str:
     return f'"{schema}"'
 
 
+def _ident(name: str) -> str:
+    """Any relation or column name, double-quoted for SQL."""
+    return '"' + name.replace('"', '""') + '"'
+
+
+def _first_line(exc: BaseException) -> str:
+    text = str(exc).strip()
+    return text.splitlines()[0] if text else type(exc).__name__
+
+
 def variables(slm: str, raw: str, version: tuple[int, ...]) -> dict[str, str]:
     """The placeholder values for one run."""
     slm_q, raw_q = _quoted(slm), _quoted(raw)
@@ -179,16 +200,28 @@ def steps(adapter: str, sql_dir: Path = SQL_DIR) -> list[Path]:
     ]
 
 
-def adapter_problems(found: Mapping[str, Sequence[str]]) -> list[str]:
-    """How the adapter views in `found` (view -> columns) differ from ADAPTER_VIEWS."""
+def adapter_problems(
+    found: Mapping[str, Sequence[tuple[str, str]]], reasons: Mapping[str, str] | None = None
+) -> list[str]:
+    """How the adapter tables in `found` (table -> (column, type) list) differ from ADAPTER_TABLES.
+
+    `reasons` carries the database's error for a table that could not be described.
+    """
     problems = []
-    for view, expected in ADAPTER_VIEWS.items():
-        if view not in found:
-            problems.append(f"{view} is missing")
+    for table, expected in ADAPTER_TABLES.items():
+        if table not in found:
+            reason = (reasons or {}).get(table)
+            problems.append(f"{table} is missing" + (f" ({reason})" if reason else ""))
             continue
-        columns = set(found[view])
-        problems += [f"{view} lacks {c}" for c in expected if c not in columns]
-        problems += [f"{view} has extra column {c}" for c in sorted(columns - set(expected))]
+        columns = dict(found[table])
+        wanted = dict(expected)
+        problems += [f"{table} lacks {c}" for c in wanted if c not in columns]
+        problems += [f"{table} has extra column {c}" for c in sorted(set(columns) - set(wanted))]
+        problems += [
+            f"{table}.{c} is {columns[c]}, expected {kind}"
+            for c, kind in expected
+            if c in columns and columns[c] != kind
+        ]
     return problems
 
 
@@ -234,35 +267,40 @@ def relation_columns(conn: psycopg.Connection[Any], schema: str) -> dict[str, li
         conn, "SELECT table_name FROM information_schema.tables WHERE table_schema = %s ORDER BY 1", [schema]
     )
     return {
-        name: [(str(r[0]), str(r[1])) for r in _rows(conn, f"DESCRIBE {_quoted(schema)}.{_quoted(name)}")]
+        name: [(str(r[0]), str(r[1])) for r in _rows(conn, f"DESCRIBE {_quoted(schema)}.{_ident(name)}")]
         for (name,) in names
     }
 
 
-def adapter_columns(conn: psycopg.Connection[Any]) -> dict[str, list[str]]:
-    """The columns of the adapter's temporary views (temp.main.<view>) that exist in this session."""
-    found: dict[str, list[str]] = {}
-    for view in ADAPTER_VIEWS:
+def adapter_columns(conn: psycopg.Connection[Any]) -> tuple[dict[str, list[tuple[str, str]]], dict[str, str]]:
+    """The (column, type) lists of the adapter's temporary tables in this session, and the
+    database's reason for each one that cannot be described."""
+    found: dict[str, list[tuple[str, str]]] = {}
+    reasons: dict[str, str] = {}
+    for table in ADAPTER_TABLES:
         try:
-            described = _rows(conn, f"DESCRIBE temp.main.{_quoted(view)}")
-        except psycopg.errors.UndefinedTable:
+            described = _rows(conn, f"DESCRIBE temp.main.{_ident(table)}")
+        except psycopg.OperationalError:
+            raise
+        except psycopg.Error as exc:
+            reasons[table] = _first_line(exc)
             continue
-        found[view] = [str(row[0]) for row in described]
-    return found
+        found[table] = [(str(row[0]), str(row[1])) for row in described]
+    return found, reasons
 
 
 def check_adapter(conn: psycopg.Connection[Any], adapter: str) -> None:
-    """Stop with a clear message when the adapter's views break the contract in ADAPTER_VIEWS."""
-    if problems := adapter_problems(adapter_columns(conn)):
+    """Stop with a clear message when the adapter's tables break the contract in ADAPTER_TABLES."""
+    if problems := adapter_problems(*adapter_columns(conn)):
         raise DeriveError(f"sql/adapters/{adapter}.sql breaks the adapter contract: " + "; ".join(problems))
 
 
-def drop_adapter_views(conn: psycopg.Connection[Any], slm: str) -> None:
-    """Drop the adapter views: this session's temporary ones and persistent ones in `slm` that
-    derives before the views became temporary left behind (they block raw-table reloads)."""
-    for view in ADAPTER_VIEWS:
-        conn.execute(f"DROP VIEW IF EXISTS temp.main.{_quoted(view)}")
-        conn.execute(f"DROP VIEW IF EXISTS {_quoted(slm)}.{_quoted(view)}")
+def drop_adapter_relations(conn: psycopg.Connection[Any], slm: str) -> None:
+    """Drop this session's temporary adapter tables, and the persistent adapter views that derives
+    before T4's review left in `slm` (they block every reload of the raw tables)."""
+    for table in ADAPTER_TABLES:
+        conn.execute(f"DROP TABLE IF EXISTS temp.main.{_ident(table)}")
+        conn.execute(f"DROP VIEW IF EXISTS {_quoted(slm)}.{_ident(table)}")
 
 
 def report(conn: psycopg.Connection[Any], slm: str) -> list[str]:
@@ -350,11 +388,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"SereneDB {'.'.join(map(str, version))}: deriving {raw} -> {slm} ({args.adapter})")
             conn.execute(f"CREATE SCHEMA IF NOT EXISTS {slm_q}")
             values = variables(slm, raw, version)
-            drop_adapter_views(conn, slm)
+            drop_adapter_relations(conn, slm)
             run(conn, files[:1], values)
             check_adapter(conn, args.adapter)
             run(conn, files[1:], values)
-            drop_adapter_views(conn, slm)
+            drop_adapter_relations(conn, slm)
             print(f"derive finished in {time.perf_counter() - started:.1f}s")
             for line in report(conn, slm):
                 print(line)

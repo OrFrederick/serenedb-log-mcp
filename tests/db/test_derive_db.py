@@ -505,20 +505,35 @@ def test_numeric_and_time_columns_answer_range_filters(database_url: str, derive
 # ----------------------------------------------------------------- the adapter contract
 
 
-def test_the_dev_adapter_views_match_the_contract_in_order(
+def test_the_dev_adapter_tables_can_be_read_and_match_the_contract(
     database_url: str, derived_sample: Schemas
 ) -> None:
+    # Fails on SereneDB 26.09.1.3 if the adapter ever goes back to temporary views, which that
+    # version cannot read (InsufficientPrivilege).
     values = derive.variables(derived_sample.slm, derived_sample.raw, (26, 10, 1))
     with psycopg.connect(database_url, autocommit=True) as conn:
         derive.run(conn, [derive.SQL_DIR / "adapters" / "dev.sql"], values)
-        found = derive.adapter_columns(conn)
+        found, reasons = derive.adapter_columns(conn)
+        adapted = {
+            table: conn.execute(f"SELECT count(*) FROM temp.main.{table}").fetchone()
+            for table in derive.ADAPTER_TABLES
+        }
 
-    assert {view: tuple(columns) for view, columns in found.items()} == derive.ADAPTER_VIEWS
+    assert reasons == {}
+    assert {table: tuple(columns) for table, columns in found.items()} == derive.ADAPTER_TABLES
+    raw_counts = {
+        "bgl_adapted": one(database_url, q("SELECT count(*) FROM {t}", derived_sample, t="raw.bgl")),
+        "os_adapted": one(database_url, q("SELECT count(*) FROM {t}", derived_sample, t="raw.openstack")),
+    }
+    assert adapted == raw_counts
 
 
-def test_a_broken_adapter_view_stops_the_derive_step(database_url: str) -> None:
+def test_a_broken_adapter_table_stops_the_derive_step(database_url: str) -> None:
     with psycopg.connect(database_url, autocommit=True) as conn:
-        conn.execute("CREATE TEMPORARY VIEW bgl_adapted AS SELECT 1::BIGINT AS entry_id, 'x' AS source_file")
+        conn.execute(
+            "CREATE TEMPORARY TABLE bgl_adapted AS SELECT 1::BIGINT AS entry_id, 'x' AS source_file, "
+            "now()::TIMESTAMP AS epoch_utc"
+        )
         with pytest.raises(derive.DeriveError) as excinfo:
             derive.check_adapter(conn, "official")
 
@@ -527,6 +542,7 @@ def test_a_broken_adapter_view_stops_the_derive_step(database_url: str) -> None:
     assert "os_adapted is missing" in message
     assert "bgl_adapted lacks message" in message
     assert "bgl_adapted has extra column source_file" in message
+    assert "bgl_adapted.epoch_utc is TIMESTAMP, expected DOUBLE" in message
 
 
 # ----------------------------------------------------------------- the raw tables stay replaceable

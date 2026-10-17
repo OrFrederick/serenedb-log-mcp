@@ -188,10 +188,11 @@ def test_the_official_adapter_is_a_todo_stub_that_lists_every_required_column() 
     text = (ROOT / "sql/adapters/official.sql").read_text()
 
     assert "TODO(organiser)" in text
-    for view, columns in derive.ADAPTER_VIEWS.items():
-        assert f"TEMPORARY VIEW {view}" in text
-        for column in columns:
-            assert re.search(rf"^--\s+{column}\s", text, re.MULTILINE), f"{view}.{column} is not listed"
+    for table, columns in derive.ADAPTER_TABLES.items():
+        assert f"TEMPORARY TABLE {table}" in text
+        for column, kind in columns:
+            listed = rf"^--\s+{column}\s+{kind}\s"
+            assert re.search(listed, text, re.MULTILINE), f"{table}.{column} {kind} is not listed"
 
 
 def test_no_sql_file_reads_the_ground_truth_labels() -> None:
@@ -206,17 +207,27 @@ def test_no_sql_file_reads_the_ground_truth_labels() -> None:
 # ----------------------------------------------------------------- the adapter contract
 
 
-def test_the_adapter_contract_names_both_views() -> None:
-    assert set(derive.ADAPTER_VIEWS) == {"bgl_adapted", "os_adapted"}
-    assert "source_file" not in derive.ADAPTER_VIEWS["os_adapted"]
+def contract_columns(table: str) -> list[tuple[str, str]]:
+    return list(derive.ADAPTER_TABLES[table])
+
+
+def test_the_adapter_contract_names_both_tables_with_their_types() -> None:
+    assert set(derive.ADAPTER_TABLES) == {"bgl_adapted", "os_adapted"}
+    os_columns = dict(derive.ADAPTER_TABLES["os_adapted"])
+    assert "source_file" not in os_columns
+    assert os_columns["epoch_utc"] == "DOUBLE"
+    assert os_columns["ts"] == "TIMESTAMP"
+    assert os_columns["entry_id"] == "BIGINT"
 
 
 def test_an_adapter_that_matches_the_contract_has_no_problems() -> None:
-    assert derive.adapter_problems({v: list(c) for v, c in derive.ADAPTER_VIEWS.items()}) == []
+    found = {table: contract_columns(table) for table in derive.ADAPTER_TABLES}
+
+    assert derive.adapter_problems(found) == []
 
 
-def test_adapter_problems_name_missing_views_and_missing_or_extra_columns() -> None:
-    found = {"bgl_adapted": [*derive.ADAPTER_VIEWS["bgl_adapted"][:-1], "source_file"]}
+def test_adapter_problems_name_missing_tables_and_missing_or_extra_columns() -> None:
+    found = {"bgl_adapted": [*contract_columns("bgl_adapted")[:-1], ("source_file", "VARCHAR")]}
 
     problems = derive.adapter_problems(found)
 
@@ -225,30 +236,47 @@ def test_adapter_problems_name_missing_views_and_missing_or_extra_columns() -> N
     assert "bgl_adapted has extra column source_file" in problems
 
 
-CREATE_VIEW_RE = re.compile(
-    r"\bCREATE\s+(?:OR\s+REPLACE\s+)?(TEMP(?:ORARY)?\s+)?VIEW\s+([\w.${}\"]+)", re.IGNORECASE
+def test_adapter_problems_name_a_column_of_the_wrong_type() -> None:
+    # epoch_utc as a TIMESTAMP would silently break every gap computation (#1).
+    columns = [(c, "TIMESTAMP" if c == "epoch_utc" else t) for c, t in contract_columns("bgl_adapted")]
+    found = {"bgl_adapted": columns, "os_adapted": contract_columns("os_adapted")}
+
+    assert derive.adapter_problems(found) == ["bgl_adapted.epoch_utc is TIMESTAMP, expected DOUBLE"]
+
+
+def test_a_missing_table_carries_the_database_reason() -> None:
+    found = {"os_adapted": contract_columns("os_adapted")}
+
+    problems = derive.adapter_problems(found, {"bgl_adapted": "permission denied for table bgl"})
+
+    assert problems == ["bgl_adapted is missing (permission denied for table bgl)"]
+
+
+CREATE_RE = re.compile(
+    r"\bCREATE\s+(?:OR\s+REPLACE\s+)?(TEMP(?:ORARY)?\s+)?(VIEW|TABLE)\s+([\w.${}\"]+)", re.IGNORECASE
 )
 
 
-def test_the_dev_adapter_creates_only_temporary_views() -> None:
-    # A persistent view over the raw tables would block every reload of them (DROP TABLE fails
-    # with DependentObjectsStillExist); a temporary view dies with the derive session.
-    created = CREATE_VIEW_RE.findall((ROOT / "sql/adapters/dev.sql").read_text())
+def test_the_dev_adapter_creates_only_temporary_tables() -> None:
+    # A persistent relation that reads the raw tables (a view) blocks every reload of them with
+    # DependentObjectsStillExist; a temporary view cannot be read at all on SereneDB 26.09.1.3
+    # (InsufficientPrivilege). A temporary table has neither problem and dies with the session.
+    created = CREATE_RE.findall((ROOT / "sql/adapters/dev.sql").read_text())
 
-    assert sorted(name for _, name in created) == sorted(derive.ADAPTER_VIEWS)
-    assert all(temporary for temporary, _ in created)
+    assert sorted(name for _, _, name in created) == sorted(derive.ADAPTER_TABLES)
+    assert all(temporary and kind.upper() == "TABLE" for temporary, kind, _ in created)
 
 
-def test_no_sql_file_creates_a_persistent_view() -> None:
+def test_no_sql_file_creates_a_view() -> None:
     for path in (ROOT / "sql").rglob("*.sql"):
         text = derive.render(path.read_text(), derive.variables("slm", "public", (26, 10, 1)))
         for statement in derive.split_statements(text):
-            for temporary, name in CREATE_VIEW_RE.findall(statement):
-                assert temporary, f"{path.name} creates the persistent view {name}"
+            for _, kind, name in CREATE_RE.findall(statement):
+                assert kind.upper() != "VIEW", f"{path.name} creates the view {name}"
 
 
-def test_the_derive_steps_read_the_adapter_views_from_the_temporary_schema() -> None:
+def test_the_derive_steps_read_the_adapter_tables_from_the_temporary_schema() -> None:
     text = (ROOT / "sql/derive/10_entries.sql").read_text()
 
-    for view in derive.ADAPTER_VIEWS:
-        assert f"FROM temp.main.{view}" in text
+    for table in derive.ADAPTER_TABLES:
+        assert f"FROM temp.main.{table}" in text

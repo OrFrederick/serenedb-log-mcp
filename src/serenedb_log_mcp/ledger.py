@@ -14,10 +14,11 @@ attached `groups_total` and a true number then looked ungrounded.
 The lock has two halves: a `threading.Lock` for the tool calls the SDK runs in parallel worker
 threads inside one server process, and the advisory file lock for other server processes.
 
-A process killed during an append leaves an unterminated last line. Reads ignore it, and the next
-append cuts it off, so one interrupted write does not make the ledger unreadable for ever. Any
-other unparseable line is still a `LedgerError`, because that means `LEDGER_PATH` points at the
-wrong file.
+A process killed during an append leaves an unterminated last line. Reads ignore that fragment and
+the next append cuts it off, so one interrupted write does not make the ledger unreadable for ever.
+A last line that holds a whole record and only lacks its newline is not a fragment: it is read and
+kept, because dropping it would let the next append reuse its id. Any other unparseable line is
+still a `LedgerError`, because that means `LEDGER_PATH` points at the wrong file.
 
 `fcntl` is POSIX-only, which covers the supported platforms (macOS for development, Linux in CI).
 """
@@ -152,26 +153,49 @@ class Ledger:
         return records
 
 
-def _complete_lines(text: str) -> list[str]:
-    """The lines that were written whole, so a torn append does not break every later read.
+def _is_a_record(line: str) -> bool:
+    """Whether an unterminated last line is a whole record rather than a torn fragment.
 
-    A process killed during an append leaves an unterminated last line. Every record this module
-    writes ends in a newline, so a file that does not end in one ends in a fragment, and a fragment
-    is not a record. Any other unparseable line still fails loudly: that means `LEDGER_PATH` points
-    at the wrong file.
+    The missing newline alone does not decide it. Ledgers this server did not write can end without
+    one and still hold a whole record on that line: a fixture built with `"\\n".join(...)`, a
+    hand-edited file, a converted pilot ledger. A torn append, by contrast, leaves bytes that do not
+    parse, or that parse but carry no `evidence_id` and so can never be cited.
+    """
+    try:
+        record = json.loads(line)
+    except json.JSONDecodeError:
+        return False
+    return isinstance(record, dict) and _ID_RE.fullmatch(str(record.get("evidence_id"))) is not None
+
+
+def _complete_lines(text: str) -> list[str]:
+    """The lines that hold a record, so a torn append does not break every later read.
+
+    A process killed during an append leaves an unterminated last line. That line is dropped only
+    when it is a fragment: dropping a whole record instead would let the next append reuse its id,
+    and an answer citing it would silently resolve to different Evidence. Any unparseable line that
+    is not the last one still fails loudly: that means `LEDGER_PATH` points at the wrong file.
     """
     lines = text.splitlines()
-    return lines[:-1] if lines and not text.endswith("\n") else lines
+    if lines and not text.endswith("\n") and not _is_a_record(lines[-1]):
+        return lines[:-1]
+    return lines
 
 
 def _drop_a_torn_tail(handle: IO[str], text: str) -> None:
-    """Cut a torn last line off the file, under the lock, before the next record is appended.
+    """Make the last line safe to append after, under the lock, before the next record is written.
 
-    Writing the next record after the fragment would turn the fragment into a terminated line, and
-    `_complete_lines` only forgives the last one, so every later read would raise again. Nothing a
-    reader can use is lost: the bytes removed are the tail of a record that was never finished.
+    Appending straight after an unterminated line would turn it into a terminated one. For a torn
+    fragment that is fatal, because `_complete_lines` only forgives the last line, so every later
+    read would raise again; the fragment is cut off instead, and nothing a reader can use is lost,
+    because those bytes are the tail of a record that was never finished. A whole record on that
+    line is kept and only terminated, so its id stays taken and its content stays readable.
     """
     if not text or text.endswith("\n"):
+        return
+    if _is_a_record(text.splitlines()[-1]):
+        handle.write("\n")
+        handle.flush()
         return
     whole = text[: text.rindex("\n") + 1] if "\n" in text else ""
     handle.truncate(len(whole.encode("utf-8")))

@@ -199,6 +199,68 @@ def test_a_torn_line_that_is_not_the_last_still_fails_loudly(tmp_path: Path) -> 
         Ledger(path)
 
 
+def test_a_whole_last_record_without_a_trailing_newline_is_kept(tmp_path: Path) -> None:
+    # A missing final newline alone does not make the last line a torn append. Ledgers this server
+    # did not write often have that shape: a fixture built with "\n".join(...), a hand-edited file,
+    # or a converted pilot ledger. Dropping E2 here would let an answer that cites [E2] resolve to
+    # whatever the next append stores under that id, with no error anywhere.
+    path = tmp_path / "ledger.jsonl"
+    records = [
+        {"evidence_id": "E1", "tool": "count_by", "total_matches": 101},
+        {"evidence_id": "E2", "tool": "count_by", "total_matches": 102},
+    ]
+    path.write_text("\n".join(json.dumps(record) for record in records), encoding="utf-8")
+
+    ledger = Ledger(path)
+
+    assert ledger.loaded == 2
+    assert ledger.get("E2") == records[1]
+    assert ledger.last_id == "E2"
+
+    stored = store(ledger, tool="search_logs", total_matches=7)
+
+    assert stored["evidence_id"] == "E3"
+    # E2 still names the count_by Evidence it named before the append, and the file is readable.
+    assert [record["evidence_id"] for record in Ledger(path).all()] == ["E1", "E2", "E3"]
+    assert Ledger(path).get("E2") == records[1]
+
+
+def test_an_unterminated_last_line_that_is_json_but_not_a_record_is_dropped(
+    tmp_path: Path,
+) -> None:
+    # The boundary case on the other side: the fragment parses, so "did it parse" is not the test.
+    # It has no evidence_id, so no reader could ever cite it, and it is dropped like any fragment.
+    path = tmp_path / "ledger.jsonl"
+    path.write_text(
+        json.dumps({"evidence_id": "E1", "tool": "count_by"}) + "\n" + '{"tool": "count_by"}',
+        encoding="utf-8",
+    )
+
+    ledger = Ledger(path)
+
+    assert ledger.loaded == 1
+    assert store(ledger, tool="trend")["evidence_id"] == "E2"
+    assert [record["evidence_id"] for record in Ledger(path).all()] == ["E1", "E2"]
+
+
+def test_a_last_record_torn_inside_a_string_is_dropped(tmp_path: Path) -> None:
+    # The common shape of a real torn append: the kill landed inside the sql field, so the line is
+    # neither valid JSON nor a record, even though it starts with a valid evidence_id.
+    path = tmp_path / "ledger.jsonl"
+    whole = json.dumps({"evidence_id": "E2", "tool": "count_by", "sql": "SELECT 1 FROM bgl"})
+    torn = whole[: whole.index("FROM")]
+    path.write_text(
+        json.dumps({"evidence_id": "E1", "tool": "count_by"}) + "\n" + torn,
+        encoding="utf-8",
+    )
+
+    ledger = Ledger(path)
+
+    assert ledger.loaded == 1
+    assert store(ledger, tool="trend")["evidence_id"] == "E2"
+    assert [record["evidence_id"] for record in Ledger(path).all()] == ["E1", "E2"]
+
+
 def test_blank_lines_are_tolerated(tmp_path: Path) -> None:
     path = tmp_path / "ledger.jsonl"
     path.write_text(json.dumps({"evidence_id": "E1", "tool": "trend"}) + "\n\n", encoding="utf-8")

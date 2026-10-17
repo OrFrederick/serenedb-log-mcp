@@ -3,7 +3,7 @@
 Each Tier gets its own throwaway schemas: a copy of the sample raw tables (from the `derived_sample`
 fixture) plus a few synthetic rows, derived once with Pattern Tier 1 on and once with it off. The
 Tier 1 tests need the Loghub-2.0 template files in SLM_DATA_DIR (`make fetch-data`) and skip
-without them.
+without them, also under SLM_REQUIRE_DB; the Tier 2 tests run either way.
 """
 
 from __future__ import annotations
@@ -14,8 +14,10 @@ import uuid
 from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Protocol
 
+import optional_data
 import psycopg
 import pytest
 from psycopg import sql
@@ -86,10 +88,10 @@ def run_derive(tier1: bool, *argv: str) -> int:
 
 
 def templates_or_skip() -> dict[str, list[gen_pattern_sql.Template]]:
-    try:
-        return gen_pattern_sql.load_templates(load_settings().data_dir)
-    except gen_pattern_sql.TemplatesMissingError as exc:
-        pytest.skip(f"Pattern Tier 1 tests need the Loghub-2.0 files: {exc}")
+    """The Loghub-2.0 templates; a Pattern Tier 1 test skips without them, even with SLM_REQUIRE_DB."""
+    if (problem := optional_data.templates_problem()) is not None:
+        pytest.skip(problem)
+    return gen_pattern_sql.load_templates(load_settings().data_dir)
 
 
 def _drop(database_url: str, *schemas: str) -> None:
@@ -504,6 +506,45 @@ def test_the_six_over_n_seconds_template_pairs_each_share_one_family_id(
         assert result[short][1] == result[long][1], (short, long)
         assert result[short][0] != result[long][0], (short, long)
     assert len({family_id for _, family_id in result.values()}) == len(OVER_N_SECONDS_PAIRS)
+
+
+# ----------------------------------------------------------------- without the optional Loghub-2.0 files
+
+
+def test_the_shared_sample_is_derived_with_tier1_exactly_when_the_templates_are_there(
+    database_url: str, derived_sample: Schemas
+) -> None:
+    used = rows(
+        database_url, q("SELECT DISTINCT template_source FROM {d}", derived_sample.slm, d="pattern_dict")
+    )
+
+    assert (("loghub2",) in used) is optional_data.derive_with_tier1()
+
+
+def write_template_files(data_dir: Path) -> None:
+    for name in gen_pattern_sql.TEMPLATE_FILES.values():
+        (data_dir / name).parent.mkdir(parents=True, exist_ok=True)
+        (data_dir / name).write_text(",".join(gen_pattern_sql.HEADER) + "\n")
+
+
+def test_a_schema_without_tier1_patterns_is_a_skip_only_without_the_template_files(
+    database_url: str, tier2_sample: T9Schemas, tmp_path: Path
+) -> None:
+    problem = optional_data.tier1_patterns_problem(database_url, tier2_sample.slm, tmp_path)
+    write_template_files(tmp_path)
+
+    assert problem is not None
+    assert f"schema {tier2_sample.slm!r} has no Tier 1 Pattern" in problem
+    assert f"Loghub-2.0 templates not found in {tmp_path / 'lh2'}" in problem
+    assert "make derive" in problem
+    # With the files there, a schema without Tier 1 Patterns is a derive to redo, not a skip.
+    assert optional_data.tier1_patterns_problem(database_url, tier2_sample.slm, tmp_path) is None
+
+
+def test_a_schema_with_tier1_patterns_needs_no_template_files(
+    database_url: str, tier1_sample: T9Schemas, tmp_path: Path
+) -> None:
+    assert optional_data.tier1_patterns_problem(database_url, tier1_sample.slm, tmp_path) is None
 
 
 # ----------------------------------------------------------------- re-runs

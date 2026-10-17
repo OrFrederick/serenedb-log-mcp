@@ -132,12 +132,13 @@ def test_get_trace_flags_the_metrics_that_moved_around_the_trace(otel_demo: Otel
         ("payment", "jvm.memory.used"): "normal",
         ("checkout", "container.cpu.utilization"): "normal",
     }
-    # Furthest from the median in units of the p05-p95 range, floored at 1% of the median, so the
-    # latency of a series that never varied before ranks above the CPU spike.
+    # Unusual series whose baseline varies come first, by distance from the median in p05-p95 ranges;
+    # series whose baseline never varied (here the synthetic latency and transactions) follow, by
+    # relative change, so a flat series that twitches cannot bury a real spike.
     assert [row["name"] for row in metrics[:3]] == [
-        "http.client.duration", "app.payment.transactions", "container.cpu.utilization",
+        "container.cpu.utilization", "http.client.duration", "app.payment.transactions",
     ]  # fmt: skip
-    latency = metrics[0]
+    latency = metrics[1]
     assert latency["value"] == pytest.approx(1400 / 30, abs=1e-5)  # (200 + 1000 + 200) ms / 30 calls
     assert latency["kind"] == "histogram"
     assert latency["unit"] == "ms"

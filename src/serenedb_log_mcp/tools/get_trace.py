@@ -10,10 +10,10 @@ share TraceId (`corpus.datasets`, `make otel-setup`). Five statements, each a re
 3. the trace's Log Entries per Component and level;
 4. the Log Entries themselves, error levels first;
 5. the metrics of the trace's services in the minutes around it, from the local per-minute roll-up,
-   each with the baseline of its series over the whole run, most unusual first: ranked by the
-   distance from the median in units of the p05-to-p95 range, which is floored at 1% of the median
-   so that a series that never varied and then moved (restarts going from 0 to 1) ranks first
-   instead of dividing by zero.
+   each with the baseline of its series over the whole run, most unusual first. Unusual series whose
+   baseline varies rank by their distance from the median in units of the p05-to-p95 range; series
+   whose baseline never varied (limits, queues that sit at 0) follow, by relative change, so that a
+   flat series moving off 0 (an infinite number of ranges) cannot bury a real spike.
 
 Statements 1 to 4 read the remote files. None is sorted by TraceId or time, but both carry TraceId
 bloom filters, so `trace_id = %s` reads only the row groups that hold the trace. That is still
@@ -441,7 +441,9 @@ def metrics_statement(rel: Relation) -> str:
                 WHEN w.value > b.p95 + {tolerance} * greatest(abs(b.p95), 1) THEN 'unusual_high'
                 WHEN w.value < b.p05 - {tolerance} * greatest(abs(b.p05), 1) THEN 'unusual_low'
                 ELSE 'normal' END AS flag,
-           abs(w.value - b.median) / greatest(b.p95 - b.p05, abs(b.median) * 0.01, 1e-9) AS deviation
+           b.p95 > b.p05 AS varies,
+           CASE WHEN b.p95 > b.p05 THEN abs(w.value - b.median) / (b.p95 - b.p05)
+                ELSE abs(w.value - b.median) / greatest(abs(b.median), 1e-9) END AS deviation
     FROM w
     LEFT JOIN {baselines} AS b
       ON b.service = w.service AND b.metric = w.metric AND b.unit = w.unit AND b.kind = w.kind
@@ -451,7 +453,7 @@ SELECT service, metric, unit, kind, round(value, 6) AS value, round(p05, 6) AS p
        count(*) OVER () AS series_total,
        count(*) FILTER (WHERE flag IN ({unusual})) OVER () AS unusual_total
 FROM judged
-ORDER BY flag IN ({unusual}) DESC, deviation DESC NULLS LAST, service, metric
+ORDER BY flag IN ({unusual}) DESC, varies DESC NULLS LAST, deviation DESC NULLS LAST, service, metric
 LIMIT %s"""
         )
         .format(

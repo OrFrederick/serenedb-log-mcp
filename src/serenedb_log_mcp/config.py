@@ -14,6 +14,7 @@ import math
 import os
 import re
 from collections.abc import Mapping
+from enum import StrEnum
 from pathlib import Path
 from types import MappingProxyType
 from typing import Any
@@ -22,11 +23,20 @@ import psycopg
 from psycopg.conninfo import conninfo_to_dict
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_serializer, field_validator
 
-from serenedb_log_mcp.evidence import Role
 
-# The Role names have one definition, the Evidence contract's `Role` (plan section 2.7). `RoleName`
-# stays as the name the settings use. `Role` is a StrEnum, so a member equals and hashes like its
-# value and works wherever a Role name string is expected.
+class Role(StrEnum):
+    """Who is asking. The Role selects the connection, the defaults and the output shape (#4).
+
+    This is the one definition of the Role names in the tree; `evidence.Role` re-exports it. It is a
+    StrEnum, so a member equals and hashes like its value and works wherever a name string is
+    expected (argparse choices, environment variable suffixes, JSON keys).
+    """
+
+    ENGINEER = "engineer"
+    TEAM_LEAD = "team_lead"
+    MANAGER = "manager"
+
+
 RoleName = Role
 ROLES: tuple[Role, ...] = tuple(Role)
 

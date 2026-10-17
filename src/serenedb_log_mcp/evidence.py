@@ -11,21 +11,25 @@ and `docs/tools.md` (T8) is generated from them.
 
 from __future__ import annotations
 
-from enum import StrEnum
 from typing import Annotated, Any, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+# The Role names are defined once, in config; the Evidence contract re-exports the enum so that
+# tools import Role and RoleParam from one place.
+from serenedb_log_mcp.config import Role
+
+__all__ = [
+    "EVIDENCE_ID_PATTERN",
+    "ROLE_DESCRIPTION",
+    "DataScope",
+    "Evidence",
+    "Role",
+    "RoleParam",
+    "ScopeFilters",
+]
+
 EVIDENCE_ID_PATTERN = r"^E[1-9][0-9]*$"
-
-
-class Role(StrEnum):
-    """Who is asking. The Role decides the defaults, the output shape and the Next Step."""
-
-    ENGINEER = "engineer"
-    TEAM_LEAD = "team_lead"
-    MANAGER = "manager"
-
 
 ROLE_DESCRIPTION = (
     "Who is asking: 'engineer' investigates one failure and needs example Log Entries and nearby "

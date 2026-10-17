@@ -1,0 +1,280 @@
+"""`toolkit.evidence_tool`: the envelope, the ledger write, the Role hook, the pin and ToolError."""
+
+import json
+from pathlib import Path
+from typing import Any
+
+import anyio
+import pytest
+from mcp.server.mcpserver import MCPServer
+from mcp.server.mcpserver.exceptions import ToolError
+from mcp_types import CallToolResult
+from sample_tool import SAMPLE_ROWS, SAMPLE_SQL, FakeQueryResult, register_sample_tools, sample_outcome
+
+from serenedb_log_mcp.config import load_settings, set_settings
+from serenedb_log_mcp.evidence import DataScope, Evidence, Role, RoleParam
+from serenedb_log_mcp.ledger import Ledger, get_ledger
+from serenedb_log_mcp.toolkit import (
+    ALWAYS_LOAD_META,
+    ToolContractError,
+    ToolOutcome,
+    evidence_tool,
+    set_role_hook,
+)
+
+
+@pytest.fixture
+def server() -> MCPServer:
+    """A scratch server with the sample Evidence tool registered."""
+    server = MCPServer(name="toolkit-test")
+    register_sample_tools(server)
+    return server
+
+
+def sample_count(server: MCPServer, **arguments: Any) -> CallToolResult:
+    """Call the sample tool the way the SDK does, and return its result."""
+    result = anyio.run(lambda: server.call_tool("sample_count", {"role": "team_lead", **arguments}))
+    assert isinstance(result, CallToolResult)
+    return result
+
+
+def envelope(result: CallToolResult) -> dict[str, Any]:
+    assert result.structured_content is not None
+    return result.structured_content
+
+
+def test_a_tool_without_a_role_parameter_is_rejected() -> None:
+    server = MCPServer(name="t")
+
+    with pytest.raises(ToolContractError, match="role"):
+
+        @evidence_tool(server, title="No Role")
+        def no_role(query: str) -> ToolOutcome:
+            """Missing the Role."""
+            return sample_outcome()
+
+
+def test_a_tool_whose_role_is_not_the_role_enum_is_rejected() -> None:
+    server = MCPServer(name="t")
+
+    with pytest.raises(ToolContractError, match="Role"):
+
+        @evidence_tool(server, title="Wrong Role type")
+        def plain_role(role: str) -> ToolOutcome:
+            """Role is not the enum."""
+            return sample_outcome()
+
+
+def test_the_tool_is_registered_with_a_title_read_only_hints_and_always_load(
+    server: MCPServer,
+) -> None:
+    tools = {tool.name: tool for tool in anyio.run(server.list_tools)}
+
+    tool = tools["sample_count"]
+    assert tool.title == "Sample: count Log Entries by alert category"
+    assert tool.meta == ALWAYS_LOAD_META
+    assert tool.annotations is not None
+    assert tool.annotations.read_only_hint is True
+    assert tool.annotations.destructive_hint is False
+    assert tool.annotations.idempotent_hint is True
+    assert tool.annotations.open_world_hint is False
+    assert tool.description is not None
+    assert "Outputs:" in tool.description
+    assert tool.input_schema["required"] == ["role"]
+
+
+def test_the_envelope_carries_the_query_the_scope_and_the_counts(server: MCPServer) -> None:
+    data = envelope(sample_count(server))
+
+    assert data["evidence_id"] == "E1"
+    assert data["tool"] == "sample_count"
+    assert data["role"] == "team_lead"
+    assert data["sql"] == [SAMPLE_SQL]
+    assert data["params"] == [[25]]
+    assert data["data_scope"]["datasets"] == ["bgl"]
+    assert data["data_scope"]["filters"]["group_by"] == "alert_tag"
+    assert data["total_matches"] == len(SAMPLE_ROWS)
+    assert data["returned"] == len(SAMPLE_ROWS)
+    assert data["truncated"] is False
+    assert data["query_ms"] == 12.3
+    assert data["columns"] == ["alert_tag", "entries"]
+    assert data["rows"] == SAMPLE_ROWS
+    assert data["summary"]["entries_total"] == 265_876
+
+
+def test_one_text_block_mirrors_the_structured_content(server: MCPServer) -> None:
+    result = sample_count(server)
+
+    assert len(result.content) == 1
+    block = result.content[0]
+    assert block.type == "text"
+    assert json.loads(block.text) == envelope(result)
+
+
+def test_every_call_is_appended_to_the_evidence_ledger(server: MCPServer) -> None:
+    sample_count(server)
+    sample_count(server)
+
+    records = get_ledger().all()
+    assert [record["evidence_id"] for record in records] == ["E1", "E2"]
+    # The #3 pilot bug: the ledger record must hold the finished envelope, summary included.
+    assert records[0]["summary"] == {"groups_total": 3, "entries_total": 265_876}
+    assert records[0]["rows"] == SAMPLE_ROWS
+    assert Evidence.model_validate(records[0]).tool == "sample_count"
+
+
+def test_the_ledger_file_is_shared_with_later_sessions(server: MCPServer, ledger_path: Path) -> None:
+    sample_count(server)
+
+    assert Ledger(ledger_path).get("E1") is not None
+
+
+def test_the_role_hook_shapes_the_answer_but_never_the_stored_evidence(server: MCPServer) -> None:
+    def withhold_rows(evidence: Evidence) -> Evidence:
+        return evidence.model_copy(update={"rows": [], "not_measured": ["financial loss"]})
+
+    set_role_hook(withhold_rows)
+    data = envelope(sample_count(server))
+
+    assert data["rows"] == []
+    assert data["not_measured"] == ["financial loss"]
+    assert data["returned"] == len(SAMPLE_ROWS)  # the count stays honest
+    assert get_ledger().get("E1")["rows"] == SAMPLE_ROWS
+
+
+def test_a_role_other_than_the_pin_is_rejected_before_the_query_runs(server: MCPServer) -> None:
+    set_settings(load_settings({}, role="manager"))
+
+    with pytest.raises(ToolError, match="--role") as raised:
+        sample_count(server, role="engineer")
+
+    assert "manager" in str(raised.value)
+    assert get_ledger().all() == []
+
+
+def test_the_pinned_role_is_accepted(server: MCPServer) -> None:
+    set_settings(load_settings({}, role="manager"))
+
+    assert envelope(sample_count(server, role="manager"))["role"] == "manager"
+
+
+def test_an_unknown_role_names_the_three_roles(server: MCPServer) -> None:
+    with pytest.raises(ToolError, match="team_lead") as raised:
+        sample_count(server, role="ceo")
+
+    assert "ceo" in str(raised.value)
+
+
+def test_an_anticipated_failure_keeps_its_own_message(server: MCPServer) -> None:
+    with pytest.raises(ToolError, match="Widen the time range"):
+        sample_count(server, fail=True)
+
+    assert get_ledger().all() == []
+
+
+def test_any_other_exception_becomes_a_tool_error_with_a_next_step() -> None:
+    server = MCPServer(name="t")
+
+    @evidence_tool(server, title="Crashing tool")
+    def crashing(role: RoleParam) -> ToolOutcome:
+        """Crash. Inputs: role. Outputs: nothing."""
+        raise RuntimeError("psycopg lost the connection")
+
+    with pytest.raises(ToolError) as raised:
+        anyio.run(lambda: server.call_tool("crashing", {"role": "engineer"}))
+
+    message = str(raised.value)
+    assert "psycopg lost the connection" in message
+    assert "Retry" in message
+
+
+def test_rows_wider_than_their_columns_are_rejected() -> None:
+    server = MCPServer(name="t")
+
+    @evidence_tool(server, title="Mislabelled rows")
+    def mislabelled(role: RoleParam) -> ToolOutcome:
+        """Return rows that do not match the columns. Inputs: role. Outputs: the envelope."""
+        return ToolOutcome(
+            result=FakeQueryResult(total=1, rows=[["KERNEL", 1, "extra"]]),
+            scope=DataScope(datasets=["bgl"]),
+            columns=["component", "entries"],
+        )
+
+    with pytest.raises(ToolError, match="columns"):
+        anyio.run(lambda: server.call_tool("mislabelled", {"role": "engineer"}))
+
+
+def test_a_truncated_result_says_so_in_the_notes(server: MCPServer) -> None:
+    data = envelope(sample_count(server, groups=1))
+
+    assert data["truncated"] is True
+    assert data["returned"] == 1
+    assert data["total_matches"] == 3
+    assert any("1 of 3" in note for note in data["notes"])
+    assert any("count_by" in note for note in data["notes"])
+
+
+def test_notes_from_the_database_layer_are_carried_through() -> None:
+    server = MCPServer(name="t")
+    note = "SereneDB restarted; the statement was retried once."
+
+    @evidence_tool(server, title="Retried tool")
+    def retried(role: RoleParam) -> ToolOutcome:
+        """A query that was retried. Inputs: role. Outputs: the envelope."""
+        return sample_outcome(notes=[note])
+
+    data = anyio.run(lambda: server.call_tool("retried", {"role": "engineer"}))
+    assert isinstance(data, CallToolResult)
+
+    assert note in envelope(data)["notes"]
+
+
+def test_the_role_reaches_the_tool_body_as_the_enum() -> None:
+    server = MCPServer(name="t")
+    seen: list[Role] = []
+
+    @evidence_tool(server, title="Role observer")
+    def observer(role: RoleParam) -> ToolOutcome:
+        """Record the Role. Inputs: role. Outputs: the envelope."""
+        seen.append(role)
+        return sample_outcome()
+
+    anyio.run(lambda: server.call_tool("observer", {"role": "manager"}))
+
+    assert seen == [Role.MANAGER]
+
+
+def test_a_tool_without_a_docstring_is_rejected() -> None:
+    server = MCPServer(name="t")
+
+    with pytest.raises(ToolContractError, match="docstring"):
+
+        @evidence_tool(server, title="No description")
+        def undocumented(role: RoleParam) -> ToolOutcome:
+            return sample_outcome()
+
+
+def test_a_tool_may_count_a_different_unit_than_the_database_layer() -> None:
+    # count_by counts groups, not Log Entries, and carries the entry count in the summary.
+    server = MCPServer(name="t")
+
+    @evidence_tool(server, title="Counting groups")
+    def counting(role: RoleParam) -> ToolOutcome:
+        """Count groups. Inputs: role. Outputs: the envelope."""
+        outcome = sample_outcome()
+        return ToolOutcome(
+            result=FakeQueryResult(total=348_460, rows=[list(row) for row in SAMPLE_ROWS]),
+            scope=outcome.scope,
+            columns=outcome.columns,
+            summary={"entries_total": 348_460, "groups_total": 31_468},
+            total_matches=31_468,
+        )
+
+    result = anyio.run(lambda: server.call_tool("counting", {"role": "team_lead"}))
+    assert isinstance(result, CallToolResult)
+    data = envelope(result)
+
+    assert data["total_matches"] == 31_468
+    assert data["returned"] == 3
+    assert data["truncated"] is True
+    assert data["summary"]["entries_total"] == 348_460

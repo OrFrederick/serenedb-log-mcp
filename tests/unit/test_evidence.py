@@ -5,7 +5,7 @@ from typing import Any
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from serenedb_log_mcp.config import ROLES
+from serenedb_log_mcp import config
 from serenedb_log_mcp.evidence import DataScope, Evidence, Role, ScopeFilters
 
 
@@ -28,8 +28,11 @@ def evidence(**overrides: Any) -> Evidence:
     return Evidence(**(fields | overrides))
 
 
-def test_role_values_are_the_three_configured_roles() -> None:
-    assert [role.value for role in Role] == list(ROLES)
+def test_the_role_names_have_exactly_one_definition() -> None:
+    # config owns the Role enum and evidence re-exports it, so the two can never drift apart.
+    assert Role is config.Role
+    assert config.RoleName is Role
+    assert [role.value for role in Role] == list(config.ROLES) == ["engineer", "team_lead", "manager"]
     # StrEnum, so a Role compares equal to the string the client sends.
     assert Role.ENGINEER == "engineer"
     assert Role("team_lead") is Role.TEAM_LEAD

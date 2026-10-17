@@ -4,11 +4,17 @@
 --
 -- One row per Component of both Datasets in the Base Corpus (10 BGL, 12 OpenStack); a corpus
 -- test checks that the rows match the loaded Components exactly.
+--
+-- team_source says where each Team comes from: 'stub' on every row here
+-- (datasets.OWNERSHIP_STUB_SOURCE). It travels with every join on the table, so an answer can tell
+-- a stub Team from an organisers' one. T25 keeps the column with its own value and sets
+-- datasets.OWNERSHIP_IS_STUB to False; a db test fails if the two disagree.
 CREATE OR REPLACE TABLE ${slm}.ownership AS
 SELECT
     CAST(dataset AS VARCHAR)   AS dataset,
     CAST(component AS VARCHAR) AS component,
-    CAST(team AS VARCHAR)      AS team
+    CAST(team AS VARCHAR)      AS team,
+    CAST('stub' AS VARCHAR)    AS team_source
 FROM (VALUES
     ('bgl', 'KERNEL',     'Kernel Team'),
     ('bgl', 'APP',        'Application Runtime Team'),

@@ -227,9 +227,12 @@ def role_tool(
             except ToolError:
                 raise
             except LedgerError as exc:
+                # `exc` already names the line and explains the damage (see `_NOT_A_LEDGER_LINE`);
+                # an unwritable path raises `PermissionError`, an `OSError`, which never reaches
+                # here, so no hint here may blame LEDGER_PATH (#49 AC3). `rstrip` avoids a second
+                # trailing period, since `exc`'s own message already ends in one.
                 raise ToolError(
-                    f"The Evidence Ledger could not be read or written: {exc}. Check that "
-                    "LEDGER_PATH is writable, or unset it to keep the Evidence Ledger in memory."
+                    f"The Evidence Ledger could not be read or written: {str(exc).rstrip('.')}."
                 ) from exc
             except ToolContractError as exc:
                 logger.exception("%s broke the Evidence contract", tool_name)

@@ -361,6 +361,8 @@ def test_main_gives_up_quickly_on_an_unreachable_database(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     monkeypatch.setenv("DATABASE_URL", "host=127.0.0.1 port=1 dbname=postgres user=postgres")
+    # Pattern Tier 1 would otherwise stop the run earlier when the Loghub-2.0 files are absent (T9).
+    monkeypatch.setenv("SLM_PATTERN_TIER1", "0")
 
     assert derive.main(["--schema", "slm_unreachable"]) == 1
 

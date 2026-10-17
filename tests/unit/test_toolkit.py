@@ -211,6 +211,23 @@ def test_the_ledger_file_is_shared_with_later_sessions(server: MCPServer, ledger
     assert Ledger(ledger_path).get("E1") is not None
 
 
+def test_a_damaged_ledger_error_does_not_blame_ledger_path(server: MCPServer, ledger_path: Path) -> None:
+    # The path itself is fine and writable; a line of the file is not valid JSON, which is the
+    # #49 reproduction (a damaged record) and the T3 slot-misuse errors, never an unwritable path
+    # (that raises PermissionError, an OSError, which takes the generic branch instead).
+    ledger_path.write_text(
+        '{"evidence_id": "E1", "tool": "sample_count"}\nnot json at all\n', encoding="utf-8"
+    )
+
+    with pytest.raises(ToolError) as raised:
+        sample_count(server)
+
+    message = str(raised.value)
+    assert "line 2" in message
+    assert ".." not in message
+    assert "writable" not in message
+
+
 def test_the_role_hook_shapes_the_answer_but_never_the_stored_evidence(server: MCPServer) -> None:
     def withhold_rows(evidence: Evidence, role: Role) -> Evidence:
         assert role is Role.TEAM_LEAD

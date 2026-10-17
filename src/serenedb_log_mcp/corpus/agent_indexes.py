@@ -35,6 +35,8 @@ from typing import Any
 __all__ = [
     "MARKER",
     "NAME_RE",
+    "REMOTE_DATASETS",
+    "SNAPSHOT_NOTE",
     "AgentIndex",
     "capture_use",
     "clear",
@@ -48,9 +50,16 @@ __all__ = [
     "unregister",
 ]
 
-_DATASETS = ("bgl", "openstack")
-NAME_RE = re.compile(r"^agent_idx_(bgl|openstack)_[0-9a-f]{8}$")
+_DATASETS = ("bgl", "openstack", "text_bench")
+NAME_RE = re.compile(r"^agent_idx_(bgl|openstack|text_bench)_[0-9a-f]{8}$")
 """The only names `create_index` generates and `drop_index` accepts."""
+REMOTE_DATASETS = frozenset({"text_bench"})
+"""Datasets read in place from remote files (`corpus.datasets`, T20): an index over one is a snapshot."""
+SNAPSHOT_NOTE = (
+    "The agent index over {dataset} is a snapshot: SereneDB built its postings from the remote Parquet "
+    "file at CREATE INDEX time and does not follow later changes to the file; REINDEX INDEX {name} "
+    "refreshes it. The file is a published, immutable benchmark file, so the snapshot matches it."
+)
 MARKER = "serenedb-log-mcp agent index "
 """Prefix of the index comment that marks an index as built by `create_index`; JSON follows."""
 
@@ -109,13 +118,24 @@ class AgentIndex:
 
     def routing_note(self) -> str:
         """The note for Evidence that this index answered."""
+        span = f"({self.time_from.isoformat()} to {self.time_to.isoformat()}, {self.rows:,} Log Entries)"
+        drop = f"drop_index(name='{self.name}') removes it."
+        if self.dataset in REMOTE_DATASETS:
+            return (
+                f"Full-text matching on {self.dataset} read the agent index {self.qualified_name}, "
+                f"because this Data Scope lies inside its slice {span}; {self.dataset} has no full "
+                f"index. {drop} {self.snapshot_note()}"
+            )
         return (
             f"Full-text matching on {self.dataset} read the agent index {self.qualified_name} instead "
-            f"of the Dataset's full index, because this Data Scope lies inside its slice "
-            f"({self.time_from.isoformat()} to {self.time_to.isoformat()}, {self.rows:,} Log Entries). "
+            f"of the Dataset's full index, because this Data Scope lies inside its slice {span}. "
             "It holds exactly the Log Entries of that slice, so the counts are the same as from the "
-            f"full index; only the query time differs. drop_index(name='{self.name}') removes it."
+            f"full index; only the query time differs. {drop}"
         )
+
+    def snapshot_note(self) -> str:
+        """For an index over a remote Dataset: it is a snapshot, refreshed by REINDEX."""
+        return SNAPSHOT_NOTE.format(dataset=self.dataset, name=self.qualified_name)
 
 
 def new_name(dataset: str, token: Callable[[], str] = lambda: secrets.token_hex(4)) -> str:

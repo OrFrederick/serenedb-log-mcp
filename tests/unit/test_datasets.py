@@ -286,6 +286,8 @@ def test_the_registry_lists_every_canonical_table_and_index_name() -> None:
     assert tables == {
         "bgl_entry",
         "os_entry",
+        "tb_entry",
+        "tb_facts",
         "pattern_dict",
         "pattern",
         "incident",

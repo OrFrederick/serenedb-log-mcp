@@ -9,7 +9,7 @@ import pytest
 from psycopg import sql
 
 from serenedb_log_mcp.config import load_settings
-from serenedb_log_mcp.corpus.datasets import DATASET_NAMES, relation
+from serenedb_log_mcp.corpus.datasets import BASE_CORPUS, relation
 
 
 class Schemas(Protocol):
@@ -17,7 +17,7 @@ class Schemas(Protocol):
     slm: str
 
 
-@pytest.mark.parametrize("name", DATASET_NAMES)
+@pytest.mark.parametrize("name", BASE_CORPUS)
 def test_the_resolved_table_has_exactly_the_registered_columns(
     database_url: str, derived_sample: Schemas, name: str
 ) -> None:

@@ -9,6 +9,9 @@ values its filters accept, from one statement per Dataset, cached for the life o
 
 The cache key is the resolved table, so per-Role views (T22) or another SLM_SCHEMA get their own
 entry. T5's `describe_corpus` can build on these facts instead of counting again.
+
+A remote Dataset (T20) reads the same rows from its facts table, which `make huge-setup` computes
+once: counting a billion remote rows per call is what the Dataset must never do.
 """
 
 from __future__ import annotations
@@ -23,7 +26,8 @@ from psycopg import sql
 
 from serenedb_log_mcp.config import Role
 from serenedb_log_mcp.corpus.datasets import Relation, relation
-from serenedb_log_mcp.db import QueryResult, fetch_all
+from serenedb_log_mcp.db import QueryFailed, QueryResult, fetch_all
+from serenedb_log_mcp.scope import ScopeError
 
 __all__ = ["DatasetFacts", "Fetch", "clear_cache", "dataset_facts"]
 
@@ -62,12 +66,31 @@ def dataset_facts(dataset: str, role: Role | None = None, *, fetch: Fetch = fetc
         cached = _cache.get(key)
     if cached is not None:
         return cached
-    found = _parse(rel.dataset.name, fetch(_statement(rel), (), role=role).rows)
+    try:
+        rows = fetch(_statement(rel), (), role=role).rows
+    except QueryFailed as exc:
+        if rel.dataset.remote is None or exc.sqlstate != UNDEFINED_TABLE:
+            raise
+        raise ScopeError(
+            f"{rel.dataset.name} is registered but not set up in this database ({rel.table_name} or its "
+            "facts table is missing). Run `make huge-setup` once (it creates the view over the remote "
+            "Parquet file and its facts), or use the Base Corpus Datasets bgl and openstack."
+        ) from exc
+    found = _parse(rel.dataset.name, rows)
     with _lock:
         return _cache.setdefault(key, found)
 
 
+UNDEFINED_TABLE = "42P01"
+
+
 def _statement(rel: Relation) -> str:
+    if rel.dataset.remote is not None:
+        return (
+            sql.SQL("SELECT kind, value, n, first, last FROM {} ORDER BY kind, value")
+            .format(rel.facts_table)
+            .as_string(None)
+        )
     table = rel.table
     parts = [
         sql.SQL(

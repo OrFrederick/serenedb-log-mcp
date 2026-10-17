@@ -21,6 +21,7 @@ def test_defaults_when_environment_is_empty() -> None:
     assert s.ledger_path is None
     assert s.export_dir == Path("exports")
     assert s.pattern_tier1 is True
+    assert s.text_bench_url == "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_000.parquet"
     assert s.role is None
 
 
@@ -38,6 +39,7 @@ def test_reads_every_variable_from_the_environment() -> None:
         "LEDGER_PATH": "/tmp/ledger.jsonl",
         "SLM_EXPORT_DIR": "/tmp/exports",
         "SLM_PATTERN_TIER1": "0",
+        "SLM_TEXT_BENCH_URL": "/data/otel/part_000.parquet",
     }
 
     s = load_settings(env)
@@ -54,6 +56,7 @@ def test_reads_every_variable_from_the_environment() -> None:
     assert s.ledger_path == Path("/tmp/ledger.jsonl")
     assert s.export_dir == Path("/tmp/exports")
     assert s.pattern_tier1 is False
+    assert s.text_bench_url == "/data/otel/part_000.parquet"
 
 
 def test_role_database_url_falls_back_to_database_url() -> None:
@@ -215,3 +218,11 @@ def test_database_url_error_never_echoes_the_value() -> None:
 
 def test_uri_database_url_is_accepted() -> None:
     assert load_settings({"DATABASE_URL": "postgresql://postgres@localhost:7890/postgres"}).database_url
+
+
+@pytest.mark.parametrize("value", ["https://example.com/a/*.parquet", "/data/**/part.parquet", ""])
+def test_the_text_bench_url_must_name_one_file(value: str) -> None:
+    # A glob or a list of files makes the view generic: indexable, but its real columns cannot be
+    # selected (docs "Indexing External Data"), so text_bench reads exactly one file.
+    with pytest.raises(ConfigError, match="text_bench_url"):
+        load_settings({}, text_bench_url=value)

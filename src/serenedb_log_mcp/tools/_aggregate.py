@@ -17,6 +17,12 @@ Statements (each a read-only `db.fetch_all`; the Evidence holds all of them, in 
   `generate_series`;
 - `family_statement` (trend by Pattern): the Patterns that share a Pattern Family with a series.
 
+A remote Dataset (T20, text_bench: a billion Log Entries of remote Parquet) is never read whole.
+`prepare` gives it only the previous-period baseline, and only when the Data Scope and its previous
+period together stay within the Dataset's scan span (and, with a full-text query, inside the agent
+index that answers it); the statements that read beyond the Data Scope then read exactly that one
+contiguous range (`Part.read_range`), because an OR of two ranges defeats Parquet row-group pruning.
+
 On SereneDB 26.10.1 the table-function form `FROM generate_series(%s, %s, ...)` fails with bound
 timestamps ("Invalid unicode (byte sequence mismatch)"), and so does a `VALUES` list of bound strings
 next to a bound `generate_series`. The templates therefore use `unnest(generate_series(...))` and
@@ -36,7 +42,14 @@ from pydantic import Field
 from serenedb_log_mcp import fts
 from serenedb_log_mcp.baseline import MIN_WEEKS, DatasetWindow, few_weeks_notes, judge, method_note, window
 from serenedb_log_mcp.config import Role
-from serenedb_log_mcp.corpus.datasets import DATASET_NAMES, OWNERSHIP_NOTE, DatasetName, Relation, relation
+from serenedb_log_mcp.corpus.datasets import (
+    BASE_CORPUS,
+    DATASET_NAMES,
+    OWNERSHIP_NOTE,
+    DatasetName,
+    Relation,
+    relation,
+)
 from serenedb_log_mcp.corpus.facts import DatasetFacts, dataset_facts
 from serenedb_log_mcp.db import QueryResult, fetch_all
 from serenedb_log_mcp.evidence import DataScope
@@ -71,8 +84,8 @@ LOG_ENTRIES_NOTE = (
     "given; never round them."
 )
 SOURCES_NOTE = (
-    "distinct_sources counts BGL nodes and OpenStack instances (instance_ref); OpenStack Log Entries "
-    "that name no instance are not counted as a source."
+    "distinct_sources counts BGL nodes, OpenStack instances (instance_ref) and text_bench services "
+    "(component); OpenStack Log Entries that name no instance are not counted as a source."
 )
 NO_MATCH_NOTE = (
     "No Log Entries matched this Data Scope. Widen the time range, drop a filter, or check the query "
@@ -264,8 +277,19 @@ class Part:
             self.col("component"),
         )
 
+    @property
+    def read_range(self) -> tuple[datetime, datetime]:
+        """The Data Scope inside this Dataset joined with its previous period: one contiguous range."""
+        span = self.window
+        if span.previous is None:
+            return span.start, span.end
+        return min(span.start, span.previous[0]), max(span.end, span.previous[1])
+
     def conditions(self, *, in_window: bool) -> Q:
-        """WHERE: the filters, plus the Data Scope's time range inside this Dataset when asked."""
+        """WHERE: the filters, plus the Data Scope's time range inside this Dataset when asked.
+
+        Without it, a remote Dataset is still bounded to `read_range`: it is never read whole.
+        """
         found: list[Q] = []
         if self.filters.query:
             predicate, params = fts.text_match(self.col("message"), self.filters.query)
@@ -283,6 +307,8 @@ class Part:
             found.append(q("{} = {}", self.col("family_id"), bound(self.filters.family_id)))
         if in_window:
             found.append(self.between(self.window.start, self.window.end))
+        elif self.rel.dataset.remote is not None:
+            found.append(self.between(*self.read_range))
         return joined(" AND ", found) if found else Q(sql.SQL("TRUE"))
 
     def between(self, start: datetime, end: datetime) -> Q:
@@ -318,7 +344,7 @@ def choose_datasets(
         reason = "alert_categories"
     if dataset is None:
         if reason is None:
-            return list(DATASET_NAMES), []
+            return list(BASE_CORPUS), []
         return ["bgl"], [f"{reason} exists only in BGL, so the Data Scope is the BGL Dataset only."]
     if reason is not None and dataset != "bgl":
         raise ScopeError(
@@ -392,8 +418,49 @@ def prepare(
     parts = []
     for name in scope.datasets:
         span = window(name, *ranges[name], start, end, baseline)
-        parts.append(Part(relation(name, role, scope), span, group_by, filters, whole=relation(name, role)))
+        rel = relation(name, role, scope)
+        whole = relation(name, role)
+        if rel.dataset.remote is not None:
+            span, whole = _remote_baseline(rel, span, role, filters)
+        parts.append(Part(rel, span, group_by, filters, whole=whole))
     return Prepared(role, scope, tuple(parts), tuple(notes))
+
+
+def _remote_baseline(
+    rel: Relation, span: DatasetWindow, role: Role, filters: EntryFilters
+) -> tuple[DatasetWindow, Relation]:
+    """The window and the relation for the baselines of a remote Dataset.
+
+    The previous period stays only when the Data Scope and the previous period together are a slice
+    the resolver lets a call read in place and, with a full-text query, lie inside one agent index.
+    Otherwise the baseline is `no_baseline` with the reason in the notes, and the statements read
+    only the Data Scope.
+    """
+    if span.previous is None:
+        return span, rel
+    name = rel.dataset.name
+    low = min(span.start, span.previous[0])
+    high = max(span.end, span.previous[1])
+    joint = DataScope(datasets=[name], time_from=low.isoformat(), time_to=high.isoformat())
+    try:
+        whole = relation(name, role, joint)
+    except ScopeError:
+        limit = rel.dataset.remote.max_scan_span.total_seconds() if rel.dataset.remote else 0
+        problem = (
+            f"reading the previous period {span.previous[0].isoformat()} to {span.previous[1].isoformat()} "
+            f"together with the Data Scope would read {(high - low).total_seconds():g} seconds of {name}, "
+            f"more than the {limit:g} seconds a call reads in place; a slice of at most half that length "
+            "gets a previous-period baseline"
+        )
+        return replace(span, previous=None, previous_problem=problem), rel
+    if filters.query and whole.agent_index is None:
+        problem = (
+            f"the agent index that answers the full-text query on {name} does not hold the previous "
+            f"period {span.previous[0].isoformat()} to {span.previous[1].isoformat()}; build it over a "
+            "slice that also covers the period just before the Data Scope to get a baseline"
+        )
+        return replace(span, previous=None, previous_problem=problem), rel
+    return span, whole
 
 
 def _values(known: Mapping[str, DatasetFacts], field_name: str) -> list[str]:

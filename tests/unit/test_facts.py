@@ -10,7 +10,8 @@ import pytest
 
 from serenedb_log_mcp.config import Role, load_settings, set_settings
 from serenedb_log_mcp.corpus import facts
-from serenedb_log_mcp.db import QueryResult
+from serenedb_log_mcp.db import QueryFailed, QueryResult
+from serenedb_log_mcp.scope import ScopeError
 
 FIRST = datetime(2005, 6, 3, 15, 42, 50, 363779)
 LAST = datetime(2006, 1, 4, 8, 0, 5, 233639)
@@ -99,3 +100,29 @@ def test_a_null_component_or_level_is_left_out_of_the_filter_values() -> None:
     found = facts.dataset_facts("bgl", None, fetch=FakeFetch(rows))
 
     assert None not in found.components
+
+
+def test_a_remote_dataset_reads_its_precomputed_facts_instead_of_scanning() -> None:
+    # Computing the facts of text_bench per call would scan a billion remote rows; `make huge-setup`
+    # stores them once in tb_facts, in the same (kind, value, n, first, last) shape.
+    first, last = datetime(2025, 9, 23), datetime(2025, 9, 23, 0, 29, 24, 39037)
+    fetch = FakeFetch([("range", None, 1_000_000_000, first, last), ("component", "frontend", 9, None, None)])
+
+    found = facts.dataset_facts("text_bench", fetch=fetch)
+
+    statement = fetch.calls[0][0]
+    assert 'FROM "slm"."tb_facts"' in statement
+    assert "tb_entry" not in statement
+    assert found.entries == 1_000_000_000
+    assert (found.first, found.last) == (first, last)
+    assert found.components == {"frontend": 9}
+
+
+def test_a_remote_dataset_that_was_never_set_up_says_how_to_set_it_up() -> None:
+    def missing(sql: str, params: Sequence[Any] = (), *, role: Role | None = None) -> QueryResult:
+        raise QueryFailed('SereneDB rejected the query (42P01): relation "tb_facts" does not exist', "42P01")
+
+    with pytest.raises(ScopeError) as excinfo:
+        facts.dataset_facts("text_bench", fetch=missing)
+
+    assert "make huge-setup" in str(excinfo.value)

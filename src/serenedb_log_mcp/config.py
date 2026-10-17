@@ -58,7 +58,11 @@ ENV_NAMES = {
     "ledger_path": "LEDGER_PATH",
     "export_dir": "SLM_EXPORT_DIR",
     "pattern_tier1": "SLM_PATTERN_TIER1",
+    "text_bench_url": "SLM_TEXT_BENCH_URL",
 }
+
+TEXT_BENCH_URL = "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_000.parquet"
+"""The remote Parquet file behind the text_bench Dataset (T20): about 1B OTel Log Entries, 41 GB."""
 
 
 class ConfigError(ValueError):
@@ -82,6 +86,7 @@ class Settings(BaseModel):
     ledger_path: Path | None = None
     export_dir: Path = Path("exports")
     pattern_tier1: bool = True
+    text_bench_url: str = TEXT_BENCH_URL
     role: RoleName | None = None
 
     @field_validator("slm_schema", "raw_schema")
@@ -97,6 +102,16 @@ class Settings(BaseModel):
         if not math.isfinite(value) or value <= 0:
             raise ValueError(f"{value!r} is not a finite number of seconds greater than 0")
         return value
+
+    @field_validator("text_bench_url")
+    @classmethod
+    def _one_file(cls, value: str) -> str:
+        # A glob (or a list of files) makes the view over it generic: it can be indexed, but its real
+        # columns cannot be selected (SereneDB docs, "Indexing External Data"). One path keeps the
+        # view on the fast path.
+        if not value.strip() or "*" in value:
+            raise ValueError(f"{value!r} is not the path or URL of one Parquet file (no glob)")
+        return value.strip()
 
     @field_validator("database_url")
     @classmethod
@@ -152,6 +167,8 @@ def load_settings(environ: Mapping[str, str] | None = None, **overrides: Any) ->
         values["export_dir"] = Path(export_dir)
     if (tier1 := get("SLM_PATTERN_TIER1")) is not None:
         values["pattern_tier1"] = _flag("SLM_PATTERN_TIER1", tier1)
+    if (text_bench_url := get("SLM_TEXT_BENCH_URL")) is not None:
+        values["text_bench_url"] = text_bench_url
     values.update(overrides)
     try:
         return Settings(**values)

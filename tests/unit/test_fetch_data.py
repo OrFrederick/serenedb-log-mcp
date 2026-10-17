@@ -1,7 +1,7 @@
 """scripts/fetch_data.py: download, verify and extract the Base Corpus and Loghub-2.0 archives.
 
 No test here touches the network: a fake download copies prepared archives, and the real-data test
-only checks file sizes in an existing SLM_DATA_DIR.
+only checks file sizes in an existing SLM_DATA_DIR, one Zenodo record at a time.
 """
 
 from __future__ import annotations
@@ -328,22 +328,56 @@ def never_download(url: str, target: Path) -> None:
     raise AssertionError(f"tried to download {url}")
 
 
-def real_data_problem() -> str | None:
-    """Why SLM_DATA_DIR (or its default) cannot serve the real-data test, or None if it can."""
-    data_dir = load_settings().data_dir
+RECORDS = sorted({a.record for a in fetch_data.ARCHIVES})
+
+
+def real_data_problem(record: str, data_dir: Path) -> str | None:
+    """Why `data_dir` cannot serve the real-data test of Zenodo `record`, or None if it can.
+
+    The predicate is per record: a host can hold the Base Corpus (8196385) without the optional
+    Loghub-2.0 files (8275861). A record none of whose files are there was not fetched and skips;
+    a record with any file there is checked, so a partial or damaged fetch fails.
+    """
     if not data_dir.is_dir():
         return f"{data_dir} does not exist; set SLM_DATA_DIR to a fetched corpus"
-    problems = fetch_data.check(fetch_data.ARCHIVES, data_dir)
-    if len(problems) == sum(len(a.members) for a in fetch_data.ARCHIVES):
-        return f"{data_dir} holds none of the corpus files; run `make fetch-data` or set SLM_DATA_DIR"
+    members = [m for a in fetch_data.ARCHIVES if a.record == record for m in a.members]
+    if not any((data_dir / m.dest).exists() for m in members):
+        return (
+            f"{data_dir} holds none of the files of Zenodo {record}; run `make fetch-data` "
+            "or set SLM_DATA_DIR"
+        )
     return None
 
 
-@pytest.mark.skipif(real_data_problem() is not None, reason=str(real_data_problem()))
-def test_an_already_fetched_data_dir_is_complete_and_left_alone() -> None:
-    # Runs whenever the data dir holds any corpus file, so a partial or damaged fetch fails here.
+def touch_member(data_dir: Path, record: str) -> None:
+    """One file of `record` under `data_dir`, with any content."""
+    member = next(a for a in fetch_data.ARCHIVES if a.record == record).members[0]
+    (data_dir / member.dest).parent.mkdir(parents=True, exist_ok=True)
+    (data_dir / member.dest).write_bytes(b"partial")
+
+
+def test_the_real_data_predicate_is_per_archive_record(tmp_path: Path) -> None:
+    # The Base Corpus is there, Loghub-2.0 is not: the first is checked, the second skips.
+    touch_member(tmp_path, "8196385")
+
+    assert RECORDS == ["8196385", "8275861"]
+    assert real_data_problem("8196385", tmp_path) is None
+    assert "holds none of the files of Zenodo 8275861" in str(real_data_problem("8275861", tmp_path))
+
+
+def test_the_real_data_predicate_skips_a_data_dir_that_does_not_exist(tmp_path: Path) -> None:
+    for record in RECORDS:
+        assert "does not exist" in str(real_data_problem(record, tmp_path / "nowhere"))
+
+
+@pytest.mark.parametrize("record", RECORDS)
+def test_an_already_fetched_data_dir_is_complete_and_left_alone(record: str) -> None:
+    # Runs for every record the data dir holds any file of, so a partial or damaged fetch fails here.
     data_dir = load_settings().data_dir
+    if (problem := real_data_problem(record, data_dir)) is not None:
+        pytest.skip(problem)
+    archives = [a for a in fetch_data.ARCHIVES if a.record == record]
     download: Callable[[str, Path], None] = never_download
 
-    assert fetch_data.check(fetch_data.ARCHIVES, data_dir) == []
-    fetch_data.fetch(fetch_data.ARCHIVES, data_dir, download)
+    assert fetch_data.check(archives, data_dir) == []
+    fetch_data.fetch(archives, data_dir, download)

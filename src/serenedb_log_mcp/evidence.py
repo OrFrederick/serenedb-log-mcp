@@ -76,8 +76,9 @@ class DataScope(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     datasets: list[str] = Field(
+        min_length=1,
         description="The Datasets the calculation covered, for example ['bgl'] or ['bgl', "
-        "'openstack']. Never empty: every number is scoped to named Datasets."
+        "'openstack']. Never empty: every number is scoped to named Datasets.",
     )
     time_from: str | None = Field(
         default=None,

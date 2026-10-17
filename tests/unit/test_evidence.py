@@ -55,6 +55,15 @@ def test_data_scope_records_the_resolved_and_the_requested_time_range() -> None:
     assert dumped["resolved_against"] == "bgl corpus end 2006-01-04T00:00:00"
 
 
+def test_a_data_scope_without_a_dataset_is_rejected() -> None:
+    # "Never empty: every number is scoped to named Datasets" is part of the description, so the
+    # model has to enforce it.
+    with pytest.raises(ValidationError, match="at least 1 item"):
+        DataScope(datasets=[])
+
+    assert "minItems" in str(DataScope.model_json_schema()["properties"]["datasets"])
+
+
 def test_data_scope_filters_include_the_shared_pattern_filters() -> None:
     scope = DataScope(
         datasets=["bgl"],

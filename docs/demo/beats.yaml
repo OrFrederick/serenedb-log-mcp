@@ -1,0 +1,101 @@
+# The demo's beats in machine-readable form (T24). docs/demo/script.md is the run sheet the presenter
+# reads; every prompt below appears there verbatim (tests/unit/test_demo_beats.py checks it).
+#
+#   uv run python scripts/demo_record.py --ledger exports/demo-ledger.jsonl   # needs SereneDB
+#   uv run python scripts/demo_replay.py exports/demo-ledger.jsonl --beats docs/demo/beats.yaml
+#
+# demo_record.py makes every call below in order; demo_replay.py reads the recorded ledger back
+# offline. verify_answer and export_investigation write no Evidence, so the beats that use them list
+# no calls; their replay is `demo_replay.py --draft` and `--answers`.
+title: Core demo v1
+budget_s: 300
+beats:
+  - title: Opening
+    seconds: 15
+    prompt: "(no prompt: the presenter says what the server is and who the three Roles are)"
+    expected: No tool call.
+
+  - title: Lines versus Incidents
+    role: team_lead
+    seconds: 60
+    prompt: >-
+      I'm the Team Lead. Over the whole BGL period, which alert category is the loudest, and is that
+      many problems or one? Break it down by node and by day.
+    expected: >-
+      count_by puts KERNDTLB at the top of the alert categories; count_by per node and the daily trend
+      show nearly all of its Log Entries on one node on one day.
+    calls:
+      - tool: count_by
+        arguments: {group_by: alert_category, dataset: bgl, top: 5}
+      - tool: count_by
+        arguments: {group_by: node, dataset: bgl, alert_categories: [KERNDTLB], top: 5}
+      - tool: trend
+        arguments: {dataset: bgl, alert_categories: [KERNDTLB], bucket: day, group_by: node, top: 3}
+
+  - title: The Engineer's view of the same lines
+    role: engineer
+    seconds: 35
+    prompt: >-
+      I'm the Engineer on call. Show me the data TLB error lines on R30-M0-N9-C:J16-U01 and what that
+      node logged just before and after the first one.
+    expected: >-
+      A full-text search_logs returns a sample of the lines with the exact total_matches; get_context
+      on the first hit shows the node's neighbouring Log Entries.
+    calls:
+      - tool: search_logs
+        arguments:
+          dataset: bgl
+          query: '"data TLB error interrupt"'
+          sources: [R30-M0-N9-C:J16-U01]
+          limit: 5
+      - tool: get_context
+        arguments: {dataset: bgl, entry_id: $entry_id, before: 10, after: 10}
+
+  - title: Live self-verification
+    role: team_lead
+    seconds: 60
+    prompt: >-
+      Check this draft against the Evidence before I send it to my team.
+    expected: >-
+      verify_answer flags the rounded count (rounded_number) with a fix hint; Claude corrects it to the
+      exact number and verify_answer returns ok.
+
+  - title: The ground-truth score
+    role: engineer
+    seconds: 55
+    prompt: >-
+      I'm the Engineer. Which OpenStack instances took unusually long to spawn, and does any error
+      line point at them?
+    expected: >-
+      latency_stats flags the slow spawns by robust z-score; count_by per level on a labelled instance
+      shows only INFO lines, so no error text points at it.
+    calls:
+      - tool: latency_stats
+        arguments: {metric: spawn, group_by: instance, limit: 6}
+      - tool: count_by
+        arguments:
+          group_by: level
+          dataset: openstack
+          sources: [a445709b-6ad0-40ec-8860-bec60b6ca0c2]
+
+  - title: The refusal
+    role: manager
+    seconds: 45
+    prompt: >-
+      I'm the Manager. What did the KERNDTLB problem cost us, how long were we down, and what should we
+      fix first?
+    expected: >-
+      Measured frequency and the owning Team only; Unknowns says that cost, downtime and customer
+      impact are not measured by these logs; verify_answer returns ok.
+    calls:
+      - tool: count_by
+        arguments: {group_by: team, alert_categories: [KERNDTLB]}
+      - tool: count_by
+        arguments: {group_by: dataset}
+
+  - title: Show your work
+    seconds: 25
+    prompt: Export this investigation as a report.
+    expected: >-
+      export_investigation returns the Markdown report with every tool call, its SQL and result, and
+      each answer with its verify_answer check.

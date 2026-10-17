@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "serenedb-log": {
+      "type": "stdio",
+      "command": "uv",
+      "args": ["run", "serenedb-log-mcp"],
+      "env": {
+        "SLM_QUERY_TIMEOUT_S": "60",
+        "LEDGER_PATH": "exports/demo-live-ledger.jsonl"
+      }
+    }
+  }
+}

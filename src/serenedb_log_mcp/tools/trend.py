@@ -245,9 +245,10 @@ def register(server: MCPServer) -> None:
         """Zero-filled counts of matching Log Entries per time bucket, optionally one series per group.
 
         Purpose: show whether a problem is rising, steady, a one-off burst or gone, over a stated
-        period of one Dataset. Counts are Log Entries, not Incidents. Quote exact numbers, never
-        round, and quote each series' count, peak and baseline instead of adding buckets yourself.
-        Use count_by for totals per group and search_logs for example Log Entries. With
+        period of one Dataset. Counts are Log Entries, not Incidents.
+        Quote exact numbers, never round, and quote each series' count, peak and baseline instead
+        of adding buckets yourself. Use count_by for totals per group and search_logs for example
+        Log Entries. With
         group_by='pattern', a series whose Pattern shares a Pattern Family with another Pattern
         carries a hand-off note, so a wording change is not read as the Pattern ending; until
         Pattern Families are assigned in the database, no such note appears.

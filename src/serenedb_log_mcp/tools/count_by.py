@@ -100,10 +100,11 @@ def register(server: MCPServer) -> None:
         """Exact counts of matching Log Entries grouped by one dimension, with a baseline per count.
 
         Purpose: answer "how often", "which Components, Teams, nodes or categories" and "is this
-        unusual" over any Data Scope, including the whole Base Corpus. Counts are Log Entries, not
-        Incidents: one failing node can write thousands of lines. Quote exact numbers, never round,
-        and quote share_pct, top_n_sum and other_count instead of adding or dividing yourself. Use
-        search_logs for example Log Entries and trend for the change over time.
+        unusual" over any Data Scope, including the whole Base Corpus.
+        Counts are Log Entries, not Incidents: one failing node can write thousands of lines.
+        Quote exact numbers, never round, and quote share_pct, top_n_sum and other_count instead of
+        adding or dividing yourself. Use search_logs for example Log Entries and trend for the
+        change over time.
         Inputs: role, group_by, and optional dataset, query (all words; "quoted phrase"), time_from,
         time_to, components, levels, sources, alert_categories, pattern_ids, family_id, top,
         baseline_from and baseline_to.

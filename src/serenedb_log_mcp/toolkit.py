@@ -20,6 +20,7 @@ from __future__ import annotations
 import functools
 import inspect
 import json
+import logging
 import textwrap
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
@@ -28,7 +29,7 @@ from typing import Annotated, Any, Protocol, get_args, get_origin, runtime_check
 from mcp.server.mcpserver import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
 from mcp_types import CallToolResult, TextContent, ToolAnnotations
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from serenedb_log_mcp.config import get_settings
 from serenedb_log_mcp.evidence import DataScope, Evidence, Role
@@ -53,6 +54,18 @@ RETRY_HINT = (
     "Retry the call once; if it fails again, narrow the Data Scope (a shorter time range or fewer "
     "filters), or call describe_corpus to check the Datasets, Components and levels you filter on."
 )
+
+CONTRACT_BUG_HINT = (
+    "That is a bug in this server, not in your call, so the same call will fail the same way and "
+    "calling it again will not help. Take another route to the number, for example count_by or "
+    "trend for how often something happens and search_logs for example Log Entries, and say in "
+    "your answer that this tool is broken."
+)
+"""Advice for a broken Evidence contract, which is deterministic, so a retry is pointless."""
+
+logger = logging.getLogger(__name__)
+"""Crashes are logged here with their traceback. In stdio mode logging goes to stderr, never to
+stdout, so it cannot corrupt the protocol stream."""
 
 
 class ToolContractError(Exception):
@@ -196,7 +209,13 @@ def role_tool(
                     f"The Evidence Ledger could not be read or written: {exc}. Check that "
                     "LEDGER_PATH is writable, or unset it to keep the Evidence Ledger in memory."
                 ) from exc
+            except ToolContractError as exc:
+                logger.exception("%s broke the Evidence contract", tool_name)
+                raise ToolError(f"{_detail(exc)} {CONTRACT_BUG_HINT}") from exc
             except Exception as exc:
+                # The SDK logs a ToolError with logger.info and no traceback, so this is the only
+                # place the stack trace of an unexpected crash can still be written down.
+                logger.exception("%s failed", tool_name)
                 raise ToolError(f"{_detail(exc)} {RETRY_HINT}") from exc
             return _as_result(payload)
 
@@ -365,9 +384,34 @@ def _truncation_notes(returned: int, total: int, own_note: str | None) -> list[s
     return [f"Truncated: {returned} of {total:,} matches returned. {SAMPLE_TRUNCATION_NOTE}"]
 
 
+VALIDATION_DETAILS = 2
+"""How many field errors of a `ValidationError` go into the message the model reads."""
+
+
 def _detail(exc: Exception) -> str:
-    text = str(exc).strip().splitlines()[0] if str(exc).strip() else type(exc).__name__
+    """One sentence that says what went wrong, ending in a full stop."""
+    text = _validation_detail(exc) if isinstance(exc, ValidationError) else _first_line(exc)
     return text if text.endswith((".", "!", "?")) else f"{text}."
+
+
+def _first_line(exc: Exception) -> str:
+    return str(exc).strip().splitlines()[0] if str(exc).strip() else type(exc).__name__
+
+
+def _validation_detail(exc: ValidationError) -> str:
+    """The failing fields and reasons of a `ValidationError`.
+
+    `str(exc)` starts with "2 validation errors for DataScope.", so the first line alone says
+    nothing about which field was wrong or why. The fields come from the server's own code, not
+    from the caller, so naming them is safe.
+    """
+    errors = exc.errors()
+    named = "; ".join(
+        f"{'.'.join(str(part) for part in error['loc']) or '(root)'}: {error['msg']}"
+        for error in errors[:VALIDATION_DETAILS]
+    )
+    more = f" and {len(errors) - VALIDATION_DETAILS} more" if len(errors) > VALIDATION_DETAILS else ""
+    return f"{exc.title} is invalid: {named}{more}."
 
 
 def _as_result(payload: BaseModel) -> CallToolResult:

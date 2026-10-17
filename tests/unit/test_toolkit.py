@@ -1,6 +1,7 @@
 """`toolkit.evidence_tool`: the envelope, the ledger write, the Role hook, the pin and ToolError."""
 
 import json
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -16,6 +17,7 @@ from serenedb_log_mcp.evidence import DataScope, Evidence, Role, RoleParam
 from serenedb_log_mcp.ledger import Ledger, get_ledger
 from serenedb_log_mcp.toolkit import (
     ALWAYS_LOAD_META,
+    RETRY_HINT,
     ToolContractError,
     ToolOutcome,
     evidence_tool,
@@ -188,6 +190,80 @@ def test_any_other_exception_becomes_a_tool_error_with_a_next_step() -> None:
     message = str(raised.value)
     assert "psycopg lost the connection" in message
     assert "Retry" in message
+
+
+def test_an_unexpected_crash_is_logged_with_its_traceback(caplog: pytest.LogCaptureFixture) -> None:
+    # The SDK logs a ToolError with logger.info and no traceback, so wrapping an unexpected
+    # exception removes the only stack trace there is. stderr is safe in stdio mode.
+    server = MCPServer(name="t")
+
+    @evidence_tool(server, title="Crashing tool")
+    def key_error(role: RoleParam) -> ToolOutcome:
+        """Crash on a missing summary key. Inputs: role. Outputs: the envelope."""
+        raise KeyError("entries_total")
+
+    with (
+        caplog.at_level(logging.ERROR, logger="serenedb_log_mcp.toolkit"),
+        pytest.raises(ToolError),
+    ):
+        anyio.run(lambda: server.call_tool("key_error", {"role": "engineer"}))
+
+    records = [record for record in caplog.records if record.name == "serenedb_log_mcp.toolkit"]
+    assert len(records) == 1
+    assert "key_error" in records[0].getMessage()
+    assert records[0].exc_info is not None
+    assert records[0].exc_info[0] is KeyError
+    assert "KeyError" in caplog.text
+    assert "Traceback" in caplog.text
+
+
+def test_a_validation_error_names_the_field_and_the_reason() -> None:
+    # str(ValidationError) starts with "2 validation errors for DataScope.", so keeping only the
+    # first line dropped everything actionable.
+    server = MCPServer(name="t")
+
+    @evidence_tool(server, title="Bad Data Scope")
+    def bad_scope(role: RoleParam) -> ToolOutcome:
+        """Build an invalid Data Scope. Inputs: role. Outputs: the envelope."""
+        return ToolOutcome(
+            result=FakeQueryResult(),
+            scope=DataScope(datasets="bgl", time_from=7),  # type: ignore[arg-type]
+            columns=["alert_tag", "entries"],
+        )
+
+    with pytest.raises(ToolError) as raised:
+        anyio.run(lambda: server.call_tool("bad_scope", {"role": "engineer"}))
+
+    message = str(raised.value)
+    assert "DataScope" in message
+    assert "datasets" in message
+    assert "time_from" in message
+    assert "valid string" in message or "valid list" in message
+
+
+def test_a_broken_contract_is_reported_as_a_server_bug_without_a_retry() -> None:
+    # A ToolContractError is deterministic: the same call fails the same way, so "Retry the call
+    # once" is the wrong advice.
+    server = MCPServer(name="t")
+
+    @evidence_tool(server, title="Mislabelled rows")
+    def mislabelled_rows(role: RoleParam) -> ToolOutcome:
+        """Return rows that do not match the columns. Inputs: role. Outputs: the envelope."""
+        return ToolOutcome(
+            result=FakeQueryResult(total=1, rows=[["KERNEL", 1, "extra"]]),
+            scope=DataScope(datasets=["bgl"]),
+            columns=["component", "entries"],
+        )
+
+    with pytest.raises(ToolError) as raised:
+        anyio.run(lambda: server.call_tool("mislabelled_rows", {"role": "engineer"}))
+
+    message = str(raised.value)
+    assert "columns" in message
+    assert "bug in this server" in message
+    assert "calling it again will not help" in message
+    assert RETRY_HINT not in message
+    assert "Retry the call" not in message
 
 
 def test_rows_wider_than_their_columns_are_rejected() -> None:

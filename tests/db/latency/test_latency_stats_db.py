@@ -15,6 +15,7 @@ from latency_corpus import (
     END,
     GET_DETAIL,
     GET_PATTERN,
+    LONE_DELETE,
     POST_SERVERS,
     SPIKE_HOUR,
     START,
@@ -164,7 +165,7 @@ def test_hourly_buckets_flag_the_one_hour_that_rose() -> None:
     for row in rows:
         start = datetime.fromisoformat(row["bucket"])
         assert {k: row[k] for k in ("n", "p50_s", "p95_s", "p99_s", "max_s")} == stats(buckets[start])
-    base_p95 = statistics.median(stats(v)["p95_s"] for v in buckets.values())
+    base_p95 = statistics.median(stats(v)["p95_s"] for v in buckets.values() if len(v) >= 20)
     summary = result["summary"]
     assert summary["baseline_p95_s"] == pytest.approx(base_p95, abs=1e-4)
     assert summary["rising_total"] == 1
@@ -226,6 +227,17 @@ def test_more_buckets_than_the_limit_keep_the_steepest_in_time_order() -> None:
     # The four 15-minute buckets of the spike hour rise, and all four are kept.
     assert sum(row["rise"] for row in rows) == 4 == result["summary"]["rising_total"]
     assert any("steepest" in note for note in result["notes"])
+
+
+def test_rising_buckets_are_kept_before_steeper_buckets_too_small_to_rise() -> None:
+    result = call(role="engineer", metric="api", group_by="bucket", bucket="15min", limit=4)
+
+    rows = row_dicts(result)
+    # The four 15-minute buckets of the spike hour rise. The lone 5 s DELETE at 07:00 is steeper
+    # (p95 ratio about 17) but holds one request, so it must not push a rising bucket out.
+    assert [row["bucket"] for row in rows] == [iso(SPIKE_HOUR + timedelta(minutes=15 * q)) for q in range(4)]
+    assert all(row["rise"] for row in rows)
+    assert iso(LONE_DELETE) not in [row["bucket"] for row in rows]
 
 
 # ----------------------------------------------------------------- Phase-Duration Anomalies

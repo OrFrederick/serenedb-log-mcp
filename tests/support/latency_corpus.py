@@ -8,7 +8,8 @@ expected number in Python:
 - GET /v2/{tenant}/servers/detail every 30 s from 2017-05-16 00:00 to 06:00 (720 requests, latency
   0.20 to 0.29 s), three times slower in the 03:00 hour: the one hour of Latency Degradation;
 - POST /v2/{tenant}/servers every 10 minutes (36 requests) and DELETE /v2/{tenant}/servers/{uuid}
-  three times; the first three hours are source os-1, the rest os-2;
+  three times, plus one 5 s DELETE alone at 07:00; the first three hours are source os-1, the rest
+  os-2;
 - 30 instances started every 10 minutes from 00:10, each with the nova start-up lines; instances 7
   and 19 spend 20 s and 12 s longer creating their image, so their spawn and build take longer;
 - instance 30 only has a GET /servers/<uuid> line: it never spawns.
@@ -34,6 +35,7 @@ from serenedb_log_mcp.server import create_server
 START = datetime(2017, 5, 16, 0, 0, 0)
 END = datetime(2017, 5, 16, 6, 0, 0)
 SPIKE_HOUR = datetime(2017, 5, 16, 3, 0, 0)
+LONE_DELETE = datetime(2017, 5, 16, 7, 0, 0)
 TENANT = "54fadb412c4e40cdbaed9335e4c35a9e"
 GET_DETAIL = "GET /v2/{tenant}/servers/detail"
 POST_SERVERS = "POST /v2/{tenant}/servers"
@@ -111,6 +113,8 @@ def requests() -> list[Request]:
         out.append(Request(ts, DELETE_SERVER, source_of(ts), 0.26))
     # The GET of instance 30, which never spawns.
     out.append(Request(START + timedelta(hours=5, minutes=30), GET_SERVER, "os-2", 0.19))
+    # One slow DELETE an hour after the rest: a steep bucket with too few requests to rise.
+    out.append(Request(LONE_DELETE, DELETE_SERVER, "os-2", 5.0))
     return sorted(out, key=lambda r: r.ts)
 
 

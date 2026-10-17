@@ -23,3 +23,11 @@ HUGE_SCHEMA ?= huge
 
 huge-setup: ## Register text_bench (remote Parquet, 1B rows) in HUGE_SCHEMA (default huge; set HUGE_SCHEMA=slm for the server)
 	$(UV) run python scripts/huge_setup.py --schema $(HUGE_SCHEMA)
+
+# The remote Dataset otel_demo (T21): views over the logs, traces and metrics of one OTel demo run, its
+# facts and the per-minute metric roll-up get_trace reads. Same schema as huge-setup, so a server with
+# SLM_SCHEMA=huge sees both remote Datasets. Takes about 85 s plus a minute of bloom-filter warm-up.
+.PHONY: otel-setup
+
+otel-setup: ## Register otel_demo (remote logs, traces, metrics) in HUGE_SCHEMA (default huge; set HUGE_SCHEMA=slm for the server)
+	$(UV) run python scripts/otel_setup.py --schema $(HUGE_SCHEMA)

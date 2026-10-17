@@ -46,3 +46,11 @@ def test_huge_setup_registers_text_bench_in_the_huge_schema_by_default() -> None
 
     assert "scripts/huge_setup.py --schema huge" in out
     assert "scripts/huge_setup.py --schema slm" in make("-n", "huge-setup", "HUGE_SCHEMA=slm")
+
+
+def test_otel_setup_registers_otel_demo_in_the_huge_schema_by_default() -> None:
+    out = make("-n", "otel-setup")
+
+    assert "scripts/otel_setup.py --schema huge" in out
+    assert "scripts/otel_setup.py --schema slm" in make("-n", "otel-setup", "HUGE_SCHEMA=slm")
+    assert "otel-setup" in make("help")

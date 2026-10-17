@@ -682,19 +682,22 @@ _databases: dict[tuple[str, float, bool], Database] = {}
 _databases_lock = threading.Lock()
 
 
-def get_database(role: Role | None = None) -> Database:
+def get_database(role: Role | None = None, *, timeout_s: float | None = None) -> Database:
     """The layer for one Role: `DATABASE_URL_<ROLE>` when it is set, `DATABASE_URL` otherwise.
 
     Built from the process-wide settings at call time and kept per connection setting, so the idle
-    connections survive between tool calls. `role=None` (scripts) uses `DATABASE_URL`.
+    connections survive between tool calls. `role=None` (scripts) uses `DATABASE_URL`. `timeout_s`
+    replaces `SLM_QUERY_TIMEOUT_S` for a call whose reads are bounded but slow, such as a trace
+    lookup in remote Parquet (`SLM_TRACE_TIMEOUT_S`, T21).
     """
     settings = get_settings()
     dsn = settings.database_url if role is None else settings.database_url_for(role)
-    key = (dsn, settings.query_timeout_s, settings.client_binding)
+    limit = settings.query_timeout_s if timeout_s is None else timeout_s
+    key = (dsn, limit, settings.client_binding)
     with _databases_lock:
         layer = _databases.get(key)
         if layer is None:
-            layer = Database(dsn, timeout_s=settings.query_timeout_s, client_binding=settings.client_binding)
+            layer = Database(dsn, timeout_s=limit, client_binding=settings.client_binding)
             _databases[key] = layer
         return layer
 
@@ -707,11 +710,16 @@ def fetch_limited(
     *,
     role: Role | None = None,
     rows_params: Sequence[Any] | None = None,
+    timeout_s: float | None = None,
 ) -> QueryResult:
-    """`Database.fetch_limited` on the layer for `role`."""
-    return get_database(role).fetch_limited(count_sql, rows_sql, params, limit, rows_params=rows_params)
+    """`Database.fetch_limited` on the layer for `role` (and `timeout_s`, see `get_database`)."""
+    return get_database(role, timeout_s=timeout_s).fetch_limited(
+        count_sql, rows_sql, params, limit, rows_params=rows_params
+    )
 
 
-def fetch_all(sql: str, params: Sequence[Any] = (), *, role: Role | None = None) -> QueryResult:
-    """`Database.fetch_all` on the layer for `role`."""
-    return get_database(role).fetch_all(sql, params)
+def fetch_all(
+    sql: str, params: Sequence[Any] = (), *, role: Role | None = None, timeout_s: float | None = None
+) -> QueryResult:
+    """`Database.fetch_all` on the layer for `role` (and `timeout_s`, see `get_database`)."""
+    return get_database(role, timeout_s=timeout_s).fetch_all(sql, params)

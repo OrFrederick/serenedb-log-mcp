@@ -707,3 +707,14 @@ def test_get_database_returns_one_layer_per_connection_setting() -> None:
     set_settings(load_settings({"DATABASE_URL": "host=shared"}))
 
     assert db.get_database(Role.ENGINEER) is db.get_database(Role.TEAM_LEAD)
+
+
+def test_a_call_can_ask_for_a_longer_timeout_than_the_default() -> None:
+    # get_trace (T21): a cold trace lookup reads remote row groups for longer than SLM_QUERY_TIMEOUT_S.
+    set_settings(load_settings({"DATABASE_URL": "host=shared", "SLM_QUERY_TIMEOUT_S": "15"}))
+
+    longer = db.get_database(Role.ENGINEER, timeout_s=120.0)
+
+    assert longer.timeout_s == 120.0
+    assert db.get_database(Role.ENGINEER).timeout_s == 15.0
+    assert longer is db.get_database(Role.ENGINEER, timeout_s=120.0)

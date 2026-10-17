@@ -106,7 +106,7 @@ def test_a_series_with_a_drift_partner_gets_a_handoff_note_naming_it() -> None:
     assert set(notes) == {"a0a0a0a0a0a0a001"}
     note = notes["a0a0a0a0a0a0a001"]
     assert "a0a0a0a0a0a0a002" in note
-    assert "62 Log Entries" in note
+    assert "62 Log Entries in the whole Dataset" in note
     assert "2005-07-01T10:00:00" in note
     assert "family_id='f0f0f0f0f0f0f0f0'" in note
     assert "wording" in note

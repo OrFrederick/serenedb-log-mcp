@@ -106,7 +106,9 @@ def test_a_pattern_with_a_drift_partner_carries_a_handoff_note(corpus: str) -> N
     assert T_NEW in entries[T_OLD]["handoff"]
     assert T_OLD in entries[T_NEW]["handoff"]
     assert "handoff" not in entries[T_TLB]
-    assert any(T_OLD in note and "family_id=" in note for note in result["notes"])
+    # One copy of each note, in its series; the notes only point there.
+    assert not any("shares Pattern Family" in note for note in result["notes"])
+    assert any("handoff" in note and T_OLD in note and T_NEW in note for note in result["notes"])
 
 
 def test_without_pattern_ids_there_is_no_handoff_and_a_note_says_why(corpus: str) -> None:

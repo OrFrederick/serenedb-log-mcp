@@ -122,7 +122,7 @@ def handoff_notes(series: Sequence[str], family_rows: Sequence[Sequence[Any]]) -
         if family is None or not partners:
             continue
         named = "; ".join(
-            f"{p} ({n:,} Log Entries, {first.isoformat()} to {last.isoformat()})"
+            f"{p} ({n:,} Log Entries in the whole Dataset, {first.isoformat()} to {last.isoformat()})"
             for p, n, first, last in partners
         )
         notes[template] = (
@@ -354,7 +354,12 @@ def _trend(prepared: Prepared, bucket: str, top: int) -> ToolOutcome:
         )
     if ranked is not None:
         notes.extend(unassigned_pattern_notes(ranked, group_by))
-    notes.extend(handoffs[k] for k in keys if k in handoffs)
+    if handoffs:
+        named = ", ".join(k for k in keys if k in handoffs)
+        notes.append(
+            f"Series {named} share a Pattern Family with another Pattern: read their handoff in "
+            "summary.series before calling a drop or an end of the series the problem ending."
+        )
     if total == 0:
         notes.append(NO_MATCH_NOTE)
     summary = {

@@ -6,11 +6,13 @@ The log lines below are synthetic, written in the BGL and OpenStack formats of L
 
 import hashlib
 import os
+from collections.abc import Iterator
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 import pytest
+from psycopg import sql
 
 import dev_loader
 
@@ -405,3 +407,91 @@ def test_ensure_samples_keeps_an_existing_file_when_the_download_is_rejected(tmp
 
     assert (tmp_path / "X_2k.log").read_bytes() == b"older\n"
     assert not (tmp_path / "X_2k.log.part").exists()
+
+
+class FakeCopy:
+    """Records every row written through it, as psycopg's copy object would receive them."""
+
+    def __init__(self, events: list[tuple[str, object]]) -> None:
+        self.events = events
+
+    def __enter__(self) -> "FakeCopy":
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        return None
+
+    def write_row(self, row: tuple[Any, ...]) -> None:
+        self.events.append(("write", row[0]))
+
+
+class FakeCursor:
+    def __init__(self, events: list[tuple[str, object]]) -> None:
+        self.events = events
+
+    def __enter__(self) -> "FakeCursor":
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        return None
+
+    def copy(self, statement: object) -> FakeCopy:
+        self.events.append(("copy", None))
+        return FakeCopy(self.events)
+
+
+class FakeConnection:
+    def __init__(self, events: list[tuple[str, object]]) -> None:
+        self.events = events
+
+    def cursor(self) -> FakeCursor:
+        return FakeCursor(self.events)
+
+    def commit(self) -> None:
+        self.events.append(("commit", None))
+
+
+def test_copy_rows_writes_each_row_as_it_is_parsed() -> None:
+    # No Python buffer: parsing row n+1 must happen after row n has gone to the server, otherwise
+    # the loader's memory grows with the batch size (a few hundred MB on BGL).
+    events: list[tuple[str, object]] = []
+
+    def rows() -> Iterator[tuple[int]]:
+        for i in range(4):
+            events.append(("parse", i))
+            yield (i,)
+
+    count = dev_loader.copy_rows(
+        FakeConnection(events),  # type: ignore[arg-type]
+        sql.Identifier("s", "t"),
+        ["line_no"],
+        rows(),
+    )
+
+    assert count == 4
+    assert events == [
+        ("copy", None),
+        ("parse", 0),
+        ("write", 0),
+        ("parse", 1),
+        ("write", 1),
+        ("parse", 2),
+        ("write", 2),
+        ("parse", 3),
+        ("write", 3),
+        ("commit", None),
+    ]
+
+
+def test_copy_rows_of_an_empty_source_still_opens_one_copy() -> None:
+    events: list[tuple[str, object]] = []
+
+    count = dev_loader.copy_rows(
+        FakeConnection(events),  # type: ignore[arg-type]
+        sql.Identifier("s", "t"),
+        ["line_no"],
+        iter(()),
+    )
+
+    assert count == 0
+    assert events == [("copy", None), ("commit", None)]

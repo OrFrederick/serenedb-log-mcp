@@ -408,28 +408,22 @@ def copy_rows(
     target: sql.Identifier,
     columns: Sequence[str],
     rows: Iterable[Row],
-    batch: int = 200_000,
 ) -> int:
-    """COPY `rows` into `target` in batches; return the row count."""
+    """COPY `rows` into `target` as they are parsed; return the row count.
+
+    `copy.write_row` streams to the server, so the rows are never collected in Python first: the
+    loader's memory no longer grows with the batch size, and one COPY replaces the 24 of a BGL
+    load. Everything still lands in one transaction, which is what the staging-table swap in
+    `_load_table` relies on.
+    """
     column_list = sql.SQL(", ").join(sql.Identifier(name) for name in columns)
     statement = sql.SQL("COPY {} ({}) FROM STDIN").format(target, column_list)
     count = 0
-    buffer: list[Row] = []
-
-    def flush() -> None:
-        with conn.cursor() as cur, cur.copy(statement) as copy:
-            for row in buffer:
-                copy.write_row(row)
-        conn.commit()
-        buffer.clear()
-
-    for row in rows:
-        buffer.append(row)
-        count += 1
-        if len(buffer) >= batch:
-            flush()
-    if buffer:
-        flush()
+    with conn.cursor() as cur, cur.copy(statement) as copy:
+        for row in rows:
+            copy.write_row(row)
+            count += 1
+    conn.commit()
     return count
 
 

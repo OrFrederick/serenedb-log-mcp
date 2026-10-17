@@ -1,0 +1,6752 @@
+[
+  {
+    "cluster_id": 1,
+    "component": "KERNEL",
+    "template": "instruction cache parity error corrected",
+    "training_size": 105924
+  },
+  {
+    "cluster_id": 2,
+    "component": "KERNEL",
+    "template": "generating core.<NUM>",
+    "training_size": 1706751
+  },
+  {
+    "cluster_id": 3,
+    "component": "KERNEL",
+    "template": "<NUM> ddr errors(s) detected and corrected on rank <NUM>, symbol <NUM>, bit <NUM>",
+    "training_size": 33939
+  },
+  {
+    "cluster_id": 4,
+    "component": "KERNEL",
+    "template": "<NUM> <*> <*> error(s) (dcr <HEX>) detected and corrected",
+    "training_size": 5040
+  },
+  {
+    "cluster_id": 5,
+    "component": "KERNEL",
+    "template": "CE sym <NUM>, at <HEX>, mask <HEX>",
+    "training_size": 201206
+  },
+  {
+    "cluster_id": 6,
+    "component": "KERNEL",
+    "template": "total of <NUM> ddr error(s) detected and corrected",
+    "training_size": 28485
+  },
+  {
+    "cluster_id": 7,
+    "component": "KERNEL",
+    "template": "ddr: activating redundant bit steering: rank=<NUM> symbol=<NUM>",
+    "training_size": 1314
+  },
+  {
+    "cluster_id": 8,
+    "component": "KERNEL",
+    "template": "ddr: excessive soft failures, consider replacing the card",
+    "training_size": 41
+  },
+  {
+    "cluster_id": 9,
+    "component": "KERNEL",
+    "template": "<NUM> double-hummer alignment exceptions",
+    "training_size": 295764
+  },
+  {
+    "cluster_id": 10,
+    "component": "KERNEL",
+    "template": "<NUM> tree receiver <NUM> in re-synch state event(s) (dcr <HEX>) detected",
+    "training_size": 7847
+  },
+  {
+    "cluster_id": 11,
+    "component": "KERNEL",
+    "template": "data TLB error interrupt",
+    "training_size": 152734
+  },
+  {
+    "cluster_id": 12,
+    "component": "KERNEL",
+    "template": "instruction address: <HEX>",
+    "training_size": 51227
+  },
+  {
+    "cluster_id": 13,
+    "component": "KERNEL",
+    "template": "machine check <*>",
+    "training_size": 6755
+  },
+  {
+    "cluster_id": 14,
+    "component": "KERNEL",
+    "template": "machine check status register: <HEX>",
+    "training_size": 246
+  },
+  {
+    "cluster_id": 15,
+    "component": "KERNEL",
+    "template": "summary...........................<NUM>",
+    "training_size": 244
+  },
+  {
+    "cluster_id": 16,
+    "component": "KERNEL",
+    "template": "instruction plb error.............<NUM>",
+    "training_size": 298
+  },
+  {
+    "cluster_id": 17,
+    "component": "KERNEL",
+    "template": "data <*> plb <*>",
+    "training_size": 593
+  },
+  {
+    "cluster_id": 18,
+    "component": "KERNEL",
+    "template": "tlb error.........................<NUM>",
+    "training_size": 296
+  },
+  {
+    "cluster_id": 19,
+    "component": "KERNEL",
+    "template": "i-cache parity error..............<NUM>",
+    "training_size": 296
+  },
+  {
+    "cluster_id": 20,
+    "component": "KERNEL",
+    "template": "d-cache <*> parity <*>",
+    "training_size": 588
+  },
+  {
+    "cluster_id": 21,
+    "component": "KERNEL",
+    "template": "imprecise machine check...........<NUM>",
+    "training_size": 289
+  },
+  {
+    "cluster_id": 22,
+    "component": "KERNEL",
+    "template": "machine state register: <HEX>",
+    "training_size": 8454
+  },
+  {
+    "cluster_id": 23,
+    "component": "KERNEL",
+    "template": "wait state enable.................<NUM>",
+    "training_size": 6745
+  },
+  {
+    "cluster_id": 24,
+    "component": "KERNEL",
+    "template": "critical input interrupt enable...<NUM>",
+    "training_size": 6559
+  },
+  {
+    "cluster_id": 25,
+    "component": "KERNEL",
+    "template": "external input interrupt enable...<NUM>",
+    "training_size": 6556
+  },
+  {
+    "cluster_id": 26,
+    "component": "KERNEL",
+    "template": "problem state (<NUM>=sup,<NUM>=usr).......<NUM>",
+    "training_size": 6546
+  },
+  {
+    "cluster_id": 27,
+    "component": "KERNEL",
+    "template": "floating point <*> <*>",
+    "training_size": 6544
+  },
+  {
+    "cluster_id": 28,
+    "component": "KERNEL",
+    "template": "floating pt ex mode <NUM> enable......<NUM>",
+    "training_size": 13044
+  },
+  {
+    "cluster_id": 29,
+    "component": "KERNEL",
+    "template": "debug wait enable.................<NUM>",
+    "training_size": 6524
+  },
+  {
+    "cluster_id": 30,
+    "component": "KERNEL",
+    "template": "debug interrupt enable............<NUM>",
+    "training_size": 6521
+  },
+  {
+    "cluster_id": 31,
+    "component": "KERNEL",
+    "template": "instruction address space.........<NUM>",
+    "training_size": 6506
+  },
+  {
+    "cluster_id": 32,
+    "component": "KERNEL",
+    "template": "data address space................<NUM>",
+    "training_size": 6503
+  },
+  {
+    "cluster_id": 33,
+    "component": "KERNEL",
+    "template": "core configuration register: <HEX>",
+    "training_size": 6431
+  },
+  {
+    "cluster_id": 34,
+    "component": "KERNEL",
+    "template": "disable store gathering..................<NUM>",
+    "training_size": 6495
+  },
+  {
+    "cluster_id": 35,
+    "component": "KERNEL",
+    "template": "disable apu instruction broadcast........<NUM>",
+    "training_size": 2396
+  },
+  {
+    "cluster_id": 36,
+    "component": "KERNEL",
+    "template": "disable trace broadcast..................<NUM>",
+    "training_size": 2393
+  },
+  {
+    "cluster_id": 37,
+    "component": "KERNEL",
+    "template": "guaranteed <*> cache block <*>",
+    "training_size": 4779
+  },
+  {
+    "cluster_id": 38,
+    "component": "KERNEL",
+    "template": "force load/store alignment...............<NUM>",
+    "training_size": 2389
+  },
+  {
+    "cluster_id": 39,
+    "component": "KERNEL",
+    "template": "icache prefetch <*>",
+    "training_size": 4777
+  },
+  {
+    "cluster_id": 40,
+    "component": "KERNEL",
+    "template": "general purpose registers:",
+    "training_size": 2318
+  },
+  {
+    "cluster_id": 41,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <*> <*> <NUM>:<NUM>",
+    "training_size": 4225
+  },
+  {
+    "cluster_id": 42,
+    "component": "KERNEL",
+    "template": "<*> <NUM>:<NUM> <*> <NUM>:<NUM>",
+    "training_size": 2661
+  },
+  {
+    "cluster_id": 43,
+    "component": "KERNEL",
+    "template": "<*> <NUM>:1eeeeeee <NUM>:ffffffff <*>",
+    "training_size": 25
+  },
+  {
+    "cluster_id": 44,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:<NUM> <*> <*>",
+    "training_size": 195
+  },
+  {
+    "cluster_id": 45,
+    "component": "KERNEL",
+    "template": "<NUM>:1fefff40 <*> <NUM>:1fefff60 <*>",
+    "training_size": 5
+  },
+  {
+    "cluster_id": 46,
+    "component": "KERNEL",
+    "template": "special purpose registers:",
+    "training_size": 2316
+  },
+  {
+    "cluster_id": 47,
+    "component": "KERNEL",
+    "template": "<*> cr:<NUM> xer:<NUM> <*>",
+    "training_size": 2290
+  },
+  {
+    "cluster_id": 48,
+    "component": "KERNEL",
+    "template": "rts panic! - stopping execution",
+    "training_size": 3983
+  },
+  {
+    "cluster_id": 49,
+    "component": "KERNEL",
+    "template": "<NUM> torus receiver <*> input pipe error(s) (dcr <HEX>) detected and corrected",
+    "training_size": 10487
+  },
+  {
+    "cluster_id": 50,
+    "component": "KERNEL",
+    "template": "data address: <HEX>",
+    "training_size": 14499
+  },
+  {
+    "cluster_id": 51,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <*> <NUM>:1eeeeeee <*>",
+    "training_size": 134
+  },
+  {
+    "cluster_id": 52,
+    "component": "KERNEL",
+    "template": "<NUM>:0000000e <NUM>:000865b0 <*> <*>",
+    "training_size": 90
+  },
+  {
+    "cluster_id": 53,
+    "component": "KERNEL",
+    "template": "<*> <NUM>:<NUM> <NUM>:<NUM> <*>",
+    "training_size": 115
+  },
+  {
+    "cluster_id": 54,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:1eeeeeee <*> <*>",
+    "training_size": 1995
+  },
+  {
+    "cluster_id": 55,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <*> <NUM>:<NUM> <*>",
+    "training_size": 105
+  },
+  {
+    "cluster_id": 56,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <*> <NUM>:000865b0 <NUM>:00089ae0",
+    "training_size": 88
+  },
+  {
+    "cluster_id": 57,
+    "component": "KERNEL",
+    "template": "<*> <*> <NUM>:000865b0 <NUM>:00089ae0",
+    "training_size": 4
+  },
+  {
+    "cluster_id": 58,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <*> <*> <NUM>:000865b0",
+    "training_size": 87
+  },
+  {
+    "cluster_id": 59,
+    "component": "KERNEL",
+    "template": "rts internal error",
+    "training_size": 2187
+  },
+  {
+    "cluster_id": 60,
+    "component": "KERNEL",
+    "template": "<*> <NUM>:<NUM> <*> <NUM>:ffffffff",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 61,
+    "component": "KERNEL",
+    "template": "ciod: Message code <NUM> is not <NUM> or <NUM>",
+    "training_size": 2278
+  },
+  {
+    "cluster_id": 62,
+    "component": "KERNEL",
+    "template": "ciod: pollControlDescriptors: Detected the debugger died.",
+    "training_size": 6443
+  },
+  {
+    "cluster_id": 63,
+    "component": "KERNEL",
+    "template": "ciod: for node <NUM>, read continuation request but ioState is <NUM>",
+    "training_size": 395
+  },
+  {
+    "cluster_id": 64,
+    "component": "KERNEL",
+    "template": "ciod: cpu <NUM> at treeaddr <NUM> sent unrecognized message <HEX>",
+    "training_size": 2569
+  },
+  {
+    "cluster_id": 65,
+    "component": "KERNEL",
+    "template": "machine check interrupt (bit=<HEX>): L2 dcache unit data parity error",
+    "training_size": 49
+  },
+  {
+    "cluster_id": 66,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:00089b10 <NUM>:00089b08 <*>",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 67,
+    "component": "KERNEL",
+    "template": "<NUM>:00082d70 <NUM>:00082d78 <NUM>:<NUM> <NUM>:00082d78",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 68,
+    "component": "KERNEL",
+    "template": "machine check interrupt (bit=<HEX>): <*> <*> <*> <*>",
+    "training_size": 62
+  },
+  {
+    "cluster_id": 69,
+    "component": "KERNEL",
+    "template": "L3 <*> control register: <*>",
+    "training_size": 79
+  },
+  {
+    "cluster_id": 70,
+    "component": "KERNEL",
+    "template": "start <*>",
+    "training_size": 192
+  },
+  {
+    "cluster_id": 71,
+    "component": "KERNEL",
+    "template": "disable speculative access...............<NUM>",
+    "training_size": 48
+  },
+  {
+    "cluster_id": 72,
+    "component": "KERNEL",
+    "template": "close EDRAM pages as soon as possible....<NUM>",
+    "training_size": 48
+  },
+  {
+    "cluster_id": 73,
+    "component": "KERNEL",
+    "template": "size of scratchpad portion of L3.........<NUM> (0M)",
+    "training_size": 48
+  },
+  {
+    "cluster_id": 74,
+    "component": "KERNEL",
+    "template": "disable all access to cache directory....<NUM>",
+    "training_size": 48
+  },
+  {
+    "cluster_id": 75,
+    "component": "KERNEL",
+    "template": "write buffer commit threshold............<NUM>",
+    "training_size": 48
+  },
+  {
+    "cluster_id": 76,
+    "component": "KERNEL",
+    "template": "size of DDR we are caching...............<NUM> (512M)",
+    "training_size": 48
+  },
+  {
+    "cluster_id": 77,
+    "component": "KERNEL",
+    "template": "prefetch depth for <*> <*>",
+    "training_size": 144
+  },
+  {
+    "cluster_id": 78,
+    "component": "KERNEL",
+    "template": "max number of outstanding prefetches.....<NUM>",
+    "training_size": 48
+  },
+  {
+    "cluster_id": 79,
+    "component": "KERNEL",
+    "template": "turn on hidden refreshes.................<NUM>",
+    "training_size": 48
+  },
+  {
+    "cluster_id": 80,
+    "component": "KERNEL",
+    "template": "disable write lines <NUM>:<NUM>..................<NUM>",
+    "training_size": 48
+  },
+  {
+    "cluster_id": 81,
+    "component": "KERNEL",
+    "template": "capture first <*> <*> error address..<NUM>",
+    "training_size": 283
+  },
+  {
+    "cluster_id": 82,
+    "component": "KERNEL",
+    "template": "disable flagging of DDR UE's as major internal error.<NUM>",
+    "training_size": 47
+  },
+  {
+    "cluster_id": 83,
+    "component": "KERNEL",
+    "template": "L3 ecc <*> register: <*>",
+    "training_size": 64
+  },
+  {
+    "cluster_id": 84,
+    "component": "KERNEL",
+    "template": "correctable error detected in directory <NUM>......<NUM>",
+    "training_size": 94
+  },
+  {
+    "cluster_id": 85,
+    "component": "KERNEL",
+    "template": "uncorrectable error detected in <*> <*>",
+    "training_size": 141
+  },
+  {
+    "cluster_id": 86,
+    "component": "KERNEL",
+    "template": "correctable error detected in EDRAM bank <NUM>.....<NUM>",
+    "training_size": 94
+  },
+  {
+    "cluster_id": 87,
+    "component": "KERNEL",
+    "template": "uncorrectable error detected in EDRAM bank <NUM>...<NUM>",
+    "training_size": 94
+  },
+  {
+    "cluster_id": 88,
+    "component": "KERNEL",
+    "template": "parity error in <*> <*>",
+    "training_size": 141
+  },
+  {
+    "cluster_id": 89,
+    "component": "KERNEL",
+    "template": "parity error in read queue <*>",
+    "training_size": 141
+  },
+  {
+    "cluster_id": 90,
+    "component": "KERNEL",
+    "template": "number of correctable errors detected in L3 <*>",
+    "training_size": 94
+  },
+  {
+    "cluster_id": 91,
+    "component": "KERNEL",
+    "template": "interrupt threshold...<NUM>",
+    "training_size": 94
+  },
+  {
+    "cluster_id": 92,
+    "component": "KERNEL",
+    "template": "number of lines with parity errors written to L3 EDRAMs...<NUM>",
+    "training_size": 47
+  },
+  {
+    "cluster_id": 93,
+    "component": "KERNEL",
+    "template": "DDR <*> <*> <*> <HEX> <HEX>",
+    "training_size": 141
+  },
+  {
+    "cluster_id": 94,
+    "component": "KERNEL",
+    "template": "memory and bus summary...........................<NUM>",
+    "training_size": 47
+  },
+  {
+    "cluster_id": 95,
+    "component": "KERNEL",
+    "template": "command manager unit summary.....................<NUM>",
+    "training_size": 47
+  },
+  {
+    "cluster_id": 96,
+    "component": "KERNEL",
+    "template": "memory manager <*> <*>",
+    "training_size": 188
+  },
+  {
+    "cluster_id": 97,
+    "component": "KERNEL",
+    "template": "memory manager address parity error..............<NUM>",
+    "training_size": 47
+  },
+  {
+    "cluster_id": 98,
+    "component": "KERNEL",
+    "template": "memory manager <*>",
+    "training_size": 94
+  },
+  {
+    "cluster_id": 99,
+    "component": "KERNEL",
+    "template": "memory manager <*> buffer <*>",
+    "training_size": 94
+  },
+  {
+    "cluster_id": 100,
+    "component": "KERNEL",
+    "template": "memory manager refresh counter timeout...........<NUM>",
+    "training_size": 47
+  },
+  {
+    "cluster_id": 101,
+    "component": "KERNEL",
+    "template": "state machine....................................<NUM>",
+    "training_size": 47
+  },
+  {
+    "cluster_id": 102,
+    "component": "KERNEL",
+    "template": "memory manager / command manager address parity..<NUM>",
+    "training_size": 47
+  },
+  {
+    "cluster_id": 103,
+    "component": "KERNEL",
+    "template": "regctl scancom interface.........................<NUM>",
+    "training_size": 47
+  },
+  {
+    "cluster_id": 104,
+    "component": "KERNEL",
+    "template": "DDR failing info register: <HEX>",
+    "training_size": 18
+  },
+  {
+    "cluster_id": 105,
+    "component": "KERNEL",
+    "template": "capture valid.........<NUM>",
+    "training_size": 47
+  },
+  {
+    "cluster_id": 106,
+    "component": "KERNEL",
+    "template": "symbol................<NUM>",
+    "training_size": 47
+  },
+  {
+    "cluster_id": 107,
+    "component": "KERNEL",
+    "template": "mask..................<HEX>",
+    "training_size": 47
+  },
+  {
+    "cluster_id": 108,
+    "component": "KERNEL",
+    "template": "miscompare............<NUM>",
+    "training_size": 47
+  },
+  {
+    "cluster_id": 109,
+    "component": "KERNEL",
+    "template": "uncorrectable error...<NUM>",
+    "training_size": 47
+  },
+  {
+    "cluster_id": 110,
+    "component": "KERNEL",
+    "template": "address parity error..<NUM>",
+    "training_size": 47
+  },
+  {
+    "cluster_id": 111,
+    "component": "KERNEL",
+    "template": "correctable error.....<NUM>",
+    "training_size": 47
+  },
+  {
+    "cluster_id": 112,
+    "component": "KERNEL",
+    "template": "qw trapped............<NUM>",
+    "training_size": 47
+  },
+  {
+    "cluster_id": 113,
+    "component": "KERNEL",
+    "template": "chip select...........<NUM>",
+    "training_size": 47
+  },
+  {
+    "cluster_id": 114,
+    "component": "KERNEL",
+    "template": "<HEX> <HEX>",
+    "training_size": 141
+  },
+  {
+    "cluster_id": 115,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:ffffffff <*> <*>",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 116,
+    "component": "KERNEL",
+    "template": "ciod: sendMsgToDebugger: error sending PROGRAM_EXITED message to debugger.",
+    "training_size": 3
+  },
+  {
+    "cluster_id": 117,
+    "component": "KERNEL",
+    "template": "<*> <*> <NUM>:1eeeeeee <NUM>:<NUM>",
+    "training_size": 26
+  },
+  {
+    "cluster_id": 118,
+    "component": "KERNEL",
+    "template": "<NUM>:000558a0 <NUM>:1eeeeeee <NUM>:0178fa90 <NUM>:0002ac00",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 119,
+    "component": "KERNEL",
+    "template": "<*> <*> <NUM>:<NUM> <NUM>:<NUM>",
+    "training_size": 2090
+  },
+  {
+    "cluster_id": 120,
+    "component": "KERNEL",
+    "template": "<NUM>:0000055f <NUM>:0c5cc1e0 <NUM>:<NUM> <NUM>:04ed1b98",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 121,
+    "component": "KERNEL",
+    "template": "<NUM>:000012c0 <NUM>:0000055f <NUM>:<NUM> <NUM>:04ecf0a0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 122,
+    "component": "KERNEL",
+    "template": "<*> <NUM>:000000e3 <NUM>:00085fd8 <NUM>:<NUM>",
+    "training_size": 3
+  },
+  {
+    "cluster_id": 123,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:ffff96e0 <NUM>:fffbccf0 <NUM>:0f554c48",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 124,
+    "component": "KERNEL",
+    "template": "<NUM>:0f4c4108 <NUM>:0d563fc0 <NUM>:0d7679b8 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 125,
+    "component": "KERNEL",
+    "template": "<*> <NUM>:1eeeeeee <NUM>:<NUM> <*>",
+    "training_size": 16
+  },
+  {
+    "cluster_id": 126,
+    "component": "KERNEL",
+    "template": "<NUM>:004d96ac <NUM>:0d6323c0 <NUM>:07bd4840 <NUM>:0567a810",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 127,
+    "component": "KERNEL",
+    "template": "<NUM>:0007d000 <NUM>:0b798900 <NUM>:<NUM> <NUM>:00090b40",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 128,
+    "component": "KERNEL",
+    "template": "<NUM> torus <*> <*> <*> error(s) (dcr <HEX>) detected and corrected",
+    "training_size": 1217
+  },
+  {
+    "cluster_id": 129,
+    "component": "KERNEL",
+    "template": "<*> correctable errors exceeds threshold (iar <HEX> lr <HEX>)",
+    "training_size": 26
+  },
+  {
+    "cluster_id": 130,
+    "component": "KERNEL",
+    "template": "<NUM>:00000fc5 <NUM>:0007d000 <NUM>:fffa8840 <NUM>:0006d600",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 131,
+    "component": "KERNEL",
+    "template": "<*> <NUM>:1eeeeeee <*> <NUM>:<NUM>",
+    "training_size": 7
+  },
+  {
+    "cluster_id": 132,
+    "component": "KERNEL",
+    "template": "<NUM>:069df3b0 <NUM>:06b563b0 <NUM>:066ccbc0 <NUM>:004d8f30",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 133,
+    "component": "KERNEL",
+    "template": "<NUM>:0deed738 <NUM>:0d9ccf30 <NUM>:0f5ef850 <NUM>:0f572850",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 134,
+    "component": "KERNEL",
+    "template": "<NUM>:0f6e9850 <NUM>:0daa7b30 <NUM>:0f66c850 <NUM>:0df5ad38",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 135,
+    "component": "KERNEL",
+    "template": "<NUM>:0da3a530 <NUM>:059674c0 <NUM>:0dfc8338 <NUM>:0e110530",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 136,
+    "component": "KERNEL",
+    "template": "<NUM>:00001f82 <NUM>:b1144000 <NUM>:06412ce0 <NUM>:0cdc1fe0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 137,
+    "component": "KERNEL",
+    "template": "<NUM>:00a2104c <NUM>:0007e080 <NUM>:06412ce0 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 138,
+    "component": "KERNEL",
+    "template": "<NUM>:0cdc1fe0 <NUM>:<NUM> <NUM>:009e7400 <NUM>:1fea8b80",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 139,
+    "component": "KERNEL",
+    "template": "<NUM>:006af9f4 <NUM>:007c1fb0 <NUM>:00007e08 <NUM>:007c2000",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 140,
+    "component": "KERNEL",
+    "template": "data storage interrupt",
+    "training_size": 63493
+  },
+  {
+    "cluster_id": 141,
+    "component": "KERNEL",
+    "template": "exception syndrome register: <HEX>",
+    "training_size": 18013
+  },
+  {
+    "cluster_id": 142,
+    "component": "KERNEL",
+    "template": "machine check: i-fetch......................<NUM>",
+    "training_size": 18017
+  },
+  {
+    "cluster_id": 143,
+    "component": "KERNEL",
+    "template": "program interrupt: <*> <*>",
+    "training_size": 57874
+  },
+  {
+    "cluster_id": 144,
+    "component": "KERNEL",
+    "template": "floating point operation....................<NUM>",
+    "training_size": 9824
+  },
+  {
+    "cluster_id": 145,
+    "component": "KERNEL",
+    "template": "store operation.............................<NUM>",
+    "training_size": 9824
+  },
+  {
+    "cluster_id": 146,
+    "component": "KERNEL",
+    "template": "data store interrupt caused by <*>",
+    "training_size": 19646
+  },
+  {
+    "cluster_id": 147,
+    "component": "KERNEL",
+    "template": "auxiliary processor.........................<NUM>",
+    "training_size": 8419
+  },
+  {
+    "cluster_id": 148,
+    "component": "KERNEL",
+    "template": "byte ordering exception.....................<NUM>",
+    "training_size": 8102
+  },
+  {
+    "cluster_id": 149,
+    "component": "KERNEL",
+    "template": "program interrupt: fp cr update.............<NUM>",
+    "training_size": 8102
+  },
+  {
+    "cluster_id": 150,
+    "component": "KERNEL",
+    "template": "program interrupt: fp cr field .............<NUM>",
+    "training_size": 8102
+  },
+  {
+    "cluster_id": 151,
+    "component": "KERNEL",
+    "template": "<NUM>:000008ce <NUM>:<NUM> <NUM>:1eeeeeee <NUM>:1feaa770",
+    "training_size": 2048
+  },
+  {
+    "cluster_id": 152,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:4e800020 <*> <*>",
+    "training_size": 2048
+  },
+  {
+    "cluster_id": 153,
+    "component": "KERNEL",
+    "template": "<NUM>:1feaa7b0 <NUM>:<NUM> <NUM>:000008ce <NUM>:1feaa790",
+    "training_size": 2048
+  },
+  {
+    "cluster_id": 154,
+    "component": "KERNEL",
+    "template": "<NUM>:0035fd54 <NUM>:1fea9830 <NUM>:1eeeeeee <NUM>:007c2130",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 155,
+    "component": "KERNEL",
+    "template": "<NUM>:1fea96f0 <NUM>:<NUM> <NUM>:02a02600 <NUM>:0098a3b0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 156,
+    "component": "KERNEL",
+    "template": "<NUM>:0045b788 <NUM>:1eeeeeee <NUM>:009823a0 <NUM>:02a02600",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 157,
+    "component": "KERNEL",
+    "template": "<NUM>:029fa5f0 <NUM>:<NUM> <NUM>:066aa9b0 <NUM>:066a29a0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 158,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:1fea98c0 <NUM>:0000000e <NUM>:006af8d0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 159,
+    "component": "KERNEL",
+    "template": "external input interrupt (unit=<HEX> bit=<HEX>): torus sender <*> retransmission error was corrected",
+    "training_size": 1322
+  },
+  {
+    "cluster_id": 160,
+    "component": "KERNEL",
+    "template": "external input interrupt (unit=<HEX> bit=<HEX>): number of corrected SRAM errors has exceeded threshold",
+    "training_size": 39
+  },
+  {
+    "cluster_id": 161,
+    "component": "KERNEL",
+    "template": "suppressing further interrupts of same type",
+    "training_size": 7694
+  },
+  {
+    "cluster_id": 162,
+    "component": "KERNEL",
+    "template": "<NUM>:00000bd5 <NUM>:071c9ae0 <NUM>:00002f54 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 163,
+    "component": "KERNEL",
+    "template": "<NUM>:002366e0 <NUM>:002363b8 <NUM>:00388c50 <NUM>:0038d720",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 164,
+    "component": "KERNEL",
+    "template": "<NUM>:10cae050 <NUM>:b1150400 <NUM>:fff1f0fc <NUM>:b1150400",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 165,
+    "component": "KERNEL",
+    "template": "<NUM>:30008e90 <NUM>:30008f40 <NUM>:<NUM> <NUM>:30008e30",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 166,
+    "component": "KERNEL",
+    "template": "<NUM>:01360ec8 <NUM>:0fea05d0 <NUM>:1eeeeeee <NUM>:01300fc8",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 167,
+    "component": "KERNEL",
+    "template": "<NUM>:01360ec8 <NUM>:01300fc8 <NUM>:000001ff <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 168,
+    "component": "KERNEL",
+    "template": "<NUM>:000001ff <NUM>:1eeeeeee <NUM>:0fee0b88 <NUM>:0000003a",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 169,
+    "component": "KERNEL",
+    "template": "<NUM>:0fea0700 <NUM>:000000ff <NUM>:0000000d <NUM>:00c80d80",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 170,
+    "component": "KERNEL",
+    "template": "<NUM>:00c7a218 <NUM>:003223e0 <NUM>:00c7a368 <NUM>:01d56830",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 171,
+    "component": "KERNEL",
+    "template": "<NUM>:00c80d48 <NUM>:00f97c30 <NUM>:00926dc0 <NUM>:00b0f6b0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 172,
+    "component": "KERNEL",
+    "template": "<NUM>:05ff6fc0 <NUM>:b1150800 <NUM>:fff1f0fc <NUM>:b1150800",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 173,
+    "component": "KERNEL",
+    "template": "<*> <NUM>:<NUM> <*> <NUM>:1fefff60",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 174,
+    "component": "KERNEL",
+    "template": "<NUM>:0000c000 <NUM>:0000c000 <NUM>:<NUM> <NUM>:1fea9f64",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 175,
+    "component": "KERNEL",
+    "template": "<NUM>:000003ff <NUM>:0000003f <NUM>:0000003f <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 176,
+    "component": "KERNEL",
+    "template": "<NUM>:06a55c20 <NUM>:06a55c1c <NUM>:<NUM> <NUM>:1feaa420",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 177,
+    "component": "KERNEL",
+    "template": "<*> <*> <NUM>:<NUM> <NUM>:00089b08",
+    "training_size": 8
+  },
+  {
+    "cluster_id": 178,
+    "component": "KERNEL",
+    "template": "<NUM>:ffffca68 <NUM>:<NUM> <NUM>:000894a4 <NUM>:ffffca68",
+    "training_size": 3
+  },
+  {
+    "cluster_id": 179,
+    "component": "KERNEL",
+    "template": "ciod: Unexpected eof at line <NUM> of node map file <*>",
+    "training_size": 328
+  },
+  {
+    "cluster_id": 180,
+    "component": "KERNEL",
+    "template": "ddr: Unable to steer rank=<NUM>, symbol=<NUM> - rank is already steering symbol <NUM>. Due to multiple symbols being over the correctable e",
+    "training_size": 22
+  },
+  {
+    "cluster_id": 181,
+    "component": "KERNEL",
+    "template": "rror threshold, consider replacing the card",
+    "training_size": 22
+  },
+  {
+    "cluster_id": 182,
+    "component": "KERNEL",
+    "template": "ddr: Unable to steer rank=<NUM>, symbol=<NUM> - rank is already steering symbol <NUM>. Due to multiple symbols being over the <*>",
+    "training_size": 24
+  },
+  {
+    "cluster_id": 183,
+    "component": "KERNEL",
+    "template": "error threshold, consider replacing the card",
+    "training_size": 23
+  },
+  {
+    "cluster_id": 184,
+    "component": "KERNEL",
+    "template": "<NUM>:08958fe0 <NUM>:1fea9330 <NUM>:1eeeeeee <NUM>:08958fd0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 185,
+    "component": "KERNEL",
+    "template": "<NUM>:1fea9a28 <NUM>:000e3760 <NUM>:00016bf0 <NUM>:0000000b",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 186,
+    "component": "KERNEL",
+    "template": "<NUM>:00788f60 <NUM>:00005afc <NUM>:0d476760 <NUM>:0d6ebda0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 187,
+    "component": "KERNEL",
+    "template": "critical input interrupt (unit=<HEX> bit=<HEX>): warning for <*> <*> wire",
+    "training_size": 7682
+  },
+  {
+    "cluster_id": 188,
+    "component": "KERNEL",
+    "template": "Kill job <NUM> timed out. Block freed.",
+    "training_size": 306
+  },
+  {
+    "cluster_id": 189,
+    "component": "KERNEL",
+    "template": "<*> <NUM>:<NUM> <*> <NUM>:000d0000",
+    "training_size": 7
+  },
+  {
+    "cluster_id": 190,
+    "component": "KERNEL",
+    "template": "program interrupt",
+    "training_size": 3667
+  },
+  {
+    "cluster_id": 191,
+    "component": "KERNEL",
+    "template": "<*> <NUM>:<NUM> <NUM>:000c65b0 <*>",
+    "training_size": 8
+  },
+  {
+    "cluster_id": 192,
+    "component": "KERNEL",
+    "template": "ciod: <*> <*> <NUM> <*> <*> <*> <*> at line <NUM> of node map file <*>",
+    "training_size": 4024
+  },
+  {
+    "cluster_id": 193,
+    "component": "KERNEL",
+    "template": "<NUM> floating point alignment exceptions",
+    "training_size": 267725
+  },
+  {
+    "cluster_id": 194,
+    "component": "KERNEL",
+    "template": "<NUM>:05bd2790 <NUM>:b1151000 <NUM>:fff09d8c <NUM>:b1151000",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 195,
+    "component": "KERNEL",
+    "template": "Target=ido://FF:F2:9F:<NUM>:E6:<NUM>:<NUM>:0D:<NUM>:E9:<NUM>:<NUM>/JTAG/<NUM> Message=Pll failed to lock",
+    "training_size": 3
+  },
+  {
+    "cluster_id": 196,
+    "component": "KERNEL",
+    "template": "<*> Message=ScomError",
+    "training_size": 3
+  },
+  {
+    "cluster_id": 197,
+    "component": "KERNEL",
+    "template": "<*> Message=Invalid JtagId = ffffffff",
+    "training_size": 63
+  },
+  {
+    "cluster_id": 198,
+    "component": "KERNEL",
+    "template": "MailboxMonitor::serviceMailboxes() lib_ido_error: <NUM> socket closed",
+    "training_size": 168
+  },
+  {
+    "cluster_id": 199,
+    "component": "KERNEL",
+    "template": "e error threshold, consider replacing the card",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 200,
+    "component": "KERNEL",
+    "template": "<NUM>:020031c0 <NUM>:199670d0 <NUM>:1eeeeeee <NUM>:009e8390",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 201,
+    "component": "KERNEL",
+    "template": "<NUM>:b1144000 <NUM>:b1144000 <NUM>:009e7f40 <NUM>:00a29bb0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 202,
+    "component": "KERNEL",
+    "template": "<NUM>:009e8730 <NUM>:<NUM> <NUM>:009e8730 <NUM>:00006c00",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 203,
+    "component": "KERNEL",
+    "template": "<NUM>:4040c4e2 <NUM>:1eeeeeee <NUM>:009e7f40 <NUM>:009a9a20",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 204,
+    "component": "KERNEL",
+    "template": "<NUM>:00a29bb0 <NUM>:<NUM> <NUM>:009e7d30 <NUM>:009e7b20",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 205,
+    "component": "KERNEL",
+    "template": "<NUM>:005cd234 <NUM>:009e8340 <NUM>:<NUM> <NUM>:0000001f",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 206,
+    "component": "KERNEL",
+    "template": "lr:004799e4 cr:4040c4e2 xer:<NUM> ctr:00481f5c",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 207,
+    "component": "KERNEL",
+    "template": "ciod: Error opening node map file <*> No such file or directory",
+    "training_size": 1936
+  },
+  {
+    "cluster_id": 208,
+    "component": "KERNEL",
+    "template": "shutdown complete",
+    "training_size": 99
+  },
+  {
+    "cluster_id": 209,
+    "component": "KERNEL",
+    "template": "no ethernet link",
+    "training_size": 14
+  },
+  {
+    "cluster_id": 210,
+    "component": "KERNEL",
+    "template": "rts: kernel terminated for reason <*> bad message header: <*> <*> <*> type=<NUM>, cpu=<NUM>, index=<NUM>, <*>",
+    "training_size": 1389
+  },
+  {
+    "cluster_id": 211,
+    "component": "KERNEL",
+    "template": "ciod: In packet from node <NUM> <*> message code <NUM> is not <NUM> or <NUM> <*> <*> <NUM> <NUM>)",
+    "training_size": 176
+  },
+  {
+    "cluster_id": 212,
+    "component": "KERNEL",
+    "template": "<NUM>:000c5fd8 <NUM>:000c65b0 <*> <*>",
+    "training_size": 7
+  },
+  {
+    "cluster_id": 213,
+    "component": "KERNEL",
+    "template": "<NUM>:000c8880 <NUM>:<NUM> <*> <*>",
+    "training_size": 7
+  },
+  {
+    "cluster_id": 214,
+    "component": "KERNEL",
+    "template": "<NUM>:00085fd8 <NUM>:000865b0 <*> <*>",
+    "training_size": 3
+  },
+  {
+    "cluster_id": 215,
+    "component": "KERNEL",
+    "template": "<*> <NUM>:1eeeeeee <NUM>:2e8ba2e9 <*>",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 216,
+    "component": "KERNEL",
+    "template": "<NUM>:14048d78 <NUM>:1416a548 <NUM>:140d9a08 <NUM>:14048ec8",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 217,
+    "component": "KERNEL",
+    "template": "<NUM>:1416a3f8 <NUM>:140457a8 <NUM>:141f7968 <NUM>:141fb088",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 218,
+    "component": "KERNEL",
+    "template": "<NUM>:140d6070 <NUM>:14166bb0 <NUM>:141fae10 <NUM>:14048c50",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 219,
+    "component": "KERNEL",
+    "template": "<NUM>:140d9790 <NUM>:1416a2d0 <NUM>:141f7840 <NUM>:14166d00",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 220,
+    "component": "KERNEL",
+    "template": "<NUM>:06f4b0b8 <NUM>:140d6198 <NUM>:141f7818 <NUM>:14166cd8",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 221,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:141faf38 <NUM>:140d62e8 <NUM>:14166e28",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 222,
+    "component": "KERNEL",
+    "template": "<NUM>:000b2f60 <NUM>:000b2f50 <NUM>:0000911c <NUM>:000b2f30",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 223,
+    "component": "KERNEL",
+    "template": "<NUM>:000b2ee0 <NUM>:1eeeeeee <NUM>:0000419b <NUM>:001066c0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 224,
+    "component": "KERNEL",
+    "template": "ciod: Missing or invalid fields on line <NUM> of node map file <*>",
+    "training_size": 2048
+  },
+  {
+    "cluster_id": 225,
+    "component": "KERNEL",
+    "template": "Power deactivated: <*>",
+    "training_size": 192
+  },
+  {
+    "cluster_id": 226,
+    "component": "KERNEL",
+    "template": "parity error.......<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 227,
+    "component": "KERNEL",
+    "template": "machine state register:",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 228,
+    "component": "KERNEL",
+    "template": "machine state register: machine state register: machine state register: machine state register: machine state register: machine",
+    "training_size": 5
+  },
+  {
+    "cluster_id": 229,
+    "component": "KERNEL",
+    "template": "state register: machine state register: machine state register: machine state register: machine state register: machine state re",
+    "training_size": 5
+  },
+  {
+    "cluster_id": 230,
+    "component": "KERNEL",
+    "template": "gister: machine state register: machine state register: machine state register: machine state register: machine state register:",
+    "training_size": 5
+  },
+  {
+    "cluster_id": 231,
+    "component": "KERNEL",
+    "template": "rts: kernel terminated for reason 1001rts: bad message header: invalid cpu, type=<NUM>, cpu=<NUM>, index=<NUM>, total=<NUM>",
+    "training_size": 3334
+  },
+  {
+    "cluster_id": 232,
+    "component": "KERNEL",
+    "template": "rts: kernel terminated for reason 1002rts: bad message header: too many packets, type=<NUM>, cpu=<NUM>, index=<NUM>, total=<NUM>, <*>",
+    "training_size": 28
+  },
+  {
+    "cluster_id": 233,
+    "component": "KERNEL",
+    "template": "",
+    "training_size": 34470
+  },
+  {
+    "cluster_id": 234,
+    "component": "KERNEL",
+    "template": "max=<NUM>",
+    "training_size": 130
+  },
+  {
+    "cluster_id": 235,
+    "component": "KERNEL",
+    "template": "<NUM>",
+    "training_size": 856
+  },
+  {
+    "cluster_id": 236,
+    "component": "KERNEL",
+    "template": "<NUM>, max=<NUM>",
+    "training_size": 103
+  },
+  {
+    "cluster_id": 237,
+    "component": "KERNEL",
+    "template": "ax=<NUM>",
+    "training_size": 13
+  },
+  {
+    "cluster_id": 238,
+    "component": "KERNEL",
+    "template": "<NUM>:08836a60 <NUM>:b1151400 <NUM>:fff1f0dc <NUM>:b1151400",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 239,
+    "component": "KERNEL",
+    "template": "MailboxMonitor::serviceMailboxes() lib_ido_error: <NUM> unexpected socket error: Broken pipe",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 240,
+    "component": "KERNEL",
+    "template": "<NUM>:0000085d <NUM>:1fea89d0 <NUM>:1eeeeeee <NUM>:09470ef4",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 241,
+    "component": "KERNEL",
+    "template": "<NUM>:0000012c <NUM>:0831a460 <NUM>:0831a460 <NUM>:00000e66",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 242,
+    "component": "KERNEL",
+    "template": ", max=<NUM>",
+    "training_size": 13
+  },
+  {
+    "cluster_id": 243,
+    "component": "KERNEL",
+    "template": "<NUM>:0691eb70 <NUM>:b1140400 <NUM>:fff1f0dc <NUM>:b1140400",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 244,
+    "component": "KERNEL",
+    "template": "<NUM>:0f4ca300 <NUM>:<NUM> <NUM>:0691eb40 <NUM>:1fea8d40",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 245,
+    "component": "KERNEL",
+    "template": "<NUM>:000894a4 <NUM>:<NUM> <*> <NUM>:b0000040",
+    "training_size": 26
+  },
+  {
+    "cluster_id": 246,
+    "component": "KERNEL",
+    "template": "x=<NUM>",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 247,
+    "component": "KERNEL",
+    "template": "<*> <NUM>:0d8e7c40 <NUM>:1eeeeeee <*>",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 248,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:0f812740 <NUM>:0f812b00 <NUM>:0f812b40",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 249,
+    "component": "KERNEL",
+    "template": "<NUM>:0e812700 <NUM>:0e812740 <NUM>:0e812b00 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 250,
+    "component": "KERNEL",
+    "template": "<NUM>:01fabd68 <NUM>:019abdd8 <NUM>:019abd98 <NUM>:019ab9d8",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 251,
+    "component": "KERNEL",
+    "template": "<NUM>:019ab998 <NUM>:0f012b38 <NUM>:0f012af8 <NUM>:0f012700",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 252,
+    "component": "KERNEL",
+    "template": "<NUM>:0f012738 <NUM>:01fabdd8 <NUM>:01fabda0 <NUM>:01fab9e0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 253,
+    "component": "KERNEL",
+    "template": "<*> <*> xer:<NUM> ctr:<NUM>",
+    "training_size": 6
+  },
+  {
+    "cluster_id": 254,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:0f7e7940 <NUM>:0f7e7d00 <NUM>:0f7e7d40",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 255,
+    "component": "KERNEL",
+    "template": "<NUM>:0e7e7900 <NUM>:0e7e7940 <NUM>:0e7e7d00 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 256,
+    "component": "KERNEL",
+    "template": "<NUM>:01f80f68 <NUM>:01980fd8 <NUM>:01980f98 <NUM>:01980bd8",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 257,
+    "component": "KERNEL",
+    "template": "<NUM>:01980b98 <NUM>:0efe7d38 <NUM>:0efe7cf8 <NUM>:0efe7900",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 258,
+    "component": "KERNEL",
+    "template": "<NUM>:0efe7938 <NUM>:01f80fd8 <NUM>:01f80fa0 <NUM>:01f80be0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 259,
+    "component": "KERNEL",
+    "template": "<NUM>:1feaa410 <NUM>:<NUM> <NUM>:fff9d8b0 <NUM>:b1140400",
+    "training_size": 3
+  },
+  {
+    "cluster_id": 260,
+    "component": "KERNEL",
+    "template": "<NUM>:1feaa340 <*> <*> <NUM>:1feaa4c0",
+    "training_size": 3
+  },
+  {
+    "cluster_id": 261,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:1feaa4c0 <NUM>:1feaa3b0 <NUM>:1feaa3a0",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 262,
+    "component": "KERNEL",
+    "template": "lr:0012cd60 cr:200024c4 xer:<NUM> ctr:0012cce8",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 263,
+    "component": "KERNEL",
+    "template": "<NUM>:02000a8a <NUM>:1feaa370 <NUM>:1eeeeeee <NUM>:002129d0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 264,
+    "component": "KERNEL",
+    "template": "MailboxMonitor::serviceMailboxes() lib_ido_error: <NUM> BGLERR_IDO_PKT_TIMEOUT connection lost to node/link/service card",
+    "training_size": 14
+  },
+  {
+    "cluster_id": 265,
+    "component": "KERNEL",
+    "template": "<NUM>:1fea443c <NUM>:ba1cfa4f <NUM>:003e98e0 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 266,
+    "component": "KERNEL",
+    "template": "<NUM>:0347ed40 <NUM>:01b00000 <NUM>:0442eda0 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 267,
+    "component": "KERNEL",
+    "template": "<NUM>:5d93e823 <NUM>:001f0000 <NUM>:5d93e823 <NUM>:013b5ca8",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 268,
+    "component": "KERNEL",
+    "template": "<NUM>:0fe9fa90 <NUM>:1eeeeeee <NUM>:0fee0768 <NUM>:0fee0768",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 269,
+    "component": "KERNEL",
+    "template": "<NUM>:0fea0740 <NUM>:000001cb <NUM>:0000a774 <NUM>:0fee0740",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 270,
+    "component": "KERNEL",
+    "template": "<NUM>:0fee072c <NUM>:<NUM> <NUM>:0fea8738 <NUM>:087d2350",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 271,
+    "component": "KERNEL",
+    "template": "<NUM>:0011e990 <NUM>:0feea7e0 <NUM>:1eeeeeee <NUM>:08b14d30",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 272,
+    "component": "KERNEL",
+    "template": "<NUM>:d2f1a9fc <NUM>:<NUM> <NUM>:08b19588 <NUM>:08bd90a8",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 273,
+    "component": "KERNEL",
+    "template": "<NUM>:0022af90 <NUM>:<NUM> <NUM>:0022c5d0 <NUM>:0022d570",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 274,
+    "component": "KERNEL",
+    "template": "<NUM>:fffffefa <NUM>:1eeeeeee <NUM>:00252d68 <NUM>:08d1aec0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 275,
+    "component": "KERNEL",
+    "template": "<NUM>:08d14ff0 <NUM>:08d079a0 <NUM>:08b18ef8 <NUM>:08bd8a18",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 276,
+    "component": "KERNEL",
+    "template": "<NUM>:08b146a8 <NUM>:<NUM> <NUM>:08b146b0 <NUM>:08bd8a20",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 277,
+    "component": "KERNEL",
+    "template": "<NUM>:08b18f00 <NUM>:08b1e690 <NUM>:08c207a0 <NUM>:08d0b4a0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 278,
+    "component": "KERNEL",
+    "template": "<NUM>:087c4f30 <NUM>:000001f7 <NUM>:<NUM> <NUM>:087886d0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 279,
+    "component": "KERNEL",
+    "template": "<NUM>:045364c0 <NUM>:045dbc80 <NUM>:<NUM> <NUM>:0032b690",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 280,
+    "component": "KERNEL",
+    "template": "<*> <NUM>:<NUM> <NUM>:ffffffe8 <*>",
+    "training_size": 11
+  },
+  {
+    "cluster_id": 281,
+    "component": "KERNEL",
+    "template": "<NUM>:008d7190 <NUM>:1eeeeeee <NUM>:0002b4f4 <NUM>:0fee1424",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 282,
+    "component": "KERNEL",
+    "template": "<NUM>:0fea0740 <NUM>:<NUM> <NUM>:045dbc80 <NUM>:008d86c0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 283,
+    "component": "KERNEL",
+    "template": "<NUM>:00f9ce00 <NUM>:0032b690 <NUM>:01abdb40 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 284,
+    "component": "KERNEL",
+    "template": "<NUM>:008d6640 <NUM>:045dbc80 <NUM>:045364c0 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 285,
+    "component": "KERNEL",
+    "template": "<NUM>:00000f0d <NUM>:02e05990 <NUM>:00003c34 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 286,
+    "component": "KERNEL",
+    "template": "<NUM>:00238bb8 <NUM>:00238e68 <NUM>:<NUM> <NUM>:00238e50",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 287,
+    "component": "KERNEL",
+    "template": "<NUM>:00238a30 <NUM>:00238ce0 <NUM>:00238aa0 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 288,
+    "component": "KERNEL",
+    "template": "<NUM>:00238df0 <NUM>:00238ac8 <NUM>:0038b360 <NUM>:0038fe30",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 289,
+    "component": "KERNEL",
+    "template": "<NUM>:0038b380 <NUM>:00238b70 <NUM>:00238df8 <NUM>:00238e20",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 290,
+    "component": "KERNEL",
+    "template": "<NUM>:bfee7466 <NUM>:0fee9b40 <NUM>:1eeeeeee <NUM>:01dc0f4c",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 291,
+    "component": "KERNEL",
+    "template": "<NUM>:0000b3db <NUM>:000001d0 <NUM>:<NUM> <NUM>:0038adf0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 292,
+    "component": "KERNEL",
+    "template": "<NUM>:0000000a <NUM>:00a9cb80 <NUM>:<NUM> <NUM>:ffffffff",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 293,
+    "component": "KERNEL",
+    "template": "<NUM>:00005c30 <NUM>:<NUM> <NUM>:002398a0 <NUM>:01dbf2a0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 294,
+    "component": "KERNEL",
+    "template": "<NUM>:09277d28 <NUM>:09293a68 <NUM>:096c9368 <NUM>:09707a38",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 295,
+    "component": "KERNEL",
+    "template": "<NUM>:000001f4 <NUM>:0000000c <NUM>:0036b7d8 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 296,
+    "component": "KERNEL",
+    "template": "Error: unable to mount filesystem",
+    "training_size": 720
+  },
+  {
+    "cluster_id": 297,
+    "component": "KERNEL",
+    "template": "Lustre mount FAILED : <*> : block_id : location",
+    "training_size": 5105
+  },
+  {
+    "cluster_id": 298,
+    "component": "KERNEL",
+    "template": "Target=ido://FF:F2:9F:<NUM>:E6:<NUM>:<NUM>:0D:<NUM>:E9:<NUM>:FB/JTAG/<NUM> Message=JtagId All all zeros, power good may be low",
+    "training_size": 4
+  },
+  {
+    "cluster_id": 299,
+    "component": "KERNEL",
+    "template": "Microloader Assertion",
+    "training_size": 1504
+  },
+  {
+    "cluster_id": 300,
+    "component": "KERNEL",
+    "template": "VALIDATE_LOAD_IMAGE_CRC_IN_DRAM",
+    "training_size": 8
+  },
+  {
+    "cluster_id": 301,
+    "component": "KERNEL",
+    "template": "<*> <NUM>:<NUM> <NUM>:000000e0 <NUM>:0008885c",
+    "training_size": 11
+  },
+  {
+    "cluster_id": 302,
+    "component": "KERNEL",
+    "template": "<NUM>:ffffc0c8 <*> <*> <NUM>:000894a8",
+    "training_size": 11
+  },
+  {
+    "cluster_id": 303,
+    "component": "KERNEL",
+    "template": "rts tree/torus link training failed: wanted: <*> C X+ X- Y+ Y- Z+ Z- got: <*> C <*> <*> <*> <*> <*>",
+    "training_size": 214
+  },
+  {
+    "cluster_id": 304,
+    "component": "KERNEL",
+    "template": "rts tree/torus link training failed: wanted: C X+ X- Y+ Y- Z+ Z- got: C <*> <*> <*> <*>",
+    "training_size": 18
+  },
+  {
+    "cluster_id": 305,
+    "component": "KERNEL",
+    "template": "rts tree/torus link training failed: wanted: A B C X+ X- Y+ Y- Z+ Z- got: A <*> <*> <*> <*> <*> <*> <*>",
+    "training_size": 171
+  },
+  {
+    "cluster_id": 306,
+    "component": "KERNEL",
+    "template": "rts tree/torus link training failed: wanted: <*> C X+ X- Y+ Y- Z+ Z- got: <*> C <*> <*> <*> <*>",
+    "training_size": 82
+  },
+  {
+    "cluster_id": 307,
+    "component": "KERNEL",
+    "template": "rts tree/torus link training failed: wanted: C X+ X- Y+ Y- Z+ Z- got: C <*> <*> <*> <*> <*>",
+    "training_size": 54
+  },
+  {
+    "cluster_id": 308,
+    "component": "KERNEL",
+    "template": "rts tree/torus link training failed: wanted: A B C X+ X- Y+ Y- Z+ Z- got: <*> <*> <*> <*> <*> <*> <*>",
+    "training_size": 46
+  },
+  {
+    "cluster_id": 309,
+    "component": "KERNEL",
+    "template": "rts tree/torus link training failed: wanted: A B C X+ X- Y+ Y- Z+ Z- got: <*> <*> <*> <*> <*> <*>",
+    "training_size": 8
+  },
+  {
+    "cluster_id": 310,
+    "component": "KERNEL",
+    "template": "rts tree/torus link training failed: wanted: C X+ X- Y+ Y- Z+ Z- got: C X+ Y- Z-",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 311,
+    "component": "KERNEL",
+    "template": "rts tree/torus link training failed: wanted: <*> C X+ X- Y+ Y- Z+ Z- got: <*> C <*> <*> <*>",
+    "training_size": 10
+  },
+  {
+    "cluster_id": 312,
+    "component": "KERNEL",
+    "template": "ddr: Unable to steer rank=<NUM>, symbol=<NUM> - rank is already steering symbol <NUM>. Due to multiple symbols being over the correctable error threshold, consider replacing the card",
+    "training_size": 197
+  },
+  {
+    "cluster_id": 313,
+    "component": "KERNEL",
+    "template": "<NUM>:000210f8 <NUM>:<NUM> <*> <NUM>:000c8550",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 314,
+    "component": "KERNEL",
+    "template": "<NUM>:167f5ff0 <NUM>:13ec5b80 <NUM>:17c63000 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 315,
+    "component": "KERNEL",
+    "template": "<NUM>:17c63c00 <NUM>:00009c00 <NUM>:13ecf780 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 316,
+    "component": "KERNEL",
+    "template": "<NUM>:17c64550 <NUM>:167f7260 <NUM>:13ecf870 <NUM>:13ecf770",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 317,
+    "component": "KERNEL",
+    "template": "ciod: generated <NUM> core files for program <*>",
+    "training_size": 62484
+  },
+  {
+    "cluster_id": 318,
+    "component": "KERNEL",
+    "template": "rts: kernel terminated for reason <NUM>",
+    "training_size": 18587
+  },
+  {
+    "cluster_id": 319,
+    "component": "KERNEL",
+    "template": "rts: bad message header: cpu <NUM> invalid <*> <*> <*> <*> PSR0=<NUM> PSR1=<NUM> <*> PIXF=<NUM>",
+    "training_size": 619
+  },
+  {
+    "cluster_id": 320,
+    "component": "KERNEL",
+    "template": "rts: bad message header: packet index <NUM> greater than max <NUM> (softheader=<NUM> <*> <*> <*> <*> PSR1=<NUM> <*> PIXF=<NUM>",
+    "training_size": 114
+  },
+  {
+    "cluster_id": 321,
+    "component": "KERNEL",
+    "template": "rts: bad message header: index <NUM> greater than total <NUM> (softheader=<NUM> <*> <NUM> <NUM>) <*> PSR1=<NUM> <*> PIXF=<NUM>",
+    "training_size": 238
+  },
+  {
+    "cluster_id": 322,
+    "component": "KERNEL",
+    "template": "rts: bad message header: expecting type <NUM> instead of type <NUM> <*> <*> <NUM> <NUM>) <*> PSR1=<NUM> <*> PIXF=<NUM>",
+    "training_size": 1146
+  },
+  {
+    "cluster_id": 323,
+    "component": "KERNEL",
+    "template": "kernel panic",
+    "training_size": 18
+  },
+  {
+    "cluster_id": 324,
+    "component": "KERNEL",
+    "template": "external input interrupt (unit=<HEX> bit=<HEX>): 1M tree receiver <NUM> in resynch mode",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 325,
+    "component": "KERNEL",
+    "template": "<NUM>:00158e00 <NUM>:0feea1a0 <NUM>:1eeeeeee <NUM>:00e4bc60",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 326,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:00220aa0 <NUM>:00004c42 <NUM>:0feea1b0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 327,
+    "component": "KERNEL",
+    "template": "iar <*> dear <*>",
+    "training_size": 442966
+  },
+  {
+    "cluster_id": 328,
+    "component": "KERNEL",
+    "template": "NFS Mount failed on <*> slept <NUM> seconds, retrying (<NUM>)",
+    "training_size": 2670
+  },
+  {
+    "cluster_id": 329,
+    "component": "KERNEL",
+    "template": "CHECK_INITIAL_GLOBAL_INTERRUPT_VALUES",
+    "training_size": 544
+  },
+  {
+    "cluster_id": 330,
+    "component": "KERNEL",
+    "template": "Lustre mount FAILED : <*> : point /p/gb1",
+    "training_size": 26426
+  },
+  {
+    "cluster_id": 331,
+    "component": "KERNEL",
+    "template": "<NUM>:1b3acb30 <NUM>:18709e10 <NUM>:10115c70 <NUM>:10115b70",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 332,
+    "component": "KERNEL",
+    "template": "<NUM>:0000e208 <NUM>:1feaa590 <NUM>:1eeeeeee <NUM>:001f9280",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 333,
+    "component": "KERNEL",
+    "template": "<NUM>:0021d210 <NUM>:1feaa59c <NUM>:1feaa5a0 <NUM>:1feaa5a4",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 334,
+    "component": "KERNEL",
+    "template": "<*> <NUM>:0000000d <NUM>:<NUM> <*>",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 335,
+    "component": "KERNEL",
+    "template": "<NUM>:ffffffff <NUM>:<NUM> <*> <NUM>:0feea440",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 336,
+    "component": "KERNEL",
+    "template": "<NUM>:001f9c00 <NUM>:<NUM> <NUM>:001f9280 <NUM>:0021d200",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 337,
+    "component": "KERNEL",
+    "template": "<*> <NUM>:<NUM> <NUM>:00089cd0 <NUM>:000894a8",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 338,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:001ea6fc <NUM>:0feea380 <NUM>:00212cd0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 339,
+    "component": "KERNEL",
+    "template": "<NUM>:0081a2f0 <NUM>:<NUM> <NUM>:0feea380 <NUM>:009ec660",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 340,
+    "component": "KERNEL",
+    "template": "lr:0014b240 cr:480042e4 xer:<NUM> ctr:001658c0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 341,
+    "component": "KERNEL",
+    "template": "<*> <NUM>:<NUM> <*> <NUM>:ff00ff00",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 342,
+    "component": "KERNEL",
+    "template": "<NUM>:0111ba70 <NUM>:0101ba60 <NUM>:<NUM> <NUM>:0feea350",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 343,
+    "component": "KERNEL",
+    "template": "<NUM>:00210df0 <NUM>:<NUM> <NUM>:0feea390 <NUM>:0111ef00",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 344,
+    "component": "KERNEL",
+    "template": "<NUM>:880024e2 <NUM>:1eeeeeee <NUM>:001b0000 <NUM>:001b0000",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 345,
+    "component": "KERNEL",
+    "template": "<NUM>:001b0000 <NUM>:001b0000 <NUM>:001b0000 <NUM>:008ddc70",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 346,
+    "component": "KERNEL",
+    "template": "<NUM>:00b5fd60 <NUM>:001ecccc <NUM>:<NUM> <NUM>:0091e170",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 347,
+    "component": "KERNEL",
+    "template": "<NUM>:4c00010d <NUM>:4c00010d <NUM>:0089dc60 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 348,
+    "component": "KERNEL",
+    "template": "lr:00107b9c cr:880224e4 xer:<NUM> ctr:0013c18c",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 349,
+    "component": "KERNEL",
+    "template": "external input interrupt (unit=<HEX> bit=<HEX>): tree header with no target waiting",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 350,
+    "component": "KERNEL",
+    "template": "<NUM>:000007a8 <NUM>:0903ce20 <NUM>:000084ae <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 351,
+    "component": "KERNEL",
+    "template": "<NUM>:000018e3 <NUM>:000000f5 <NUM>:000002c4 <NUM>:001f7a58",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 352,
+    "component": "KERNEL",
+    "template": "<NUM>:089af7b0 <NUM>:0026e740 <NUM>:00997ee0 <NUM>:00997e70",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 353,
+    "component": "KERNEL",
+    "template": "<NUM>:090337e8 <NUM>:<NUM> <NUM>:0971de18 <NUM>:0971e638",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 354,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:002cf5e0 <NUM>:0030b3b8 <NUM>:00274fb0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 355,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:00272b10 <NUM>:008c7560 <NUM>:001fd2f8",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 356,
+    "component": "KERNEL",
+    "template": "lr:0000a4c0 cr:400024e2 xer:<NUM> <*>",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 357,
+    "component": "KERNEL",
+    "template": "<NUM>:00000bb8 <NUM>:00000bb8 <NUM>:002b09b0 <NUM>:094c4df0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 358,
+    "component": "KERNEL",
+    "template": "<NUM>:1feaa680 <NUM>:1feaa748 <NUM>:094c4de8 <NUM>:0022a210",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 359,
+    "component": "KERNEL",
+    "template": "<NUM>:00211a50 <NUM>:<NUM> <NUM>:0feea3c0 <NUM>:00b5d6b0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 360,
+    "component": "KERNEL",
+    "template": "<NUM>:000c8818 <NUM>:<NUM> <NUM>:000c9cd0 <NUM>:000c94a8",
+    "training_size": 4
+  },
+  {
+    "cluster_id": 361,
+    "component": "KERNEL",
+    "template": "<NUM>:0000c000 <NUM>:1fea9d90 <NUM>:1eeeeeee <NUM>:1a398000",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 362,
+    "component": "KERNEL",
+    "template": "<NUM>:18429ff0 <NUM>:0c287f40 <NUM>:1a3a4000 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 363,
+    "component": "KERNEL",
+    "template": "<NUM>:1a3a4c00 <NUM>:0000cc00 <NUM>:0c294b40 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 364,
+    "component": "KERNEL",
+    "template": "<NUM>:1a3a4f10 <NUM>:1842a5d0 <NUM>:0c294c30 <NUM>:0c294b30",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 365,
+    "component": "KERNEL",
+    "template": "<NUM>:0036d808 <NUM>:0fee8af0 <NUM>:1eeeeeee <NUM>:006c20d0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 366,
+    "component": "KERNEL",
+    "template": "<NUM>:00007ef4 <NUM>:b1144000 <NUM>:0ae73210 <NUM>:0947d370",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 367,
+    "component": "KERNEL",
+    "template": "<NUM>:0af7d898 <NUM>:001fbd00 <NUM>:0ae73210 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 368,
+    "component": "KERNEL",
+    "template": "<NUM>:094fd380 <NUM>:0947d370 <NUM>:b1144000 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 369,
+    "component": "KERNEL",
+    "template": "<NUM>:0adf3200 <NUM>:0917d310 <NUM>:091fd320 <NUM>:0fee8c80",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 370,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:09faec80 <NUM>:0001fbd0 <NUM>:09faecd0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 371,
+    "component": "KERNEL",
+    "template": "<NUM>:01a86cd4 <NUM>:000000af <NUM>:0fee93b0 <NUM>:01a86cdc",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 372,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:0fee97f8 <NUM>:0fee94f0 <NUM>:074ac9e4",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 373,
+    "component": "KERNEL",
+    "template": "<NUM>:800006a7 <NUM>:0feea300 <NUM>:1eeeeeee <NUM>:0bdfa920",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 374,
+    "component": "KERNEL",
+    "template": "<NUM>:0bde3578 <NUM>:0001b588 <NUM>:<NUM> <NUM>:800006a7",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 375,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:0bde0038 <NUM>:03a92320 <NUM>:03a92f70",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 376,
+    "component": "KERNEL",
+    "template": "<NUM>:0422afa0 <NUM>:03e5efa0 <NUM>:03a92fa0 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 377,
+    "component": "KERNEL",
+    "template": "<NUM>:0bdf73e0 <NUM>:089ed1fc <NUM>:00228ed0 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 378,
+    "component": "KERNEL",
+    "template": "<NUM>:0feea490 <NUM>:0feea498 <NUM>:<NUM> <NUM>:09a0ef90",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 379,
+    "component": "KERNEL",
+    "template": "<NUM>:017ffcd0 <NUM>:<NUM> <NUM>:017ffc60 <NUM>:00f83ea0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 380,
+    "component": "KERNEL",
+    "template": "<NUM>:001470b8 <NUM>:0fea03b0 <NUM>:1eeeeeee <NUM>:05cdb3e0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 381,
+    "component": "KERNEL",
+    "template": "<NUM>:01cdb4e0 <NUM>:01cdadc0 <NUM>:0a013960 <NUM>:05cdb3d0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 382,
+    "component": "KERNEL",
+    "template": "<NUM>:05ce2cd0 <NUM>:<NUM> <NUM>:0033ba1c <NUM>:0014704c",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 383,
+    "component": "KERNEL",
+    "template": "<NUM>:0fea04c8 <NUM>:1eeeeeee <NUM>:05cdb550 <NUM>:01cdb5c0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 384,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:0fee0710 <*> <*>",
+    "training_size": 4
+  },
+  {
+    "cluster_id": 385,
+    "component": "KERNEL",
+    "template": "<NUM>:0fee06fc <NUM>:01cdb4e0 <NUM>:05cdb3e0 <NUM>:01cdadc0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 386,
+    "component": "KERNEL",
+    "template": "<NUM>:0fea0680 <NUM>:0a013cc0 <NUM>:0a013940 <NUM>:09d31300",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 387,
+    "component": "KERNEL",
+    "template": "<NUM>:09baae88 <NUM>:0000015e <NUM>:01803f98 <NUM>:4c00080b",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 388,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:0a5b2910 <NUM>:0feea610 <NUM>:0000000c",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 389,
+    "component": "KERNEL",
+    "template": "<NUM>:0017b5e8 <NUM>:0017b030 <NUM>:0017afcc <NUM>:0feea640",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 390,
+    "component": "KERNEL",
+    "template": "<NUM>:0feea610 <NUM>:<NUM> <NUM>:0000015e <NUM>:0000015e",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 391,
+    "component": "KERNEL",
+    "template": "<NUM>:ffffffe0 <*> <*> <NUM>:<NUM>",
+    "training_size": 6
+  },
+  {
+    "cluster_id": 392,
+    "component": "KERNEL",
+    "template": "<NUM>:000000a9 <NUM>:000000de <NUM>:000000df <NUM>:0fea0710",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 393,
+    "component": "KERNEL",
+    "template": "<NUM>:0153e2f0 <NUM>:0033b2a0 <NUM>:010afa30 <NUM>:090a1df0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 394,
+    "component": "KERNEL",
+    "template": "<*> <*> <NUM>:<NUM> <NUM>:00378d10",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 395,
+    "component": "KERNEL",
+    "template": "<NUM>:00002fff <NUM>:1fea89f0 <NUM>:1eeeeeee <NUM>:0851f718",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 396,
+    "component": "KERNEL",
+    "template": "<NUM>:000025f8 <NUM>:1eeeeeee <NUM>:05b1f6a0 <NUM>:02a00078",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 397,
+    "component": "KERNEL",
+    "template": "<NUM>:0028e750 <NUM>:1fea9d00 <NUM>:00c80230 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 398,
+    "component": "KERNEL",
+    "template": "<NUM>:00312c00 <NUM>:<NUM> <NUM>:1fea9bd4 <NUM>:1fea9c40",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 399,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:01306b40 <NUM>:0906e590 <NUM>:0fea0550",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 400,
+    "component": "KERNEL",
+    "template": "<NUM>:01306c00 <NUM>:1eeeeeee <NUM>:00002bdb <NUM>:0fee119c",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 401,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <*> <*> <NUM>:0fea0710",
+    "training_size": 3
+  },
+  {
+    "cluster_id": 402,
+    "component": "KERNEL",
+    "template": "<NUM>:01505b70 <NUM>:0033b2a0 <NUM>:01306a70 <NUM>:09084df0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 403,
+    "component": "KERNEL",
+    "template": "<NUM>:00002e67 <NUM>:0feea5b0 <NUM>:1eeeeeee <NUM>:09f940d0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 404,
+    "component": "KERNEL",
+    "template": "<NUM>:00001a90 <NUM>:0002e670 <NUM>:0000020c <NUM>:08e78ea0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 405,
+    "component": "KERNEL",
+    "template": "<NUM>:000000dc <NUM>:08ea7660 <NUM>:000006a1 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 406,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:00d842b0 <NUM>:00ddab50 <NUM>:0026e740",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 407,
+    "component": "KERNEL",
+    "template": "lr:0010e064 cr:4440482c xer:<NUM> ctr:00113b58",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 408,
+    "component": "KERNEL",
+    "template": "<NUM>:0feea9fc <NUM>:001f6854 <NUM>:001f6850 <NUM>:0feea9b8",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 409,
+    "component": "KERNEL",
+    "template": "<NUM>:001f684c <NUM>:<NUM> <NUM>:0feea9fc <NUM>:001f65d8",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 410,
+    "component": "KERNEL",
+    "template": "<NUM>:00378c80 <NUM>:0fea0570 <NUM>:1eeeeeee <*>",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 411,
+    "component": "KERNEL",
+    "template": "<NUM>:00378d18 <NUM>:014a87f8 <NUM>:09048d10 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 412,
+    "component": "KERNEL",
+    "template": "<NUM>:014a8a58 <NUM>:014a8990 <NUM>:014a88c8 <NUM>:0180e4a0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 413,
+    "component": "KERNEL",
+    "template": "<NUM>:001fdc08 <NUM>:1eeeeeee <NUM>:000167b5 <NUM>:0fee0a44",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 414,
+    "component": "KERNEL",
+    "template": "<NUM>:000002a6 <NUM>:0fee0710 <NUM>:08f6a570 <NUM>:014a7df0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 415,
+    "component": "KERNEL",
+    "template": "<NUM>:0180c6f0 <NUM>:0033b2a0 <NUM>:0180e430 <NUM>:09048e30",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 416,
+    "component": "KERNEL",
+    "template": "<NUM>:014a87b0 <NUM>:08f6a570 <NUM>:08f806f0 <NUM>:09048cf0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 417,
+    "component": "KERNEL",
+    "template": "<NUM>:011e9688 <NUM>:011e95c0 <NUM>:011e94f8 <NUM>:00148f9c",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 418,
+    "component": "KERNEL",
+    "template": "<NUM>:011e88c0 <NUM>:1eeeeeee <NUM>:00019cfe <NUM>:0fee0f1c",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 419,
+    "component": "KERNEL",
+    "template": "<NUM>:014f4730 <NUM>:0033b2a0 <NUM>:0127ef70 <NUM>:090945f0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 420,
+    "component": "KERNEL",
+    "template": "<NUM>:011e9430 <NUM>:<NUM> <NUM>:09088df0 <NUM>:090944f0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 421,
+    "component": "KERNEL",
+    "template": "<NUM>:0134d370 <NUM>:1eeeeeee <NUM>:00003c8a <NUM>:0fee0a30",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 422,
+    "component": "KERNEL",
+    "template": "<NUM>:00f9c330 <NUM>:0033b2a0 <NUM>:00f9a930 <NUM>:09066b70",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 423,
+    "component": "KERNEL",
+    "template": "lr:<NUM> <*> xer:<NUM> <*>",
+    "training_size": 6
+  },
+  {
+    "cluster_id": 424,
+    "component": "KERNEL",
+    "template": "pro",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 425,
+    "component": "KERNEL",
+    "template": "program",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 426,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:000c8590 <NUM>:000c8580 <NUM>:000c9478",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 427,
+    "component": "KERNEL",
+    "template": "<NUM>:000c9478 <NUM>:000002f0 <NUM>:000d0000 <NUM>:000d0078",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 428,
+    "component": "KERNEL",
+    "template": "<NUM>:1fefff50 <NUM>:<NUM> <NUM>:1fefff70 <NUM>:004ad960",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 429,
+    "component": "KERNEL",
+    "template": "lr:0001e620 cr:200044e2 xer:<NUM> ctr:002582cc",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 430,
+    "component": "KERNEL",
+    "template": "<NUM>:000196bd <NUM>:0fea05f0 <NUM>:1eeeeeee <NUM>:09088f00",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 431,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:09052a80 <NUM>:09092f40 <NUM>:0033c9a0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 432,
+    "component": "KERNEL",
+    "template": "<NUM>:010afa50 <NUM>:1eeeeeee <NUM>:0000bf5c <NUM>:0fee17b8",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 433,
+    "component": "KERNEL",
+    "template": "<NUM>:01007dd0 <NUM>:1eeeeeee <NUM>:0000beca <NUM>:0fee1394",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 434,
+    "component": "KERNEL",
+    "template": "<NUM>:000000d6 <NUM>:000000e9 <NUM>:000000ea <NUM>:0fea0700",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 435,
+    "component": "KERNEL",
+    "template": "<NUM>:000000a2 <NUM>:000000a2 <NUM>:000000a3 <NUM>:0fea0700",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 436,
+    "component": "KERNEL",
+    "template": "<NUM>:000000bc <NUM>:0fee0700 <NUM>:09052a80 <NUM>:010af8c0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 437,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:0fee0700 <NUM>:0fea86f8 <NUM>:000011f0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 438,
+    "component": "KERNEL",
+    "template": "<NUM>:013f3340 <NUM>:0033c9a0 <NUM>:bff341a9 <NUM>:09092f40",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 439,
+    "component": "KERNEL",
+    "template": "<NUM>:0fee06ec <NUM>:0000003f <NUM>:<NUM> <NUM>:00e5d280",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 440,
+    "component": "KERNEL",
+    "template": "<NUM>:010b1600 <NUM>:09052a80 <NUM>:09088f00 <NUM>:000865b0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 441,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:0026f530 <NUM>:002735f8 <NUM>:000c65b0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 442,
+    "component": "KERNEL",
+    "template": "<NUM>:0feeaa04 <NUM>:001f7834 <NUM>:008c30e0 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 443,
+    "component": "KERNEL",
+    "template": "<NUM>:001f7926 <NUM>:<NUM> <NUM>:008868a0 <NUM>:4c000405",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 444,
+    "component": "KERNEL",
+    "template": "<NUM>:0a92fef8 <NUM>:0a9362e8 <NUM>:0eac76d8 <NUM>:0eac2888",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 445,
+    "component": "KERNEL",
+    "template": "<NUM>:0eaca548 <NUM>:000003e2 <NUM>:0eac8640 <NUM>:0eac0980",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 446,
+    "component": "KERNEL",
+    "template": "<NUM>:000007e0 <NUM>:03636b88 <NUM>:<NUM> <NUM>:0fee9250",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 447,
+    "component": "KERNEL",
+    "template": "<NUM>:00b7d6a0 <NUM>:00bb24e0 <NUM>:00b476a0 <NUM>:00bb24e0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 448,
+    "component": "KERNEL",
+    "template": "<NUM>:00ba16e0 <NUM>:017939c0 <NUM>:0160b2c0 <NUM>:0178f7c0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 449,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:00b7e6c0 <NUM>:00bb3500 <NUM>:fffffff0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 450,
+    "component": "KERNEL",
+    "template": "<NUM>:00bb36e0 <NUM>:0178b5c0 <NUM>:017831c0 <NUM>:0177efc0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 451,
+    "component": "KERNEL",
+    "template": "<NUM>:00807c00 <NUM>:00807c08 <NUM>:<NUM> <NUM>:fffffffc",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 452,
+    "component": "KERNEL",
+    "template": "<NUM>:010fd5bc <NUM>:<NUM> <NUM>:1fe888d0 <NUM>:1fe888c0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 453,
+    "component": "KERNEL",
+    "template": "<NUM>:00000c60 <NUM>:0fee8a20 <NUM>:1eeeeeee <NUM>:03a498c0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 454,
+    "component": "KERNEL",
+    "template": "<NUM>:03a48c60 <NUM>:03a8db20 <NUM>:03a44220 <NUM>:03a8db20",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 455,
+    "component": "KERNEL",
+    "template": "<NUM>:03a890e0 <NUM>:07a8db20 <NUM>:<NUM> <NUM>:07a60520",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 456,
+    "component": "KERNEL",
+    "template": "<NUM>:03a8e780 <NUM>:07a32f20 <NUM>:079d8320 <NUM>:079aad20",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 457,
+    "component": "KERNEL",
+    "template": "Error sending packet on tree network, packet at address <NUM> is not aligned",
+    "training_size": 5
+  },
+  {
+    "cluster_id": 458,
+    "component": "KERNEL",
+    "template": "data cache <*> parity error detected. attempting to correct",
+    "training_size": 14006
+  },
+  {
+    "cluster_id": 459,
+    "component": "KERNEL",
+    "template": "ddr: redundant bit steering failed, sequencer timeout",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 460,
+    "component": "KERNEL",
+    "template": "<NUM>:001f7640 <NUM>:00300c80 <NUM>:00300c90 <NUM>:00300d60",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 461,
+    "component": "KERNEL",
+    "template": "<NUM>:011f7f20 <NUM>:001f7f00 <NUM>:1feaa540 <NUM>:1feaa530",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 462,
+    "component": "KERNEL",
+    "template": "ddrSize == <NUM>*<NUM>*<NUM> || ddrSize == <NUM>*<NUM>*<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 463,
+    "component": "KERNEL",
+    "template": "rts assertion failed: `personality->version == BGLPERSONALITY_VERSION' in `void start()' at start.cc:<NUM>",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 464,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:0004c5a2 <NUM>:038f9e01 <NUM>:000093ad",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 465,
+    "component": "KERNEL",
+    "template": "<NUM>:000558b0 <NUM>:1eeeeeee <NUM>:01d78220 <NUM>:000fffc0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 466,
+    "component": "KERNEL",
+    "template": "<NUM>:03f2f208 <NUM>:03f2ed90 <NUM>:03f2f268 <NUM>:03f2edf0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 467,
+    "component": "KERNEL",
+    "template": "<NUM>:04d80980 <NUM>:04d80920 <NUM>:04d80e00 <NUM>:04d80da0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 468,
+    "component": "KERNEL",
+    "template": "<NUM>:04d80678 <NUM>:1eeeeeee <NUM>:03f2ea80 <NUM>:03f2e600",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 469,
+    "component": "KERNEL",
+    "template": "<NUM>:000004e8 <NUM>:04d80918 <NUM>:04d80978 <NUM>:04d80d98",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 470,
+    "component": "KERNEL",
+    "template": "<NUM>:04d80df8 <NUM>:03f2e900 <NUM>:03f2ed20 <NUM>:03f2e8a0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 471,
+    "component": "KERNEL",
+    "template": "<NUM>:0000000c <NUM>:000000c0 <NUM>:03f2e5a0 <NUM>:1f7e9dd0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 472,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:01003ec0 <NUM>:08f6c860 <NUM>:0fea0520",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 473,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <*> <*> <NUM>:0fea06f0",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 474,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:0fee06f0 <NUM>:08f6c840 <NUM>:00f4eaf0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 475,
+    "component": "KERNEL",
+    "template": "<NUM>:01003df0 <NUM>:003682a0 <NUM>:00f71030 <NUM>:08f7a800",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 476,
+    "component": "KERNEL",
+    "template": "<NUM>:00f4ddf0 <NUM>:08f6c840 <NUM>:<NUM> <NUM>:00f4eb80",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 477,
+    "component": "KERNEL",
+    "template": "<NUM>:000000be <NUM>:0bda6f60 <NUM>:1eeeeeee <NUM>:0bf0005f",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 478,
+    "component": "KERNEL",
+    "template": "<NUM>:004791c4 <NUM>:<NUM> <NUM>:00e6ee10 <NUM>:0061e5b0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 479,
+    "component": "KERNEL",
+    "template": "<NUM>:000002f8 <NUM>:000000be <NUM>:fff5f8f8 <NUM>:b1141000",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 480,
+    "component": "KERNEL",
+    "template": "<NUM>:00e6ee10 <NUM>:00e6e480 <NUM>:<NUM> <NUM>:00005b46",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 481,
+    "component": "KERNEL",
+    "template": "<NUM>:00e6f630 <NUM>:0cd67b50 <NUM>:03a182f0 <NUM>:000000f0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 482,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:0bda71a0 <NUM>:0cf13630 <NUM>:0bda71a8",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 483,
+    "component": "KERNEL",
+    "template": "<NUM>:00e6e8e0 <NUM>:<NUM> <NUM>:000002d0 <NUM>:0bda71a0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 484,
+    "component": "KERNEL",
+    "template": "<NUM>:0016b348 <NUM>:0fee9f20 <NUM>:1eeeeeee <NUM>:009f3360",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 485,
+    "component": "KERNEL",
+    "template": "<NUM>:0024710c <NUM>:1eeeeeee <NUM>:00000e38 <NUM>:00038e00",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 486,
+    "component": "KERNEL",
+    "template": "<NUM>:003b6ea0 <NUM>:0fea0540 <NUM>:1eeeeeee <NUM>:010ee8a0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 487,
+    "component": "KERNEL",
+    "template": "<NUM>:003b6f38 <NUM>:00ff1768 <NUM>:08ee7e30 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 488,
+    "component": "KERNEL",
+    "template": "<NUM>:00ff19c8 <NUM>:00ff1900 <NUM>:00ff1838 <NUM>:0014a8f4",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 489,
+    "component": "KERNEL",
+    "template": "<NUM>:ffff3b5a <NUM>:1eeeeeee <NUM>:00004b6a <NUM>:0fee0bf0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 490,
+    "component": "KERNEL",
+    "template": "<NUM>:0000002f <NUM>:0fee06f0 <NUM>:08efcd90 <NUM>:00ff3120",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 491,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:003682a0 <NUM>:010ee8a0 <NUM>:08ee7dd0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 492,
+    "component": "KERNEL",
+    "template": "<NUM>:00ff1720 <NUM>:08efcd90 <NUM>:08efb550 <NUM>:08ee7e10",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 493,
+    "component": "KERNEL",
+    "template": "<NUM>:00192a24 <NUM>:0fe69fc0 <NUM>:1eeeeeee <NUM>:00f88210",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 494,
+    "component": "KERNEL",
+    "template": "<NUM>:09a6dfe8 <NUM>:09bcc138 <NUM>:09f0b638 <NUM>:09f0d5a8",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 495,
+    "component": "KERNEL",
+    "template": "<NUM>:003c79b0 <NUM>:09786d40 <NUM>:<NUM> <NUM>:0016ae7c",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 496,
+    "component": "KERNEL",
+    "template": "<NUM>:000099c8 <NUM>:<NUM> <NUM>:00084fc0 <NUM>:00084fb0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 497,
+    "component": "KERNEL",
+    "template": "<NUM>:00084fa0 <NUM>:1eeeeeee <NUM>:1f0995a0 <NUM>:004c2450",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 498,
+    "component": "KERNEL",
+    "template": "<NUM>:c2a385eb <NUM>:c2a67df3 <NUM>:c2a9cc0d <NUM>:c2ad4d2b",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 499,
+    "component": "KERNEL",
+    "template": "<NUM>:ffffffc0 <NUM>:<NUM> <NUM>:ffffffff <NUM>:00146df4",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 500,
+    "component": "KERNEL",
+    "template": "<NUM>:002580c0 <NUM>:1eeeeeee <NUM>:00036f34 <NUM>:0fee0fbc",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 501,
+    "component": "KERNEL",
+    "template": "<NUM>:01cdf820 <NUM>:01cde9e0 <NUM>:027d6500 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 502,
+    "component": "KERNEL",
+    "template": "<NUM>:09f913d0 <NUM>:09ff3c50 <NUM>:09ff3cd0 <NUM>:09f91410",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 503,
+    "component": "KERNEL",
+    "template": "lr:00146ef4 cr:4a404244 xer:<NUM> ctr:00146df4",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 504,
+    "component": "KERNEL",
+    "template": "<NUM>:00002a58 <NUM>:0fee9ae0 <NUM>:1eeeeeee <NUM>:00d58078",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 505,
+    "component": "KERNEL",
+    "template": "<NUM>:8000054b <NUM>:001d7050 <NUM>:00d3f6c0 <NUM>:001d0000",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 506,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:001d8660 <NUM>:7ff310ca <NUM>:001db728",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 507,
+    "component": "KERNEL",
+    "template": "<NUM>:00b10758 <NUM>:00b10378 <NUM>:00b101d0 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 508,
+    "component": "KERNEL",
+    "template": "Error receiving packet on tree network, <*> <*> <NUM> <*> <*> <*> <NUM> <*> <*> <*> <NUM>) <*> PSR1=<NUM> PRXF=<NUM> PIXF=<NUM>",
+    "training_size": 6145
+  },
+  {
+    "cluster_id": 509,
+    "component": "KERNEL",
+    "template": "ddr: activating redundant bit steering for next allocation: rank=<NUM> symbol=<NUM>",
+    "training_size": 492
+  },
+  {
+    "cluster_id": 510,
+    "component": "KERNEL",
+    "template": "<NUM>:0000001a <NUM>:0fee9b20 <NUM>:1eeeeeee <NUM>:0000001b",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 511,
+    "component": "KERNEL",
+    "template": "<NUM>:3ff00000 <NUM>:0fee9af0 <NUM>:1eeeeeee <NUM>:3ff00000",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 512,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:3ffd8b18 <NUM>:e76566b9 <NUM>:3ffd8b18",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 513,
+    "component": "KERNEL",
+    "template": "<NUM>:e76566b9 <NUM>:001d8640 <NUM>:7ffd8b18 <NUM>:001dbc40",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 514,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:00fa4710 <NUM>:00aa3490 <NUM>:00aa3f90",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 515,
+    "component": "KERNEL",
+    "template": "<NUM>:00000cc8 <NUM>:1feaa2a0 <NUM>:1eeeeeee <NUM>:0000018b",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 516,
+    "component": "KERNEL",
+    "template": "<NUM>:018bcb08 <NUM>:018b8b08 <NUM>:0150b738 <NUM>:018b0b38",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 517,
+    "component": "KERNEL",
+    "template": "<NUM>:018bcb38 <NUM>:<NUM> <NUM>:015011c0 <NUM>:0595b4a0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 518,
+    "component": "KERNEL",
+    "template": "<NUM>:0596b4a0 <NUM>:1eeeeeee <NUM>:0598b4a0 <NUM>:059841d8",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 519,
+    "component": "KERNEL",
+    "template": "<NUM>:059e4e60 <NUM>:014ecaf8 <NUM>:00009c40 <NUM>:002d8a78",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 520,
+    "component": "KERNEL",
+    "template": "<NUM>:0556f1f0 <NUM>:02fa98ac <NUM>:059d4e60 <NUM>:059c2158",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 521,
+    "component": "KERNEL",
+    "template": "<NUM>:059ae8d8 <NUM>:0597db98 <NUM>:05964e60 <NUM>:05984e60",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 522,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:0ae672c0 <NUM>:0006d240 <NUM>:00001b4a",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 523,
+    "component": "KERNEL",
+    "template": "<NUM>:0b252b10 <NUM>:0029bdd0 <NUM>:00f6b300 <NUM>:00f6b290",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 524,
+    "component": "KERNEL",
+    "template": "<NUM>:0000001d <NUM>:0fee9ac0 <NUM>:1eeeeeee <NUM>:00aa6e30",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 525,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:0000001c <NUM>:00ea3b20 <NUM>:001d0000",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 526,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:001d8680 <NUM>:800d2fd0 <NUM>:001db450",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 527,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:001d6f20 <NUM>:00aa3260 <NUM>:00aa3580",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 528,
+    "component": "KERNEL",
+    "template": "<NUM>:00241bc0 <NUM>:b1140000 <NUM>:fff81b00 <NUM>:b1140000",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 529,
+    "component": "KERNEL",
+    "template": "<*> <*> <NUM>:<NUM> <NUM>:0023ff70",
+    "training_size": 3
+  },
+  {
+    "cluster_id": 530,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <*> <NUM>:00005c30 <NUM>:0fee9770",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 531,
+    "component": "KERNEL",
+    "template": "<NUM>:0014d50c <NUM>:0fee9a60 <NUM>:1eeeeeee <NUM>:00231c68",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 532,
+    "component": "KERNEL",
+    "template": "<NUM>:0000b6ac <NUM>:<NUM> <NUM>:00231c68 <NUM>:4c00010d",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 533,
+    "component": "KERNEL",
+    "template": "<NUM>:003b0000 <NUM>:003b0000 <*> <*>",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 534,
+    "component": "KERNEL",
+    "template": "<NUM>:003b7760 <NUM>:003b0000 <NUM>:ffffffe8 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 535,
+    "component": "KERNEL",
+    "template": "<NUM>:003b7740 <NUM>:003b7800 <NUM>:000000f3 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 536,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:090d22d0 <NUM>:0911d3d0 <NUM>:0916b110",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 537,
+    "component": "KERNEL",
+    "template": "<NUM>:afffffff <NUM>:0fee9630 <NUM>:1eeeeeee <NUM>:b1145000",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 538,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:000000e0 <NUM>:00002b20 <NUM>:012c19c0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 539,
+    "component": "KERNEL",
+    "template": "<NUM>:0039a65c <NUM>:<NUM> <NUM>:b1145000 <NUM>:003986f0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 540,
+    "component": "KERNEL",
+    "template": "<*> <NUM>:0feea610 <NUM>:1eeeeeee <*>",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 541,
+    "component": "KERNEL",
+    "template": "<NUM>:090a5e00 <NUM>:09022c00 <NUM>:<NUM> <NUM>:000020c9",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 542,
+    "component": "KERNEL",
+    "template": "<NUM>:000028c8 <NUM>:000007d2 <NUM>:<NUM> <NUM>:0021fa20",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 543,
+    "component": "KERNEL",
+    "template": "<NUM>:0021fa14 <*> <NUM>:00282c30 <*>",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 544,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:0029b6b0 <NUM>:00e9a7a0 <NUM>:00e9a730",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 545,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:021bf5b8 <NUM>:021b75b8 <NUM>:01cbad08",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 546,
+    "component": "KERNEL",
+    "template": "<NUM>:07243b28 <NUM>:021b8508 <NUM>:021c0508 <NUM>:01cb85b8",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 547,
+    "component": "KERNEL",
+    "template": "<NUM>:074f1b28 <NUM>:1eeeeeee <NUM>:00000a63 <NUM>:000001f2",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 548,
+    "component": "KERNEL",
+    "template": "<NUM>:07511b28 <NUM>:0750a860 <NUM>:074e1b28 <NUM>:01caf580",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 549,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:066add90 <NUM>:061add88 <NUM>:ffff63c8",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 550,
+    "component": "KERNEL",
+    "template": "<NUM>:06fc2ba0 <NUM>:03fe032c <NUM>:074dc810 <NUM>:07e5c53c",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 551,
+    "component": "KERNEL",
+    "template": "<NUM>:0756c810 <NUM>:0755c810 <NUM>:0750c810 <NUM>:00a6c9f0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 552,
+    "component": "KERNEL",
+    "template": "L1 DCACHE summary averages: #ofDirtyLines: <NUM> out of <NUM> #ofDirtyDblWord: <NUM> out of <NUM>",
+    "training_size": 3149
+  },
+  {
+    "cluster_id": 553,
+    "component": "KERNEL",
+    "template": "<NUM>:01d4fa60 <NUM>:0fea0530 <NUM>:1eeeeeee <NUM>:024fffd0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 554,
+    "component": "KERNEL",
+    "template": "<NUM>:0033d880 <NUM>:01d4f430 <NUM>:0a00c6c0 <NUM>:024fffc0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 555,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:0a00c6c0 <NUM>:0a00c6c8 <NUM>:0a00c6d0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 556,
+    "component": "KERNEL",
+    "template": "<NUM>:0fea0580 <NUM>:01d4f5b0 <NUM>:01d4f770 <NUM>:01d4f930",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 557,
+    "component": "KERNEL",
+    "template": "<NUM>:01d4fae0 <NUM>:09dd6e60 <NUM>:09fc7560 <NUM>:0a00c6a0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 558,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <*> <*> <NUM>:0fea0700",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 559,
+    "component": "KERNEL",
+    "template": "<NUM>:0000023e <NUM>:0022536c <NUM>:0a0c8ea0 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 560,
+    "component": "KERNEL",
+    "template": "<NUM>:01bb0500 <NUM>:00368a80 <NUM>:01fd0900 <NUM>:0a1438a0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 561,
+    "component": "KERNEL",
+    "template": "<NUM>:01575fc0 <NUM>:0a0c8ea0 <NUM>:<NUM> <NUM>:015766d0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 562,
+    "component": "KERNEL",
+    "template": "<NUM>:0fee0700 <*> <NUM>:002a0000 <NUM>:<NUM>",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 563,
+    "component": "KERNEL",
+    "template": "<NUM>:0000002c <NUM>:<NUM> <NUM>:009c94f0 <NUM>:0fe9fb40",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 564,
+    "component": "KERNEL",
+    "template": "<NUM>:00247e20 <NUM>:1eeeeeee <NUM>:00034a8d <NUM>:0fee0a34",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 565,
+    "component": "KERNEL",
+    "template": "<NUM>:0000002a <NUM>:0000002a <NUM>:0000002b <NUM>:0fea0700",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 566,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:0022536c <*> <*>",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 567,
+    "component": "KERNEL",
+    "template": "<NUM>:00002c18 <NUM>:000247e2 <NUM>:00000eaa <NUM>:000247b4",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 568,
+    "component": "KERNEL",
+    "template": "<NUM>:00003aa8 <NUM>:0a025dcc <NUM>:0a025dc4 <NUM>:0a025dc8",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 569,
+    "component": "KERNEL",
+    "template": "<NUM>:0022533c <NUM>:09b191b8 <NUM>:00e93868 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 570,
+    "component": "KERNEL",
+    "template": "<NUM>:000007c6 <NUM>:000a0c00 <NUM>:0000b2ac <NUM>:0915d5ac",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 571,
+    "component": "KERNEL",
+    "template": "<NUM>:0fea04c8 <NUM>:00368af0 <NUM>:0fea04d0 <NUM>:0036a3a0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 572,
+    "component": "KERNEL",
+    "template": "<NUM>:013e8c20 <NUM>:1eeeeeee <NUM>:0001b7dc <NUM>:0fee0840",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 573,
+    "component": "KERNEL",
+    "template": "<NUM>:013dc480 <NUM>:00368a80 <NUM>:013dc7c0 <NUM>:0a133fe0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 574,
+    "component": "KERNEL",
+    "template": "<*> <*> <NUM>:<NUM> <NUM>:003b7710",
+    "training_size": 3
+  },
+  {
+    "cluster_id": 575,
+    "component": "KERNEL",
+    "template": "<*> <*> xer:<NUM> ctr:0014ac7c",
+    "training_size": 3
+  },
+  {
+    "cluster_id": 576,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:09b330e0 <NUM>:001470c0 <NUM>:000051c4",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 577,
+    "component": "KERNEL",
+    "template": "<NUM>:000059c3 <NUM>:000008e8 <NUM>:0000089e <NUM>:0021fa20",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 578,
+    "component": "KERNEL",
+    "template": "<NUM>:0912f6d0 <NUM>:0029b6b0 <NUM>:00eb3e40 <NUM>:00eb3dd0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 579,
+    "component": "KERNEL",
+    "template": "<NUM>:0a43b1f0 <NUM>:0fee9f60 <NUM>:1eeeeeee <NUM>:b1145000",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 580,
+    "component": "KERNEL",
+    "template": "<NUM>:08df35a0 <NUM>:0a24a4c0 <NUM>:0a24a4d0 <NUM>:0a24a520",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 581,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:afffffff <NUM>:00001e10 <NUM>:0a2486b0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 582,
+    "component": "KERNEL",
+    "template": "<NUM>:0021e750 <NUM>:0021e744 <NUM>:0021e738 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 583,
+    "component": "KERNEL",
+    "template": "<NUM>:00e00660 <NUM>:00dc4aa0 <NUM>:<NUM> <NUM>:0feea0a0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 584,
+    "component": "KERNEL",
+    "template": "<NUM>:003ba04c <NUM>:0043a8e0 <NUM>:b1145000 <NUM>:08df3480",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 585,
+    "component": "KERNEL",
+    "template": "critical input interrupt (unit=<HEX> bit=<HEX>): warning for <*> <*> wire, suppressing further interrupts of same type",
+    "training_size": 3546
+  },
+  {
+    "cluster_id": 586,
+    "component": "KERNEL",
+    "template": "<NUM> tree receiver <NUM> in re-synch state event(s) (dcr <HEX>) detected over <NUM> seconds",
+    "training_size": 3148
+  },
+  {
+    "cluster_id": 587,
+    "component": "KERNEL",
+    "template": "<NUM> torus receiver <*> input pipe error(s) (dcr <HEX>) detected and corrected over <NUM> seconds",
+    "training_size": 3512
+  },
+  {
+    "cluster_id": 588,
+    "component": "KERNEL",
+    "template": "<NUM> ddr error(s) detected and corrected on rank <NUM>, symbol <NUM> over <NUM> seconds",
+    "training_size": 10436
+  },
+  {
+    "cluster_id": 589,
+    "component": "KERNEL",
+    "template": "total of <NUM> ddr error(s) detected and corrected over <NUM> seconds",
+    "training_size": 10415
+  },
+  {
+    "cluster_id": 590,
+    "component": "KERNEL",
+    "template": "<NUM> <*> <*> error(s) (dcr <HEX>) detected and corrected over <NUM> seconds",
+    "training_size": 1515
+  },
+  {
+    "cluster_id": 591,
+    "component": "KERNEL",
+    "template": "idoproxy communication failure: socket closed",
+    "training_size": 41
+  },
+  {
+    "cluster_id": 592,
+    "component": "KERNEL",
+    "template": "<NUM>:<NUM> <NUM>:0bfea6c0 <NUM>:0bfea4c0 <NUM>:0bfa19c0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 593,
+    "component": "KERNEL",
+    "template": "<NUM>:000001b2 <NUM>:0a5e3800 <NUM>:000001b2 <NUM>:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 594,
+    "component": "KERNEL",
+    "template": "Machine Check Status Register: <HEX>",
+    "training_size": 56
+  },
+  {
+    "cluster_id": 595,
+    "component": "KERNEL",
+    "template": "Machine State Register: <HEX>",
+    "training_size": 69
+  },
+  {
+    "cluster_id": 596,
+    "component": "KERNEL",
+    "template": "Core Configuration Register <NUM>: <HEX>",
+    "training_size": 69
+  },
+  {
+    "cluster_id": 597,
+    "component": "KERNEL",
+    "template": "DDR failing info register: DDR Fail Info Register: <HEX>",
+    "training_size": 29
+  },
+  {
+    "cluster_id": 598,
+    "component": "KERNEL",
+    "template": "General Purpose Registers:",
+    "training_size": 69
+  },
+  {
+    "cluster_id": 599,
+    "component": "KERNEL",
+    "template": "r00=<HEX> r01=<HEX> r02=<HEX> r03=<HEX>",
+    "training_size": 69
+  },
+  {
+    "cluster_id": 600,
+    "component": "KERNEL",
+    "template": "r04=<HEX> r05=<HEX> r06=<HEX> r07=<HEX>",
+    "training_size": 69
+  },
+  {
+    "cluster_id": 601,
+    "component": "KERNEL",
+    "template": "r08=<HEX> r09=<HEX> r10=<HEX> r11=<HEX>",
+    "training_size": 69
+  },
+  {
+    "cluster_id": 602,
+    "component": "KERNEL",
+    "template": "r12=<HEX> r13=<HEX> r14=<HEX> r15=<HEX>",
+    "training_size": 68
+  },
+  {
+    "cluster_id": 603,
+    "component": "KERNEL",
+    "template": "r16=<HEX> r17=<HEX> r18=<HEX> r19=<HEX>",
+    "training_size": 68
+  },
+  {
+    "cluster_id": 604,
+    "component": "KERNEL",
+    "template": "r20=<HEX> r21=<HEX> r22=<HEX> r23=<HEX>",
+    "training_size": 68
+  },
+  {
+    "cluster_id": 605,
+    "component": "KERNEL",
+    "template": "r24=<HEX> r25=<HEX> r26=<HEX> r27=<HEX>",
+    "training_size": 68
+  },
+  {
+    "cluster_id": 606,
+    "component": "KERNEL",
+    "template": "r28=<HEX> r29=<HEX> r30=<HEX> r31=<HEX>",
+    "training_size": 68
+  },
+  {
+    "cluster_id": 607,
+    "component": "KERNEL",
+    "template": "Special Purpose Registers:",
+    "training_size": 68
+  },
+  {
+    "cluster_id": 608,
+    "component": "KERNEL",
+    "template": "lr=<HEX> cr=<HEX> xer=<HEX> ctr=<HEX>",
+    "training_size": 68
+  },
+  {
+    "cluster_id": 609,
+    "component": "KERNEL",
+    "template": "msr=<HEX> dear=<HEX> esr=<HEX> fpscr=<HEX>",
+    "training_size": 68
+  },
+  {
+    "cluster_id": 610,
+    "component": "KERNEL",
+    "template": "dbcr0=<HEX> dbsr=<HEX> ccr0=<HEX>",
+    "training_size": 68
+  },
+  {
+    "cluster_id": 611,
+    "component": "KERNEL",
+    "template": "Floating Point Status and Control Register: <HEX>",
+    "training_size": 68
+  },
+  {
+    "cluster_id": 612,
+    "component": "KERNEL",
+    "template": "exception summary........................<NUM>",
+    "training_size": 68
+  },
+  {
+    "cluster_id": 613,
+    "component": "KERNEL",
+    "template": "enabled exception summary................<NUM>",
+    "training_size": 68
+  },
+  {
+    "cluster_id": 614,
+    "component": "KERNEL",
+    "template": "invalid operation exception <*>",
+    "training_size": 204
+  },
+  {
+    "cluster_id": 615,
+    "component": "KERNEL",
+    "template": "overflow exception.......................<NUM>",
+    "training_size": 68
+  },
+  {
+    "cluster_id": 616,
+    "component": "KERNEL",
+    "template": "underflow exception......................<NUM>",
+    "training_size": 68
+  },
+  {
+    "cluster_id": 617,
+    "component": "KERNEL",
+    "template": "divide-by-zero exception.................<NUM>",
+    "training_size": 68
+  },
+  {
+    "cluster_id": 618,
+    "component": "KERNEL",
+    "template": "inexact exception........................<NUM>",
+    "training_size": 68
+  },
+  {
+    "cluster_id": 619,
+    "component": "KERNEL",
+    "template": "invalid <*>",
+    "training_size": 408
+  },
+  {
+    "cluster_id": 620,
+    "component": "KERNEL",
+    "template": "fraction <*>",
+    "training_size": 136
+  },
+  {
+    "cluster_id": 621,
+    "component": "KERNEL",
+    "template": "quiet NaN................................<NUM>",
+    "training_size": 68
+  },
+  {
+    "cluster_id": 622,
+    "component": "KERNEL",
+    "template": "minus <*>",
+    "training_size": 136
+  },
+  {
+    "cluster_id": 623,
+    "component": "KERNEL",
+    "template": "minus normalized number..................<NUM>",
+    "training_size": 68
+  },
+  {
+    "cluster_id": 624,
+    "component": "KERNEL",
+    "template": "minus denormalized number................<NUM>",
+    "training_size": 68
+  },
+  {
+    "cluster_id": 625,
+    "component": "KERNEL",
+    "template": "plus <*>",
+    "training_size": 136
+  },
+  {
+    "cluster_id": 626,
+    "component": "KERNEL",
+    "template": "plus denormalized number.................<NUM>",
+    "training_size": 68
+  },
+  {
+    "cluster_id": 627,
+    "component": "KERNEL",
+    "template": "plus normalized number...................<NUM>",
+    "training_size": 68
+  },
+  {
+    "cluster_id": 628,
+    "component": "KERNEL",
+    "template": "reserved.................................<NUM>",
+    "training_size": 68
+  },
+  {
+    "cluster_id": 629,
+    "component": "KERNEL",
+    "template": "invalid operation exception (int cnvt)...<NUM>",
+    "training_size": 68
+  },
+  {
+    "cluster_id": 630,
+    "component": "KERNEL",
+    "template": "enable invalid operation exceptions......<NUM>",
+    "training_size": 68
+  },
+  {
+    "cluster_id": 631,
+    "component": "KERNEL",
+    "template": "enable overflow exceptions...............<NUM>",
+    "training_size": 68
+  },
+  {
+    "cluster_id": 632,
+    "component": "KERNEL",
+    "template": "enable underflow exceptions..............<NUM>",
+    "training_size": 68
+  },
+  {
+    "cluster_id": 633,
+    "component": "KERNEL",
+    "template": "enable divide-by-zero exceptions.........<NUM>",
+    "training_size": 68
+  },
+  {
+    "cluster_id": 634,
+    "component": "KERNEL",
+    "template": "enable inexact exceptions................<NUM>",
+    "training_size": 68
+  },
+  {
+    "cluster_id": 635,
+    "component": "KERNEL",
+    "template": "enable non-IEEE mode.....................<NUM>",
+    "training_size": 68
+  },
+  {
+    "cluster_id": 636,
+    "component": "KERNEL",
+    "template": "round nearest............................<NUM>",
+    "training_size": 68
+  },
+  {
+    "cluster_id": 637,
+    "component": "KERNEL",
+    "template": "round toward <*>",
+    "training_size": 204
+  },
+  {
+    "cluster_id": 638,
+    "component": "KERNEL",
+    "template": "Floating Point Registers:",
+    "training_size": 68
+  },
+  {
+    "cluster_id": 639,
+    "component": "KERNEL",
+    "template": "<*> ffffffff ffffffff ffffffff",
+    "training_size": 835
+  },
+  {
+    "cluster_id": 640,
+    "component": "KERNEL",
+    "template": "ciod: Received signal <NUM>, code=<NUM>, errno=<NUM>, address=<HEX>",
+    "training_size": 39457
+  },
+  {
+    "cluster_id": 641,
+    "component": "KERNEL",
+    "template": "Power Good signal deactivated: <*> A service action may be required.",
+    "training_size": 94
+  },
+  {
+    "cluster_id": 642,
+    "component": "KERNEL",
+    "template": "<NUM> torus <*> <*> <*> error(s) (dcr <HEX>) detected and corrected over <NUM> seconds",
+    "training_size": 1049
+  },
+  {
+    "cluster_id": 643,
+    "component": "KERNEL",
+    "template": "Target=ido://FF:F2:9F:<NUM>:D5:<NUM>:<NUM>:0D:<NUM>:E9:2A:FE/JTAG/<NUM> Message=Invalid JtagId = ffffffff Run environmental monitor to diagnose possible hardware failure.",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 644,
+    "component": "KERNEL",
+    "template": "<NUM>:0000000c <NUM>:0fe9fa20 <NUM>:1eeeeeee <NUM>:000000c0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 645,
+    "component": "KERNEL",
+    "template": "<NUM>:0fe9fa40 <NUM>:1eeeeeee <NUM>:094231c0 <NUM>:800000c0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 646,
+    "component": "KERNEL",
+    "template": "<NUM>:0962a620 <NUM>:ffffffff <NUM>:<NUM> <NUM>:3800000c",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 647,
+    "component": "KERNEL",
+    "template": "<NUM>:8962a6e0 <NUM>:0fee15f4 <NUM>:000002d0 <NUM>:00545a20",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 648,
+    "component": "KERNEL",
+    "template": "<NUM>:0fee06f4 <NUM>:<NUM> <NUM>:0fea07f0 <NUM>:000c65b0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 649,
+    "component": "KERNEL",
+    "template": "<NUM>:0000002f <NUM>:00085fd0 <NUM>:1eeeeeee <NUM>:ffffffff",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 650,
+    "component": "KERNEL",
+    "template": "<NUM>:00fd1f80 <NUM>:<NUM> <NUM>:0003a045 <NUM>:0fee0ac0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 651,
+    "component": "KERNEL",
+    "template": "<NUM>:000003df <NUM>:0022536c <NUM>:0fee0700 <NUM>:0fea86f8",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 652,
+    "component": "KERNEL",
+    "template": "<NUM>:00002d38 <NUM>:<NUM> <NUM>:000865b0 <NUM>:00089cd0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 653,
+    "component": "KERNEL",
+    "template": "<NUM>:00553df0 <NUM>:002a0000 <NUM>:<NUM> <NUM>:000865b0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 654,
+    "component": "KERNEL",
+    "template": "<NUM>:01bb81c8 <NUM>:1eeeeeee <NUM>:0000fff3 <NUM>:0fee1024",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 655,
+    "component": "KERNEL",
+    "template": "<NUM>:0000012a <NUM>:0022536c <NUM>:0a175ec0 <NUM>:01bb80c0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 656,
+    "component": "KERNEL",
+    "template": "<NUM>:01e73000 <NUM>:00368a80 <NUM>:01c4dc00 <NUM>:0a1ab840",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 657,
+    "component": "KERNEL",
+    "template": "<NUM>:000017e7 <NUM>:0afdb950 <NUM>:<NUM> <NUM>:000015e7",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 658,
+    "component": "KERNEL",
+    "template": "<NUM>:00001de7 <NUM>:00000be2 <NUM>:000008e6 <NUM>:0021fa20",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 659,
+    "component": "KERNEL",
+    "template": "<NUM>:0b8d2510 <NUM>:0029b6b0 <NUM>:0189a800 <NUM>:0189a790",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 660,
+    "component": "KERNEL",
+    "template": "<NUM>:01f18060 <NUM>:1eeeeeee <NUM>:0000cccd <NUM>:0fee091c",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 661,
+    "component": "KERNEL",
+    "template": "<NUM>:0000001b <NUM>:0000002e <NUM>:0000002f <NUM>:0fea0700",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 662,
+    "component": "KERNEL",
+    "template": "<NUM>:000003b6 <NUM>:0022536c <NUM>:0a363e60 <NUM>:01f17f00",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 663,
+    "component": "KERNEL",
+    "template": "<NUM>:01f29340 <NUM>:00368a80 <NUM>:01f28980 <NUM>:0a362ae0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 664,
+    "component": "KERNEL",
+    "template": "<NUM>:01b1cd90 <NUM>:1eeeeeee <NUM>:0000676f <NUM>:0fee10c4",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 665,
+    "component": "KERNEL",
+    "template": "<NUM>:0000007d <NUM>:000000e2 <NUM>:000000e3 <NUM>:0fea0700",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 666,
+    "component": "KERNEL",
+    "template": "<NUM>:000000eb <NUM>:<NUM> <NUM>:09b23610 <NUM>:01b1cca0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 667,
+    "component": "KERNEL",
+    "template": "<NUM>:01e14120 <NUM>:0036a010 <NUM>:01d7b860 <NUM>:09b5dc90",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 668,
+    "component": "KERNEL",
+    "template": "<NUM>:01b1b920 <NUM>:09b23610 <NUM>:<NUM> <NUM>:003b8cb0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 669,
+    "component": "KERNEL",
+    "template": "lr:0014b4f4 cr:2a404828 xer:<NUM> ctr:0014b34c",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 670,
+    "component": "KERNEL",
+    "template": "<NUM>:0016af30 <NUM>:0feea5e0 <NUM>:1eeeeeee <NUM>:097b2d30",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 671,
+    "component": "KERNEL",
+    "template": "<NUM>:09a0a578 <NUM>:0a04b7c8 <NUM>:0a047ba8 <NUM>:0a0600a8",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 672,
+    "component": "KERNEL",
+    "template": "<NUM>:0a041688 <NUM>:<NUM> <NUM>:003b8f38 <NUM>:0feea6d8",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 673,
+    "component": "KERNEL",
+    "template": "<NUM>:0feea670 <NUM>:<NUM> <NUM>:0000e8b0 <NUM>:097b2d30",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 674,
+    "component": "KERNEL",
+    "template": "MACHINE CHECK <*> <*> <*> <*> iar <HEX> lr <HEX>)",
+    "training_size": 14482
+  },
+  {
+    "cluster_id": 675,
+    "component": "KERNEL",
+    "template": "Exception Syndrome Register: <HEX>",
+    "training_size": 4
+  },
+  {
+    "cluster_id": 676,
+    "component": "KERNEL",
+    "template": "<*> <*> <NUM> <NUM>",
+    "training_size": 273
+  },
+  {
+    "cluster_id": 677,
+    "component": "KERNEL",
+    "template": "fpr10=<HEX> <NUM> <*> <*>",
+    "training_size": 13
+  },
+  {
+    "cluster_id": 678,
+    "component": "KERNEL",
+    "template": "fpr14=<HEX> <NUM> f206dd8f c032ba03",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 679,
+    "component": "KERNEL",
+    "template": "fpr15=<HEX> c039e57f 49a050a3 c0472313",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 680,
+    "component": "KERNEL",
+    "template": "fpr16=<HEX> c0339d46 f4d3334d c0336cf0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 681,
+    "component": "KERNEL",
+    "template": "fpr17=<HEX> c03f1ed2 b368f5a1 4030cbea",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 682,
+    "component": "KERNEL",
+    "template": "fpr18=<HEX> c017d546 a7aba2ea <NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 683,
+    "component": "KERNEL",
+    "template": "fpr19=<HEX> 3fe99f11 2c01fb9a c036f393",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 684,
+    "component": "KERNEL",
+    "template": "fpr20=<HEX> c015af9e 66894b45 <NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 685,
+    "component": "KERNEL",
+    "template": "fpr21=<HEX> 4034f4b3 0b0773fd c0243fac",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 686,
+    "component": "KERNEL",
+    "template": "fpr22=<HEX> 4031c448 0930136e bfa9e110",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 687,
+    "component": "KERNEL",
+    "template": "fpr23=<HEX> <NUM> fe877a91 c026b8ec",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 688,
+    "component": "KERNEL",
+    "template": "fpr24=<HEX> 4031fc2a 5c507b46 c047a376",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 689,
+    "component": "KERNEL",
+    "template": "fpr25=<HEX> 402907c2 99bd0882 c0354a91",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 690,
+    "component": "KERNEL",
+    "template": "fpr26=<HEX> 400e19be 30f2742d 4025d58f",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 691,
+    "component": "KERNEL",
+    "template": "fpr27=<HEX> c04a0154 84c3abc2 403e4042",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 692,
+    "component": "KERNEL",
+    "template": "fpr28=<HEX> c028dd73 9c2f1236 bff963ea",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 693,
+    "component": "KERNEL",
+    "template": "fpr29=<HEX> 403eb4f0 f6b83afa 400a310e",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 694,
+    "component": "KERNEL",
+    "template": "fpr30=<HEX> 403d017a 847b4c03 c02aa133",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 695,
+    "component": "KERNEL",
+    "template": "idoproxy communication failure: BGLERR_IDO_PKT_TIMEOUT connection lost to node/link/service card",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 696,
+    "component": "KERNEL",
+    "template": "ciod: In packet from node <NUM> <*> message still ready for node <NUM> <*> <NUM> <NUM> <NUM>)",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 697,
+    "component": "KERNEL",
+    "template": "machine check interrupt (bit=<HEX>): L2 dcache unit <*> <*> parity error",
+    "training_size": 23
+  },
+  {
+    "cluster_id": 698,
+    "component": "KERNEL",
+    "template": "fpr0=<HEX> <*> <NUM> <*>",
+    "training_size": 15
+  },
+  {
+    "cluster_id": 699,
+    "component": "KERNEL",
+    "template": "fpr1=<HEX> <NUM> <*> <*>",
+    "training_size": 20
+  },
+  {
+    "cluster_id": 700,
+    "component": "KERNEL",
+    "template": "fpr2=<HEX> <NUM> <*> <*>",
+    "training_size": 25
+  },
+  {
+    "cluster_id": 701,
+    "component": "KERNEL",
+    "template": "fpr3=<HEX> <NUM> <*> <*>",
+    "training_size": 25
+  },
+  {
+    "cluster_id": 702,
+    "component": "KERNEL",
+    "template": "<*> <*> 0ffaa000 bfd98f2f",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 703,
+    "component": "KERNEL",
+    "template": "fpr5=<HEX> 40465fd1 28ec6124 3fd15277",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 704,
+    "component": "KERNEL",
+    "template": "fpr6=<HEX> 4050ed36 798582f4 bf92e6d9",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 705,
+    "component": "KERNEL",
+    "template": "fpr7=<HEX> 400c9dd0 c245a32f c070b279",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 706,
+    "component": "KERNEL",
+    "template": "fpr8=<HEX> bf93c286 e063712e 3fc004d2",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 707,
+    "component": "KERNEL",
+    "template": "fpr9=<HEX> <*> <NUM> c01c0000",
+    "training_size": 8
+  },
+  {
+    "cluster_id": 708,
+    "component": "KERNEL",
+    "template": "fpr10=<HEX> <*> <NUM> <*>",
+    "training_size": 11
+  },
+  {
+    "cluster_id": 709,
+    "component": "KERNEL",
+    "template": "fpr12=<HEX> c08f58dd b022b757 3fc7afbd",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 710,
+    "component": "KERNEL",
+    "template": "fpr13=<HEX> 08f07178 8aa2d785 bf836735",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 711,
+    "component": "KERNEL",
+    "template": "fpr14=<HEX> ffffffff <*> <*>",
+    "training_size": 28
+  },
+  {
+    "cluster_id": 712,
+    "component": "KERNEL",
+    "template": "fpr15=<HEX> ffffffff <*> <*>",
+    "training_size": 28
+  },
+  {
+    "cluster_id": 713,
+    "component": "KERNEL",
+    "template": "fpr16=<HEX> ffffffff <*> <*>",
+    "training_size": 29
+  },
+  {
+    "cluster_id": 714,
+    "component": "KERNEL",
+    "template": "fpr17=<HEX> ffffffff <*> <*>",
+    "training_size": 30
+  },
+  {
+    "cluster_id": 715,
+    "component": "KERNEL",
+    "template": "<*> ffffffff <NUM> <*>",
+    "training_size": 147
+  },
+  {
+    "cluster_id": 716,
+    "component": "KERNEL",
+    "template": "<*> ffffffff d6ab5368 <*>",
+    "training_size": 18
+  },
+  {
+    "cluster_id": 717,
+    "component": "KERNEL",
+    "template": "fpr24=<HEX> ffffffff <*> <*>",
+    "training_size": 22
+  },
+  {
+    "cluster_id": 718,
+    "component": "KERNEL",
+    "template": "fpr25=<HEX> ffffffff <*> <*>",
+    "training_size": 21
+  },
+  {
+    "cluster_id": 719,
+    "component": "KERNEL",
+    "template": "fpr27=<HEX> ffffffff <*> <*>",
+    "training_size": 21
+  },
+  {
+    "cluster_id": 720,
+    "component": "KERNEL",
+    "template": "<*> <*> 724b8988 bfdea458",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 721,
+    "component": "KERNEL",
+    "template": "fpr5=<HEX> c0252d92 dc69a17b 3fa38ba0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 722,
+    "component": "KERNEL",
+    "template": "fpr6=<HEX> 401eddf7 ae4ee1be bfaf15cf",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 723,
+    "component": "KERNEL",
+    "template": "fpr7=<HEX> bfe0ae17 d4864bce c073268b",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 724,
+    "component": "KERNEL",
+    "template": "fpr8=<HEX> bff1b01d 399b8aa9 3f961734",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 725,
+    "component": "KERNEL",
+    "template": "fpr12=<HEX> <*> <NUM> <*>",
+    "training_size": 16
+  },
+  {
+    "cluster_id": 726,
+    "component": "KERNEL",
+    "template": "fpr13=<HEX> 08f01338 a05ee3ee bf99fa89",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 727,
+    "component": "KERNEL",
+    "template": "fpr6=<HEX> <NUM> <*> <*>",
+    "training_size": 21
+  },
+  {
+    "cluster_id": 728,
+    "component": "KERNEL",
+    "template": "fpr8=<HEX> <NUM> <*> <*>",
+    "training_size": 9
+  },
+  {
+    "cluster_id": 729,
+    "component": "KERNEL",
+    "template": "fpr9=<HEX> <NUM> <*> <*>",
+    "training_size": 22
+  },
+  {
+    "cluster_id": 730,
+    "component": "KERNEL",
+    "template": "fpr11=<HEX> <NUM> <*> <*>",
+    "training_size": 19
+  },
+  {
+    "cluster_id": 731,
+    "component": "KERNEL",
+    "template": "fpr12=<HEX> c07a533b 5c8d52fd 3b448d34",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 732,
+    "component": "KERNEL",
+    "template": "<*> <*> 48b0e5c1 bfd7fac0",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 733,
+    "component": "KERNEL",
+    "template": "fpr5=<HEX> c041d767 98ccf536 3fd1ec70",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 734,
+    "component": "KERNEL",
+    "template": "fpr6=<HEX> 402e4ca6 d06a9c52 bfb51f5e",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 735,
+    "component": "KERNEL",
+    "template": "fpr7=<HEX> 4006d1dc 4159854d c07033f7",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 736,
+    "component": "KERNEL",
+    "template": "fpr8=<HEX> bffe7d56 d3a1c84c 3fbd6d43",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 737,
+    "component": "KERNEL",
+    "template": "fpr12=<HEX> <NUM> <*> <*>",
+    "training_size": 10
+  },
+  {
+    "cluster_id": 738,
+    "component": "KERNEL",
+    "template": "fpr13=<HEX> 0600c742 194784d2 bfa4a99d",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 739,
+    "component": "KERNEL",
+    "template": "<*> <*> 3689c9ed bfd7fba9",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 740,
+    "component": "KERNEL",
+    "template": "fpr5=<HEX> c0400eed 5069bc5b 3fd16986",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 741,
+    "component": "KERNEL",
+    "template": "fpr6=<HEX> c0270fba 667a10b9 bfb879ba",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 742,
+    "component": "KERNEL",
+    "template": "fpr7=<HEX> 3fe38584 9bbab824 c0713f53",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 743,
+    "component": "KERNEL",
+    "template": "fpr8=<HEX> bff1ab84 43957dee 3fbbe027",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 744,
+    "component": "KERNEL",
+    "template": "fpr12=<HEX> c09099f7 f4afcb3f 3fc48629",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 745,
+    "component": "KERNEL",
+    "template": "fpr13=<HEX> 004c8328 <*> <*>",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 746,
+    "component": "KERNEL",
+    "template": "<*> <*> b6976eae bfdc2100",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 747,
+    "component": "KERNEL",
+    "template": "fpr5=<HEX> <NUM> <*> <*>",
+    "training_size": 20
+  },
+  {
+    "cluster_id": 748,
+    "component": "KERNEL",
+    "template": "fpr6=<HEX> c048e028 7ad46c19 bfc0e6fa",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 749,
+    "component": "KERNEL",
+    "template": "fpr7=<HEX> bff1d32e 1623e4b0 c0708b4d",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 750,
+    "component": "KERNEL",
+    "template": "fpr8=<HEX> 3fb7c30c 0a92e01c 3fb0b354",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 751,
+    "component": "KERNEL",
+    "template": "fpr12=<HEX> 408c4060 a69e902e 3fcb38fd",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 752,
+    "component": "KERNEL",
+    "template": "fpr13=<HEX> <NUM> <*> <*>",
+    "training_size": 8
+  },
+  {
+    "cluster_id": 753,
+    "component": "KERNEL",
+    "template": "<*> <*> 19cd9b6c bfb870b9",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 754,
+    "component": "KERNEL",
+    "template": "fpr5=<HEX> 3faf2d97 e4f577ad 3fdcc0ca",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 755,
+    "component": "KERNEL",
+    "template": "fpr6=<HEX> bf52895d df8d76aa 3f928227",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 756,
+    "component": "KERNEL",
+    "template": "fpr7=<HEX> 3f62ea8c 1cc24a7c c0706e16",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 757,
+    "component": "KERNEL",
+    "template": "fpr8=<HEX> bff4781b eca2b489 3fc2b54d",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 758,
+    "component": "KERNEL",
+    "template": "fpr12=<HEX> 408e2ee4 94608dcf 3fa438c4",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 759,
+    "component": "KERNEL",
+    "template": "<*> <*> 98ea8be4 3f5e6e65",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 760,
+    "component": "KERNEL",
+    "template": "fpr5=<HEX> c02c2f8c 1c22e9ce bf732a29",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 761,
+    "component": "KERNEL",
+    "template": "fpr6=<HEX> 404f5793 594d4931 bf8ea01b",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 762,
+    "component": "KERNEL",
+    "template": "fpr7=<HEX> bfe0bbc0 6fc1328a c0255f17",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 763,
+    "component": "KERNEL",
+    "template": "fpr8=<HEX> 3ff0e303 006296a7 bf75cb0b",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 764,
+    "component": "KERNEL",
+    "template": "fpr13=<HEX> 08ea4ee8 1174aee6 3f5a3b49",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 765,
+    "component": "KERNEL",
+    "template": "<*> <*> c1d36c4c 3f627cf5",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 766,
+    "component": "KERNEL",
+    "template": "fpr5=<HEX> c01fbab1 72ffae7b 3f6276d1",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 767,
+    "component": "KERNEL",
+    "template": "fpr6=<HEX> c028c3ec 7787f21a bf687c08",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 768,
+    "component": "KERNEL",
+    "template": "fpr7=<HEX> bfe2e13e 6723211a c025f045",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 769,
+    "component": "KERNEL",
+    "template": "fpr8=<HEX> c0009a39 002233d1 3f5c7ae7",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 770,
+    "component": "KERNEL",
+    "template": "fpr0=<HEX> <NUM> <*> <*>",
+    "training_size": 14
+  },
+  {
+    "cluster_id": 771,
+    "component": "KERNEL",
+    "template": "fpr18=<HEX> ffffffff <*> <*>",
+    "training_size": 18
+  },
+  {
+    "cluster_id": 772,
+    "component": "KERNEL",
+    "template": "fpr19=<HEX> ffffffff <*> <*>",
+    "training_size": 16
+  },
+  {
+    "cluster_id": 773,
+    "component": "KERNEL",
+    "template": "fpr20=<HEX> ffffffff <*> <*>",
+    "training_size": 17
+  },
+  {
+    "cluster_id": 774,
+    "component": "KERNEL",
+    "template": "fpr21=<HEX> ffffffff <*> <*>",
+    "training_size": 18
+  },
+  {
+    "cluster_id": 775,
+    "component": "KERNEL",
+    "template": "fpr29=<HEX> ffffffff <*> <*>",
+    "training_size": 15
+  },
+  {
+    "cluster_id": 776,
+    "component": "KERNEL",
+    "template": "fpr30=<HEX> ffffffff <*> <*>",
+    "training_size": 9
+  },
+  {
+    "cluster_id": 777,
+    "component": "KERNEL",
+    "template": "fpr22=<HEX> ffffffff <*> <*>",
+    "training_size": 10
+  },
+  {
+    "cluster_id": 778,
+    "component": "KERNEL",
+    "template": "fpr23=<HEX> ffffffff <*> <*>",
+    "training_size": 12
+  },
+  {
+    "cluster_id": 779,
+    "component": "KERNEL",
+    "template": "fpr26=<HEX> ffffffff <*> <*>",
+    "training_size": 11
+  },
+  {
+    "cluster_id": 780,
+    "component": "KERNEL",
+    "template": "fpr28=<HEX> ffffffff <*> <*>",
+    "training_size": 15
+  },
+  {
+    "cluster_id": 781,
+    "component": "KERNEL",
+    "template": "fpr31=<HEX> ffffffff <*> <*>",
+    "training_size": 7
+  },
+  {
+    "cluster_id": 782,
+    "component": "KERNEL",
+    "template": "fpr0=<HEX> 7ffff620 3000b810 0ff71674",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 783,
+    "component": "KERNEL",
+    "template": "<*> 7ffff640 <*> 7ffff620",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 784,
+    "component": "KERNEL",
+    "template": "fpr3=<HEX> 7ffff680 3000b4f8 0ff66adc",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 785,
+    "component": "KERNEL",
+    "template": "fpr4=<HEX> 0000001a 0002d000 0fd6a8a0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 786,
+    "component": "KERNEL",
+    "template": "fpr6=<HEX> 100cd1f8 0ff66a94 7ffff5f0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 787,
+    "component": "KERNEL",
+    "template": "fpr7=<HEX> 0ffb3160 0ff676b8 7ffff570",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 788,
+    "component": "KERNEL",
+    "template": "<*> 0ffcb46c <NUM> 7ffff720",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 789,
+    "component": "KERNEL",
+    "template": "fpr10=<HEX> 0ffb3160 0ff67564 7ffff590",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 790,
+    "component": "KERNEL",
+    "template": "fpr11=<HEX> 7ffff5d0 0ff674f0 7ffff5b0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 791,
+    "component": "KERNEL",
+    "template": "fpr12=<HEX> 7ffff590 0ff00940 0ffc5cc8",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 792,
+    "component": "KERNEL",
+    "template": "fpr2=<HEX> bfdab5ea f57d3fc0 bff983e7",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 793,
+    "component": "KERNEL",
+    "template": "fpr3=<HEX> c011219b 299ec4c5 bff81ed8",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 794,
+    "component": "KERNEL",
+    "template": "fpr4=<HEX> bfed0fde 9d1bbc14 3fe7397f",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 795,
+    "component": "KERNEL",
+    "template": "fpr5=<HEX> 3fdc6564 131c98ab bfec670f",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 796,
+    "component": "KERNEL",
+    "template": "fpr6=<HEX> 3ff0cd25 c73b917d c00e173d",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 797,
+    "component": "KERNEL",
+    "template": "fpr7=<HEX> c010cb2d 4a8d6dd5 c0032aec",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 798,
+    "component": "KERNEL",
+    "template": "fpr9=<HEX> 4011f6fa bc21a47f bfec1331",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 799,
+    "component": "KERNEL",
+    "template": "fpr10=<HEX> 4006d4e7 2985ff69 4004af29",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 800,
+    "component": "KERNEL",
+    "template": "fpr11=<HEX> bff675e4 4a3f4c02 4010e161",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 801,
+    "component": "KERNEL",
+    "template": "fpr12=<HEX> bfe64237 ef5ae7a2 bffee1ae",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 802,
+    "component": "KERNEL",
+    "template": "fpr14=<HEX> 4010aaba 98dc1a71 40321afc",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 803,
+    "component": "KERNEL",
+    "template": "fpr15=<HEX> bff434ab 02c6bc5e c00d254b",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 804,
+    "component": "KERNEL",
+    "template": "fpr16=<HEX> 3ffd3453 71e8d5cb c021177e",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 805,
+    "component": "KERNEL",
+    "template": "fpr17=<HEX> c00f074c 767c4303 402b07a4",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 806,
+    "component": "KERNEL",
+    "template": "fpr18=<HEX> c0243a30 534e39ab c012546c",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 807,
+    "component": "KERNEL",
+    "template": "fpr19=<HEX> bff19563 18fb6c17 3ff8ddaf",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 808,
+    "component": "KERNEL",
+    "template": "fpr20=<HEX> c00c51ea 1a28d8a0 c01b7a04",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 809,
+    "component": "KERNEL",
+    "template": "fpr21=<HEX> 4000c7d7 49d67fe2 c0055ebf",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 810,
+    "component": "KERNEL",
+    "template": "fpr22=<HEX> bff940d7 632f9637 4007c039",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 811,
+    "component": "KERNEL",
+    "template": "fpr23=<HEX> bfea213f 0fdbbf61 bffcbf8a",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 812,
+    "component": "KERNEL",
+    "template": "fpr24=<HEX> c01b330e ff88bf26 4019e2c6",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 813,
+    "component": "KERNEL",
+    "template": "fpr25=<HEX> bff2dec1 6e8b6df5 c00b111b",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 814,
+    "component": "KERNEL",
+    "template": "fpr26=<HEX> 40229ff9 c25641f4 <NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 815,
+    "component": "KERNEL",
+    "template": "fpr27=<HEX> 3ff960a9 5da4ea47 4020b0c6",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 816,
+    "component": "KERNEL",
+    "template": "fpr28=<HEX> c0102368 f342ccd5 c020dfcf",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 817,
+    "component": "KERNEL",
+    "template": "fpr29=<HEX> 40148be6 1ac3b737 402538d8",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 818,
+    "component": "KERNEL",
+    "template": "fpr30=<HEX> bfff7911 7629b09f c004556a",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 819,
+    "component": "KERNEL",
+    "template": "<NUM> microseconds spent in the rbs signal handler during <NUM> calls. <NUM> microseconds was the maximum time for a single instance of a correctable ddr.",
+    "training_size": 135096
+  },
+  {
+    "cluster_id": 820,
+    "component": "KERNEL",
+    "template": "<NUM> total interrupts. <NUM> critical input interrupts. <NUM> microseconds total spent on critical input interrupts, <NUM> microseconds max time in a critical input interrupt.",
+    "training_size": 135096
+  },
+  {
+    "cluster_id": 821,
+    "component": "KERNEL",
+    "template": "fpr1=<HEX> 0000aa06 <NUM> 0342e6f0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 822,
+    "component": "KERNEL",
+    "template": "fpr2=<HEX> <*> <*> <NUM>",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 823,
+    "component": "KERNEL",
+    "template": "fpr3=<HEX> 3fe33333 <NUM> 3fe33333",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 824,
+    "component": "KERNEL",
+    "template": "fpr6=<HEX> c007d3cb 3e5753a1 c007d3cb",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 825,
+    "component": "KERNEL",
+    "template": "fpr13=<HEX> <*> <*> fffffffc",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 826,
+    "component": "KERNEL",
+    "template": "external input interrupt (unit=<HEX> bit=<HEX>): number of corrected SRAM errors has exceeded threshold, suppressing further interrupts of same type",
+    "training_size": 57
+  },
+  {
+    "cluster_id": 827,
+    "component": "KERNEL",
+    "template": "ddr: Suppressing further CE interrupts",
+    "training_size": 302
+  },
+  {
+    "cluster_id": 828,
+    "component": "KERNEL",
+    "template": "instruction TLB error interrupt",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 829,
+    "component": "KERNEL",
+    "template": "Kernel detected <NUM> integer alignment exceptions (<NUM>) iar <HEX>, dear <HEX> (<NUM>) iar <HEX>, dear <HEX> (<NUM>) iar <HEX>, dear <HEX> (<NUM>) iar <HEX>, dear <HEX> (<NUM>) iar <HEX>, dear <HEX> (<NUM>) iar <HEX>, dear <HEX> (<NUM>) iar <HEX>, dear <HEX> (<NUM>) iar <HEX>, dear <HEX>",
+    "training_size": 22177
+  },
+  {
+    "cluster_id": 830,
+    "component": "KERNEL",
+    "template": "fpr0=<HEX> bfb0a518 a9aa63ac bfc740f6",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 831,
+    "component": "KERNEL",
+    "template": "fpr1=<HEX> bfbaf6fe b59cf788 bfc09d6c",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 832,
+    "component": "KERNEL",
+    "template": "fpr2=<HEX> bfcb272d e3cdf295 3fcab7f6",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 833,
+    "component": "KERNEL",
+    "template": "fpr3=<HEX> bfa0c49c 9991a9e0 3fc5695e",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 834,
+    "component": "KERNEL",
+    "template": "fpr4=<HEX> 3fd8426b 977893e5 3fba466d",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 835,
+    "component": "KERNEL",
+    "template": "fpr5=<HEX> 3fe13b82 93c3f2c1 3fbcbeb6",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 836,
+    "component": "KERNEL",
+    "template": "fpr6=<HEX> 3fd03ed8 46d01014 bfc80ca1",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 837,
+    "component": "KERNEL",
+    "template": "fpr7=<HEX> bfb74002 3710328b bfcb7ed6",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 838,
+    "component": "KERNEL",
+    "template": "fpr8=<HEX> c0262820 2caf34ac c01b0573",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 839,
+    "component": "KERNEL",
+    "template": "fpr10=<HEX> c01cdf54 343c21a0 bfcefc09",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 840,
+    "component": "KERNEL",
+    "template": "fpr11=<HEX> c031a8d1 61672fb5 c0322a53",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 841,
+    "component": "KERNEL",
+    "template": "fpr13=<HEX> 40250b22 9c0f76af 40218bdb",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 842,
+    "component": "KERNEL",
+    "template": "fpr14=<HEX> bff6fdf9 665dcd85 bffc2f3a",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 843,
+    "component": "KERNEL",
+    "template": "fpr15=<HEX> 4017ab30 de2b215b 402defe6",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 844,
+    "component": "KERNEL",
+    "template": "fpr16=<HEX> 4021f361 4a4cf3ec 4016ad57",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 845,
+    "component": "KERNEL",
+    "template": "fpr17=<HEX> c014873d 8aef55ff c027ac72",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 846,
+    "component": "KERNEL",
+    "template": "fpr18=<HEX> c01bc613 ee00caaa 3ff73af6",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 847,
+    "component": "KERNEL",
+    "template": "fpr19=<HEX> 4013a210 dfa708d6 c032176d",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 848,
+    "component": "KERNEL",
+    "template": "fpr20=<HEX> <NUM> a82b8ace 4015122e",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 849,
+    "component": "KERNEL",
+    "template": "fpr21=<HEX> 4004d51e 9c5139cd c0261f66",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 850,
+    "component": "KERNEL",
+    "template": "fpr22=<HEX> c01d47fb 83d918e1 402309b8",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 851,
+    "component": "KERNEL",
+    "template": "fpr23=<HEX> c0061a9c c2f8a41a c008d371",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 852,
+    "component": "KERNEL",
+    "template": "fpr24=<HEX> 4012c016 8c8da6e4 4019dcc5",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 853,
+    "component": "KERNEL",
+    "template": "fpr25=<HEX> bfc22b5d 07cbfb97 c023a3bc",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 854,
+    "component": "KERNEL",
+    "template": "fpr26=<HEX> c016ecfe 225d3696 402e6ee0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 855,
+    "component": "KERNEL",
+    "template": "fpr27=<HEX> 3ff925d0 5f32e549 c000af8c",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 856,
+    "component": "KERNEL",
+    "template": "fpr28=<HEX> 402752a9 4879f9cc 4013ec5c",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 857,
+    "component": "KERNEL",
+    "template": "fpr29=<HEX> 3fdf36fa 659f7cfe <NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 858,
+    "component": "KERNEL",
+    "template": "fpr30=<HEX> <*> <NUM> <*>",
+    "training_size": 3
+  },
+  {
+    "cluster_id": 859,
+    "component": "KERNEL",
+    "template": "fpr31=<HEX> c008806c e06ca8f9 c02f96a0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 860,
+    "component": "KERNEL",
+    "template": "fpr1=<HEX> 3fd4fef8 8e61c0de bfeb7ad4",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 861,
+    "component": "KERNEL",
+    "template": "fpr2=<HEX> 3ff0fbd9 4c14decd bfeb7b2e",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 862,
+    "component": "KERNEL",
+    "template": "fpr3=<HEX> bfd4d41e 0882e006 bfd4d50f",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 863,
+    "component": "KERNEL",
+    "template": "fpr4=<HEX> bfe3cfc7 9b8fa1d0 bfe3cf99",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 864,
+    "component": "KERNEL",
+    "template": "fpr5=<HEX> 3fe3cf2b 4c96bfaa 3f06e1a5",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 865,
+    "component": "KERNEL",
+    "template": "fpr6=<HEX> 3ff006ec 1e52ceb1 bff006d9",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 866,
+    "component": "KERNEL",
+    "template": "fpr7=<HEX> bdd567fe c4b827fb 3df5dd71",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 867,
+    "component": "KERNEL",
+    "template": "fpr8=<HEX> 3df764ed 3dc40043 3df885ce",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 868,
+    "component": "KERNEL",
+    "template": "fpr9=<HEX> bdecab74 fd2656c6 3df3ddff",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 869,
+    "component": "KERNEL",
+    "template": "fpr10=<HEX> bde0e370 1f19656a 3e014040",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 870,
+    "component": "KERNEL",
+    "template": "fpr11=<HEX> 3e02751d e8e91307 3e035909",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 871,
+    "component": "KERNEL",
+    "template": "fpr12=<HEX> bdf69e9c bd76be8c 3dff5972",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 872,
+    "component": "KERNEL",
+    "template": "fpr13=<HEX> bf106090 49cff16a 3f0a8264",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 873,
+    "component": "KERNEL",
+    "template": "fpr14=<HEX> 3f0a7e2e 8cd6e69b bef44493",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 874,
+    "component": "KERNEL",
+    "template": "fpr15=<HEX> bef438e3 cee686d4 3f0a805e",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 875,
+    "component": "KERNEL",
+    "template": "fpr16=<HEX> 3f0a8231 3d4cc357 3f0a8020",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 876,
+    "component": "KERNEL",
+    "template": "fpr17=<HEX> bef44517 a3a961c9 3f0a7e2b",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 877,
+    "component": "KERNEL",
+    "template": "fpr18=<HEX> bef4396c d5790b0e bf106097",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 878,
+    "component": "KERNEL",
+    "template": "fpr19=<HEX> 3e3e02f8 4e0ebb83 3e468e58",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 879,
+    "component": "KERNEL",
+    "template": "fpr20=<HEX> be43c53c 9b194704 be3beda6",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 880,
+    "component": "KERNEL",
+    "template": "fpr21=<HEX> 3e0fde1c 660fee85 be494bcf",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 881,
+    "component": "KERNEL",
+    "template": "fpr22=<HEX> 3e3ddd71 e70b65ae 3e460d37",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 882,
+    "component": "KERNEL",
+    "template": "fpr23=<HEX> be43bc84 bd5ac63d be3ba3ec",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 883,
+    "component": "KERNEL",
+    "template": "fpr24=<HEX> 3e164570 9b11c7cc be48368d",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 884,
+    "component": "KERNEL",
+    "template": "fpr25=<HEX> bed648f8 b8089fb0 3edb8e89",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 885,
+    "component": "KERNEL",
+    "template": "fpr26=<HEX> 3ec10355 044a0507 bed64e42",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 886,
+    "component": "KERNEL",
+    "template": "fpr27=<HEX> 3ec1002d fea4549a 3edb858b",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 887,
+    "component": "KERNEL",
+    "template": "fpr28=<HEX> 3edb905e 1a50628e 3edb81bd",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 888,
+    "component": "KERNEL",
+    "template": "fpr29=<HEX> bed65055 9ec00cf7 3ec10067",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 889,
+    "component": "KERNEL",
+    "template": "fpr30=<HEX> 3ec11f84 d6dbe0ae bed64319",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 890,
+    "component": "KERNEL",
+    "template": "fpr1=<HEX> 3fd2b2fb 5573f0e0 bcd2d127",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 891,
+    "component": "KERNEL",
+    "template": "fpr2=<HEX> 3ca19d8b d3d85973 4007df0e",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 892,
+    "component": "KERNEL",
+    "template": "fpr3=<HEX> 3ffb6183 d3d8596f 4007df0e",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 893,
+    "component": "KERNEL",
+    "template": "fpr4=<HEX> 3fe2b2e9 6622619a bcf2b08f",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 894,
+    "component": "KERNEL",
+    "template": "fpr5=<HEX> 3ffb6183 cc79128b 3cfecf86",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 895,
+    "component": "KERNEL",
+    "template": "fpr6=<HEX> 40076db7 457d611f 3d01021d",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 896,
+    "component": "KERNEL",
+    "template": "fpr7=<HEX> <*> <NUM> <*>",
+    "training_size": 5
+  },
+  {
+    "cluster_id": 897,
+    "component": "KERNEL",
+    "template": "fpr8=<HEX> 3ffb6183 c4ac2530 bcda6879",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 898,
+    "component": "KERNEL",
+    "template": "fpr9=<HEX> 40076db7 a7349330 3ce586f1",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 899,
+    "component": "KERNEL",
+    "template": "fpr10=<HEX> 3ffb6183 cc44c335 bce5611e",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 900,
+    "component": "KERNEL",
+    "template": "fpr11=<HEX> 3fd2b2fb f2250422 3fd2b2fb",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 901,
+    "component": "KERNEL",
+    "template": "fpr12=<HEX> 3ffb6183 8e7d21fd 3ffb6183",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 902,
+    "component": "KERNEL",
+    "template": "fpr13=<HEX> bf003602 e8ef3019 bf003602",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 903,
+    "component": "KERNEL",
+    "template": "<*> <*> <NUM> 3ff00000",
+    "training_size": 5
+  },
+  {
+    "cluster_id": 904,
+    "component": "KERNEL",
+    "template": "fpr22=<HEX> bff00000 <NUM> bff00000",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 905,
+    "component": "KERNEL",
+    "template": "fpr24=<HEX> bff00000 5b487c24 3f827da8",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 906,
+    "component": "KERNEL",
+    "template": "fpr25=<HEX> 3ff00000 696d6573 6c652074",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 907,
+    "component": "KERNEL",
+    "template": "fpr0=<HEX> 3fefffff fffffe7a 3fefffff",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 908,
+    "component": "KERNEL",
+    "template": "<*> 3f4fffff fffffe7a 3f4fffff",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 909,
+    "component": "KERNEL",
+    "template": "fpr4=<HEX> bf67d3cb fffffe51 3f4fffff",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 910,
+    "component": "KERNEL",
+    "template": "fpr8=<HEX> bf67d3cb 007f850f 3d05f9cf",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 911,
+    "component": "KERNEL",
+    "template": "fpr9=<HEX> 408fffff b4e362e2 3cf17e94",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 912,
+    "component": "KERNEL",
+    "template": "fpr10=<HEX> 3c4bb730 3e575172 c007d3cb",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 913,
+    "component": "KERNEL",
+    "template": "fpr11=<HEX> <*> <*> <NUM>",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 914,
+    "component": "KERNEL",
+    "template": "fpr12=<HEX> 3c498626 3e575151 c007d3cb",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 915,
+    "component": "KERNEL",
+    "template": "fpr13=<HEX> 3924ec31 88881e97 <NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 916,
+    "component": "KERNEL",
+    "template": "fpr15=<HEX> bc4f7014 000000bc 3ff00000",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 917,
+    "component": "KERNEL",
+    "template": "fpr17=<HEX> bc57872f d1030d25 3fbca20d",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 918,
+    "component": "KERNEL",
+    "template": "fpr18=<HEX> 408fffff 3e575140 c007d3cb",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 919,
+    "component": "KERNEL",
+    "template": "fpr19=<HEX> bc5955b8 fa73c196 3ce14312",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 920,
+    "component": "KERNEL",
+    "template": "fpr20=<HEX> bc7d4360 89decd90 3cb90ddb",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 921,
+    "component": "KERNEL",
+    "template": "fpr21=<HEX> 3f500000 48ae126b 3d0ad4cc",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 922,
+    "component": "KERNEL",
+    "template": "fpr29=<HEX> 3a127157 72505e30 bcd08103",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 923,
+    "component": "KERNEL",
+    "template": "fpr30=<HEX> 3ce14312 25eab70e 3cd0a179",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 924,
+    "component": "KERNEL",
+    "template": "fpr5=<HEX> 4025a18f a1482c21 3f6ce353",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 925,
+    "component": "KERNEL",
+    "template": "fpr6=<HEX> 402953b1 b72f6516 3f946f0b",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 926,
+    "component": "KERNEL",
+    "template": "fpr7=<HEX> 40113b1d 88d927d4 3fc8881c",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 927,
+    "component": "KERNEL",
+    "template": "fpr8=<HEX> <*> <*> 3fe00000",
+    "training_size": 3
+  },
+  {
+    "cluster_id": 928,
+    "component": "KERNEL",
+    "template": "fpr11=<HEX> <*> <NUM> <*>",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 929,
+    "component": "KERNEL",
+    "template": "fpr12=<HEX> 40286de8 5fbb49ec 3fee65b1",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 930,
+    "component": "KERNEL",
+    "template": "fpr0=<HEX> 0001827f 3f6a8c91 3ec756aa",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 931,
+    "component": "KERNEL",
+    "template": "fpr1=<HEX> 8ff2ff96 d0e7aef3 3eca2702",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 932,
+    "component": "KERNEL",
+    "template": "fpr3=<HEX> 8f2c2960 90140eab 3fa24e17",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 933,
+    "component": "KERNEL",
+    "template": "fpr4=<HEX> <NUM> <*> <*>",
+    "training_size": 8
+  },
+  {
+    "cluster_id": 934,
+    "component": "KERNEL",
+    "template": "fpr5=<HEX> 1b9d1880 dfd4314f 3f24878b",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 935,
+    "component": "KERNEL",
+    "template": "fpr7=<HEX> fd937100 fcc3d8f4 <NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 936,
+    "component": "KERNEL",
+    "template": "fpr9=<HEX> bb8462e0 fcd63593 <NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 937,
+    "component": "KERNEL",
+    "template": "fpr12=<HEX> 727ebf3e 00010c81 aaecab24",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 938,
+    "component": "KERNEL",
+    "template": "fpr13=<HEX> e00cb387 0001cd23 f8bde000",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 939,
+    "component": "KERNEL",
+    "template": "fpr7=<HEX> <NUM> <*> <*>",
+    "training_size": 5
+  },
+  {
+    "cluster_id": 940,
+    "component": "KERNEL",
+    "template": "fpr31=<HEX> 3fc86306 <*> <*>",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 941,
+    "component": "KERNEL",
+    "template": "rts assertion failed: `vaddr % PAGE_SIZE_1M == <NUM>' in `int initializeAppMemory(int, TLBEntry&, unsigned int, unsigned int)' at mmu.cc:<NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 942,
+    "component": "KERNEL",
+    "template": "fpr0=<HEX> bfd9119c 0c643dc2 400c7cc8",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 943,
+    "component": "KERNEL",
+    "template": "fpr1=<HEX> 3fe83bcb f6265688 3fd6cb5c",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 944,
+    "component": "KERNEL",
+    "template": "fpr2=<HEX> 3ff2872e f626568a 3fd6cb5c",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 945,
+    "component": "KERNEL",
+    "template": "fpr3=<HEX> 3ff34da9 191b32e7 400c7b99",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 946,
+    "component": "KERNEL",
+    "template": "<*> <*> 92636fd5 bfb270e7",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 947,
+    "component": "KERNEL",
+    "template": "fpr5=<HEX> 40045d5a 06be1146 3ff482f0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 948,
+    "component": "KERNEL",
+    "template": "fpr6=<HEX> 40021c6f a8f77056 3ff733af",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 949,
+    "component": "KERNEL",
+    "template": "fpr7=<HEX> bfe5f5c1 8ee86893 3fe7d594",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 950,
+    "component": "KERNEL",
+    "template": "fpr8=<HEX> 4024fd26 de5ba6e6 400b1ea2",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 951,
+    "component": "KERNEL",
+    "template": "fpr9=<HEX> 3fe99e42 8fb815f2 400afc39",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 952,
+    "component": "KERNEL",
+    "template": "fpr12=<HEX> 3f766531 0ea28f87 bf8303c4",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 953,
+    "component": "KERNEL",
+    "template": "fpr13=<HEX> 40238ba4 <NUM> c01df19c",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 954,
+    "component": "KERNEL",
+    "template": "fpr13=<HEX> 060008a5 4ea20105 3fc1d2c5",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 955,
+    "component": "KERNEL",
+    "template": "fpr31=<HEX> <NUM> 28f5c28f 40128f5c",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 956,
+    "component": "KERNEL",
+    "template": "fpr0=<HEX> 0100011f 8cb2b750 4024093f",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 957,
+    "component": "KERNEL",
+    "template": "fpr3=<HEX> 408f4000 3740a5e9 4026f8d5",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 958,
+    "component": "KERNEL",
+    "template": "fpr4=<HEX> 3ff00000 843ea599 3f0804f2",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 959,
+    "component": "KERNEL",
+    "template": "fpr7=<HEX> bfdc2b71 88e368f1 3ef4f8b5",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 960,
+    "component": "KERNEL",
+    "template": "fpr8=<HEX> bfe016b5 8da3311e 3f06d5a7",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 961,
+    "component": "KERNEL",
+    "template": "fpr11=<HEX> bfd80aa1 b64fc1d3 4074e425",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 962,
+    "component": "KERNEL",
+    "template": "fpr13=<HEX> 0000011f 984983e1 c0756f84",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 963,
+    "component": "KERNEL",
+    "template": "fpr1=<HEX> 00759b38 c5b18dbd 3fdd0fef",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 964,
+    "component": "KERNEL",
+    "template": "fpr5=<HEX> 407497d1 7ae147ae 4011ae14",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 965,
+    "component": "KERNEL",
+    "template": "fpr6=<HEX> 3fbdc5fe 6b99523a 3fe93231",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 966,
+    "component": "KERNEL",
+    "template": "fpr7=<HEX> 3fbdb8a5 9885abca beb8e10b",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 967,
+    "component": "KERNEL",
+    "template": "fpr9=<HEX> 40944c74 f69f8e08 3fdffffe",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 968,
+    "component": "KERNEL",
+    "template": "fpr11=<HEX> 4095618c 58ed155e 3e2f742a",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 969,
+    "component": "KERNEL",
+    "template": "fpr13=<HEX> 060006fb 0fdd8d22 3d8357c0",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 970,
+    "component": "KERNEL",
+    "template": "fpr2=<HEX> bfe675e5 b65c522f 40052e40",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 971,
+    "component": "KERNEL",
+    "template": "fpr4=<HEX> bfd7147c 6f2832ff 3fe1a8bc",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 972,
+    "component": "KERNEL",
+    "template": "fpr5=<HEX> 3fe7e35a 243d0164 c0152a1b",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 973,
+    "component": "KERNEL",
+    "template": "fpr6=<HEX> bfe662a7 1129f091 <NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 974,
+    "component": "KERNEL",
+    "template": "fpr8=<HEX> bfcbd0a0 117324af 3fe184d6",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 975,
+    "component": "KERNEL",
+    "template": "fpr11=<HEX> 3e4363aa 77478fd9 3fe0d90f",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 976,
+    "component": "KERNEL",
+    "template": "<*> bf216810 e50a1cb9 3f34ce3d",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 977,
+    "component": "KERNEL",
+    "template": "fpr5=<HEX> befb1101 ff902ae7 3f439972",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 978,
+    "component": "KERNEL",
+    "template": "fpr6=<HEX> 3f503043 58a9662d 3f2dfdac",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 979,
+    "component": "KERNEL",
+    "template": "fpr11=<HEX> bf114ab6 bfec5137 bee2ba98",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 980,
+    "component": "KERNEL",
+    "template": "<*> <*> d9d7bdbb 3ddb7cdf",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 981,
+    "component": "KERNEL",
+    "template": "fpr5=<HEX> 3fefabb7 84dc4fe1 3f0e019c",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 982,
+    "component": "KERNEL",
+    "template": "fpr6=<HEX> c006dde7 84dc4fe1 3fce019c",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 983,
+    "component": "KERNEL",
+    "template": "fpr8=<HEX> 3fc8b161 b605c900 bf718d1a",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 984,
+    "component": "KERNEL",
+    "template": "fpr9=<HEX> 4000efff 3b301df2 bff30219",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 985,
+    "component": "KERNEL",
+    "template": "fpr13=<HEX> 4000c8d0 128cfca0 3fa0a96f",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 986,
+    "component": "KERNEL",
+    "template": "fpr2=<HEX> 17002a83 78d4fdf3 4043a6e9",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 987,
+    "component": "KERNEL",
+    "template": "fpr4=<HEX> 3fe99999 a0000000 40037e17",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 988,
+    "component": "KERNEL",
+    "template": "fpr5=<HEX> 42c80000 <NUM> 3fd31b6b",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 989,
+    "component": "KERNEL",
+    "template": "fpr8=<HEX> 3ff36523 e0000000 3fba0da6",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 990,
+    "component": "KERNEL",
+    "template": "fpr13=<HEX> 00006a83 29ee437c 3feb932c",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 991,
+    "component": "KERNEL",
+    "template": "ciod: for node <NUM>, incomplete data written to core file core.<NUM>",
+    "training_size": 38
+  },
+  {
+    "cluster_id": 992,
+    "component": "KERNEL",
+    "template": "fpr2=<HEX> 20001c84 8e38e38e 403b38e3",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 993,
+    "component": "KERNEL",
+    "template": "fpr6=<HEX> 40623f66 <NUM> 3fd80000",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 994,
+    "component": "KERNEL",
+    "template": "fpr13=<HEX> 06001c94 53eb915a 4088ed0d",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 995,
+    "component": "KERNEL",
+    "template": "fpr0=<HEX> 20000b21 040c0000 <NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 996,
+    "component": "KERNEL",
+    "template": "fpr11=<HEX> 408bead8 b363781c 405246f3",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 997,
+    "component": "KERNEL",
+    "template": "fpr7=<HEX> 42c80000 1dea4cc8 3c5e9184",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 998,
+    "component": "KERNEL",
+    "template": "fpr9=<HEX> 40a4e7cf 800e99b1 3fefcf0c",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 999,
+    "component": "KERNEL",
+    "template": "fpr10=<HEX> 3fe8a2f4 8568391d 3fbbf1b7",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 1000,
+    "component": "KERNEL",
+    "template": "fpr13=<HEX> 0000359d f1e75989 3f2c5b7b",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 1,
+    "component": "LINKCARD",
+    "template": "MidplaneSwitchController performing bit sparing on <*> bit <NUM>",
+    "training_size": 964
+  },
+  {
+    "cluster_id": 2,
+    "component": "LINKCARD",
+    "template": "MidplaneSwitchController::sendTrain() port disconnected: R07-M1-L1-U19-E",
+    "training_size": 24
+  },
+  {
+    "cluster_id": 3,
+    "component": "LINKCARD",
+    "template": "MidplaneSwitchController::parityAlignment() pap failed: <*> <*> <*>",
+    "training_size": 14
+  },
+  {
+    "cluster_id": 4,
+    "component": "LINKCARD",
+    "template": "MidplaneSwitchController::receiveTrain() iap failed: <*> <*> ec000000",
+    "training_size": 166
+  },
+  {
+    "cluster_id": 5,
+    "component": "LINKCARD",
+    "template": "MidplaneSwitchController::clearPort() bll_clear_port failed: R63-M0-L0-U19-A",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 1,
+    "component": "APP",
+    "template": "ciod: Error loading <*> invalid or missing program image, No such file or directory",
+    "training_size": 46416
+  },
+  {
+    "cluster_id": 2,
+    "component": "APP",
+    "template": "ciod: LOGIN <*> failed: No such file or directory",
+    "training_size": 43647
+  },
+  {
+    "cluster_id": 3,
+    "component": "APP",
+    "template": "ciod: failed to read message prefix on control stream (CioStream socket to <IP>:<NUM>",
+    "training_size": 5983
+  },
+  {
+    "cluster_id": 4,
+    "component": "APP",
+    "template": "ciod: LOGIN <*> failed: <*> <*>",
+    "training_size": 1288
+  },
+  {
+    "cluster_id": 5,
+    "component": "APP",
+    "template": "ciod: Error creating node map from file <*> <*> <*> <*>",
+    "training_size": 5464
+  },
+  {
+    "cluster_id": 6,
+    "component": "APP",
+    "template": "ciod: Error loading <*> program image too big, <NUM> > <NUM>",
+    "training_size": 1512
+  },
+  {
+    "cluster_id": 7,
+    "component": "APP",
+    "template": "ciod: Error creating node map from file <*> <*> <*> <*> <*>",
+    "training_size": 520
+  },
+  {
+    "cluster_id": 8,
+    "component": "APP",
+    "template": "ciod: Error creating node map from file <*> <*> <*>",
+    "training_size": 2328
+  },
+  {
+    "cluster_id": 9,
+    "component": "APP",
+    "template": "external input interrupt (unit=<HEX> bit=<HEX>): uncorrectable torus error",
+    "training_size": 10
+  },
+  {
+    "cluster_id": 10,
+    "component": "APP",
+    "template": "Torus non-recoverable error DCRs follow.",
+    "training_size": 10
+  },
+  {
+    "cluster_id": 11,
+    "component": "APP",
+    "template": "DCR <HEX> : <HEX>",
+    "training_size": 130
+  },
+  {
+    "cluster_id": 12,
+    "component": "APP",
+    "template": "ciod: Error loading <*> invalid or missing program image, <*> <*> <*>",
+    "training_size": 22040
+  },
+  {
+    "cluster_id": 13,
+    "component": "APP",
+    "template": "ciod: Error loading ../homme/build.Linux/preqx -n <NUM>: invalid or missing program image, No such file or directory",
+    "training_size": 64
+  },
+  {
+    "cluster_id": 14,
+    "component": "APP",
+    "template": "ciod: Error reading message prefix after <*> on CioStream socket to <IP>:<NUM>: <*> <*> <*> <*>",
+    "training_size": 23219
+  },
+  {
+    "cluster_id": 15,
+    "component": "APP",
+    "template": "ciod: Error loading <*> invalid or missing program image, Permission denied",
+    "training_size": 43040
+  },
+  {
+    "cluster_id": 16,
+    "component": "APP",
+    "template": "ciod: Error reading message prefix on CioStream socket to <IP>:<NUM>, <*> <*> <*> <*>",
+    "training_size": 28802
+  },
+  {
+    "cluster_id": 17,
+    "component": "APP",
+    "template": "ciod: Error loading -mode VN: invalid or missing program image, No such file or directory",
+    "training_size": 1024
+  },
+  {
+    "cluster_id": 18,
+    "component": "APP",
+    "template": "ciod: Error reading message prefix on CioStream socket to <IP>:<NUM>, Connection timed out",
+    "training_size": 1991
+  },
+  {
+    "cluster_id": 19,
+    "component": "APP",
+    "template": "ciod: Error creating node map from file my_map.txt: No such file or directory",
+    "training_size": 24
+  },
+  {
+    "cluster_id": 20,
+    "component": "APP",
+    "template": "ciod: Error loading /p/gb1/light3/sppm_chkpt/sppm: not a CNK program image",
+    "training_size": 1024
+  },
+  {
+    "cluster_id": 1,
+    "component": "MMCS",
+    "template": "idoproxydb has been started: $Name: <*> $ Input parameters: -enableflush -loguserinfo db.properties BlueGene1",
+    "training_size": 114
+  },
+  {
+    "cluster_id": 2,
+    "component": "MMCS",
+    "template": "ciodb has been restarted.",
+    "training_size": 129
+  },
+  {
+    "cluster_id": 3,
+    "component": "MMCS",
+    "template": "mmcs_db_server has been started: <*> --useDatabase BGL --dbproperties <*> --iolog /bgl/BlueLight/logs/BGL --reconnect-blocks all",
+    "training_size": 63
+  },
+  {
+    "cluster_id": 4,
+    "component": "MMCS",
+    "template": "Ido packet timeout",
+    "training_size": 4276
+  },
+  {
+    "cluster_id": 5,
+    "component": "MMCS",
+    "template": "idoproxydb hit ASSERT condition: ASSERT <*> Source <*> Source line=<NUM> Function=int <*> <*>",
+    "training_size": 84250
+  },
+  {
+    "cluster_id": 6,
+    "component": "MMCS",
+    "template": "idoproxydb hit ASSERT condition: ASSERT expression=!(nMsgLen > <HEX>) Source file=idomarshalerio.cpp Source line=<NUM> Function=int IdoMarshalerRecvBuffer::ReadBlock(IdoMsg::IdoMsgHdr*&)",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 7,
+    "component": "MMCS",
+    "template": "idoproxydb hit ASSERT condition: ASSERT expression=!(RecvMsgHdr.ulLen > <HEX>) Source file=idomarshalerio.cpp Source line=<NUM> Function=virtual int IdoMarshalerIo::RunRecv()",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 8,
+    "component": "MMCS",
+    "template": "mmcs_db_server has been started: ./mmcs_db_server --useDatabase BGL --dbproperties <*> --iolog /bgl/BlueLight/logs/BGL --reconnect-blocks all --shutdown-timeout <NUM>",
+    "training_size": 72
+  },
+  {
+    "cluster_id": 9,
+    "component": "MMCS",
+    "template": "mmcs_db_server has been started: ./mmcs_db_server --useDatabase BGL --dbproperties serverdb.properties --iolog /bgl/BlueLight/logs/BGL --reconnect-blocks all --no-reconnect-blocks",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 10,
+    "component": "MMCS",
+    "template": "L3 major internal error",
+    "training_size": 3
+  },
+  {
+    "cluster_id": 11,
+    "component": "MMCS",
+    "template": "mmcs_db_server has been started: ./mmcs_db_server --useDatabase BGL --dbproperties db.properties --iolog /bgl/BlueLight/logs/BGL --reconnect-blocks all --shutdown-timeout <NUM> --shutdown-timeout <NUM>",
+    "training_size": 18
+  },
+  {
+    "cluster_id": 1,
+    "component": "HARDWARE",
+    "template": "PrepareForService is being done on this <*> mCardSernum(<HEX>), <*> mIp(<IP>), mType(<NUM>)) by root",
+    "training_size": 5
+  },
+  {
+    "cluster_id": 2,
+    "component": "HARDWARE",
+    "template": "PrepareForService shutting down <*> mCardSernum(<HEX>), <*> mIp(<IP>), mType(<NUM>)) as part of Service Action <NUM>",
+    "training_size": 2316
+  },
+  {
+    "cluster_id": 3,
+    "component": "HARDWARE",
+    "template": "EndServiceAction is restarting the <*> in midplane <*> as part of Service Action <NUM>",
+    "training_size": 537
+  },
+  {
+    "cluster_id": 4,
+    "component": "HARDWARE",
+    "template": "EndServiceAction <NUM> performed upon <*> by <*>",
+    "training_size": 233
+  },
+  {
+    "cluster_id": 5,
+    "component": "HARDWARE",
+    "template": "NodeCard VPD is corrupt",
+    "training_size": 10
+  },
+  {
+    "cluster_id": 6,
+    "component": "HARDWARE",
+    "template": "PrepareForService is being done on this part <*> mCardSernum(<HEX>), <*> mIp(<IP>), mType(<NUM>)) by <*>",
+    "training_size": 131
+  },
+  {
+    "cluster_id": 7,
+    "component": "HARDWARE",
+    "template": "NodeCard temperature sensor chip <*> is not accessible",
+    "training_size": 5
+  },
+  {
+    "cluster_id": 8,
+    "component": "HARDWARE",
+    "template": "NodeCard power module <*> is not accessible",
+    "training_size": 230
+  },
+  {
+    "cluster_id": 9,
+    "component": "HARDWARE",
+    "template": "NodeCard VPD chip is not accessible",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 10,
+    "component": "HARDWARE",
+    "template": "PrepareForService is being done on this Midplane <*> <*> <*> by <*>",
+    "training_size": 249
+  },
+  {
+    "cluster_id": 11,
+    "component": "HARDWARE",
+    "template": "PrepareForService is being done on this rack <*> by <*>",
+    "training_size": 30
+  },
+  {
+    "cluster_id": 12,
+    "component": "HARDWARE",
+    "template": "LinkCard power module U58 is not accessible",
+    "training_size": 319
+  },
+  {
+    "cluster_id": 13,
+    "component": "HARDWARE",
+    "template": "NodeCard is not fully functional",
+    "training_size": 60
+  },
+  {
+    "cluster_id": 14,
+    "component": "HARDWARE",
+    "template": "LinkCard is not fully functional",
+    "training_size": 248
+  },
+  {
+    "cluster_id": 15,
+    "component": "HARDWARE",
+    "template": "EndServiceAction <NUM> was performed upon <*> by <*>",
+    "training_size": 4
+  },
+  {
+    "cluster_id": 16,
+    "component": "HARDWARE",
+    "template": "PrepareForService shutting down <*> <*> mCardSernum(<HEX>), <*> mIp(<IP>), mType(<NUM>)) as part of Service Action <NUM>",
+    "training_size": 715
+  },
+  {
+    "cluster_id": 17,
+    "component": "HARDWARE",
+    "template": "EndServiceAction is restarting the <*> cards in Midplane <*> as part of Service Action <NUM>",
+    "training_size": 51
+  },
+  {
+    "cluster_id": 18,
+    "component": "HARDWARE",
+    "template": "com.ibm.bgldevices.BulkPowerModule with VPD of com.ibm.bgldevices.BulkPowerModule$VpdReply: IBM Part Number: 53P5763, Vendor: Cherokee International, Vendor Serial Number: <NUM>, Assembly Revision: \u0000.A, Code Revision: B.<NUM>, Manufacture Date: during week <NUM> of <NUM>, Manufacture Location: Tustin, CA, USA is usable but not a supported version",
+    "training_size": 4
+  },
+  {
+    "cluster_id": 1,
+    "component": "DISCOVERY",
+    "template": "Node card is not fully functional",
+    "training_size": 17364
+  },
+  {
+    "cluster_id": 2,
+    "component": "DISCOVERY",
+    "template": "Can not get assembly information for node card",
+    "training_size": 17305
+  },
+  {
+    "cluster_id": 3,
+    "component": "DISCOVERY",
+    "template": "Node card status: no ALERTs are active. Clock Mode is Low. Clock Select is Midplane. Phy JTAG Reset is asserted. ASIC JTAG Reset is <*> <*> <*> <*> <*> <*> <*> <*> <*> <*> <*> <*> <*> <*> <*> <*> <*> <*> <*> <*> <*> <*> <*> <*> <*> <*> <*> OK. MPGOOD ERROR LATCH IS ACTIVE. The <NUM> volt rail is OK. The <NUM> volt rail is OK.",
+    "training_size": 16897
+  },
+  {
+    "cluster_id": 4,
+    "component": "DISCOVERY",
+    "template": "Node card VPD check: <*> node in processor card slot <*> do not match. VPD ecid <HEX>, found <HEX>",
+    "training_size": 21356
+  },
+  {
+    "cluster_id": 5,
+    "component": "DISCOVERY",
+    "template": "Ido chip status changed: <*> ip=<IP> v=<NUM> t=<NUM> status=M <*> <*> <NUM> <NUM>:<NUM>:<NUM> <*> <NUM>",
+    "training_size": 11904
+  },
+  {
+    "cluster_id": 6,
+    "component": "DISCOVERY",
+    "template": "BglIdoChip table has <NUM> IDOs with the same IP address (<IP>)",
+    "training_size": 9
+  },
+  {
+    "cluster_id": 7,
+    "component": "DISCOVERY",
+    "template": "SerialNumber(<HEX>) IpAddress(<IP>) Status(A)",
+    "training_size": 64
+  },
+  {
+    "cluster_id": 8,
+    "component": "DISCOVERY",
+    "template": "While initializing <*> card iDo machine with LP of <*> caught java.io.IOException: Could not contact iDo with <*> and IP=/<IP> because java.lang.RuntimeException: Communication error: (DirectIDo for Uninitialized DirectIDo for <*> is in state = COMMUNICATION_ERROR, sequenceNumberIsOk = false, ExpectedSequenceNumber = <NUM>, Reply Sequence Number = <NUM>, timedOut = true, retries = <NUM>, timeout = <NUM>, Expected Op Command = <NUM>, Actual Op Reply = <NUM>, Expected Sync Command = <NUM>, Actual Sync Reply = <NUM>)",
+    "training_size": 518
+  },
+  {
+    "cluster_id": 9,
+    "component": "DISCOVERY",
+    "template": "While initializing node card, ido with LP of <*> caught java.lang.IllegalStateException: IDo is not in functional state -- currently in state COMMUNICATION_ERROR",
+    "training_size": 9
+  },
+  {
+    "cluster_id": 10,
+    "component": "DISCOVERY",
+    "template": "Problem communicating with <*> <*> iDo machine with LP of <*> caught java.lang.IllegalStateException: while executing <*> Operation caught java.lang.RuntimeException: Communication error: (DirectIDo for com.ibm.ido.DirectIDo object <*> with image version <NUM> and card type <NUM>] is in state = COMMUNICATION_ERROR, sequenceNumberIsOk = false, ExpectedSequenceNumber = <NUM>, Reply Sequence Number = <NUM>, timedOut = true, retries = <NUM>, timeout = <NUM>, Expected Op Command = <NUM>, Actual Op Reply = <NUM>, Expected Sync Command = <NUM>, Actual Sync Reply = <NUM>)",
+    "training_size": 21
+  },
+  {
+    "cluster_id": 11,
+    "component": "DISCOVERY",
+    "template": "While initializing node card, ido with LP of <*> caught java.lang.IllegalStateException: while executing <*> Operation caught java.lang.RuntimeException: Communication error: (DirectIDo for com.ibm.ido.DirectIDo object <*> with image version <NUM> and card type <NUM>] is in state = COMMUNICATION_ERROR, sequenceNumberIsOk = false, ExpectedSequenceNumber = <NUM>, Reply Sequence Number = <NUM>, timedOut = true, retries = <NUM>, timeout = <NUM>, Expected Op Command = <NUM>, Actual Op Reply = <NUM>, Expected Sync Command = <NUM>, Actual Sync Reply = <NUM>)",
+    "training_size": 10
+  },
+  {
+    "cluster_id": 12,
+    "component": "DISCOVERY",
+    "template": "Node card status: no ALERTs are active. Clock Mode is Low. Clock Select is Midplane. Phy JTAG Reset is asserted. ASIC JTAG Reset is asserted. Temperature Mask is not active. No temperature error. Temperature Limit Error Latch is clear. PGOOD IS NOT ASSERTED. PGOOD ERROR LATCH IS ACTIVE. MPGOOD IS NOT OK. MPGOOD ERROR LATCH IS ACTIVE. THE <NUM> VOLT RAIL IS NOT OK. THE <NUM> VOLT RAIL IS NOT OK.",
+    "training_size": 116
+  },
+  {
+    "cluster_id": 13,
+    "component": "DISCOVERY",
+    "template": "While initializing node card, ido with LP of FF:F2:9F:<NUM>:E6:<NUM>:<NUM>:0D:<NUM>:E9:<NUM>:<NUM> caught java.lang.NullPointerException",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 14,
+    "component": "DISCOVERY",
+    "template": "Node card status: ALERT <NUM>, ALERT <NUM>, ALERT <NUM>, ALERT <NUM> is (are) active. Clock Mode is Low. Clock Select is Midplane. Phy JTAG Reset is asserted. ASIC JTAG Reset is not asserted. TEMPERATURE MASK IS ACTIVE. No temperature error. Temperature Limit Error Latch is clear. PGOOD is asserted. PGOOD error latch is clear. MPGOOD is OK. MPGOOD error latch is clear. The <NUM> volt rail is OK. The <NUM> volt rail is OK.",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 15,
+    "component": "DISCOVERY",
+    "template": "Node card status: no ALERTs are active. Clock Mode is Low. Clock Select is Midplane. Phy JTAG Reset is asserted. ASIC JTAG Reset is asserted. Temperature Mask is not active. No temperature error. Temperature Limit Error Latch is clear. PGOOD IS NOT ASSERTED. PGOOD ERROR LATCH IS ACTIVE. MPGOOD is OK. MPGOOD ERROR LATCH IS ACTIVE. The <NUM> volt rail is OK. The <NUM> volt rail is OK.",
+    "training_size": 49
+  },
+  {
+    "cluster_id": 16,
+    "component": "DISCOVERY",
+    "template": "this link card is not fully functional",
+    "training_size": 22
+  },
+  {
+    "cluster_id": 17,
+    "component": "DISCOVERY",
+    "template": "Problem reading the ethernet arl entries fro the service card: java.lang.IllegalStateException: while executing I2C Operation caught java.lang.RuntimeException: Communication error: (DirectIDo for com.ibm.ido.DirectIDo object <*> with image version <NUM> and card type <NUM>] is in state = COMMUNICATION_ERROR, sequenceNumberIsOk = false, ExpectedSequenceNumber = <NUM>, Reply Sequence Number = <NUM>, timedOut = true, retries = <NUM>, timeout = <NUM>, Expected Op Command = <NUM>, Actual Op Reply = <NUM>, Expected Sync Command = <NUM>, Actual Sync Reply = <NUM>)",
+    "training_size": 4
+  },
+  {
+    "cluster_id": 18,
+    "component": "DISCOVERY",
+    "template": "New ido chip inserted into the database: <*> ip=<IP> v=<NUM> t=<NUM>",
+    "training_size": 3455
+  },
+  {
+    "cluster_id": 19,
+    "component": "DISCOVERY",
+    "template": "Node card VPD check: missing <*> node, VPD ecid <HEX> in processor card slot <*>",
+    "training_size": 887
+  },
+  {
+    "cluster_id": 20,
+    "component": "DISCOVERY",
+    "template": "Problem communicating with service card, ido chip: <*> java.lang.IllegalStateException: IDo is not in functional state -- currently in state COMMUNICATION_ERROR",
+    "training_size": 6
+  },
+  {
+    "cluster_id": 21,
+    "component": "DISCOVERY",
+    "template": "While initializing service card iDo with LP of <*> caught java.io.IOException: Could not contact iDo with <*> and IP=/<IP> because java.lang.RuntimeException: Communication error: (DirectIDo for Uninitialized DirectIDo for <*> is in state = COMMUNICATION_ERROR, sequenceNumberIsOk = false, ExpectedSequenceNumber = <NUM>, Reply Sequence Number = <NUM>, timedOut = true, retries = <NUM>, timeout = <NUM>, Expected Op Command = <NUM>, Actual Op Reply = <NUM>, Expected Sync Command = <NUM>, Actual Sync Reply = <NUM>)",
+    "training_size": 197
+  },
+  {
+    "cluster_id": 22,
+    "component": "DISCOVERY",
+    "template": "Expected <NUM> active FanModules, but found <NUM> ( Found J300 J301 J302 J303 J304 <*> <*> <*> <*> ).",
+    "training_size": 11
+  },
+  {
+    "cluster_id": 23,
+    "component": "DISCOVERY",
+    "template": "Found invalid node ecid in processor card slot <*> ecid <HEX>",
+    "training_size": 5558
+  },
+  {
+    "cluster_id": 24,
+    "component": "DISCOVERY",
+    "template": "Node card status: ALERT <NUM>, ALERT <NUM>, ALERT <NUM>, ALERT <NUM> is (are) active. Clock Mode is Low. Clock Select is Midplane. Phy JTAG Reset is asserted. ASIC JTAG Reset is not asserted. Temperature Mask is not active. No temperature error. Temperature Limit Error Latch is clear. PGOOD is asserted. PGOOD error latch is clear. MPGOOD is OK. MPGOOD error latch is clear. The <NUM> volt rail is OK. The <NUM> volt rail is OK.",
+    "training_size": 171
+  },
+  {
+    "cluster_id": 25,
+    "component": "DISCOVERY",
+    "template": "Problem communicating with service card, ido chip: <*> java.io.IOException: Could not find EthernetSwitch on port:address <NUM>:<NUM>",
+    "training_size": 166
+  },
+  {
+    "cluster_id": 26,
+    "component": "DISCOVERY",
+    "template": "Bad cable going into LinkCard (<HEX>) Jtag (<NUM>) Port <*> - <NUM> bad wires",
+    "training_size": 232
+  },
+  {
+    "cluster_id": 27,
+    "component": "DISCOVERY",
+    "template": "Missing reverse cable: Cable <*> <NUM> <*> <*> --> <*> <NUM> <*> <*> is present BUT the reverse cable <*> <NUM> <*> <*> --> <*> <NUM> <*> <*> is missing",
+    "training_size": 522
+  },
+  {
+    "cluster_id": 28,
+    "component": "DISCOVERY",
+    "template": "Problem communicating with service card, ido chip: <*> java.lang.IllegalStateException: while executing CONTROL Operation caught java.lang.RuntimeException: Communication error: (DirectIDo for com.ibm.ido.DirectIDo object <*> with image version <NUM> and card type <NUM>] is in state = COMMUNICATION_ERROR, sequenceNumberIsOk = false, ExpectedSequenceNumber = <NUM>, Reply Sequence Number = <NUM>, timedOut = true, retries = <NUM>, timeout = <NUM>, Expected Op Command = <NUM>, Actual Op Reply = <NUM>, Expected Sync Command = <NUM>, Actual Sync Reply = <NUM>)",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 29,
+    "component": "DISCOVERY",
+    "template": "Error getting detailed hw info for node, caught java.io.IOException: Problems with the chip, clear all resets",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 30,
+    "component": "DISCOVERY",
+    "template": "Error getting detailed hw info for node, caught java.io.IOException: Problems with the chip, could not <*> <*> <*>",
+    "training_size": 35
+  },
+  {
+    "cluster_id": 31,
+    "component": "DISCOVERY",
+    "template": "Node card status: no ALERTs are active. Clock Mode is Low. Clock Select is Midplane. Phy JTAG Reset is asserted. ASIC JTAG Reset is not asserted. Temperature Mask is not active. No temperature error. Temperature Limit Error Latch is clear. PGOOD IS NOT ASSERTED. PGOOD ERROR LATCH IS ACTIVE. MPGOOD IS NOT OK. MPGOOD ERROR LATCH IS ACTIVE. The <NUM> volt rail is OK. The <NUM> volt rail is OK.",
+    "training_size": 227
+  },
+  {
+    "cluster_id": 32,
+    "component": "DISCOVERY",
+    "template": "Node card status: no ALERTs are active. Clock Mode is Low. Clock Select is Midplane. Phy JTAG Reset is asserted. ASIC JTAG Reset is not asserted. Temperature Mask is not active. No temperature error. Temperature Limit Error Latch is clear. PGOOD IS NOT ASSERTED. PGOOD ERROR LATCH IS ACTIVE. MPGOOD IS NOT OK. MPGOOD ERROR LATCH IS ACTIVE. THE <NUM> VOLT RAIL IS NOT OK. THE <NUM> VOLT RAIL IS NOT OK.",
+    "training_size": 49
+  },
+  {
+    "cluster_id": 33,
+    "component": "DISCOVERY",
+    "template": "Node card status: no ALERTs are active. Clock Mode is Low. Clock Select is Midplane. Phy JTAG Reset is asserted. ASIC JTAG Reset is not asserted. Temperature Mask is not active. No temperature error. Temperature Limit Error Latch is clear. PGOOD IS NOT ASSERTED. PGOOD ERROR LATCH IS ACTIVE. MPGOOD IS NOT OK. MPGOOD ERROR LATCH IS ACTIVE. The <NUM> volt rail is OK. THE <NUM> VOLT RAIL IS NOT OK.",
+    "training_size": 3
+  },
+  {
+    "cluster_id": 1,
+    "component": "CMCS",
+    "template": "Starting SystemController",
+    "training_size": 71
+  },
+  {
+    "cluster_id": 2,
+    "component": "CMCS",
+    "template": "Controlling BG/L rows [ <NUM> <NUM> <NUM> <NUM> ]",
+    "training_size": 20
+  },
+  {
+    "cluster_id": 3,
+    "component": "CMCS",
+    "template": "Running as background command",
+    "training_size": 70
+  },
+  {
+    "cluster_id": 4,
+    "component": "CMCS",
+    "template": "Controlling BG/L rows [ <NUM> <NUM> <NUM> <NUM> <NUM> <NUM> <NUM> <NUM> ]",
+    "training_size": 50
+  },
+  {
+    "cluster_id": 1,
+    "component": "BGLMASTER",
+    "template": "BGLMaster has been started: ./BGLMaster --consoleip <IP> --consoleport <NUM> --configfile bglmaster.init",
+    "training_size": 6
+  },
+  {
+    "cluster_id": 2,
+    "component": "BGLMASTER",
+    "template": "mmcs_server exited normally with exit code <NUM>",
+    "training_size": 9
+  },
+  {
+    "cluster_id": 3,
+    "component": "BGLMASTER",
+    "template": "mmcs_server exited abnormally due to signal: Aborted",
+    "training_size": 11
+  },
+  {
+    "cluster_id": 4,
+    "component": "BGLMASTER",
+    "template": "ciodb exited normally with exit code <NUM>",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 5,
+    "component": "BGLMASTER",
+    "template": "mmcs_server exited abnormally due to signal: Segmentation fault",
+    "training_size": 3
+  },
+  {
+    "cluster_id": 6,
+    "component": "BGLMASTER",
+    "template": "BGLMaster has been started: ./BGLMaster --consoleip <IP> --consoleport <NUM> --configfile bglmaster.init --autorestart y",
+    "training_size": 59
+  },
+  {
+    "cluster_id": 7,
+    "component": "BGLMASTER",
+    "template": "idoproxy exited normally with exit code <NUM>",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 8,
+    "component": "BGLMASTER",
+    "template": "ciodb exited abnormally due to signal: Aborted",
+    "training_size": 23
+  },
+  {
+    "cluster_id": 9,
+    "component": "BGLMASTER",
+    "template": "BGLMaster has been started: ./BGLMaster --consoleip <IP> --consoleport <NUM> --configfile bglmaster.init --autorestart y --db2profile /u/bgdb2cli/sqllib/db2profile --dbproperties db.properties",
+    "training_size": 31
+  },
+  {
+    "cluster_id": 1,
+    "component": "MONITOR",
+    "template": "monitor caught java.lang.UnsupportedOperationException: power module <*> not present and is stopping",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 2,
+    "component": "MONITOR",
+    "template": "While inserting monitor info into DB caught java.lang.NullPointerException",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 3,
+    "component": "MONITOR",
+    "template": "power module status fault detected on node card. status registers are: <NUM>/<NUM>/<NUM>/<NUM>",
+    "training_size": 4
+  },
+  {
+    "cluster_id": 4,
+    "component": "MONITOR",
+    "template": "No power module U58 found found on link card",
+    "training_size": 6
+  },
+  {
+    "cluster_id": 5,
+    "component": "MONITOR",
+    "template": "Temperature Over Limit on link card",
+    "training_size": 972
+  },
+  {
+    "cluster_id": 6,
+    "component": "MONITOR",
+    "template": "Link PGOOD error latched on link card",
+    "training_size": 349
+  },
+  {
+    "cluster_id": 7,
+    "component": "MONITOR",
+    "template": "Local PGOOD error latched on link card",
+    "training_size": 4
+  },
+  {
+    "cluster_id": 8,
+    "component": "MONITOR",
+    "template": "monitor caught java.lang.IllegalStateException: while executing CONTROL Operation caught java.io.EOFException and is stopping",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 9,
+    "component": "MONITOR",
+    "template": "monitor caught java.lang.IllegalStateException: while executing <*> Operation caught java.net.SocketException: Broken pipe and is stopping",
+    "training_size": 190
+  },
+  {
+    "cluster_id": 10,
+    "component": "MONITOR",
+    "template": "While reading FanModule caught java.lang.IllegalStateException: while executing I2C Operation caught java.net.SocketException: Broken pipe",
+    "training_size": 8
+  },
+  {
+    "cluster_id": 11,
+    "component": "MONITOR",
+    "template": "Hardware monitor caught java.lang.IllegalStateException: while executing I2C Operation caught java.net.SocketException: Broken pipe and is stopping",
+    "training_size": 4
+  },
+  {
+    "cluster_id": 12,
+    "component": "MONITOR",
+    "template": "While setting fan speed caught java.lang.IllegalStateException: while executing I2C Operation caught java.lang.IllegalStateException: client not in a usable state because java.net.SocketException: Broken pipe",
+    "training_size": 8
+  },
+  {
+    "cluster_id": 13,
+    "component": "MONITOR",
+    "template": "While reading FanModule caught java.lang.IllegalStateException: while executing I2C Operation caught java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.net.SocketException: Broken pipe",
+    "training_size": 8
+  },
+  {
+    "cluster_id": 14,
+    "component": "MONITOR",
+    "template": "While setting fan speed caught java.lang.IllegalStateException: while executing I2C Operation caught java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.net.SocketException: Broken pipe",
+    "training_size": 8
+  },
+  {
+    "cluster_id": 15,
+    "component": "MONITOR",
+    "template": "While reading FanModule caught java.lang.IllegalStateException: while executing I2C Operation caught java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.net.SocketException: Broken pipe",
+    "training_size": 8
+  },
+  {
+    "cluster_id": 16,
+    "component": "MONITOR",
+    "template": "While setting fan speed caught java.lang.IllegalStateException: while executing I2C Operation caught java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.net.SocketException: Broken pipe",
+    "training_size": 7
+  },
+  {
+    "cluster_id": 17,
+    "component": "MONITOR",
+    "template": "While reading FanModule caught java.lang.IllegalStateException: while executing I2C Operation caught java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.net.SocketException: Broken pipe",
+    "training_size": 7
+  },
+  {
+    "cluster_id": 18,
+    "component": "MONITOR",
+    "template": "While setting fan speed caught java.lang.IllegalStateException: while executing I2C Operation caught java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.net.SocketException: Broken pipe",
+    "training_size": 5
+  },
+  {
+    "cluster_id": 19,
+    "component": "MONITOR",
+    "template": "While reading FanModule caught java.lang.IllegalStateException: while executing I2C Operation caught java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.net.SocketException: Broken pipe",
+    "training_size": 5
+  },
+  {
+    "cluster_id": 20,
+    "component": "MONITOR",
+    "template": "While setting fan speed caught java.lang.IllegalStateException: while executing I2C Operation caught java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.net.SocketException: Broken pipe",
+    "training_size": 3
+  },
+  {
+    "cluster_id": 21,
+    "component": "MONITOR",
+    "template": "While reading FanModule caught java.lang.IllegalStateException: while executing I2C Operation caught java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.lang.IllegalStateException: client not in a usable state because java.net.SocketException: Broken pipe",
+    "training_size": 3
+  },
+  {
+    "cluster_id": 22,
+    "component": "MONITOR",
+    "template": "Hardware monitor caught java.net.SocketException: Broken pipe and is stopping",
+    "training_size": 77
+  },
+  {
+    "cluster_id": 1,
+    "component": "SERV_NET",
+    "template": "DeclareServiceNetworkCharacteristics has been run but the DB is not empty",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 2,
+    "component": "SERV_NET",
+    "template": "DeclareServiceNetworkCharacteristics has been run with the force option but the DB is not empty",
+    "training_size": 1
+  },
+  {
+    "cluster_id": 3,
+    "component": "SERV_NET",
+    "template": "Added <NUM> subnets and <NUM> addresses to DB",
+    "training_size": 1
+  }
+]

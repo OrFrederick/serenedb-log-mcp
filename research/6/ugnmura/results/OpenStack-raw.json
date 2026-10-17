@@ -1,0 +1,409 @@
+{
+  "archive_sha256": "87c98c5ed03262e05cdb7a6f3717033df76d88fda0f7d2db23bd9fa4200f1879",
+  "bytes": 61442082,
+  "catalog": {
+    "any_match_coverage": 0.9990953709941295,
+    "cache": {
+      "currsize": 50000,
+      "hits": 64635,
+      "maxsize": 50000,
+      "misses": 143185
+    },
+    "lines_per_second": 24686.57838351204,
+    "multiple_matches": 0,
+    "no_match": 188,
+    "seconds": 8.41833958402276,
+    "templates": 48,
+    "top": {
+      "E12": 2065,
+      "E13": 2065,
+      "E18": 2066,
+      "E21": 2066,
+      "E22": 4132,
+      "E23": 2066,
+      "E25": 2067,
+      "E26": 2066,
+      "E28": 2065,
+      "E37": 2066,
+      "E38": 2065,
+      "E4": 4049,
+      "E41": 6194,
+      "E42": 90475,
+      "E43": 3059,
+      "E44": 12043,
+      "E46": 3059,
+      "E47": 12035,
+      "E5": 12043,
+      "E9": 2066
+    },
+    "unique_match": 207632,
+    "unique_match_coverage": 0.9990953709941295,
+    "unmatched_examples": [
+      {
+        "line": 13720,
+        "message": "[instance: 1dbcdff4-2bc2-431f-9444-b2e855d74da5] During sync_power_state the instance has a pending task (deleting). Skip.",
+        "source": "openstack_normal1.log"
+      },
+      {
+        "line": 27180,
+        "message": "Traceback (most recent call last):",
+        "source": "openstack_normal1.log"
+      },
+      {
+        "line": 27181,
+        "message": "File \"/usr/lib/python2.7/dist-packages/oslo_service/periodic_task.py\", line 220, in run_periodic_tasks",
+        "source": "openstack_normal1.log"
+      },
+      {
+        "line": 27182,
+        "message": "task(self, context)",
+        "source": "openstack_normal1.log"
+      },
+      {
+        "line": 27183,
+        "message": "File \"/usr/lib/python2.7/dist-packages/nova/compute/manager.py\", line 6743, in _run_image_cache_manager_pass",
+        "source": "openstack_normal1.log"
+      },
+      {
+        "line": 27184,
+        "message": "self.driver.manage_image_cache(context, filtered_instances)",
+        "source": "openstack_normal1.log"
+      },
+      {
+        "line": 27185,
+        "message": "File \"/usr/lib/python2.7/dist-packages/nova/virt/libvirt/driver.py\", line 7139, in manage_image_cache",
+        "source": "openstack_normal1.log"
+      },
+      {
+        "line": 27186,
+        "message": "self.image_cache_manager.update(context, all_instances)",
+        "source": "openstack_normal1.log"
+      },
+      {
+        "line": 27187,
+        "message": "File \"/usr/lib/python2.7/dist-packages/nova/virt/libvirt/imagecache.py\", line 674, in update",
+        "source": "openstack_normal1.log"
+      },
+      {
+        "line": 27188,
+        "message": "self._age_and_verify_cached_images(context, all_instances, base_dir)",
+        "source": "openstack_normal1.log"
+      },
+      {
+        "line": 27189,
+        "message": "File \"/usr/lib/python2.7/dist-packages/nova/virt/libvirt/imagecache.py\", line 610, in _age_and_verify_cached_images",
+        "source": "openstack_normal1.log"
+      },
+      {
+        "line": 27190,
+        "message": "inuse_backing_images = self._list_backing_images()",
+        "source": "openstack_normal1.log"
+      },
+      {
+        "line": 27191,
+        "message": "File \"/usr/lib/python2.7/dist-packages/nova/virt/libvirt/imagecache.py\", line 309, in _list_backing_images",
+        "source": "openstack_normal1.log"
+      },
+      {
+        "line": 27192,
+        "message": "disk_path)",
+        "source": "openstack_normal1.log"
+      },
+      {
+        "line": 27193,
+        "message": "File \"/usr/lib/python2.7/dist-packages/nova/virt/libvirt/utils.py\", line 184, in get_disk_backing_file",
+        "source": "openstack_normal1.log"
+      },
+      {
+        "line": 27194,
+        "message": "backing_file = images.qemu_img_info(path, format).backing_file",
+        "source": "openstack_normal1.log"
+      },
+      {
+        "line": 27195,
+        "message": "File \"/usr/lib/python2.7/dist-packages/nova/virt/images.py\", line 65, in qemu_img_info",
+        "source": "openstack_normal1.log"
+      },
+      {
+        "line": 27196,
+        "message": "raise exception.InvalidDiskInfo(reason=msg)",
+        "source": "openstack_normal1.log"
+      },
+      {
+        "line": 27197,
+        "message": "InvalidDiskInfo: Disk info file is invalid: qemu-img failed to execute on /var/lib/nova/instances/16797a0f-32fb-494c-8f36-38588148c35d/disk : Unexpected error while running command.",
+        "source": "openstack_normal1.log"
+      },
+      {
+        "line": 27198,
+        "message": "Command: /usr/bin/python -m oslo_concurrency.prlimit --as=1073741824 --cpu=2 -- env LC_ALL=C LANG=C qemu-img info /var/lib/nova/instances/16797a0f-32fb-494c-8f36-38588148c35d/disk",
+        "source": "openstack_normal1.log"
+      }
+    ],
+    "version": "loghub2-regex-v1:a05b4e7534a0f2ce0c01c6a1eea7b28c30d85b2006bc1d8d873bcccbe2d68559"
+  },
+  "components": {
+    "__HEADER_UNPARSED__": 8,
+    "keystonemiddleware.auth_token": 6,
+    "nova.api.openstack.compute.server_external_events": 2065,
+    "nova.api.openstack.wsgi": 2064,
+    "nova.compute.claims": 16520,
+    "nova.compute.manager": 24784,
+    "nova.compute.resource_tracker": 6956,
+    "nova.metadata.wsgi.server": 20403,
+    "nova.osapi_compute.wsgi.server": 78330,
+    "nova.scheduler.host_manager": 866,
+    "nova.virt.libvirt.driver": 10336,
+    "nova.virt.libvirt.imagecache": 45298,
+    "oslo_service.periodic_task": 184
+  },
+  "dataset": "OpenStack",
+  "drain3": {
+    "assignment_coverage": 1.0,
+    "end_to_end_lines_per_second": 10554.713702474195,
+    "frozen_coverage": 1.0,
+    "groups": 57,
+    "groups_sha256": "32872d681052d67d2b5b4e8646576d21cb4a5c0cf579d804bc718779f46e59a3",
+    "inference_lines_per_second": 21761.249708349784,
+    "inference_seconds": 9.55000300006941,
+    "template_changes": 15,
+    "top": [
+      {
+        "component": "nova.osapi_compute.wsgi.server",
+        "count": 70072,
+        "template": "<IP> \"GET <*> HTTP/<NUM>\" status: <NUM> len: <NUM> time: <NUM>"
+      },
+      {
+        "component": "nova.metadata.wsgi.server",
+        "count": 20403,
+        "template": "<IP>,<IP> \"GET <*> HTTP/<NUM>\" status: <NUM> len: <NUM> time: <NUM>"
+      },
+      {
+        "component": "nova.virt.libvirt.imagecache",
+        "count": 12043,
+        "template": "image <UUID> at (/var/lib/nova/instances/_base/<HEX>): checking"
+      },
+      {
+        "component": "nova.virt.libvirt.imagecache",
+        "count": 12043,
+        "template": "image <UUID> at (/var/lib/nova/instances/_base/<HEX>): in use: on this node <NUM> local, <NUM> on other nodes sharing this instance storage"
+      },
+      {
+        "component": "nova.virt.libvirt.imagecache",
+        "count": 12035,
+        "template": "Active base files: /var/lib/nova/instances/_base/<HEX>"
+      },
+      {
+        "component": "nova.compute.manager",
+        "count": 10331,
+        "template": "[instance: <UUID>] VM <*> (Lifecycle Event)"
+      },
+      {
+        "component": "nova.osapi_compute.wsgi.server",
+        "count": 6194,
+        "template": "<IP> \"POST <*> HTTP/<NUM>\" status: <NUM> len: <NUM> time: <NUM>"
+      },
+      {
+        "component": "nova.virt.libvirt.driver",
+        "count": 4130,
+        "template": "[instance: <UUID>] Instance <*> successfully."
+      },
+      {
+        "component": "nova.compute.manager",
+        "count": 4130,
+        "template": "[instance: <UUID>] Took <NUM> seconds to <*> the instance on the hypervisor."
+      },
+      {
+        "component": "nova.compute.claims",
+        "count": 4130,
+        "template": "[instance: <UUID>] <*> <*> <NUM> MB, <*> <NUM> MB"
+      },
+      {
+        "component": "nova.compute.claims",
+        "count": 4130,
+        "template": "[instance: <UUID>] Total <*> <NUM> <*> used: <NUM> <*>"
+      },
+      {
+        "component": "nova.compute.claims",
+        "count": 4130,
+        "template": "[instance: <UUID>] <*> limit not specified, defaulting to unlimited"
+      },
+      {
+        "component": "nova.compute.manager",
+        "count": 4053,
+        "template": "[instance: <UUID>] During sync_power_state the instance has a pending task <*> Skip."
+      },
+      {
+        "component": "nova.virt.libvirt.imagecache",
+        "count": 3059,
+        "template": "Unknown base file: /var/lib/nova/instances/_base/<HEX>"
+      },
+      {
+        "component": "nova.virt.libvirt.imagecache",
+        "count": 3059,
+        "template": "Removable base files: /var/lib/nova/instances/_base/<HEX>"
+      },
+      {
+        "component": "nova.virt.libvirt.driver",
+        "count": 2066,
+        "template": "[instance: <UUID>] Creating image"
+      },
+      {
+        "component": "nova.compute.manager",
+        "count": 2066,
+        "template": "[instance: <UUID>] Took <NUM> seconds to build instance."
+      },
+      {
+        "component": "nova.api.openstack.compute.server_external_events",
+        "count": 2065,
+        "template": "Creating event network-vif-plugged:<UUID> for instance <UUID>"
+      },
+      {
+        "component": "nova.compute.manager",
+        "count": 2065,
+        "template": "[instance: <UUID>] Took <NUM> seconds to deallocate network for instance."
+      },
+      {
+        "component": "nova.compute.claims",
+        "count": 2065,
+        "template": "[instance: <UUID>] Attempting claim: memory <NUM> MB, disk <NUM> GB, vcpus <NUM> CPU"
+      }
+    ],
+    "total_seconds": 19.68978087499272,
+    "train_lines_per_second": 20495.518004783884,
+    "train_seconds": 10.139777874923311,
+    "training_clusters": 57,
+    "unknown": 0
+  },
+  "drain3_version": "0.9.11",
+  "drain_config": {
+    "depth": 5,
+    "max_clusters": "unlimited",
+    "partition": "Component",
+    "sim_th": 0.5
+  },
+  "empty_content": 0,
+  "header_unparsed": 8,
+  "lines": 207820,
+  "mask": {
+    "coverage": 1.0,
+    "groups": 4583,
+    "groups_sha256": "eb0c8fd2013edb30826bfe5d779972f7ddd07fd64c0ff1aa947a191fe3e09a65",
+    "lines_per_second": 23364.82965938425,
+    "seconds": 8.894565166090615,
+    "top": [
+      {
+        "component": "nova.osapi_compute.wsgi.server",
+        "count": 67363,
+        "template": "<IP> \"GET /v2/<HEX>/servers/detail HTTP/<NUM>\" status: <NUM> len: <NUM> time: <NUM>"
+      },
+      {
+        "component": "nova.virt.libvirt.imagecache",
+        "count": 12043,
+        "template": "image <UUID> at (/var/lib/nova/instances/_base/<HEX>): checking"
+      },
+      {
+        "component": "nova.virt.libvirt.imagecache",
+        "count": 12043,
+        "template": "image <UUID> at (/var/lib/nova/instances/_base/<HEX>): in use: on this node <NUM> local, <NUM> on other nodes sharing this instance storage"
+      },
+      {
+        "component": "nova.virt.libvirt.imagecache",
+        "count": 12035,
+        "template": "Active base files: /var/lib/nova/instances/_base/<HEX>"
+      },
+      {
+        "component": "nova.metadata.wsgi.server",
+        "count": 5386,
+        "template": "<IP>,<IP> \"GET /openstack/<NUM>-<NUM>-<NUM>/meta_data.json HTTP/<NUM>\" status: <NUM> len: <NUM> time: <NUM>"
+      },
+      {
+        "component": "nova.compute.manager",
+        "count": 4132,
+        "template": "[instance: <UUID>] VM Resumed (Lifecycle Event)"
+      },
+      {
+        "component": "nova.osapi_compute.wsgi.server",
+        "count": 4129,
+        "template": "<IP> \"POST /v2/<HEX>/os-server-external-events HTTP/<NUM>\" status: <NUM> len: <NUM> time: <NUM>"
+      },
+      {
+        "component": "nova.metadata.wsgi.server",
+        "count": 4071,
+        "template": "<IP>,<IP> \"GET /openstack/<NUM>-<NUM>-<NUM>/vendor_data.json HTTP/<NUM>\" status: <NUM> len: <NUM> time: <NUM>"
+      },
+      {
+        "component": "nova.compute.manager",
+        "count": 4049,
+        "template": "[instance: <UUID>] During sync_power_state the instance has a pending task (spawning). Skip."
+      },
+      {
+        "component": "nova.virt.libvirt.imagecache",
+        "count": 3059,
+        "template": "Unknown base file: /var/lib/nova/instances/_base/<HEX>"
+      },
+      {
+        "component": "nova.virt.libvirt.imagecache",
+        "count": 3059,
+        "template": "Removable base files: /var/lib/nova/instances/_base/<HEX>"
+      },
+      {
+        "component": "nova.compute.manager",
+        "count": 2067,
+        "template": "[instance: <UUID>] VM Stopped (Lifecycle Event)"
+      },
+      {
+        "component": "nova.osapi_compute.wsgi.server",
+        "count": 2066,
+        "template": "<IP> \"GET /v2/<HEX>/servers/<UUID> HTTP/<NUM>\" status: <NUM> len: <NUM> time: <NUM>"
+      },
+      {
+        "component": "nova.virt.libvirt.driver",
+        "count": 2066,
+        "template": "[instance: <UUID>] Creating image"
+      },
+      {
+        "component": "nova.compute.manager",
+        "count": 2066,
+        "template": "[instance: <UUID>] VM Started (Lifecycle Event)"
+      },
+      {
+        "component": "nova.compute.manager",
+        "count": 2066,
+        "template": "[instance: <UUID>] VM Paused (Lifecycle Event)"
+      },
+      {
+        "component": "nova.virt.libvirt.driver",
+        "count": 2066,
+        "template": "[instance: <UUID>] Instance spawned successfully."
+      },
+      {
+        "component": "nova.compute.manager",
+        "count": 2066,
+        "template": "[instance: <UUID>] Took <NUM> seconds to spawn the instance on the hypervisor."
+      },
+      {
+        "component": "nova.compute.manager",
+        "count": 2066,
+        "template": "[instance: <UUID>] Took <NUM> seconds to build instance."
+      },
+      {
+        "component": "nova.api.openstack.compute.server_external_events",
+        "count": 2065,
+        "template": "Creating event network-vif-plugged:<UUID> for instance <UUID>"
+      }
+    ]
+  },
+  "mask_version": "mask-v1",
+  "peak_rss_platform_units": 47611904,
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "processor": "arm",
+  "python": "3.12.13 (main, Aug  5 2026, 15:33:41) [Clang 22.1.3 ]",
+  "raw_sha256_in_stream_order": "94df6daec483b9285f63d58e7211dffa793c4eccea23fb45a347dec188f73897",
+  "source_sha256": {
+    "openstack_abnormal.log": "7ab718fbb2f2b804893955cecf37ad9533cfa0efaf5b03009474d5bb019b6af4",
+    "openstack_normal1.log": "4e4d47347bdae198056bb3b0a8a755e1cb0100d6c6a30bbd4058684234769199",
+    "openstack_normal2.log": "3c51741dcea1fb0731d1f86588b12587707e7abea01e725ee16c9441b8b68db7"
+  },
+  "timing": "single process wall clock including compressed archive reads, header parsing, hashing/counting; excludes dependency install/download; no concurrent method workers"
+}

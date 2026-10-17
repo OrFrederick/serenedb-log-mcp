@@ -1,0 +1,55 @@
+{
+  "checked": "2026-10-17",
+  "repositories": [
+    {
+      "full_name": "logpai/Drain3",
+      "html_url": "https://github.com/logpai/Drain3",
+      "pushed_at": "2025-02-04T02:49:05Z",
+      "archived": false,
+      "license": {
+        "key": "other",
+        "name": "Other",
+        "spdx_id": "NOASSERTION",
+        "url": null,
+        "node_id": "MDc6TGljZW5zZTA="
+      },
+      "default_branch": "master"
+    },
+    {
+      "full_name": "logpai/logparser",
+      "html_url": "https://github.com/logpai/logparser",
+      "pushed_at": "2025-06-10T23:50:49Z",
+      "archived": false,
+      "license": {
+        "key": "other",
+        "name": "Other",
+        "spdx_id": "NOASSERTION",
+        "url": null,
+        "node_id": "MDc6TGljZW5zZTA="
+      },
+      "default_branch": "main"
+    },
+    {
+      "full_name": "logpai/loghub-2.0",
+      "html_url": "https://github.com/logpai/loghub-2.0",
+      "pushed_at": "2025-10-08T13:14:48Z",
+      "archived": false,
+      "license": {
+        "key": "other",
+        "name": "Other",
+        "spdx_id": "NOASSERTION",
+        "url": null,
+        "node_id": "MDc6TGljZW5zZTA="
+      },
+      "default_branch": "main"
+    },
+    {
+      "full_name": "logpai/LILAC",
+      "html_url": "https://github.com/logpai/LILAC",
+      "pushed_at": "2024-02-03T17:46:03Z",
+      "archived": false,
+      "license": null,
+      "default_branch": "main"
+    }
+  ]
+}

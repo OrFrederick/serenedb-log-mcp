@@ -1,0 +1,344 @@
+[
+  {
+    "cluster_id": 1,
+    "component": "nova.osapi_compute.wsgi.server",
+    "template": "<IP> \"GET <*> HTTP/<NUM>\" status: <NUM> len: <NUM> time: <NUM>",
+    "training_size": 70072
+  },
+  {
+    "cluster_id": 2,
+    "component": "nova.osapi_compute.wsgi.server",
+    "template": "<IP> \"POST <*> HTTP/<NUM>\" status: <NUM> len: <NUM> time: <NUM>",
+    "training_size": 6194
+  },
+  {
+    "cluster_id": 3,
+    "component": "nova.osapi_compute.wsgi.server",
+    "template": "<IP> \"DELETE /v2/<HEX>/servers/<UUID> HTTP/<NUM>\" status: <NUM> len: <NUM> time: <NUM>",
+    "training_size": 2064
+  },
+  {
+    "cluster_id": 1,
+    "component": "nova.virt.libvirt.driver",
+    "template": "[instance: <UUID>] Creating image",
+    "training_size": 2066
+  },
+  {
+    "cluster_id": 2,
+    "component": "nova.virt.libvirt.driver",
+    "template": "[instance: <UUID>] Instance <*> successfully.",
+    "training_size": 4130
+  },
+  {
+    "cluster_id": 3,
+    "component": "nova.virt.libvirt.driver",
+    "template": "[instance: <UUID>] Deleting instance files <*>",
+    "training_size": 2064
+  },
+  {
+    "cluster_id": 4,
+    "component": "nova.virt.libvirt.driver",
+    "template": "[instance: <UUID>] Deletion of <*> complete",
+    "training_size": 2064
+  },
+  {
+    "cluster_id": 5,
+    "component": "nova.virt.libvirt.driver",
+    "template": "couldn't obtain the vcpu count from domain id: <UUID>, exception: Requested operation is not valid: cpu affinity is not supported",
+    "training_size": 12
+  },
+  {
+    "cluster_id": 1,
+    "component": "nova.compute.manager",
+    "template": "[instance: <UUID>] VM <*> (Lifecycle Event)",
+    "training_size": 10331
+  },
+  {
+    "cluster_id": 2,
+    "component": "nova.compute.manager",
+    "template": "While synchronizing instance power states, found <NUM> instances in the database and <NUM> instances on the hypervisor.",
+    "training_size": 45
+  },
+  {
+    "cluster_id": 3,
+    "component": "nova.compute.manager",
+    "template": "[instance: <UUID>] During sync_power_state the instance has a pending task <*> Skip.",
+    "training_size": 4053
+  },
+  {
+    "cluster_id": 4,
+    "component": "nova.compute.manager",
+    "template": "[instance: <UUID>] Took <NUM> seconds to <*> the instance on the hypervisor.",
+    "training_size": 4130
+  },
+  {
+    "cluster_id": 5,
+    "component": "nova.compute.manager",
+    "template": "[instance: <UUID>] Took <NUM> seconds to build instance.",
+    "training_size": 2066
+  },
+  {
+    "cluster_id": 6,
+    "component": "nova.compute.manager",
+    "template": "[instance: <UUID>] Terminating instance",
+    "training_size": 2064
+  },
+  {
+    "cluster_id": 7,
+    "component": "nova.compute.manager",
+    "template": "[instance: <UUID>] Took <NUM> seconds to deallocate network for instance.",
+    "training_size": 2065
+  },
+  {
+    "cluster_id": 8,
+    "component": "nova.compute.manager",
+    "template": "Running instance usage audit for host cp-<NUM>.slowvm1.tcloud-pg0.utah.cloudlab.us from <NUM>-<NUM>-<NUM> <NUM>:<NUM>:<NUM> to <NUM>-<NUM>-<NUM> <NUM>:<NUM>:<NUM>. <NUM> instances.",
+    "training_size": 30
+  },
+  {
+    "cluster_id": 1,
+    "component": "nova.virt.libvirt.imagecache",
+    "template": "image <UUID> at (/var/lib/nova/instances/_base/<HEX>): checking",
+    "training_size": 12043
+  },
+  {
+    "cluster_id": 2,
+    "component": "nova.virt.libvirt.imagecache",
+    "template": "image <UUID> at (/var/lib/nova/instances/_base/<HEX>): in use: on this node <NUM> local, <NUM> on other nodes sharing this instance storage",
+    "training_size": 12043
+  },
+  {
+    "cluster_id": 3,
+    "component": "nova.virt.libvirt.imagecache",
+    "template": "Active base files: /var/lib/nova/instances/_base/<HEX>",
+    "training_size": 12035
+  },
+  {
+    "cluster_id": 4,
+    "component": "nova.virt.libvirt.imagecache",
+    "template": "Unknown base file: /var/lib/nova/instances/_base/<HEX>",
+    "training_size": 3059
+  },
+  {
+    "cluster_id": 5,
+    "component": "nova.virt.libvirt.imagecache",
+    "template": "Removable base files: /var/lib/nova/instances/_base/<HEX>",
+    "training_size": 3059
+  },
+  {
+    "cluster_id": 6,
+    "component": "nova.virt.libvirt.imagecache",
+    "template": "Removing base or swap file: /var/lib/nova/instances/_base/<HEX>",
+    "training_size": 2064
+  },
+  {
+    "cluster_id": 7,
+    "component": "nova.virt.libvirt.imagecache",
+    "template": "Base or swap file too young to remove: /var/lib/nova/instances/_base/<HEX>",
+    "training_size": 995
+  },
+  {
+    "cluster_id": 1,
+    "component": "nova.api.openstack.compute.server_external_events",
+    "template": "Creating event network-vif-plugged:<UUID> for instance <UUID>",
+    "training_size": 2065
+  },
+  {
+    "cluster_id": 1,
+    "component": "nova.metadata.wsgi.server",
+    "template": "<IP>,<IP> \"GET <*> HTTP/<NUM>\" status: <NUM> len: <NUM> time: <NUM>",
+    "training_size": 20403
+  },
+  {
+    "cluster_id": 1,
+    "component": "nova.api.openstack.wsgi",
+    "template": "HTTP exception thrown: No instances found for any event",
+    "training_size": 2064
+  },
+  {
+    "cluster_id": 1,
+    "component": "nova.compute.claims",
+    "template": "[instance: <UUID>] Attempting claim: memory <NUM> MB, disk <NUM> GB, vcpus <NUM> CPU",
+    "training_size": 2065
+  },
+  {
+    "cluster_id": 2,
+    "component": "nova.compute.claims",
+    "template": "[instance: <UUID>] <*> <*> <NUM> MB, <*> <NUM> MB",
+    "training_size": 4130
+  },
+  {
+    "cluster_id": 3,
+    "component": "nova.compute.claims",
+    "template": "[instance: <UUID>] Total <*> <NUM> <*> used: <NUM> <*>",
+    "training_size": 4130
+  },
+  {
+    "cluster_id": 4,
+    "component": "nova.compute.claims",
+    "template": "[instance: <UUID>] <*> limit not specified, defaulting to unlimited",
+    "training_size": 4130
+  },
+  {
+    "cluster_id": 5,
+    "component": "nova.compute.claims",
+    "template": "[instance: <UUID>] Claim successful",
+    "training_size": 2065
+  },
+  {
+    "cluster_id": 1,
+    "component": "nova.compute.resource_tracker",
+    "template": "Auditing locally available compute resources for node cp-<NUM>.slowvm1.tcloud-pg0.utah.cloudlab.us",
+    "training_size": 1739
+  },
+  {
+    "cluster_id": 2,
+    "component": "nova.compute.resource_tracker",
+    "template": "Total usable vcpus: <NUM>, total allocated vcpus: <NUM>",
+    "training_size": 1739
+  },
+  {
+    "cluster_id": 3,
+    "component": "nova.compute.resource_tracker",
+    "template": "Final resource view: name=cp-<NUM>.slowvm1.tcloud-pg0.utah.cloudlab.us phys_ram=64172MB <*> phys_disk=15GB <*> total_vcpus=<NUM> used_vcpus=<NUM> pci_stats=[]",
+    "training_size": 1739
+  },
+  {
+    "cluster_id": 4,
+    "component": "nova.compute.resource_tracker",
+    "template": "Compute_service record updated for cp-<NUM>.slowvm1.tcloud-pg0.utah.cloudlab.us:cp-<NUM>.slowvm1.tcloud-pg0.utah.cloudlab.us",
+    "training_size": 1739
+  },
+  {
+    "cluster_id": 1,
+    "component": "nova.scheduler.host_manager",
+    "template": "Successfully synced instances from host 'cp-<NUM>.slowvm1.tcloud-pg0.utah.cloudlab.us'.",
+    "training_size": 502
+  },
+  {
+    "cluster_id": 2,
+    "component": "nova.scheduler.host_manager",
+    "template": "The instance sync for host 'cp-<NUM>.slowvm1.tcloud-pg0.utah.cloudlab.us' did not match. Re-created its InstanceList.",
+    "training_size": 364
+  },
+  {
+    "cluster_id": 1,
+    "component": "oslo_service.periodic_task",
+    "template": "Error during ComputeManager._run_image_cache_manager_pass",
+    "training_size": 8
+  },
+  {
+    "cluster_id": 2,
+    "component": "oslo_service.periodic_task",
+    "template": "Traceback (most recent call last):",
+    "training_size": 8
+  },
+  {
+    "cluster_id": 3,
+    "component": "oslo_service.periodic_task",
+    "template": "File <*> line <NUM>, in <*>",
+    "training_size": 64
+  },
+  {
+    "cluster_id": 4,
+    "component": "oslo_service.periodic_task",
+    "template": "task(self, context)",
+    "training_size": 8
+  },
+  {
+    "cluster_id": 5,
+    "component": "oslo_service.periodic_task",
+    "template": "self.driver.manage_image_cache(context, filtered_instances)",
+    "training_size": 8
+  },
+  {
+    "cluster_id": 6,
+    "component": "oslo_service.periodic_task",
+    "template": "self.image_cache_manager.update(context, all_instances)",
+    "training_size": 8
+  },
+  {
+    "cluster_id": 7,
+    "component": "oslo_service.periodic_task",
+    "template": "self._age_and_verify_cached_images(context, all_instances, base_dir)",
+    "training_size": 8
+  },
+  {
+    "cluster_id": 8,
+    "component": "oslo_service.periodic_task",
+    "template": "inuse_backing_images = self._list_backing_images()",
+    "training_size": 8
+  },
+  {
+    "cluster_id": 9,
+    "component": "oslo_service.periodic_task",
+    "template": "disk_path)",
+    "training_size": 8
+  },
+  {
+    "cluster_id": 10,
+    "component": "oslo_service.periodic_task",
+    "template": "backing_file = images.qemu_img_info(path, format).backing_file",
+    "training_size": 8
+  },
+  {
+    "cluster_id": 11,
+    "component": "oslo_service.periodic_task",
+    "template": "raise exception.InvalidDiskInfo(reason=msg)",
+    "training_size": 8
+  },
+  {
+    "cluster_id": 12,
+    "component": "oslo_service.periodic_task",
+    "template": "InvalidDiskInfo: Disk info file is invalid: qemu-img failed to execute on /var/lib/nova/instances/<UUID>/disk : Unexpected error while running command.",
+    "training_size": 8
+  },
+  {
+    "cluster_id": 13,
+    "component": "oslo_service.periodic_task",
+    "template": "Command: /usr/bin/python -m oslo_concurrency.prlimit --as=<NUM> --cpu=<NUM> -- env LC_ALL=C LANG=C qemu-img info /var/lib/nova/instances/<UUID>/disk",
+    "training_size": 8
+  },
+  {
+    "cluster_id": 14,
+    "component": "oslo_service.periodic_task",
+    "template": "Exit code: <NUM>",
+    "training_size": 8
+  },
+  {
+    "cluster_id": 15,
+    "component": "oslo_service.periodic_task",
+    "template": "Stdout: u''",
+    "training_size": 8
+  },
+  {
+    "cluster_id": 16,
+    "component": "oslo_service.periodic_task",
+    "template": "Stderr: u\"qemu-img: Could not open '/var/lib/nova/instances/<UUID>/disk': Could not open '/var/lib/nova/instances/<UUID>/disk': No such file or directory\\n\"",
+    "training_size": 8
+  },
+  {
+    "cluster_id": 1,
+    "component": "__HEADER_UNPARSED__",
+    "template": "<*> <NUM>-<NUM>-<NUM> <NUM>:<NUM>:<NUM> <NUM> ERROR oslo_service.periodic_task",
+    "training_size": 8
+  },
+  {
+    "cluster_id": 1,
+    "component": "keystonemiddleware.auth_token",
+    "template": "Bad response code while validating token: <NUM>",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 2,
+    "component": "keystonemiddleware.auth_token",
+    "template": "Identity response: <!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML <NUM>//EN\">",
+    "training_size": 2
+  },
+  {
+    "cluster_id": 3,
+    "component": "keystonemiddleware.auth_token",
+    "template": "Unable to validate token: Failed to fetch token data from identity server",
+    "training_size": 2
+  }
+]

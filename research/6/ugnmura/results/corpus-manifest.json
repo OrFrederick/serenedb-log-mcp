@@ -1,0 +1,30 @@
+[
+  {
+    "file": "BGL.zip",
+    "url": "https://zenodo.org/api/records/8196385/files/BGL.zip/content",
+    "bytes": 57489019,
+    "md5": "4452953c470f2d95fcb32d5f6e733f7a",
+    "sha256": "d67fd82a711aea0157a9b83175892c6ee60e384a2ddf5bc51f39118453816da8"
+  },
+  {
+    "file": "OpenStack.tar.gz",
+    "url": "https://zenodo.org/api/records/8196385/files/OpenStack.tar.gz/content",
+    "bytes": 5394691,
+    "md5": "66bd42c07837a094d9b0ea2d036b5713",
+    "sha256": "87c98c5ed03262e05cdb7a6f3717033df76d88fda0f7d2db23bd9fa4200f1879"
+  },
+  {
+    "file": "BGL-annotated.zip",
+    "url": "https://zenodo.org/api/records/8275861/files/BGL.zip/content",
+    "bytes": 86118141,
+    "md5": "521ee643375bb6e9d0dd88636ff7ece1",
+    "sha256": "2a6e72e53a9dcfe263a8ac6a0c6cf0f694d250ea8bdbe6bcae46e81500ec7fa3"
+  },
+  {
+    "file": "OpenStack-annotated.zip",
+    "url": "https://zenodo.org/api/records/8275861/files/OpenStack.zip/content",
+    "bytes": 7387614,
+    "md5": "707faeedf8b1b9f920c073114139a023",
+    "sha256": "64860353633e81b33ceb493168521c73e1d8060a2c3b6bce46d1647f00deee7e"
+  }
+]

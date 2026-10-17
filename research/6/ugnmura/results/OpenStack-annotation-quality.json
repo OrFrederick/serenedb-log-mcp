@@ -1,0 +1,34 @@
+{
+  "catalogue": {
+    "FGA": 1.0,
+    "GA": 1.0,
+    "PA": 1.0,
+    "lines": 207632,
+    "predicted_groups": 48,
+    "seconds": 12.23346512496937,
+    "truth_groups": 48,
+    "unknown": 0
+  },
+  "drain3": {
+    "FGA": 0.6896551724137931,
+    "GA": 0.3852055559836634,
+    "PA": 0.087775487400786,
+    "lines": 207632,
+    "predicted_groups": 39,
+    "seconds": 6.137760792043991,
+    "truth_groups": 48,
+    "unknown": 0
+  },
+  "drain_train_seconds": 3.5212484169751406,
+  "mask": {
+    "FGA": 0.018675352877307275,
+    "GA": 0.506164753024582,
+    "PA": 0.2469417045542113,
+    "lines": 207632,
+    "predicted_groups": 4557,
+    "seconds": 3.1053107909392565,
+    "truth_groups": 48,
+    "unknown": 0
+  },
+  "scope": "full annotated Content only, no Component field exists; one unpartitioned Drain3 model; normalized-exact PA proxy, not official oracle-corrected evaluator"
+}

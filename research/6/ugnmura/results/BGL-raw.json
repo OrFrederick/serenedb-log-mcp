@@ -1,0 +1,404 @@
+{
+  "archive_sha256": "d67fd82a711aea0157a9b83175892c6ee60e384a2ddf5bc51f39118453816da8",
+  "bytes": 743185031,
+  "catalog": {
+    "any_match_coverage": 0.9753561685295358,
+    "cache": {
+      "currsize": 50000,
+      "hits": 4143173,
+      "maxsize": 50000,
+      "misses": 604790
+    },
+    "lines_per_second": 40390.52025146735,
+    "multiple_matches": 161,
+    "no_match": 117008,
+    "seconds": 117.55141974997241,
+    "templates": 320,
+    "top": {
+      "E10": 135096,
+      "E118": 43647,
+      "E13": 135096,
+      "E147": 39457,
+      "E191": 28485,
+      "E208": 105924,
+      "E228": 62484,
+      "E237": 295764,
+      "E240": 267725,
+      "E26": 84253,
+      "E285": 152734,
+      "E296": 63493,
+      "E301": 51227,
+      "E310": 1706751,
+      "E314": 201206,
+      "E317": 442966,
+      "E35": 47504,
+      "E36": 26546,
+      "E48": 43040,
+      "E94": 33939
+    },
+    "unique_match": 4630794,
+    "unique_match_coverage": 0.9753222592509672,
+    "unmatched_examples": [
+      {
+        "line": 14731,
+        "message": "mmcs_db_server has been started: ./mmcs_db_server --useDatabase BGL --dbproperties serverdb.properties --iolog /bgl/BlueLight/logs/BGL --reconnect-blocks all",
+        "source": "BGL.log"
+      },
+      {
+        "line": 14738,
+        "message": "ciod: failed to read message prefix on control stream (CioStream socket to 172.16.96.116:33399",
+        "source": "BGL.log"
+      },
+      {
+        "line": 14739,
+        "message": "ciod: failed to read message prefix on control stream (CioStream socket to 172.16.96.116:33569",
+        "source": "BGL.log"
+      },
+      {
+        "line": 14740,
+        "message": "ciod: failed to read message prefix on control stream (CioStream socket to 172.16.96.116:33570",
+        "source": "BGL.log"
+      },
+      {
+        "line": 14741,
+        "message": "ciod: failed to read message prefix on control stream (CioStream socket to 172.16.96.116:33459",
+        "source": "BGL.log"
+      },
+      {
+        "line": 14742,
+        "message": "ciod: failed to read message prefix on control stream (CioStream socket to 172.16.96.116:33460",
+        "source": "BGL.log"
+      },
+      {
+        "line": 14743,
+        "message": "ciod: failed to read message prefix on control stream (CioStream socket to 172.16.96.116:33231",
+        "source": "BGL.log"
+      },
+      {
+        "line": 14744,
+        "message": "ciod: failed to read message prefix on control stream (CioStream socket to 172.16.96.116:33232",
+        "source": "BGL.log"
+      },
+      {
+        "line": 14745,
+        "message": "ciod: failed to read message prefix on control stream (CioStream socket to 172.16.96.116:33229",
+        "source": "BGL.log"
+      },
+      {
+        "line": 14746,
+        "message": "ciod: failed to read message prefix on control stream (CioStream socket to 172.16.96.116:33230",
+        "source": "BGL.log"
+      },
+      {
+        "line": 14747,
+        "message": "ciod: failed to read message prefix on control stream (CioStream socket to 172.16.96.116:33235",
+        "source": "BGL.log"
+      },
+      {
+        "line": 14748,
+        "message": "ciod: failed to read message prefix on control stream (CioStream socket to 172.16.96.116:33236",
+        "source": "BGL.log"
+      },
+      {
+        "line": 14749,
+        "message": "ciod: failed to read message prefix on control stream (CioStream socket to 172.16.96.116:33297",
+        "source": "BGL.log"
+      },
+      {
+        "line": 14750,
+        "message": "ciod: failed to read message prefix on control stream (CioStream socket to 172.16.96.116:33298",
+        "source": "BGL.log"
+      },
+      {
+        "line": 14751,
+        "message": "ciod: failed to read message prefix on control stream (CioStream socket to 172.16.96.116:33233",
+        "source": "BGL.log"
+      },
+      {
+        "line": 14752,
+        "message": "ciod: failed to read message prefix on control stream (CioStream socket to 172.16.96.116:33234",
+        "source": "BGL.log"
+      },
+      {
+        "line": 14753,
+        "message": "ciod: failed to read message prefix on control stream (CioStream socket to 172.16.96.116:33613",
+        "source": "BGL.log"
+      },
+      {
+        "line": 14754,
+        "message": "ciod: failed to read message prefix on control stream (CioStream socket to 172.16.96.116:33614",
+        "source": "BGL.log"
+      },
+      {
+        "line": 14755,
+        "message": "ciod: failed to read message prefix on control stream (CioStream socket to 172.16.96.116:33271",
+        "source": "BGL.log"
+      },
+      {
+        "line": 14756,
+        "message": "ciod: failed to read message prefix on control stream (CioStream socket to 172.16.96.116:33272",
+        "source": "BGL.log"
+      }
+    ],
+    "version": "loghub2-regex-v1:b4e33dc830bfda4ddb14c0dcaf8e1328ce2af06ce56ab8ea4fecd61deaa2cad1"
+  },
+  "components": {
+    "APP": 228536,
+    "BGLMASTER": 145,
+    "CMCS": 211,
+    "DISCOVERY": 97172,
+    "HARDWARE": 5148,
+    "KERNEL": 4324967,
+    "LINKCARD": 1170,
+    "MMCS": 88930,
+    "MONITOR": 1681,
+    "SERV_NET": 3
+  },
+  "dataset": "BGL",
+  "drain3": {
+    "assignment_coverage": 1.0,
+    "end_to_end_lines_per_second": 10055.573866477578,
+    "frozen_coverage": 1.0,
+    "groups": 1125,
+    "groups_sha256": "b152cb47c203a8e6cf7d7e3f3c12400ddbfc7f148f47d4e0b7f90ede493945f5",
+    "inference_lines_per_second": 30148.665080202358,
+    "inference_seconds": 157.48501591593958,
+    "template_changes": 315,
+    "top": [
+      {
+        "component": "KERNEL",
+        "count": 1706751,
+        "template": "generating core.<NUM>"
+      },
+      {
+        "component": "KERNEL",
+        "count": 442966,
+        "template": "iar <*> dear <*>"
+      },
+      {
+        "component": "KERNEL",
+        "count": 295764,
+        "template": "<NUM> double-hummer alignment exceptions"
+      },
+      {
+        "component": "KERNEL",
+        "count": 267725,
+        "template": "<NUM> floating point alignment exceptions"
+      },
+      {
+        "component": "KERNEL",
+        "count": 201206,
+        "template": "CE sym <NUM>, at <HEX>, mask <HEX>"
+      },
+      {
+        "component": "KERNEL",
+        "count": 152734,
+        "template": "data TLB error interrupt"
+      },
+      {
+        "component": "KERNEL",
+        "count": 135096,
+        "template": "<NUM> microseconds spent in the rbs signal handler during <NUM> calls. <NUM> microseconds was the maximum time for a single instance of a correctable ddr."
+      },
+      {
+        "component": "KERNEL",
+        "count": 135096,
+        "template": "<NUM> total interrupts. <NUM> critical input interrupts. <NUM> microseconds total spent on critical input interrupts, <NUM> microseconds max time in a critical input interrupt."
+      },
+      {
+        "component": "KERNEL",
+        "count": 105924,
+        "template": "instruction cache parity error corrected"
+      },
+      {
+        "component": "MMCS",
+        "count": 84250,
+        "template": "idoproxydb hit ASSERT condition: ASSERT <*> Source <*> Source line=<NUM> Function=int <*> <*>"
+      },
+      {
+        "component": "KERNEL",
+        "count": 63493,
+        "template": "data storage interrupt"
+      },
+      {
+        "component": "KERNEL",
+        "count": 62484,
+        "template": "ciod: generated <NUM> core files for program <*>"
+      },
+      {
+        "component": "KERNEL",
+        "count": 57874,
+        "template": "program interrupt: <*> <*>"
+      },
+      {
+        "component": "KERNEL",
+        "count": 51227,
+        "template": "instruction address: <HEX>"
+      },
+      {
+        "component": "APP",
+        "count": 46416,
+        "template": "ciod: Error loading <*> invalid or missing program image, No such file or directory"
+      },
+      {
+        "component": "APP",
+        "count": 43647,
+        "template": "ciod: LOGIN <*> failed: No such file or directory"
+      },
+      {
+        "component": "APP",
+        "count": 43040,
+        "template": "ciod: Error loading <*> invalid or missing program image, Permission denied"
+      },
+      {
+        "component": "KERNEL",
+        "count": 39457,
+        "template": "ciod: Received signal <NUM>, code=<NUM>, errno=<NUM>, address=<HEX>"
+      },
+      {
+        "component": "KERNEL",
+        "count": 34470,
+        "template": ""
+      },
+      {
+        "component": "KERNEL",
+        "count": 33939,
+        "template": "<NUM> ddr errors(s) detected and corrected on rank <NUM>, symbol <NUM>, bit <NUM>"
+      }
+    ],
+    "total_seconds": 472.1722562079085,
+    "train_lines_per_second": 15087.878986115891,
+    "train_seconds": 314.6872402919689,
+    "training_clusters": 1125,
+    "unknown": 0
+  },
+  "drain3_version": "0.9.11",
+  "drain_config": {
+    "depth": 4,
+    "max_clusters": "unlimited",
+    "partition": "Component",
+    "sim_th": 0.5
+  },
+  "empty_content": 34470,
+  "header_unparsed": 0,
+  "lines": 4747963,
+  "mask": {
+    "coverage": 1.0,
+    "groups": 42181,
+    "groups_sha256": "769c7cbc09f40766f9bc08ae23fd47e1a0b6af28ff3d533f29195b84327891fc",
+    "lines_per_second": 51688.64452962788,
+    "seconds": 91.85698412498459,
+    "top": [
+      {
+        "component": "KERNEL",
+        "count": 1706751,
+        "template": "generating core.<NUM>"
+      },
+      {
+        "component": "KERNEL",
+        "count": 295764,
+        "template": "<NUM> double-hummer alignment exceptions"
+      },
+      {
+        "component": "KERNEL",
+        "count": 267725,
+        "template": "<NUM> floating point alignment exceptions"
+      },
+      {
+        "component": "KERNEL",
+        "count": 201206,
+        "template": "CE sym <NUM>, at <HEX>, mask <HEX>"
+      },
+      {
+        "component": "KERNEL",
+        "count": 152734,
+        "template": "data TLB error interrupt"
+      },
+      {
+        "component": "KERNEL",
+        "count": 135096,
+        "template": "<NUM> microseconds spent in the rbs signal handler during <NUM> calls. <NUM> microseconds was the maximum time for a single instance of a correctable ddr."
+      },
+      {
+        "component": "KERNEL",
+        "count": 135096,
+        "template": "<NUM> total interrupts. <NUM> critical input interrupts. <NUM> microseconds total spent on critical input interrupts, <NUM> microseconds max time in a critical input interrupt."
+      },
+      {
+        "component": "KERNEL",
+        "count": 105924,
+        "template": "instruction cache parity error corrected"
+      },
+      {
+        "component": "MMCS",
+        "count": 84168,
+        "template": "idoproxydb hit ASSERT condition: ASSERT expression=<NUM> Source file=idotransportmgr.cpp Source line=<NUM> Function=int IdoTransportMgr::SendPacket(IdoUdpMgr*, BglCtlPavTrace*)"
+      },
+      {
+        "component": "KERNEL",
+        "count": 63493,
+        "template": "data storage interrupt"
+      },
+      {
+        "component": "KERNEL",
+        "count": 51227,
+        "template": "instruction address: <HEX>"
+      },
+      {
+        "component": "KERNEL",
+        "count": 39457,
+        "template": "ciod: Received signal <NUM>, code=<NUM>, errno=<NUM>, address=<HEX>"
+      },
+      {
+        "component": "KERNEL",
+        "count": 34470,
+        "template": ""
+      },
+      {
+        "component": "KERNEL",
+        "count": 33939,
+        "template": "<NUM> ddr errors(s) detected and corrected on rank <NUM>, symbol <NUM>, bit <NUM>"
+      },
+      {
+        "component": "KERNEL",
+        "count": 28485,
+        "template": "total of <NUM> ddr error(s) detected and corrected"
+      },
+      {
+        "component": "APP",
+        "count": 26546,
+        "template": "ciod: Error reading message prefix on CioStream socket to <IP>:<NUM>, Link has been severed"
+      },
+      {
+        "component": "KERNEL",
+        "count": 22177,
+        "template": "Kernel detected <NUM> integer alignment exceptions (<NUM>) iar <HEX>, dear <HEX> (<NUM>) iar <HEX>, dear <HEX> (<NUM>) iar <HEX>, dear <HEX> (<NUM>) iar <HEX>, dear <HEX> (<NUM>) iar <HEX>, dear <HEX> (<NUM>) iar <HEX>, dear <HEX> (<NUM>) iar <HEX>, dear <HEX> (<NUM>) iar <HEX>, dear <HEX>"
+      },
+      {
+        "component": "APP",
+        "count": 20480,
+        "template": "ciod: Error loading /bgl/apps/scaletest/performance/MINIBEN/mb_243_0810/allreduce.rts: invalid or missing program image, Exec format error"
+      },
+      {
+        "component": "KERNEL",
+        "count": 18587,
+        "template": "rts: kernel terminated for reason <NUM>"
+      },
+      {
+        "component": "KERNEL",
+        "count": 18017,
+        "template": "machine check: i-fetch......................<NUM>"
+      }
+    ]
+  },
+  "mask_version": "mask-v1",
+  "peak_rss_platform_units": 47611904,
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "processor": "arm",
+  "python": "3.12.13 (main, Aug  5 2026, 15:33:41) [Clang 22.1.3 ]",
+  "raw_sha256_in_stream_order": "666130b15ef44eb32fd02bd053e6c6e007c37696b5e7e8b9d8e45b729876a5d2",
+  "source_sha256": {
+    "BGL.log": "666130b15ef44eb32fd02bd053e6c6e007c37696b5e7e8b9d8e45b729876a5d2"
+  },
+  "timing": "single process wall clock including compressed archive reads, header parsing, hashing/counting; excludes dependency install/download; no concurrent method workers"
+}

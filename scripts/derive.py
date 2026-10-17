@@ -3,6 +3,7 @@
 
 Usage (see `make help`):
     uv run python scripts/derive.py [--adapter dev|official] [--schema S] [--raw-schema R]
+    uv run python scripts/derive.py --only 20_patterns [--only STEP ...]
 
 Runs, in this order and inside SLM_SCHEMA:
     1. sql/adapters/<adapter>.sql   the only loader-specific SQL: raw tables -> two temporary
@@ -13,15 +14,19 @@ Runs, in this order and inside SLM_SCHEMA:
 Every step is re-runnable: tables are rebuilt with CREATE OR REPLACE, indexes are dropped and
 built again, so a second run gives the same tables. Afterwards it prints a report: row counts,
 the BGL node names without a node card, the OpenStack derived-column coverage and any Component
-without a Team.
+without a Team. `--only` runs just the named sql/derive steps (file names without .sql), without
+the adapter and the seeds, on canonical tables that already exist.
 
 SQL files use two kinds of placeholders, replaced before execution:
     ${slm}, ${raw}                   the quoted canonical and raw schema names
     ${create_log_text_dictionary}    the dictionary DDL for the server version: the
                                      `AS split_text(...)` form on SereneDB 26.10.1 or later, the
                                      legacy `(TEMPLATE = 'text', ...)` form before that
+    ${pattern_tier1}                 the Tier 1 Pattern SQL that scripts/gen_pattern_sql.py
+                                     generates from the Loghub-2.0 template files (T9)
 
-Environment: DATABASE_URL, SLM_SCHEMA (default slm), SLM_RAW_SCHEMA (default public).
+Environment: DATABASE_URL, SLM_SCHEMA (default slm), SLM_RAW_SCHEMA (default public),
+SLM_DATA_DIR and SLM_PATTERN_TIER1 (default 1; 0 derives Patterns without the Loghub-2.0 files).
 """
 
 from __future__ import annotations
@@ -37,6 +42,8 @@ from typing import Any
 
 import psycopg
 
+import gen_pattern_sql
+from gen_pattern_sql import Template
 from serenedb_log_mcp.config import SCHEMA_RE, ConfigError, load_settings
 
 SQL_DIR = Path(__file__).resolve().parent.parent / "sql"
@@ -189,13 +196,20 @@ def _first_line(exc: BaseException) -> str:
     return text.splitlines()[0] if text else type(exc).__name__
 
 
-def variables(slm: str, raw: str, version: tuple[int, ...]) -> dict[str, str]:
-    """The placeholder values for one run."""
+def variables(
+    slm: str,
+    raw: str,
+    version: tuple[int, ...],
+    tier1: Mapping[str, Sequence[Template]] | None = None,
+) -> dict[str, str]:
+    """The placeholder values for one run. `tier1` are the Loghub-2.0 templates per Dataset, or
+    None when Pattern Tier 1 is off."""
     slm_q, raw_q = _quoted(slm), _quoted(raw)
     return {
         "slm": slm_q,
         "raw": raw_q,
         "create_log_text_dictionary": dictionary_ddl(f"{slm_q}.log_text", version),
+        "pattern_tier1": gen_pattern_sql.tier1_sql(slm_q, tier1),
     }
 
 
@@ -210,6 +224,29 @@ def steps(adapter: str, sql_dir: Path = SQL_DIR) -> list[Path]:
         *sorted((sql_dir / "seed").glob("*.sql")),
         *sorted((sql_dir / "derive").glob("*.sql")),
     ]
+
+
+def select_steps(files: Sequence[Path], names: Sequence[str]) -> list[Path]:
+    """The sql/derive steps of `files` named in `names` (file names without .sql), in run order."""
+    derive_steps = {p.stem: p for p in files if p.parent.name == "derive"}
+    for name in names:
+        if name not in derive_steps:
+            raise DeriveError(f"unknown derive step {name!r}; derive steps: {', '.join(derive_steps)}")
+    return [p for p in files if p.parent.name == "derive" and p.stem in names]
+
+
+def load_tier1(enabled: bool, data_dir: Path) -> dict[str, list[Template]] | None:
+    """The Loghub-2.0 templates for Pattern Tier 1, or None when SLM_PATTERN_TIER1=0."""
+    if not enabled:
+        print("Pattern Tier 1 off (SLM_PATTERN_TIER1=0): every Pattern comes from the generic masks")
+        return None
+    try:
+        templates = gen_pattern_sql.load_templates(data_dir)
+    except (gen_pattern_sql.TemplatesMissingError, gen_pattern_sql.TemplateFileError) as exc:
+        raise DeriveError(str(exc)) from None
+    counts = ", ".join(f"{len(found)} for {dataset}" for dataset, found in templates.items())
+    print(f"Pattern Tier 1 on: Loghub-2.0 templates, {counts}")
+    return templates
 
 
 def adapter_problems(
@@ -425,6 +462,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--adapter", default="dev", help="sql/adapters/<adapter>.sql (default: dev)")
     parser.add_argument("--schema", help="target schema (default: SLM_SCHEMA, else slm)")
     parser.add_argument("--raw-schema", help="schema of the loader's raw tables (default: SLM_RAW_SCHEMA)")
+    parser.add_argument(
+        "--only",
+        action="append",
+        metavar="STEP",
+        help="run only this sql/derive step, for example 20_patterns (repeatable; no adapter, no seeds)",
+    )
     return parser
 
 
@@ -441,11 +484,13 @@ def main(argv: Sequence[str] | None = None) -> int:
                 f"SLM_SCHEMA and SLM_RAW_SCHEMA are both {slm!r}; derive into its own schema (default slm)"
             )
         files = steps(args.adapter)
-        if not split_statements(files[0].read_text()):
+        only = select_steps(files, args.only) if args.only else None
+        if only is None and not split_statements(files[0].read_text()):
             raise DeriveError(
                 f"{files[0].relative_to(SQL_DIR.parent)} has no statements yet: TODO(organiser), "
                 "it is filled in when the organisers' loader arrives (T25)"
             )
+        tier1 = load_tier1(settings.pattern_tier1, settings.data_dir)
         started = time.perf_counter()
         with psycopg.connect(
             settings.database_url, autocommit=True, connect_timeout=CONNECT_TIMEOUT_S
@@ -454,13 +499,16 @@ def main(argv: Sequence[str] | None = None) -> int:
             version = serenedb_version(str(row[0]) if row else "")
             print(f"SereneDB {'.'.join(map(str, version))}: deriving {raw} -> {slm} ({args.adapter})")
             conn.execute(f"CREATE SCHEMA IF NOT EXISTS {slm_q}")
-            values = variables(slm, raw, version)
+            values = variables(slm, raw, version, tier1)
             began = True
-            drop_adapter_relations(conn, slm)
-            run(conn, files[:1], values)
-            check_adapter(conn, args.adapter)
-            run(conn, files[1:], values)
-            drop_adapter_relations(conn, slm)
+            if only is not None:
+                run(conn, only, values)
+            else:
+                drop_adapter_relations(conn, slm)
+                run(conn, files[:1], values)
+                check_adapter(conn, args.adapter)
+                run(conn, files[1:], values)
+                drop_adapter_relations(conn, slm)
             print(f"derive finished in {time.perf_counter() - started:.1f}s")
             for line in report(conn, slm):
                 print(line)

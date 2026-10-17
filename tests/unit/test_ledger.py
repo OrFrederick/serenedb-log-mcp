@@ -261,6 +261,137 @@ def test_a_last_record_torn_inside_a_string_is_dropped(tmp_path: Path) -> None:
     assert [record["evidence_id"] for record in Ledger(path).all()] == ["E1", "E2"]
 
 
+# Every character `str.splitlines()` breaks a string at, plus the CRLF pair. `json.dumps` escapes
+# the ASCII control characters, CR and LF, but writes U+0085, U+2028 and U+2029 raw, so a record can
+# carry one of those and must still be exactly one line of the ledger file.
+LINE_SEPARATORS = [
+    "\n",
+    "\r",
+    "\r\n",
+    "\x0b",
+    "\x0c",
+    "\x1c",
+    "\x1d",
+    "\x1e",
+    "\x85",
+    "\u2028",
+    "\u2029",
+]
+# The three that survive json.dumps unescaped, and so are the ones a stored record can really hold.
+RAW_SEPARATORS = ["\x85", "\u2028", "\u2029"]
+
+
+def separator_id(separator: str) -> str:
+    return "+".join(f"U+{ord(character):04X}" for character in separator)
+
+
+def test_the_separator_list_covers_every_character_str_splitlines_breaks_on() -> None:
+    # The defect in #49 is this whole class of characters, not only the three the review named.
+    breaks = {chr(code) for code in range(0x110000) if len(f"a{chr(code)}b".splitlines()) > 1}
+
+    assert breaks == {separator for separator in LINE_SEPARATORS if len(separator) == 1}
+
+
+@pytest.mark.parametrize("separator", LINE_SEPARATORS, ids=separator_id)
+def test_a_record_holding_a_line_separator_stays_one_record(tmp_path: Path, separator: str) -> None:
+    # Regression for #49: a Log Entry message holding U+2028 made the ledger unreadable for every
+    # later read and append, because the file was split into lines with str.splitlines().
+    path = tmp_path / "ledger.jsonl"
+    message = f"ciod: LOGIN chdir(/p/gb1){separator}failed"
+
+    stored = store(Ledger(path), tool="search_logs", rows=[{"message": message}])
+
+    assert path.read_text(encoding="utf-8").count("\n") == 1, "a record is one line of the file"
+
+    later = Ledger(path)
+
+    assert later.loaded == 1
+    assert later.get("E1") == stored
+    assert later.get("E1")["rows"][0]["message"] == message
+    assert later.last_id == "E1"
+    # The numbering continues and the following append is unaffected.
+    assert store(later, tool="trend")["evidence_id"] == "E2"
+    reopened = Ledger(path)
+    assert [record["evidence_id"] for record in reopened.all()] == ["E1", "E2"]
+    assert reopened.get("E1")["rows"][0]["message"] == message
+
+
+@pytest.mark.parametrize("separator", RAW_SEPARATORS, ids=separator_id)
+def test_a_ledger_an_older_build_wrote_with_a_raw_separator_still_reads(
+    tmp_path: Path, separator: str
+) -> None:
+    # Builds before #49 stored these characters raw, so damaged ledgers already exist. Reading has
+    # to recover them, which is why the fix is on the reading side.
+    path = tmp_path / "ledger.jsonl"
+    record = {"evidence_id": "E1", "tool": "search_logs", "sql": f"SELECT{separator}1 FROM bgl"}
+    path.write_text(json.dumps(record, ensure_ascii=False) + "\n", encoding="utf-8")
+
+    ledger = Ledger(path)
+
+    assert ledger.loaded == 1
+    assert ledger.get("E1") == record
+    assert store(ledger, tool="trend")["evidence_id"] == "E2"
+
+
+@pytest.mark.parametrize("separator", RAW_SEPARATORS, ids=separator_id)
+def test_a_whole_last_record_without_a_newline_that_holds_a_separator_is_kept(
+    tmp_path: Path, separator: str
+) -> None:
+    # The dangerous half of #49: str.splitlines() cut this record in two, the piece after the
+    # separator did not parse, so the last line looked like a torn append and E2 was dropped. The
+    # next append would then hand E2 to different Evidence, and an answer citing [E2] would
+    # silently resolve to that instead.
+    path = tmp_path / "ledger.jsonl"
+    records = [
+        {"evidence_id": "E1", "tool": "count_by", "total_matches": 101},
+        {"evidence_id": "E2", "tool": "search_logs", "rows": [{"message": f"a{separator}b"}]},
+    ]
+    path.write_text("\n".join(json.dumps(record, ensure_ascii=False) for record in records), encoding="utf-8")
+
+    ledger = Ledger(path)
+
+    assert ledger.loaded == 2
+    assert ledger.get("E2") == records[1]
+    assert ledger.last_id == "E2"
+    assert store(ledger, tool="trend")["evidence_id"] == "E3"
+    assert Ledger(path).get("E2") == records[1]
+
+
+@pytest.mark.parametrize("separator", RAW_SEPARATORS, ids=separator_id)
+def test_a_torn_last_line_that_holds_a_separator_is_still_dropped(tmp_path: Path, separator: str) -> None:
+    # The other half: a genuinely torn append whose fragment holds a separator is still a fragment,
+    # so it is dropped on read and cut off by the next append.
+    path = tmp_path / "ledger.jsonl"
+    whole = json.dumps(
+        {"evidence_id": "E2", "tool": "search_logs", "sql": f"SELECT{separator}1 FROM bgl"},
+        ensure_ascii=False,
+    )
+    torn = whole[: whole.index("FROM")]
+    path.write_text(json.dumps({"evidence_id": "E1", "tool": "count_by"}) + "\n" + torn, encoding="utf-8")
+
+    ledger = Ledger(path)
+
+    assert ledger.loaded == 1
+    assert store(ledger, tool="trend")["evidence_id"] == "E2"
+    assert [record["evidence_id"] for record in Ledger(path).all()] == ["E1", "E2"]
+
+
+def test_an_unreadable_line_is_named_by_number_and_does_not_blame_the_path(tmp_path: Path) -> None:
+    # LEDGER_PATH can be exactly right and the file still damaged, as #49 showed, so the message
+    # names the file and the line and leaves both causes open.
+    path = tmp_path / "ledger.jsonl"
+    path.write_text(
+        json.dumps({"evidence_id": "E1", "tool": "count_by"}) + "\nnot a record at all\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(LedgerError) as raised:
+        Ledger(path)
+
+    assert f"{path} line 2" in str(raised.value)
+    assert "LEDGER_PATH" not in str(raised.value)
+
+
 def test_blank_lines_are_tolerated(tmp_path: Path) -> None:
     path = tmp_path / "ledger.jsonl"
     path.write_text(json.dumps({"evidence_id": "E1", "tool": "trend"}) + "\n\n", encoding="utf-8")

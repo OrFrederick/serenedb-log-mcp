@@ -320,3 +320,14 @@ def test_every_evidence_tool_carries_the_answer_frame(server: MCPServer) -> None
     assert data["answer_frame"] == answer_frame(Role.TEAM_LEAD)
     assert data["rows"] == SAMPLE_ROWS
     assert data["not_measured"] == []
+
+
+def test_the_role_parameter_tells_the_agent_what_each_role_receives() -> None:
+    # The input schema is shown to the model (the output schema is not), so the role parameter of
+    # every tool is where the agent learns that the Role changes the rows it gets.
+    from serenedb_log_mcp.evidence import ROLE_DESCRIPTION
+
+    assert "no raw Log Entries" in ROLE_DESCRIPTION
+    assert "at most 3 sample Log Entries" in ROLE_DESCRIPTION
+    assert "answer_frame" in ROLE_DESCRIPTION
+    assert "get_role_brief" in ROLE_DESCRIPTION

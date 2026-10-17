@@ -478,11 +478,3 @@ def test_an_agent_index_over_the_text_bench_view_is_adopted_from_the_catalog(
     use(monkeypatch, FakeDatabase(catalog=[(TB_NAME, built.marker(), "tb_entry")]), FakeConnection())
 
     assert index_admin.existing_agent_indexes(settings=SLM) == [built]
-
-
-def test_the_catalog_lists_indexes_over_views_too() -> None:
-    # pg_indexes lists no index over a view on SereneDB 26.10.1, and pg_index has indrelid 0 for one,
-    # so the catalog reads pg_class and takes the view's name from pg_get_indexdef.
-    assert "c.relkind = 'i'" in index_admin.CATALOG_SQL
-    assert "LEFT JOIN pg_indexes" in index_admin.CATALOG_SQL
-    assert "pg_get_indexdef" in index_admin.CATALOG_SQL

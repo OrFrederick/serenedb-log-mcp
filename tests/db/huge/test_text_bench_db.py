@@ -121,7 +121,11 @@ def test_full_text_needs_an_agent_index_and_then_reads_it(text_bench: Any) -> No
     trend = call("trend", role="engineer", dataset="text_bench", bucket="minute", query="visa", **SLICE)
     assert trend["summary"]["total"] == sum(counts.values())
 
-    assert [index.name for index in existing_agent_indexes()] == [name]
+    # The catalog must see the index over the view (PR #62 review: on 26.09.1.3 it did not, so the
+    # same slice was built again under a new name and drop_index refused the first one).
+    assert [(index.name, index.dataset) for index in existing_agent_indexes()] == [(name, "text_bench")]
+    again = call("create_index", role="engineer", **INDEXED)
+    assert (again["summary"]["status"], again["summary"]["index"]) == ("reused", name)
     dropped = call("drop_index", role="engineer", name=name)
     assert dropped["summary"]["status"] == "dropped"
     assert existing_agent_indexes() == []

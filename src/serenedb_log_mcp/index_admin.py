@@ -85,16 +85,25 @@ BUILD_TIMEOUT_S = 300.0
 """A build still running after this is cancelled (if SereneDB acts on the cancel)."""
 
 CATALOG_SQL = """SELECT c.relname, d.description,
-       coalesce(i.tablename, regexp_extract(pg_get_indexdef(c.oid), ' ON [^ .]+[.]([^ ]+) USING ', 1))
+       coalesce(i.tablename, t.relname, s.table_name,
+                regexp_extract(pg_get_indexdef(c.oid), ' ON [^ .]+[.]([^ ]+) USING ', 1))
 FROM pg_class AS c
 JOIN pg_namespace AS n ON n.oid = c.relnamespace
 LEFT JOIN pg_indexes AS i ON i.schemaname = n.nspname AND i.indexname = c.relname
+LEFT JOIN pg_index AS x ON x.indexrelid = c.oid AND x.indrelid <> 0
+LEFT JOIN pg_class AS t ON t.oid = x.indrelid
+LEFT JOIN sdb_indexes AS s
+       ON s.database_name = current_database() AND s.schema_name = n.nspname AND s.index_name = c.relname
 LEFT JOIN pg_description AS d ON d.objoid = c.oid
 WHERE n.nspname = %s AND c.relkind = 'i'
 ORDER BY c.relname"""
-"""Every index in the schema with its comment and table (or view); agent indexes are picked out in
-Python. pg_indexes lists no index over a view on SereneDB 26.10.1 (and pg_index has indrelid 0 for
-one), so the view's name comes from the index definition."""
+"""Every index in the schema with its comment and the table or view it is on; agent indexes are
+picked out in Python. The catalogs disagree between versions for an index over a view (text_bench),
+so the table comes from the first source that names it: `pg_indexes` (tables only), `pg_index`'s
+`indrelid` (the view on 26.09.1.3, 0 on 26.10.1), SereneDB's `sdb_indexes` (both versions) and
+`pg_get_indexdef` (26.10.1; NULL for an inverted index on 26.09.1.3). Without any of them an agent
+index over a view would be invisible, so `drop_index` would refuse it and `create_index` would build
+a second one (PR #62 review)."""
 
 _lock = threading.Lock()
 _TOTAL_TIME_RE = re.compile(r"Total Time: ([0-9.]+)s")

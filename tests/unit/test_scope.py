@@ -124,6 +124,8 @@ def test_family_id_accepts_hex_ids(family: str) -> None:
 
 def test_no_family_id_means_no_filter() -> None:
     assert validate_family_id(None) is None
+    assert validate_family_id("") is None
+    assert validate_family_id("  ") is None
 
 
 def test_a_malformed_family_id_is_rejected_with_a_hint() -> None:
@@ -295,6 +297,22 @@ def test_time_bounds_give_back_the_datetimes_to_bind() -> None:
 
     assert time_bounds(scope) == (datetime(2005, 12, 28, 8, 0, 6), datetime(2006, 1, 4, 8, 0, 6))
     assert time_bounds(build_scope(["bgl"])) == (None, None)
+
+
+def test_a_relative_range_too_large_for_a_date_is_rejected() -> None:
+    with pytest.raises(ScopeError, match="last 30d"):
+        resolve_time("last 99999999999d", None, datasets=["bgl"], corpus_end=ENDS)
+
+
+@pytest.mark.parametrize("datasets", [[""], ["bgl", "  "]])
+def test_an_empty_dataset_name_is_rejected(datasets: list[str]) -> None:
+    with pytest.raises(ScopeError, match="dataset"):
+        build_scope(datasets)
+
+
+def test_a_bare_string_counts_as_one_value() -> None:
+    assert validate_choices("component", "kernel", COMPONENTS) == ["KERNEL"]
+    assert validate_pattern_ids(PATTERN_A) == [PATTERN_A]
 
 
 def test_a_bare_m_is_rejected_because_it_could_mean_months() -> None:

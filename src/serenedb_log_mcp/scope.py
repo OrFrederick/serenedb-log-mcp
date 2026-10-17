@@ -106,6 +106,8 @@ def validate_choices(name: str, values: Sequence[str] | None, allowed: Iterable[
 
     Every unknown value is reported in one ScopeError, so the agent fixes the call in one go.
     """
+    if isinstance(values, str):
+        values = [values]
     if not values:
         return None
     options = list(dict.fromkeys(allowed))
@@ -160,6 +162,8 @@ def _or(values: Sequence[str]) -> str:
 
 def validate_pattern_ids(values: Sequence[str] | None) -> list[str] | None:
     """Pattern ids as lowercase 16-hex `template_id` values, deduplicated; None when none given."""
+    if isinstance(values, str):
+        values = [values]
     if not values:
         return None
     normal = [value.strip().lower() for value in values]
@@ -176,8 +180,8 @@ def validate_pattern_ids(values: Sequence[str] | None) -> list[str] | None:
 
 
 def validate_family_id(value: str | None) -> str | None:
-    """A Pattern Family id in lowercase hex; None when none given."""
-    if value is None:
+    """A Pattern Family id in lowercase hex; None when none given (an empty string counts as none)."""
+    if value is None or not value.strip():
         return None
     normal = value.strip().lower()
     if not FAMILY_ID_RE.fullmatch(normal):
@@ -278,10 +282,14 @@ def _relative(value: str, datasets: Sequence[str], corpus_end: Mapping[str, date
     latest = max(ends, key=lambda name: ends[name])
     last = ends[latest]
     end = last.replace(microsecond=0) + timedelta(seconds=1)
+    try:
+        start = end - count * unit
+    except OverflowError:
+        raise ScopeError(f"time_from={value!r} reaches before the year 1. {_RELATIVE_HELP}") from None
     against = f"{latest} corpus end {last.isoformat()}"
     if len(ends) > 1:
         against += f" (the latest of {', '.join(names)})"
-    return TimeRange(end - count * unit, end, value, against)
+    return TimeRange(start, end, value, against)
 
 
 # The Data Scope -------------------------------------------------------------------------------------
@@ -308,6 +316,11 @@ def build_scope(
     empty strings and empty lists are left out, because they filter nothing.
     """
     names = list(dict.fromkeys([datasets] if isinstance(datasets, str) else datasets))
+    if any(not name.strip() for name in names):
+        raise ScopeError(
+            f"datasets={names!r} contains an empty dataset name. Name each Dataset, for example "
+            "dataset='bgl'; call describe_corpus for the Datasets."
+        )
     if not names:
         raise ScopeError(
             "Name at least one dataset, for example dataset='bgl'; call describe_corpus for the Datasets."

@@ -3,6 +3,10 @@
 `derived_sample` loads the samples with the dev loader into `scratch_t4_<hex>_raw`, adds a few
 synthetic raw rows that the samples lack, runs the derive step into `scratch_t4_<hex>` and drops
 both schemas at the end of the session. It never touches the shared raw tables in `public`.
+
+Pattern Tier 1 needs the optional Loghub-2.0 template files (`make fetch-data`). Without them every
+derive in the db tests runs with SLM_PATTERN_TIER1=0, so the db tests run on a fresh checkout and
+only the Tier 1 tests skip, with the reason (#66).
 """
 
 from __future__ import annotations
@@ -16,6 +20,7 @@ from urllib.error import URLError
 
 import psycopg
 import pytest
+from optional_data import derive_with_tier1
 from psycopg import sql
 
 import derive
@@ -95,6 +100,13 @@ def _add_synthetic_rows(database_url: str, raw: str) -> None:
             lower = upper
 
 
+@pytest.fixture(autouse=True)
+def _tier1_off_without_the_templates(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Every derive a db test runs itself uses Pattern Tier 1 only when the template files are there."""
+    if not derive_with_tier1():
+        monkeypatch.setenv("SLM_PATTERN_TIER1", "0")
+
+
 @pytest.fixture(scope="session")
 def derived_sample(database_url: str) -> Iterator[Schemas]:
     """The samples (plus synthetic rows) derived into a scratch schema; dropped afterwards."""
@@ -110,7 +122,9 @@ def derived_sample(database_url: str) -> Iterator[Schemas]:
     try:
         assert dev_loader.main(["--sample", "--schema", schemas.raw]) == 0
         _add_synthetic_rows(database_url, schemas.raw)
-        assert derive.main(["--schema", schemas.slm, "--raw-schema", schemas.raw]) == 0
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setenv("SLM_PATTERN_TIER1", "1" if derive_with_tier1() else "0")
+            assert derive.main(["--schema", schemas.slm, "--raw-schema", schemas.raw]) == 0
         yield schemas
     finally:
         _drop(database_url, schemas.slm, schemas.raw)

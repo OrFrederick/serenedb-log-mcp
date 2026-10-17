@@ -184,6 +184,13 @@ def test_the_evidence_says_counts_are_log_entries_and_ts_is_local_time(corpus: s
     assert len(result["sql"]) == len(result["params"])
 
 
+def test_a_free_standing_punctuation_word_is_refused_instead_of_a_zero_series(corpus: str) -> None:
+    message = call_error("trend", role="engineer", dataset="bgl", bucket="week", query="TLB error ... ;")
+
+    assert "has words without a letter or digit ('...', ';')" in message
+    assert "Remove them" in message
+
+
 def test_a_grouped_trend_without_matches_is_one_zero_series_and_zero_groups(corpus: str) -> None:
     result = call(
         "trend", role="engineer", dataset="bgl", bucket="week", group_by="component", query="zebra unicorn"

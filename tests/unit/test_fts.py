@@ -120,10 +120,97 @@ def test_too_many_fuzzy_words_are_refused_with_a_hint() -> None:
         text_match(MESSAGE, words, mode="fuzzy")
 
 
-@pytest.mark.parametrize("punctuation", ["::", "-- ..", '""'])
+@pytest.mark.parametrize("punctuation", ["::", "-- ..", '""', "_", "__ ;"])
 def test_a_query_without_any_word_is_rejected_with_a_hint(punctuation: str) -> None:
+    # An underscore is a word character to Python but not to the index: phraseto_tsquery('_')
+    # fails with 22023 on 26.10.1, and websearch_to_tsquery('_') matches nothing (#80).
     with pytest.raises(ScopeError, match="no words to search for"):
         normalise_query(punctuation)
+
+
+# Measured on SereneDB 26.10.1 with the log_text dictionary (#80): each of these, standing alone
+# outside double quotes, makes websearch_to_tsquery('error <word>') match no row, wherever it stands
+# and also doubled, while the same query without it matches. Includes the non-ASCII marks a pasted
+# log line may hold, and a lone combining accent.
+UNMATCHABLE_WORDS = [
+    *";,.:!?()[]{}/\\|&*+=<>#@$%^~'_`",
+    *["...", "::", ";;", "=>", "||", "&&", "!=", "<=", ">=", "**", "//", "()", "[]", "{}", "<>"],
+    *["''", ":-", "(;)", "_-_", "__", "\u2013", "—", "…", "·", "→", "€", "°", "§", "•", "«", "»", "✓"],
+    *["\U0001f642", "́"],
+]
+
+
+@pytest.mark.parametrize("word", UNMATCHABLE_WORDS)
+@pytest.mark.parametrize("template", ["error {}", "{} error", "parity {} error", "error {}{}"])
+def test_all_words_refuses_a_free_standing_word_without_a_letter_or_digit(word: str, template: str) -> None:
+    query = template.format(word, word)
+
+    with pytest.raises(ScopeError, match="without a letter or digit") as refused:
+        text_match(MESSAGE, query)
+
+    assert repr(word if template != "error {}{}" else word + word) in str(refused.value)
+    assert "Remove it" in str(refused.value)
+
+
+@pytest.mark.parametrize(
+    "query",
+    [
+        'parity ;"error"',  # quotes split words, so ';' stands alone (0 rows)
+        '"parity error";',
+        "parity - ;",  # a lone '-' is no operator for the next word
+        "parity ;-",
+        "parity +;",
+        "parity error\t;",  # ASCII whitespace splits words
+        "parity error \u00a0 x",  # a no-break space standing alone is a word too
+        "parity OR ;",  # harmless inside OR (2 rows), but the word can still never match
+    ],
+)
+def test_all_words_refuses_unmatchable_words_next_to_quotes_operators_and_whitespace(query: str) -> None:
+    with pytest.raises(ScopeError, match="without a letter or digit"):
+        text_match(MESSAGE, query)
+
+
+def test_all_words_names_every_unmatchable_word_once() -> None:
+    with pytest.raises(ScopeError, match=r"has words without a letter or digit \(';', ','\)") as refused:
+        text_match(MESSAGE, "parity ; error , ;")
+
+    assert "Remove them" in str(refused.value)
+
+
+@pytest.mark.parametrize(
+    "query",
+    [
+        # Measured to match the same rows as without the punctuation: a word starting with '-'
+        # excludes a term no Log Entry holds, and a lone quote or empty quotes are ignored.
+        *["error -", "error --", "error ---", "error ->", "error -;", "error --;", "parity - error"],
+        *["- parity error", 'error "', 'error ""'],
+        # Punctuation attached to a word is analysed away with it.
+        *["error;", ";error", "error:", "(error)", "parity, error", "parity error.", "ciod: failed"],
+        *['error;"x"', "x'); DROP TABLE t; --"],
+        # A no-break space or another Unicode space joins, so this is one word: error.
+        "error\u00a0;",
+        # Letters and digits of any script are terms the dictionary keeps.
+        *["parity ²", "parity Ⅻ", "x_y", "_error"],
+    ],
+)
+def test_all_words_keeps_operators_attached_punctuation_and_real_words(query: str) -> None:
+    _, params = text_match(MESSAGE, query)
+
+    assert params == [query]
+
+
+@pytest.mark.parametrize("mode", ["phrase", "any_words"])
+def test_phrase_and_any_words_let_the_dictionary_drop_free_standing_punctuation(mode: str) -> None:
+    # phraseto_tsquery('ciod: failed ;') matches the 5,983 BGL Log Entries of 'ciod: failed', and the
+    # bare text drops ';' as well (#80), so neither mode needs the check.
+    _, params = text_match(MESSAGE, "ciod: failed ;", mode=mode)  # type: ignore[arg-type]
+
+    assert params == ["ciod: failed ;"]
+
+
+def test_fuzzy_skips_words_the_index_has_no_token_for() -> None:
+    # ts_levenshtein('_', 0) matches nothing, so 'error _' would match no Log Entry (#80).
+    assert fuzzy_terms("error _ __ x_y _z") == [("error", 1), ("x_y", 0), ("_z", 0)]
 
 
 def test_filter_any_matches_exact_values_without_changing_the_relevance_score() -> None:

@@ -216,6 +216,28 @@ def test_zero_matches_is_a_result_with_a_hint_not_an_error(corpus: str) -> None:
     assert len(result["sql"]) == 1  # no row query and no facets when nothing matched
 
 
+def test_a_free_standing_punctuation_word_is_refused_instead_of_matching_nothing(corpus: str) -> None:
+    # websearch_to_tsquery keeps a lone ';' as a term no Log Entry holds, so 'TLB error ;' found 0
+    # Log Entries without an error or a note (#80).
+    text = call_error("search_logs", role="engineer", dataset="bgl", query="TLB error ;")
+
+    assert "query='TLB error ;' has a word without a letter or digit (';')" in text
+    assert "Remove it" in text
+    assert call("search_logs", role="engineer", dataset="bgl", query="TLB error")["total_matches"] == STORM
+
+
+def test_attached_or_excluded_punctuation_and_the_other_modes_still_match(corpus: str) -> None:
+    def total(query: str, mode: str = "all_words") -> int:
+        found = call("search_logs", role="engineer", dataset="bgl", query=query, mode=mode)
+        return int(found["total_matches"])
+
+    assert total("ciod: failed") == APPSEV
+    assert total("TLB error -;") == STORM  # '-;' excludes a term no Log Entry holds
+    assert total("TLB error ;", mode="phrase") == STORM
+    assert total("idoproxy hello ;", mode="any_words") == MMCS + NEWCOMP
+    assert total("interupt _", mode="fuzzy") == STORM
+
+
 def test_a_search_needs_a_query_or_a_pattern_filter(corpus: str) -> None:
     text = call_error("search_logs", role="engineer", dataset="bgl", components=["KERNEL"])
 

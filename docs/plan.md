@@ -199,7 +199,7 @@ Fifteen core tools (rows 1 to 14 and 6a) stay below the tool counts where select
 - An inverted index over a view needs a fast-path source to return real columns. A view over a list of files is a generic view: it can be indexed and answers counts and scores, but selecting its real columns raises an error ("Indexing Views" page of the SereneDB docs).
 - A SELECT-only login role can still read server files (`read_csv('/etc/passwd')`) and change some server-wide settings, such as `enable_external_access`. Never run experiments that `SET` server-wide settings on the shared instance.
 - `mcp` 2.3.0: `from mcp.server.mcpserver import MCPServer`, `from mcp.server.mcpserver.exceptions import ToolError` (as used in `research/2-NoNaim95:research/2/NoNaim95/prototype/server.py`).
-- Claude Code 2.1.293 shows the model only `structuredContent` on success and only `content[0].text` on errors. Without `_meta["anthropic/alwaysLoad"]` the tools sit behind ToolSearch. `outputSchema` is never shown to the model, so each description must summarise its output fields.
+- Claude Code 2.1.293 (NoNaim95's probe; OrFrederick's #2 probe ran on 2.1.263 with the same result) shows the model only `structuredContent` on success and only `content[0].text` on errors. Without `_meta["anthropic/alwaysLoad"]` the tools sit behind ToolSearch. `outputSchema` is never shown to the model, so each description must summarise its output fields.
 - The dev loader (`/Users/deni/hackathon/tools/dev_loader.py`, moved into the repo in T1) loads `bgl(line_no, alert_tag, epoch, ts, node, component, level, message, raw)`, `openstack(line_no, source_file, log_file, ts, pid, level, component, request_id, instance_id, message, raw)`, `lh2_bgl` and `lh2_openstack`. It is throwaway and is not the organisers' loader. The organisers' loader, schema and Ownership Table have not arrived.
 - KERNDTLB on the dev data (checked on the shared instance): the category has 152,734 Log Entries on 541 nodes; node R30-M0-N9-C:J16-U01 has 152,182 of them, all on 2005-06-11.
 
@@ -481,6 +481,7 @@ Rules for using the order: each Claude works down the list within its own ticket
   - [ ] `count_by(role, group_by, query?, filters, top, baseline_from?, baseline_to?)` supports `dataset`, `component`, `team`, `level`, `node`, `rack`, `midplane`, `alert_category` and `pattern`, and accepts the shared filters including `pattern_ids[]` and `family_id`. Each group has `count`, `share_pct`, `distinct_sources`, `first_seen` and `last_seen`. The summary has `total`, `groups_total`, `top_n_sum` and `other_count`, and an `(other)` row keeps the totals exact.
   - [ ] `count_by(group_by='dataset')` with no filters covers the whole Base Corpus; a golden test matches independent SQL (4,747,963 and 207,820 on the dev data).
   - [ ] `trend(role, bucket, query?, group_by?, filters)` zero-fills with `time_bucket` and `generate_series`, allows at most 5 series, and raises a `ToolError` that explains how to recover when more than 400 buckets would be needed.
+  - [ ] When `trend` is grouped by Pattern, a series whose Pattern has a drift partner (the same `family_id`, from T9 once it lands) carries a hand-off note, so a wording change is not read as a Pattern ending (#1). Before T9 lands, the note is absent and the description says so.
   - [ ] Every count and series carries the previous-period value, the median-week value and a normal or unusual flag; the method is stated in `notes`.
   - [ ] `group_by='team'` joins the Ownership Table, and unmapped Components appear as `(unmapped)`.
   - [ ] Descriptions say "quote exact numbers, never round", and results note that the counts are Log Entries, not Incidents.
@@ -590,6 +591,7 @@ Rules for using the order: each Claude works down the list within its own ticket
 - **Acceptance criteria:**
   - [ ] `find_precursors(role, dataset, target_pattern, window_s, same_source, min_support, min_lift, filters)` returns, per candidate precursor, the support (target Incidents preceded), the rate, a baseline rate from a deterministic probe grid, and the lift. Only candidates that pass both thresholds are returned.
   - [ ] Every result is labelled a Hypothesis in `notes`, quotes delays per source (median and range), and states the thresholds and the baseline method.
+  - [ ] The defaults follow #1's Cascade rule: `window_s = 60` and a minimum lag of 1 s, so same-timestamp artefacts never count as precursors. Both are stated in the description and in `notes`.
   - [ ] Golden tests: KERNMC within 120 s precedes 64 of 136 APPSEV Incidents (47%), and KERNTERM to KERNREC has a per-node median delay of 85 s (range 47 to 142 s).
   - [ ] A Pattern with no precursor that passes returns the "no consistent precursor found" note, not an empty list without explanation.
   - [ ] `list_incidents(similar_to=<incident_id>)` ranks earlier Incidents by the Jaccard similarity of the Pattern sets seen on the Incident's sources during the Incident, with same-Component and Spread tie-breaks (never a BM25 sort), and states the similarity method in `notes`. A golden test checks one known repeat from the #7 research.
@@ -782,6 +784,7 @@ Rules that keep the two Claudes out of each other's files:
 ### Small decision items dropped or moved
 - **#7's hand-made OpenStack family map:** not planned. BGL uses its alert categories, and both Datasets use the `family_id` drift merge. A follow-up ticket if Team Lead answers need OpenStack families.
 - **#1's Episode** (an optional merge of Incidents across Patterns): not planned; the term is only proposed in the glossary.
+- **#4's cross-Role worked thread** (KERNMC → KERNRTSP → APPSEV on R27-M0-NA-C:J11-U11, 2006-01-03): replaced by #5's "Start-up path failures" investigation (T18), which both Claudes later agreed on. The KERNMC-before-APPSEV pair survives as a precursor golden test in T16.
 - **#2's `get_evidence(rerun=true)`:** moved to `scripts/replay_ledger.py` (T13), which compares totals for relevance-sorted results and rows otherwise.
 - **#1's rule that every Team Lead and Manager answer shows Log Entries, Incidents and Spread side by side:** enforced as a `verify_answer` check (T12) and carried in every `list_incidents` summary (T27).
 

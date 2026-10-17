@@ -112,7 +112,7 @@ Every tool queries these names only, and only through the resolver `corpus.datas
 | `os_entry` | `entry_id`, `ts`, `epoch_utc`, `source_id` (neutral id per source file, never the file name), `log_file`, `pid`, `component`, `level`, `request_id`, `instance_id`, `instance_ref` (UUID from `[instance: …]` or `/servers/<uuid>`), `endpoint`, `http_status`, `latency_s`, `message`, `template_id`, `family_id`, `pattern_key` | T4; Pattern columns filled by T9 |
 | `pattern_dict` | `dataset`, `message`, `template_id`, `template_text`, `template_source` (`loghub2`, `sqlmask`, `empty`), `event_id`, `family_id` (the Pattern dictionary of #6: one row per distinct message) | T9 |
 | `pattern` | `dataset`, `template_id`, `template_text`, `template_source`, `event_id`, `family_id`, `component`, `level`, `entries`, `first_seen`, `last_seen` (one row per Pattern; the catalogue behind `list_patterns`) | T9 |
-| `incident` | `dataset`, `incident_id`, `pattern_key`, `gap_s`, `merge_scope`, `t0`, `t1`, `t0_utc`, `t1_utc`, `entries`, `bursts`, `nodes`, `nodecards`, `midplanes`, `racks`, `top_node`, `top_node_share`, `shape` | T10 (BGL), T27 (OpenStack Request Failures) |
+| `incident` | `dataset`, `incident_id`, `pattern_key`, `gap_s`, `merge_scope`, `t0`, `t1`, `t0_utc`, `t1_utc`, `entries`, `bursts`, `nodes`, `nodecards`, `midplanes`, `racks`, `top_node`, `top_node_share`, `shape` | T10 (BGL), T27 (OpenStack Request Failures: `nodes` counts sources, instances or hosts; the BGL topology columns and `shape` are NULL) |
 | `os_instance` | `instance_id`, phase durations (spawn, build, …), robust z-scores | T11 |
 | `ownership` | `dataset`, `component`, `team` (stub, `TODO(organiser)`), `team_source` (where the Team comes from: `stub` until T25, #48) | T4, replaced in T25 |
 

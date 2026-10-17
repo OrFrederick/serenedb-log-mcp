@@ -47,7 +47,7 @@ from serenedb_log_mcp.tools._aggregate import (
 
 DEFAULT_TOP = 25
 MAX_TOP = 100
-BASELINE_COLUMNS = ("prev_period", "median_week", "expected", "baseline_flag")
+BASELINE_COLUMNS = ("prev_period", "median_week", "expected", "baseline_basis", "baseline_flag")
 
 
 def register(server: MCPServer) -> None:
@@ -89,8 +89,9 @@ def register(server: MCPServer) -> None:
         baseline_from: Annotated[
             str | None,
             Field(
-                description="Optional baseline period start (ISO-8601), with baseline_to; it replaces "
-                "the default baseline, the period of equal length just before the Data Scope."
+                description="Optional baseline period start (ISO-8601), with baseline_to. Its count, "
+                "scaled to the Data Scope's length, becomes expected and drives baseline_flag "
+                "(baseline_basis 'named_period'); without it the median week is the reference."
             ),
         ] = None,
         baseline_to: Annotated[
@@ -110,7 +111,8 @@ def register(server: MCPServer) -> None:
         baseline_from and baseline_to.
         Outputs: the Evidence envelope. rows: one per group, largest first, with columns dataset,
         the group_by value, count, share_pct, distinct_sources, first_seen, last_seen, prev_period,
-        median_week, expected and baseline_flag (normal, unusual_high, unusual_low or no_baseline),
+        median_week, expected, baseline_basis (named_period, median_week, previous_period or none)
+        and baseline_flag (normal, unusual_high, unusual_low or no_baseline),
         plus an (other) row per Dataset for the groups beyond top. summary: total, groups_total,
         top_n_sum, top_n_share_pct, other_count, other_groups and the baseline periods. notes:
         the baseline method. total_matches counts groups, not Log Entries.
@@ -222,6 +224,7 @@ def _row(
         base.prev_period,
         base.median_week,
         base.expected,
+        base.basis,
         base.flag,
     ]
 

@@ -81,12 +81,15 @@ def test_an_explicit_baseline_period_replaces_the_previous_period() -> None:
 
     assert w.previous == baseline
     assert w.previous_days == 31
+    assert w.previous_named is True
+    assert window("bgl", FIRST, LAST, datetime(2005, 11, 8), datetime(2005, 11, 15)).previous_named is False
 
 
 def test_an_explicit_baseline_outside_the_dataset_is_null_with_the_reason() -> None:
     w = window("bgl", FIRST, LAST, None, None, (datetime(2005, 5, 1), datetime(2005, 6, 1)))
 
     assert w.previous is None
+    assert w.previous_named is False
     assert w.previous_problem is not None
     assert "not inside" in w.previous_problem
 
@@ -145,6 +148,25 @@ def test_too_few_whole_weeks_fall_back_to_the_previous_period_scaled_to_the_scop
 
     assert verdict.basis == "previous_period"
     assert verdict.expected == 100
+    assert verdict.flag == "unusual_high"
+
+
+def test_a_named_baseline_period_drives_the_verdict_scaled_to_the_scope() -> None:
+    # 400 Log Entries in a 28-day named period make 100 expected in 7 days, even with a median.
+    verdict = judge(
+        310, median_week=10, weeks=30, days=7, previous=400, previous_days=28, previous_named=True
+    )
+
+    assert verdict.basis == "named_period"
+    assert verdict.expected == 100
+    assert verdict.flag == "unusual_high"
+
+
+def test_the_default_previous_period_does_not_outrank_the_median_week() -> None:
+    # Against the previous period (400) this would be normal; against the median week it is not.
+    verdict = judge(310, median_week=100, weeks=30, days=7, previous=400, previous_days=7)
+
+    assert verdict.basis == "median_week"
     assert verdict.flag == "unusual_high"
 
 

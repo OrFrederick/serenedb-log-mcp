@@ -636,6 +636,8 @@ class Baseline:
     prev_period: int | None
     median_week: int | float | None
     expected: float | None
+    basis: str
+    """named_period, median_week, previous_period, or none."""
     flag: str
 
 
@@ -649,8 +651,9 @@ def baseline_of(count: int, stats: GroupStats, span: DatasetWindow) -> Baseline:
         days=span.days,
         previous=previous,
         previous_days=span.previous_days,
+        previous_named=span.previous_named,
     )
-    return Baseline(previous, median, verdict.expected, verdict.flag)
+    return Baseline(previous, median, verdict.expected, verdict.basis or "none", verdict.flag)
 
 
 def number(value: float | None) -> int | float | None:

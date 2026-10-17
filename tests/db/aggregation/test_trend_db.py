@@ -145,6 +145,7 @@ def test_a_short_dataset_falls_back_to_the_previous_period(corpus: str) -> None:
     entry = series(result)["(all)"]
     assert (entry["count"], entry["prev_period"], entry["expected"]) == (OS_ERRORS, 20, 20)
     assert entry["baseline_flag"] == "unusual_low"
+    assert entry["baseline_basis"] == "previous_period"
     assert result["total_matches"] == 21
 
 

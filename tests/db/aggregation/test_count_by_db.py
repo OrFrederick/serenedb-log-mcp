@@ -119,6 +119,7 @@ def test_baselines_flag_the_storm_week_and_leave_the_steady_lines_normal(corpus:
     assert (storm["count"], storm["prev_period"], storm["median_week"]) == (STORM, 0, 0)
     assert storm["expected"] == 0
     assert storm["baseline_flag"] == "unusual_high"
+    assert storm["baseline_basis"] == "median_week"
     steady = rows["(non-alert)"]
     assert (steady["count"], steady["prev_period"], steady["median_week"]) == (14, 14, 14)
     assert steady["baseline_flag"] == "normal"
@@ -144,6 +145,11 @@ def test_a_named_baseline_period_replaces_the_previous_period(corpus: str) -> No
     assert rows["(non-alert)"]["prev_period"] == 4 * 14
     assert rows["APPSEV"]["prev_period"] == 4
     assert result["summary"]["baseline"]["bgl"]["previous_from"] == "2005-06-06T00:00:00"
+    # The named 4-week period drives expected, scaled to the 1-week Data Scope.
+    assert {r["baseline_basis"] for r in rows.values()} == {"named_period"}
+    assert (rows["(non-alert)"]["expected"], rows["(non-alert)"]["baseline_flag"]) == (14, "normal")
+    assert rows["APPSEV"]["expected"] == 1
+    assert rows["KERNDTLB"]["baseline_flag"] == "unusual_high"
 
 
 def test_without_a_time_range_there_is_no_previous_period(corpus: str) -> None:
@@ -162,6 +168,7 @@ def test_a_whole_dataset_scope_flags_nothing_as_unusual(corpus: str) -> None:
 
     rows = row_dicts(result)
     assert {r["baseline_flag"] for r in rows} == {"no_baseline"}
+    assert {r["baseline_basis"] for r in rows} == {"none"}
     assert {r["median_week"] for r in rows} == {None}
     assert any("outside the Data Scope" in note and "trend" in note for note in result["notes"])
 

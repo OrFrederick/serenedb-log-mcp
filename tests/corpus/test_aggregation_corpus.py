@@ -148,3 +148,4 @@ def test_a_week_of_bgl_is_judged_against_the_weeks_outside_it(slm_schema: str) -
     weeks = result["summary"]["baseline"]["bgl"]["whole_weeks_outside_scope"]
     assert weeks == 29  # 30 whole weeks in BGL, minus the one in the Data Scope
     assert rows["(non-alert)"]["median_week"] is not None
+    assert rows["(non-alert)"]["baseline_basis"] == "median_week"

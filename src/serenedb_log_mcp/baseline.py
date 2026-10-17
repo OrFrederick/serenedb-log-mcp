@@ -49,7 +49,7 @@ WEEK = timedelta(days=7)
 DAY = timedelta(days=1)
 
 Flag = Literal["normal", "unusual_high", "unusual_low", "no_baseline"]
-Basis = Literal["median_week", "previous_period"]
+Basis = Literal["named_period", "median_week", "previous_period"]
 
 
 def dataset_end(last: datetime) -> datetime:
@@ -77,6 +77,8 @@ class DatasetWindow:
     """The previous or named baseline period, start inclusive and end exclusive; None when unusable."""
     previous_problem: str | None
     """Why `previous` is None, in one sentence for the notes."""
+    previous_named: bool = False
+    """True when `previous` is the caller's named baseline period, which then drives the verdict."""
 
     @property
     def days(self) -> float:
@@ -108,7 +110,8 @@ def window(
     inside_end = ds_end if end is None else min(end, ds_end)
     inside_end = max(inside_end, inside_start)
     previous, problem = _previous(dataset, first, ds_end, start, inside_start, inside_end, baseline)
-    return DatasetWindow(dataset, first, ds_end, inside_start, inside_end, previous, problem)
+    named = baseline is not None and previous is not None
+    return DatasetWindow(dataset, first, ds_end, inside_start, inside_end, previous, problem, named)
 
 
 def _previous(
@@ -162,11 +165,18 @@ def judge(
     days: float,
     previous: int | None,
     previous_days: float | None,
+    previous_named: bool = False,
 ) -> Verdict:
-    """Compare `count` over `days` with what a normal period of that length holds."""
+    """Compare `count` over `days` with what a normal period of that length holds.
+
+    The reference, in order: a named baseline period (the caller asked for that comparison), the
+    median week, the default previous period; each scaled to the Data Scope's length.
+    """
     expected: float
     basis: Basis
-    if median_week is not None and weeks >= MIN_WEEKS:
+    if previous_named and previous is not None and previous_days:
+        expected, basis = previous * days / previous_days, "named_period"
+    elif median_week is not None and weeks >= MIN_WEEKS:
         expected, basis = median_week * days / 7, "median_week"
     elif previous is not None and previous_days:
         expected, basis = previous * days / previous_days, "previous_period"
@@ -194,9 +204,10 @@ def method_note(windows: Sequence[DatasetWindow], whole_weeks: Mapping[str, int]
         f"length just before the Data Scope, or in the named baseline period ({periods}). "
         "median_week is the median of the zero-filled weekly counts (Monday-start weeks) with the "
         f"same filters over the Dataset's whole weeks outside the Data Scope ({weeks}). expected is "
-        "median_week scaled to "
-        "the Data Scope's length, or prev_period scaled to it when fewer than "
-        f"{MIN_WEEKS} such weeks exist. baseline_flag is unusual_high when the count is at least "
+        "the named baseline period's count scaled to the Data Scope's length when baseline_from and "
+        "baseline_to are given, else median_week scaled to it, else prev_period scaled to it when "
+        f"fewer than {MIN_WEEKS} such weeks exist; baseline_basis names the one used (named_period, "
+        "median_week, previous_period or none). baseline_flag is unusual_high when the count is at least "
         f"{UNUSUAL_RATIO} times expected and at least {MIN_DIFFERENCE} Log Entries above it, unusual_low "
         f"when it is at most expected / {UNUSUAL_RATIO} and at least {MIN_DIFFERENCE} below it, "
         "normal otherwise, and no_baseline when neither baseline exists."

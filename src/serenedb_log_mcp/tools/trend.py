@@ -258,7 +258,8 @@ def register(server: MCPServer) -> None:
         Outputs: the Evidence envelope. rows: one per bucket, columns bucket and one column per
         series ('(all)' without group_by). summary: bucket, buckets, total, groups_total,
         series_total, other_count, and per series its count, share_pct, peak_bucket, peak_count,
-        prev_period, median_week, expected, baseline_flag and any handoff. notes: the baseline
+        prev_period, median_week, expected, baseline_basis, baseline_flag and any handoff. notes:
+        the baseline
         method. total_matches counts buckets, not Log Entries.
         """
         datasets, notes = choose_datasets(dataset, group_by, alert_categories)
@@ -336,6 +337,7 @@ def _trend(prepared: Prepared, bucket: str, top: int) -> ToolOutcome:
             "prev_period": base.prev_period,
             "median_week": base.median_week,
             "expected": base.expected,
+            "baseline_basis": base.basis,
             "baseline_flag": base.flag,
         }
         if k in handoffs:

@@ -125,7 +125,7 @@ def test_vectors_of_another_model_are_an_actionable_error(sample: str) -> None:
     assert "make embed-patterns" in error
 
 
-def test_a_schema_without_the_vector_table_gets_an_actionable_error(
+def test_an_empty_schema_gets_an_actionable_error(
     sample: str, database_url: str, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     empty = f"scratch_t26_{uuid.uuid4().hex[:8]}"
@@ -134,16 +134,75 @@ def test_a_schema_without_the_vector_table_gets_an_actionable_error(
     try:
         monkeypatch.setattr(config, "_active", load_settings(slm_schema=empty))
         error = call_error("find_patterns", role="engineer", dataset="bgl", text="error")
-        assert "make embed-patterns" in error
+        # Whichever table the server names first, the message says how to build it.
         assert "make derive" in error
     finally:
         with psycopg.connect(database_url, autocommit=True) as conn:
             conn.execute(sql.SQL("DROP SCHEMA IF EXISTS {} CASCADE").format(sql.Identifier(empty)))
 
 
+def vector_counts(schema: str) -> tuple[int, int]:
+    """count(*) and count(DISTINCT dataset, template_id) of the fake model's rows."""
+    with psycopg.connect(get_settings().database_url, autocommit=True) as conn:
+        row = conn.execute(
+            sql.SQL(
+                "SELECT count(*), count(DISTINCT dataset || ':' || template_id) FROM {} WHERE model = %s"
+            ).format(sql.Identifier(schema, "pattern_vector")),
+            [MODEL],
+        ).fetchone()
+    assert row is not None
+    return int(row[0]), int(row[1])
+
+
 def test_embedding_again_replaces_the_models_rows(sample: str) -> None:
     before = {d: stored(sample, d) for d in DATASETS}
+    total, distinct = vector_counts(sample)
+    assert total == distinct  # one row per Pattern
 
     assert embed_patterns.main(["--schema", sample], embedder=FakeEmbedder()) == 0
 
+    assert vector_counts(sample) == (total, distinct)  # replaced, not appended
     assert {d: stored(sample, d) for d in DATASETS} == before
+
+
+def test_a_pattern_without_a_vector_still_comes_back_in_hybrid_mode(sample: str) -> None:
+    lexical = call("search_patterns", role="engineer", dataset="openstack", query="spawning")
+    target = row_dicts(lexical)[0]["template_id"]
+    with psycopg.connect(get_settings().database_url, autocommit=True) as conn:
+        conn.execute(
+            sql.SQL("DELETE FROM {} WHERE template_id = %s").format(sql.Identifier(sample, "pattern_vector")),
+            [target],
+        )
+    try:
+        hybrid = call("find_patterns", role="engineer", dataset="openstack", text="spawning", top=50)
+        semantic = call("find_patterns", role="engineer", dataset="openstack", text="spawning",
+                        mode="semantic", top=50)  # fmt: skip
+    finally:
+        assert embed_patterns.main(["--schema", sample], embedder=FakeEmbedder()) == 0
+
+    (row,) = [r for r in row_dicts(hybrid) if r["template_id"] == target]
+    assert (row["vector_rank"], row["similarity"], row["lexical_rank"]) == (None, None, 1)
+    assert hybrid["summary"]["patterns_without_vector"] == 1
+    assert any("no vector" in note for note in hybrid["notes"])
+    assert target not in {r["template_id"] for r in row_dicts(semantic)}
+
+
+def test_a_schema_with_vectors_but_no_catalogue_points_to_make_derive(
+    sample: str, database_url: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    schema = f"scratch_t26_{uuid.uuid4().hex[:8]}"
+    with psycopg.connect(database_url, autocommit=True) as conn:
+        conn.execute(sql.SQL("CREATE SCHEMA {}").format(sql.Identifier(schema)))
+        conn.execute(
+            sql.SQL(
+                "CREATE TABLE {} (dataset VARCHAR, template_id VARCHAR, model VARCHAR, emb FLOAT[384])"
+            ).format(sql.Identifier(schema, "pattern_vector"))
+        )
+    try:
+        monkeypatch.setattr(config, "_active", load_settings(slm_schema=schema))
+        error = call_error("find_patterns", role="engineer", dataset="bgl", text="error")
+        assert "Pattern catalogue or its search index is missing" in error
+        assert "No Pattern vectors" not in error
+    finally:
+        with psycopg.connect(database_url, autocommit=True) as conn:
+            conn.execute(sql.SQL("DROP SCHEMA IF EXISTS {} CASCADE").format(sql.Identifier(schema)))

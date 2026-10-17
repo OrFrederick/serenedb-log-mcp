@@ -233,7 +233,16 @@ def test_the_views_follow_the_schema() -> None:
 def test_roles_sql_splits_into_statements() -> None:
     text = (ROOT / "sql" / "access" / "roles.sql").read_text()
 
-    assert len(derive.split_statements(text)) == len(statements())
+    vector_table = access.vector_table_statements("slm")
+    assert len(derive.split_statements(text)) + len(vector_table) == len(statements())
+
+
+def test_the_vector_table_is_created_before_its_views() -> None:
+    # A schema derived before find_patterns (T26) has no pattern_vector; make access creates it.
+    rendered = statements()
+    first_view = next(i for i, s in enumerate(rendered) if "pattern_vector AS SELECT" in s)
+    assert rendered[0].startswith('CREATE TABLE IF NOT EXISTS "slm".pattern_vector')
+    assert first_view > 0
 
 
 # ----------------------------------------------------------------- make targets

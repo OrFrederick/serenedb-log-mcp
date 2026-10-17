@@ -301,7 +301,7 @@ Outputs: the Evidence envelope, whose rows hold the list_patterns columns (templ
 component, level, entries, first_seen, last_seen, family_id, template_text) plus score (the
 fused RRF score, or the similarity in mode 'semantic'), similarity (cosine, -1 to 1),
 vector_rank and lexical_rank (null without a word match), best first; summary holds
-patterns_total, lexical_matches, model, mode, words, synonyms and
+patterns_total, lexical_matches, patterns_without_vector, model, mode, words, synonyms and
 ignored_words; total_matches counts the ranked Patterns.
 ```
 

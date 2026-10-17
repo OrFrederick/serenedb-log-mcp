@@ -119,7 +119,7 @@ Builds everything the tools read, inside `SLM_SCHEMA` (default `slm`): the canon
 
 Patterns come in two tiers: Tier 1 matches the Loghub-2.0 templates and needs the files from step 3; `SLM_PATTERN_TIER1=0 make derive` uses only the generic masks (Tier 2) and needs no Loghub-2.0 files.
 
-Optional, for `find_patterns` (semantic Pattern search, T26): `uv sync --extra vectors`, then `make embed-patterns`. It embeds the Pattern catalogue locally with fastembed (no API key; the first run downloads a model of about 90 MB into `FASTEMBED_CACHE_PATH`, default `~/.cache/serenedb-log-mcp/fastembed`) and stores the vectors in SereneDB in about 7 s. Run it again after a derive that changed the Patterns. Without it every other tool works, and `find_patterns` answers with these setup steps.
+Optional, for `find_patterns` (semantic Pattern search, T26): `uv sync --extra vectors`, then `make embed-patterns`. It embeds the Pattern catalogue locally with fastembed (no API key; the first run downloads a model of about 90 MB into `FASTEMBED_CACHE_PATH`, default `~/.cache/serenedb-log-mcp/fastembed`) and stores the vectors in SereneDB in about 7 s. Run it again after a derive that changed the Patterns. Without it every other tool works, and `find_patterns` answers with these setup steps. A schema derived before `find_patterns` existed needs no new derive: `make embed-patterns` and `make access` both create the (empty) `pattern_vector` table first.
 
 ### Quick variant: the 2,000-line samples
 
@@ -241,7 +241,7 @@ Messages in rows are cut to 240 characters. Query text goes through `websearch_t
 ## Results
 
 - [docs/results/ground-truth.md](docs/results/ground-truth.md): `latency_stats` finds **4 of 4** labelled OpenStack slow spawns by timing alone (5 flagged at the default threshold; the fifth is reported as a Hypothesis). No ERROR or WARNING line points at them, so text search alone would not find them.
-- [docs/results/find-patterns.md](docs/results/find-patterns.md): the optional `find_patterns` (local vectors fused with BM25) beats the lexical `search_patterns` on #7's 124 labelled questions by +0.055 recall@10 (95% CI [+0.016, +0.096]) and +0.071 MRR; vectors alone gain nothing significant. Reading the catalogue with `list_patterns` stays the first choice.
+- [docs/results/find-patterns.md](docs/results/find-patterns.md): the optional `find_patterns` (local vectors fused with BM25) beats the lexical `search_patterns` on #7's 124 labelled questions by +0.055 recall@10 (95% CI [+0.016, +0.096]) and +0.071 MRR, but the intervals are optimistic: the embedded text, model and mode were chosen on the same questions (untuned: +0.028 recall@10), and there is no multiple-testing correction. Vectors alone gain nothing significant. Reading the catalogue with `list_patterns` stays the first choice.
 - [docs/results/patterns.md](docs/results/patterns.md): the SQL Pattern dictionary agrees with the Loghub-2.0 labels on 99.99991% of BGL lines (4,631,257 of 4,631,261) and on 100% of OpenStack lines, with 465 BGL and 73 OpenStack Patterns.
 
 ## SereneDB features used

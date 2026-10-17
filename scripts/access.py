@@ -7,10 +7,11 @@ Usage (see `make help`):
     uv run python scripts/access.py --drop     # drop the per-Role views and the LOGIN roles
 
 Creating runs, as the superuser of DATABASE_URL: `drop_statements` (the views and LOGIN roles of an
-earlier run), then sql/access/roles.sql. The check then connects as each Role's login and reports
-what it may read: its own views (and, for the Roles that search text, its own full-text index), and
-not the canonical tables, the canonical indexes or the other Roles' views. It also tries a wrong
-password, because a server that trusts every client (the dev container runs with
+earlier run), then sql/derive/25_pattern_vectors.sql (idempotent; it creates the find_patterns vector
+table that a schema derived before T26 lacks), then sql/access/roles.sql. The check then connects as
+each Role's login and reports what it may read: its own views (and, for the Roles that search text,
+its own full-text index), and not the canonical tables, the canonical indexes or the other Roles'
+views. It also tries a wrong password, because a server that trusts every client (the dev container runs with
 SERENEDB_HOST_AUTH_METHOD=trust) lets anyone log in as any role.
 
 The grants are defence in depth: any login can still read server files (`read_csv`, `read_text`,
@@ -46,6 +47,9 @@ from serenedb_log_mcp.config import SCHEMA_RE, ConfigError, Role, Settings, load
 from serenedb_log_mcp.corpus.datasets import ROLE_WITHHELD_COLUMNS, role_schema
 
 ROLES_SQL = Path(__file__).resolve().parent.parent / "sql" / "access" / "roles.sql"
+VECTORS_SQL = Path(__file__).resolve().parent.parent / "sql" / "derive" / "25_pattern_vectors.sql"
+"""The idempotent derive step that creates the find_patterns vector table (T26). roles.sql views it,
+so `make access` runs it first: a schema derived before T26 then needs no new derive."""
 CONNECT_TIMEOUT_S = 10
 LOGIN_RE = re.compile(r"^slm_[a-z0-9_]*[a-z0-9]$")
 PASSWORD_RE = re.compile(r"PASSWORD\s+'(?:[^']|'')*'")
@@ -126,8 +130,13 @@ def variables(slm: str, found: Mapping[Role, Login]) -> dict[str, str]:
 
 
 def statements(slm: str, found: Mapping[Role, Login], path: Path = ROLES_SQL) -> list[str]:
-    """sql/access/roles.sql, rendered and split into statements."""
-    return split_statements(render(path.read_text(), variables(slm, found)))
+    """The vector table step, then sql/access/roles.sql, rendered and split into statements."""
+    return vector_table_statements(slm) + split_statements(render(path.read_text(), variables(slm, found)))
+
+
+def vector_table_statements(slm: str, path: Path = VECTORS_SQL) -> list[str]:
+    """sql/derive/25_pattern_vectors.sql for `slm`: CREATE TABLE IF NOT EXISTS, safe to run again."""
+    return split_statements(render(path.read_text(), {"slm": _schema(slm)}))
 
 
 def drop_statements(slm: str, found: Mapping[Role, Login]) -> list[str]:

@@ -15,6 +15,7 @@ it up and points to list_patterns and search_patterns, which need none of it.
 
 from __future__ import annotations
 
+import re
 from typing import Annotated, Any, Literal
 
 from mcp.server.mcpserver import MCPServer
@@ -22,7 +23,7 @@ from mcp.server.mcpserver.exceptions import ToolError
 from pydantic import Field
 
 from serenedb_log_mcp import fts
-from serenedb_log_mcp.corpus.datasets import DATASET_NAMES, Relation, relation
+from serenedb_log_mcp.corpus.datasets import DATASET_NAMES, PATTERN_VECTORS, Relation, relation
 from serenedb_log_mcp.corpus.embeddings import INSTALL_HINT, EmbeddingUnavailable, get_embedder
 from serenedb_log_mcp.corpus.synonyms import Expansion, expand
 from serenedb_log_mcp.db import QueryFailed, fetch_all
@@ -33,8 +34,10 @@ from serenedb_log_mcp.tools._aggregate import DatasetName
 from serenedb_log_mcp.tools._catalogue import (
     CHOOSE_NOTE,
     COLUMNS,
+    NO_MESSAGE,
     WHOLE_DATASET_NOTE,
     catalogue_row,
+    missing_catalogue,
     vector_literal,
     vector_statement,
 )
@@ -43,6 +46,7 @@ DEFAULT_TOP = 10
 MAX_TOP = 50
 RRF_K = 60
 """The Reciprocal Rank Fusion constant of Cormack et al. (SIGIR 2009), as #7 measured it."""
+_MISSING_TABLE = re.compile(r"with name (\w+) does not exist")
 Mode = Literal["hybrid", "semantic"]
 SEARCHED = len(COLUMNS)
 """Index of the first score column of a statement row: distance, then the BM25 score."""
@@ -107,10 +111,14 @@ def register(server: MCPServer) -> None:
         component, level, entries, first_seen, last_seen, family_id, template_text) plus score (the
         fused RRF score, or the similarity in mode 'semantic'), similarity (cosine, -1 to 1),
         vector_rank and lexical_rank (null without a word match), best first; summary holds
-        patterns_total, lexical_matches, model, mode, words, synonyms and
+        patterns_total, lexical_matches, patterns_without_vector, model, mode, words, synonyms and
         ignored_words; total_matches counts the ranked Patterns.
         """
-        normalised = fts.normalise_query(text)
+        try:
+            normalised = fts.normalise_query(text)
+        except ScopeError as exc:
+            # fts names its parameter `query`; this tool's is `text`.
+            raise ScopeError(str(exc).replace("query", "text", 1)) from exc
         if normalised is None:
             raise ScopeError(
                 "text is empty. Pass the problem in plain words, for example 'memory errors', or read "
@@ -118,9 +126,14 @@ def register(server: MCPServer) -> None:
             )
         try:
             embedder = get_embedder()
-            vector = embedder.embed_query(normalised)
+            vector = vector_literal(embedder.embed_query(normalised))
         except EmbeddingUnavailable as exc:
             raise ToolError(f"{exc} {SETUP_HINT.format(dataset=dataset)}") from exc
+        except ValueError as exc:
+            raise ToolError(
+                f"The embedding model {embedder.model} returned an unusable vector for this text ({exc}). "
+                f"Rephrase the text. {SETUP_HINT.format(dataset=dataset)}"
+            ) from exc
         expansion = expand(normalised) if mode == "hybrid" else None
         scope = build_scope(
             dataset,
@@ -131,7 +144,7 @@ def register(server: MCPServer) -> None:
         rel = relation(dataset, role, scope)
         statement = vector_statement(
             rel,
-            vector_literal(vector),
+            vector,
             embedder.model,
             embedder.dimensions,
             expansion.words if expansion else (),
@@ -140,17 +153,22 @@ def register(server: MCPServer) -> None:
         try:
             result = fetch_all(statement.text, statement.params, role=role)
         except QueryFailed as exc:
-            if exc.sqlstate == "42P01":  # undefined_table
+            if exc.sqlstate == "42P01" and _missing_table(exc) == PATTERN_VECTORS:
                 raise ToolError(_missing(rel, embedder.model)) from exc
+            if (missing := missing_catalogue(exc, rel)) is not None:
+                raise missing from exc
             raise
-        if not result.rows:
+        found = [catalogue_row(row) for row in result.rows]
+        if not any(row[SEARCHED] is not None for row in found):
             raise ToolError(_missing(rel, embedder.model))
-        rows = _ranked([catalogue_row(row) for row in result.rows], mode)
+        unembedded = sum(row[SEARCHED] is None and row[7] != NO_MESSAGE for row in found)
+        rows = _ranked(found, mode)
         shown = rows[:top]
         lexical = sum(row[-1] is not None for row in rows)
         summary: dict[str, Any] = {
             "patterns_total": len(rows),
             "lexical_matches": lexical if expansion else None,
+            "patterns_without_vector": unembedded,
             "model": embedder.model,
             "mode": mode,
             "words": list(expansion.words) if expansion else [],
@@ -162,7 +180,7 @@ def register(server: MCPServer) -> None:
             scope=scope,
             columns=list(RESULT_COLUMNS),
             summary=summary,
-            notes=_notes(dataset, embedder.model, mode, expansion),
+            notes=_notes(dataset, embedder.model, mode, expansion, unembedded),
             rows=shown,
             total_matches=len(rows),
             truncation_note=(
@@ -173,26 +191,41 @@ def register(server: MCPServer) -> None:
 
 
 def _ranked(rows: list[list[Any]], mode: Mode) -> list[list[Any]]:
-    """Rows in RESULT_COLUMNS order, best first: the vector rank, the BM25 rank and their fusion."""
+    """Rows in RESULT_COLUMNS order, best first: the vector rank, the BM25 rank and their fusion.
+
+    A Pattern without a vector has no vector_rank or similarity; in mode 'hybrid' it is still ranked
+    by its word match, and a Pattern with neither is left out. BM25 scores are rounded to four
+    decimals before ranking, as search_patterns rounds them, so lexical_rank is its order.
+    """
     distance, bm25 = SEARCHED, SEARCHED + 1
-    by_vector = sorted(rows, key=lambda row: (float(row[distance]), row[0]))
+    embedded = [row for row in rows if row[distance] is not None]
+    by_vector = sorted(embedded, key=lambda row: (float(row[distance]), row[0]))
     vector_rank = {row[0]: rank for rank, row in enumerate(by_vector, start=1)}
-    matched = [row for row in rows if row[bm25] is not None]
-    by_words = sorted(matched, key=lambda row: (-float(row[bm25]), -int(row[3]), row[0]))
+    words = {row[0]: round(float(row[bm25]), 4) for row in rows if row[bm25] is not None}
+    matched = [row for row in rows if row[0] in words]
+    by_words = sorted(matched, key=lambda row: (-words[row[0]], -int(row[3]), row[0]))
     lexical_rank = {row[0]: rank for rank, row in enumerate(by_words, start=1)}
     ranked: list[list[Any]] = []
     for row in rows:
         tid = row[0]
-        similarity = round(1.0 - float(row[distance]), 4)
-        lexical = lexical_rank.get(tid)
+        vector, lexical = vector_rank.get(tid), lexical_rank.get(tid)
+        if vector is None and (mode == "semantic" or lexical is None):
+            continue
+        similarity = None if vector is None else round(1.0 - float(row[distance]), 4)
         if mode == "semantic":
             score = similarity
         else:
-            fused = 1.0 / (RRF_K + vector_rank[tid]) + (1.0 / (RRF_K + lexical) if lexical else 0.0)
-            score = round(fused, 6)
-        ranked.append([*row[:SEARCHED], score, similarity, vector_rank[tid], lexical])
-    ranked.sort(key=lambda row: (-row[SEARCHED], row[SEARCHED + 2]))
+            score = round(sum(1.0 / (RRF_K + rank) for rank in (vector, lexical) if rank), 6)
+        ranked.append([*row[:SEARCHED], score, similarity, vector, lexical])
+    no_rank = len(rows) + 1
+    ranked.sort(key=lambda row: (-row[SEARCHED], row[SEARCHED + 2] or no_rank, row[SEARCHED + 3] or no_rank))
     return ranked
+
+
+def _missing_table(exc: QueryFailed) -> str | None:
+    """The table a 42P01 error names ('Table with name pattern_vector does not exist!'), if any."""
+    match = _MISSING_TABLE.search(str(exc))
+    return match.group(1) if match else None
 
 
 def _missing(rel: Relation, model: str) -> str:
@@ -203,7 +236,9 @@ def _missing(rel: Relation, model: str) -> str:
     )
 
 
-def _notes(dataset: str, model: str, mode: Mode, expansion: Expansion | None) -> list[str]:
+def _notes(
+    dataset: str, model: str, mode: Mode, expansion: Expansion | None, unembedded: int = 0
+) -> list[str]:
     method = (
         f"Every embedded Pattern of {dataset} is ranked by the cosine similarity of its template text "
         f"to the question ({model}, embedded locally, exact scan in SereneDB)"
@@ -220,6 +255,17 @@ def _notes(dataset: str, model: str, mode: Mode, expansion: Expansion | None) ->
             method += "."
     else:
         method += "; score is that similarity."
+    if unembedded:
+        method += (
+            f" {unembedded} Pattern{'s' if unembedded != 1 else ''} of {dataset} "
+            f"{'have' if unembedded != 1 else 'has'} no vector (added after the last "
+            "`make embed-patterns`): "
+            + (
+                "left out here; use mode='hybrid' or search_patterns for them."
+                if mode == "semantic"
+                else "ranked by the word match alone, with similarity and vector_rank null."
+            )
+        )
     return [
         method,
         "Vector search always returns its nearest Patterns, even when none is about the question, and "

@@ -24,7 +24,9 @@ SETTINGS = load_settings({}, slm_schema="slm")
 BGL = relation("bgl", settings=SETTINGS)
 
 
-def statement_row(template_id: str, distance: float, bm25: float | None, entries: int = 1) -> list[Any]:
+def statement_row(
+    template_id: str, distance: float | None, bm25: float | None, entries: int = 1
+) -> list[Any]:
     return [template_id, "KERNEL", "INFO", entries, None, None, None, f"text {template_id}", distance, bm25]
 
 
@@ -188,3 +190,51 @@ def test_the_description_says_how_it_differs_from_the_other_catalogue_tools() ->
     assert "Optional" in description
     assert "make embed-patterns" in description
     assert "always returns" in description
+
+
+# Review fixes (#102) -------------------------------------------------------------------------------
+
+
+def test_a_pattern_without_a_vector_is_ranked_by_its_word_match_in_hybrid_mode() -> None:
+    rows = [statement_row("a", 0.10, None), statement_row("new", None, 3.0)]
+
+    hybrid = {r[0]: dict(zip(RESULT_COLUMNS, r, strict=True)) for r in _ranked(rows, "hybrid")}
+    semantic = [r[0] for r in _ranked(rows, "semantic")]
+
+    assert hybrid["new"]["vector_rank"] is None
+    assert hybrid["new"]["similarity"] is None
+    assert hybrid["new"]["lexical_rank"] == 1
+    assert hybrid["new"]["score"] == round(1 / (RRF_K + 1), 6)
+    assert semantic == ["a"]
+
+
+def test_a_pattern_with_neither_a_vector_nor_a_word_match_is_left_out() -> None:
+    rows = [statement_row("a", 0.10, None), statement_row("none", None, None)]
+
+    assert [r[0] for r in _ranked(rows, "hybrid")] == ["a"]
+
+
+def test_bm25_scores_are_rounded_before_ranking_like_search_patterns() -> None:
+    # Equal at four decimals, so entries decide, as in search_patterns.
+    rows = [statement_row("x", 0.5, 2.00001, entries=1), statement_row("y", 0.6, 2.00002, entries=9)]
+
+    assert {r[0]: r[-1] for r in _ranked(rows, "hybrid")} == {"y": 1, "x": 2}
+
+
+def test_the_statement_is_driven_by_the_catalogue() -> None:
+    text = vector_statement(BGL, "[1,0]", "m", 384, ["memory"]).text
+
+    assert "FROM catalogue AS c LEFT JOIN vec AS v" in text
+    assert "LEFT JOIN hits AS h ON h.template_id = c.template_id" in text
+
+
+@pytest.mark.parametrize("bad", [math.nan, math.inf, -math.inf])
+def test_a_non_finite_query_vector_is_refused(bad: float) -> None:
+    with pytest.raises(ValueError, match="NaN or infinite"):
+        vector_literal([0.1, bad])
+
+
+def test_a_text_without_words_names_the_text_parameter() -> None:
+    error = call_error(role="engineer", dataset="bgl", text="?!")
+
+    assert "find_patterns: text='?!' has no words" in error

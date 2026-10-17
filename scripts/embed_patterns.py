@@ -9,7 +9,8 @@ It reads every Pattern of SLM_SCHEMA's catalogue (`pattern`, built by sql/derive
 embeds its template text locally with fastembed (`corpus.embeddings`, no API key; the first run
 downloads the model, about 90 MB, into FASTEMBED_CACHE_PATH or ~/.cache/serenedb-log-mcp/fastembed)
 and replaces that model's rows of `pattern_vector` (sql/derive/25_pattern_vectors.sql) in one
-transaction. It takes a few seconds for the 538 Patterns of the Base Corpus and is re-runnable:
+transaction. It takes a few seconds for the 536 Patterns of the Base Corpus (the 538 of the catalogue
+but the two Patterns of empty messages) and is re-runnable:
 run it again after a derive that changed the Patterns. The Pattern of empty messages has no text and
 gets no vector.
 
@@ -27,6 +28,7 @@ from pathlib import Path
 from typing import Any
 
 import psycopg
+from psycopg import sql
 
 from derive import CONNECT_TIMEOUT_S, DeriveError, _quoted, render, split_statements
 from serenedb_log_mcp.config import ConfigError, load_settings
@@ -50,8 +52,10 @@ def patterns(conn: psycopg.Connection[Any], slm: str) -> list[tuple[str, str, st
     """(dataset, template_id, document text) of every Pattern with a template text, in a stable order."""
     try:
         rows = conn.execute(
-            f"SELECT dataset, template_id, component, template_text FROM {_quoted(slm)}.{PATTERNS} "
-            "WHERE template_source <> 'empty' ORDER BY dataset, template_id"
+            sql.SQL(
+                "SELECT dataset, template_id, component, template_text FROM {} "
+                "WHERE template_source <> 'empty' ORDER BY dataset, template_id"
+            ).format(sql.Identifier(slm, PATTERNS))
         ).fetchall()
     except psycopg.errors.UndefinedTable as exc:
         raise EmbedError(
@@ -79,11 +83,12 @@ def store(
     vectors: Sequence[Sequence[float]],
 ) -> None:
     """Replace `model`'s rows of the vector table with these vectors, in one transaction."""
-    table = f"{_quoted(slm)}.{PATTERN_VECTORS}"
+    table = sql.Identifier(slm, PATTERN_VECTORS)
+    cast = sql.SQL("::FLOAT[{}]").format(sql.Literal(int(dimensions)))
     rows = [(d, t, model, list(v)) for (d, t, _), v in zip(found, vectors, strict=True)]
     with conn.transaction(), conn.cursor() as cursor:
-        cursor.execute(f"DELETE FROM {table} WHERE model = %s", [model])
-        cursor.executemany(f"INSERT INTO {table} VALUES (%s, %s, %s, %s::FLOAT[{dimensions}])", rows)
+        cursor.execute(sql.SQL("DELETE FROM {} WHERE model = %s").format(table), [model])
+        cursor.executemany(sql.SQL("INSERT INTO {} VALUES (%s, %s, %s, %s{})").format(table, cast), rows)
 
 
 def build_parser() -> argparse.ArgumentParser:

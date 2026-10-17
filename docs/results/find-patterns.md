@@ -17,13 +17,24 @@ The scope follows the maintainer's change for #38: it covers the Base Corpus cat
 73 OpenStack Patterns), not the dropped OTel track. Vectors live in SereneDB, as #7 decided. There
 is no vector index, because #7 measured an exact scan of a few hundred vectors as negligible.
 
-**Short answer.** Yes, a little, and only in hybrid mode. On the 124 labelled questions of the two
-#7 label sets, hybrid `find_patterns` beats `search_patterns`:
+**Short answer.** Perhaps a little, and only in hybrid mode; the numbers are optimistic. On the
+124 labelled questions of the two #7 label sets, hybrid `find_patterns` beats `search_patterns`:
 
 - recall@10 is up by **+0.055** (95% CI [+0.016, +0.096]);
 - MRR is up by **+0.071** (95% CI [+0.029, +0.117]).
 
-Vectors alone (`mode='semantic'`) show no significant gain over `search_patterns`. The gain is
+**These intervals are optimistic, for three reasons:**
+
+- **Selection bias.** We chose the embedded text, the model and the default mode on the same 124
+  questions, the 16 "holdout" questions included, that the intervals are reported on. There is no
+  untouched test set. With the untuned choice (raw template text), hybrid R@10 was 0.721, a gain
+  of +0.028 over `search_patterns`, not +0.055 (table below).
+- **The holdout disagrees.** On NoNaim95's 16 holdout questions, hybrid R@10 (0.669) is *below*
+  semantic (0.691); only its MRR is higher.
+- **No multiple-testing correction.** The six pooled comparisons (three pairs, two metrics) are
+  each reported at 95% without correction.
+
+Vectors alone (`mode='semantic'`) show no significant gain over `search_patterns`. Any gain is
 small next to what #7 measured for Claude reading the whole catalogue with `list_patterns` (MRR
 0.98 to 1.00 on the same kind of questions). So `list_patterns` stays the first choice, and
 `find_patterns` stays optional.
@@ -40,8 +51,12 @@ git show origin/research/7-OrFrederick:research/7/OrFrederick/labels.yaml > orfr
 gh api -H 'Accept: application/vnd.github.raw' > nonaim95.yaml \
   'repos/NoNaim95/serenedb-log-mcp/contents/research/7/NoNaim95/experiments/r7e_labels.yaml?ref=research/7-NoNaim95'
 make bench-find-patterns BENCH_ARGS="orfrederick.yaml nonaim95.yaml"
-SLM_REQUIRE_DB=1 make test-corpus       # tests/corpus/test_find_patterns_corpus.py pins the examples below
+SLM_REQUIRE_DB=1 make test-corpus       # pins the examples below, only after the two steps above
 ```
+
+`tests/corpus/test_find_patterns_corpus.py` carries the `embedding_model` marker: without
+`uv sync --extra vectors` and `make embed-patterns` it skips, even with `SLM_REQUIRE_DB=1`, and
+pins nothing.
 
 `bench/find_patterns_recall.py` sends every question through the MCP tools in process, as an agent
 would call them, with `top=50`. The relevant Loghub-2.0 EventIds map to our Pattern ids through
@@ -63,14 +78,20 @@ min(10, the number of relevant Patterns). Paraphrase questions are those labelle
 | NoNaim95 main (57) | search_patterns | 0.586 | 0.699 | 0.728 | 0.477 | 0.831 | 0.633 |
 | | find_patterns semantic | 0.620 | 0.721 | 0.744 | 0.449 | 0.810 | 0.591 |
 | | find_patterns hybrid | 0.661 | 0.764 | 0.790 | 0.498 | 0.865 | 0.681 |
-| NoNaim95 holdout (16) | search_patterns | 0.526 | 0.640 | 0.650 | 0.263 | 0.593 | 0.464 |
+| NoNaim95 holdout (16; also used for selection) | search_patterns | 0.526 | 0.640 | 0.650 | 0.263 | 0.593 | 0.464 |
 | | find_patterns semantic | 0.632 | 0.691 | 0.694 | 0.312 | 0.661 | 0.517 |
 | | find_patterns hybrid | 0.595 | 0.669 | 0.677 | 0.300 | 0.752 | 0.479 |
 | **Pooled (124)** | search_patterns | 0.569 | 0.693 | 0.717 | 0.437 | 0.784 | 0.608 |
 | | find_patterns semantic | 0.620 | 0.725 | 0.744 | 0.424 | 0.799 | 0.623 |
 | | find_patterns hybrid | **0.643** | **0.748** | **0.769** | **0.463** | **0.855** | **0.662** |
+| | find_patterns hybrid, untuned (raw template text) | 0.615 | 0.721 | 0.743 | 0.453 | 0.823 | 0.633 |
 
-Paired bootstrap of the pooled differences (5,000 resamples, seed 0):
+The untuned row comes from the throwaway comparison script described below, before the embedded
+text was chosen; its pooled values are the question-weighted means of the per-set results
+(±0.001).
+
+Paired bootstrap of the pooled differences (5,000 resamples, seed 0; six comparisons, no
+multiple-testing correction, and on the questions the choices were made on):
 
 | Comparison | R@10 | MRR |
 |---|---|---|
@@ -78,7 +99,7 @@ Paired bootstrap of the pooled differences (5,000 resamples, seed 0):
 | semantic − search_patterns | +0.032 [−0.023, +0.090] | +0.015 [−0.048, +0.081] |
 | hybrid − semantic | +0.023 [−0.016, +0.062] | **+0.056 [+0.007, +0.106]** |
 
-What we chose and why:
+What we chose and why (every choice below was made on these same 124 questions):
 
 - **The embedded text.** Before writing the tool we compared three variants with a throwaway
   script (exact cosine in numpy, the same `search_patterns` calls and RRF): the raw template text,

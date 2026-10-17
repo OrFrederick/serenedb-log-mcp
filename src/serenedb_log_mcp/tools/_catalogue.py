@@ -307,8 +307,15 @@ and change a cosine distance by less than 0.001."""
 
 
 def vector_literal(vector: Sequence[float]) -> str:
-    """A query vector as the compact text SereneDB casts to FLOAT[N]: '[0.0123,-0.0456,...]'."""
-    return "[" + ",".join(f"{round(float(v), VECTOR_DIGITS):g}" for v in vector) + "]"
+    """A query vector as the compact text SereneDB casts to FLOAT[N]: '[0.0123,-0.0456,...]'.
+
+    ValueError for a NaN or infinite component: SereneDB accepts them and returns a distance of 2
+    for every Pattern, a wrong ranking rather than an error.
+    """
+    values = [float(v) for v in vector]
+    if not all(math.isfinite(v) for v in values):
+        raise ValueError("the query vector has a NaN or infinite component")
+    return "[" + ",".join(f"{round(v, VECTOR_DIGITS):g}" for v in values) + "]"
 
 
 def vector_statement(
@@ -319,13 +326,16 @@ def vector_statement(
     words: Sequence[str] = (),
     synonyms: Sequence[str] = (),
 ) -> Q:
-    """Every embedded Pattern of `rel`'s Dataset in COLUMNS order plus its cosine `distance` to the
-    query `vector` (a `vector_literal`) and, when `words` are given, its BM25 `score` (NULL without a
-    lexical match), unsorted: the one statement behind find_patterns (T26).
+    """Every Pattern of `rel`'s Dataset in COLUMNS order plus its cosine `distance` to the query
+    `vector` (a `vector_literal`; NULL for a Pattern without a vector of `model`) and, when `words`
+    are given, its BM25 `score` (NULL without a lexical match), unsorted: the one statement behind
+    find_patterns (T26).
 
-    The distance is an exact scan of the Dataset's vectors of `model` (a few hundred rows); the BM25
-    side is `search_statement`'s. There is no ORDER BY, for the reason given there: the caller ranks
-    both sides and fuses them itself.
+    The statement is driven by the catalogue, so a Pattern that has a word match but no vector (one
+    added by a derive after the last `make embed-patterns`) still comes back. The distance is an
+    exact scan of the Dataset's vectors of `model` (a few hundred rows); the BM25 side is
+    `search_statement`'s. There is no ORDER BY, for the reason given there: the caller ranks both
+    sides and fuses them itself.
     """
     vec = q(
         "vec AS (\n    SELECT template_id, emb <=> {} AS distance\n    FROM {}\n"
@@ -340,10 +350,10 @@ def vector_statement(
     if words:
         ctes.insert(1, _hits_cte(rel, words, synonyms))
         score = Q(sql.SQL("h.score"))
-        join = Q(sql.SQL("\nLEFT JOIN hits AS h ON h.template_id = v.template_id"))
+        join = Q(sql.SQL("\nLEFT JOIN hits AS h ON h.template_id = c.template_id"))
     return q(
         "WITH {}\nSELECT " + _SHOWN.format(p="c.") + ", v.distance, {} AS score\n"
-        "FROM vec AS v JOIN catalogue AS c ON c.template_id = v.template_id{}",
+        "FROM catalogue AS c LEFT JOIN vec AS v ON v.template_id = c.template_id{}",
         joined(",\n", ctes),
         score,
         join,

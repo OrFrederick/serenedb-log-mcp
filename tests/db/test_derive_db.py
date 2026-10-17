@@ -96,6 +96,20 @@ def test_a_second_derive_gives_identical_row_counts(database_url: str, derived_s
     assert matches > 0
 
 
+def test_a_second_derive_keeps_the_pattern_vectors(database_url: str, derived_sample: Schemas) -> None:
+    # derived_sample embedded the Patterns (find_patterns, T26); 25_pattern_vectors only creates the
+    # table when it is missing, and template ids are content hashes, so the vectors stay valid.
+    vectors = q(
+        "SELECT count(*), count(DISTINCT template_id) FROM {t}", derived_sample, t="slm.pattern_vector"
+    )
+    before = one(database_url, vectors)
+
+    assert derive.main(["--schema", derived_sample.slm, "--raw-schema", derived_sample.raw]) == 0
+
+    assert before[0] > 0
+    assert one(database_url, vectors) == before
+
+
 def test_derive_prints_the_topology_report(
     derived_sample: Schemas, capsys: pytest.CaptureFixture[str]
 ) -> None:

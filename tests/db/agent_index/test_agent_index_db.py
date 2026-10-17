@@ -34,8 +34,11 @@ def trend(**scope: str) -> dict[str, Any]:
     return call("trend", role="engineer", dataset="bgl", bucket="hour", query=QUERY, **scope)
 
 
-def agent_index_rows(database_url: str, schema: str) -> list[tuple[str, str, str | None]]:
-    """(name, indexdef, comment) of every index in `schema` whose name starts with agent_idx_."""
+def agent_index_rows(database_url: str, schema: str) -> list[tuple[str, str | None, str | None]]:
+    """(name, indexdef, comment) of every index in `schema` whose name starts with agent_idx_.
+
+    indexdef is NULL for an inverted index on SereneDB 26.09.1.3.
+    """
     with psycopg.connect(database_url, autocommit=True) as conn:
         return [
             tuple(row)
@@ -70,8 +73,12 @@ def test_create_query_and_drop_an_agent_index(corpus: str, database_url: str) ->
     assert agent_indexes.is_agent_name(name)
     [(found, definition, comment)] = agent_index_rows(database_url, corpus)
     assert found == name
-    assert "USING inverted" in definition
-    assert "WHERE" in definition
+    # SereneDB 26.10.1 prints the definition; 26.09.1.3 (the arm64 dev image) leaves indexdef NULL
+    # for an inverted index (PR #59 review). The name, the marker and the slice count below hold on
+    # both, so only the definition check depends on the version.
+    if definition is not None:
+        assert "USING inverted" in definition
+        assert "WHERE" in definition
     assert comment is not None
     assert comment.startswith(agent_indexes.MARKER)
     assert any("CREATE INDEX" in statement for statement in created["sql"])

@@ -37,6 +37,31 @@ def test_phrase_mode_matches_the_words_in_order() -> None:
     assert params == ["data TLB error"]
 
 
+# SereneDB 26.10.1's websearch_to_tsquery turns each double-quoted part, closed or open to the end
+# of the query, into ts_phrase(part), and fails with 22023 "produced no tokens after analysis" when
+# the part has characters but no letter or digit (T15's injection test found it).
+@pytest.mark.parametrize(
+    "query", ['error ";"', 'error " ;', 'error " "', '";" error', 'error -"-"', 'error "_"']
+)
+def test_all_words_refuses_a_quoted_phrase_without_a_word(query: str) -> None:
+    with pytest.raises(ScopeError, match="quoted phrase without a word"):
+        text_match(MESSAGE, query)
+
+
+@pytest.mark.parametrize("query", ['error ""', 'error "', '"parity error" corrected', 'error "a;"'])
+def test_all_words_keeps_empty_quotes_and_quoted_words(query: str) -> None:
+    _, params = text_match(MESSAGE, query)
+
+    assert params == [query]
+
+
+@pytest.mark.parametrize("mode", ["phrase", "any_words"])
+def test_other_modes_do_not_read_quotes_as_phrases(mode: str) -> None:
+    _, params = text_match(MESSAGE, 'error ";"', mode=mode)  # type: ignore[arg-type]
+
+    assert params == ['error ";"']
+
+
 def test_the_query_text_is_bound_never_formatted_into_the_sql() -> None:
     predicate, params = text_match(MESSAGE, "x'); DROP TABLE t; --")
 

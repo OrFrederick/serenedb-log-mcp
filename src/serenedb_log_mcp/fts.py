@@ -78,6 +78,7 @@ _PARSERS: dict[str, sql.SQL] = {
 # ('dat32k_060205' and '172.16.96.116' are one token each).
 _WORD_RE = re.compile(r"\w+(?:\.\w+)*")
 _HAS_WORD_RE = re.compile(r"\w")
+_LETTER_OR_DIGIT_RE = re.compile(r"[^\W_]")
 _DIGIT_HYPHEN_DIGIT_RE = re.compile(r"[0-9]-[0-9]")
 
 
@@ -113,6 +114,8 @@ def text_match(
     column: sql.Composable, query: str, mode: QueryMode = "all_words"
 ) -> tuple[sql.Composed, list[Any]]:
     """`column @@ <query in mode>` and its parameter list; `column` must be an indexed text column."""
+    if mode == "all_words":
+        _check_quoted_phrases(query)
     if mode in _PARSERS:
         return sql.SQL("{} @@ {}(%s)").format(column, _PARSERS[mode]), [query]
     if mode == "any_words":
@@ -120,6 +123,23 @@ def text_match(
     if mode == "fuzzy":
         return _fuzzy(column, query)
     raise ValueError(f"unknown full-text mode {mode!r}; valid: {', '.join(QUERY_MODES)}")
+
+
+def _check_quoted_phrases(query: str) -> None:
+    """ScopeError for a double-quoted part of an all_words query that holds no letter or digit.
+
+    SereneDB 26.10.1's `websearch_to_tsquery` turns each quoted part, closed or open to the end of
+    the query, into `ts_phrase(part)` and fails with 22023 ("produced no tokens after analysis") when
+    the part has characters but no word, for example `error ";"` or `error " "`; an empty `""` and a
+    lone `"` are accepted. Splitting at the quotes puts the quoted parts at the odd positions.
+    """
+    for part in query.split('"')[1::2]:
+        if part and not _LETTER_OR_DIGIT_RE.search(part):
+            raise ScopeError(
+                f'query={query!r} has a quoted phrase without a word ("{part}"): a phrase in double '
+                "quotes must hold the words to find in order. Remove those quotes, or put words "
+                "between them."
+            )
 
 
 def _fuzzy(column: sql.Composable, query: str) -> tuple[sql.Composed, list[Any]]:

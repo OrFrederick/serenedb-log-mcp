@@ -371,11 +371,16 @@ spread_totals AS (
            count(DISTINCT midplane) AS midplanes_total, count(DISTINCT rack) AS racks_total,
            count(DISTINCT instance) AS instances_total, count(DISTINCT host) AS hosts_total
     FROM sources
+),
+day_totals AS (
+    SELECT count(DISTINCT CAST(i.t0 AS DATE)) AS incident_days,
+           count(*) FILTER (WHERE i.nodes = t.widest_nodes) AS widest_incidents
+    FROM incidents i CROSS JOIN totals t
 )
-SELECT totals.*, spread_totals.*, pattern_key, incident_id, t0, t1,
+SELECT totals.*, spread_totals.*, day_totals.*, pattern_key, incident_id, t0, t1,
        round(t1_utc - t0_utc, 3) AS duration_s, entries, bursts, nodes, nodecards, midplanes, racks,
        top_node, round(top_node_share, 4) AS top_node_share, shape
-FROM totals CROSS JOIN spread_totals
+FROM totals CROSS JOIN spread_totals CROSS JOIN day_totals
 LEFT JOIN (SELECT * FROM incidents ORDER BY {} LIMIT {}) AS listed ON TRUE
 ORDER BY {}""",
         ctes,
@@ -400,6 +405,8 @@ _TOTALS = (
     "racks_total",
     "instances_total",
     "hosts_total",
+    "incident_days",
+    "widest_incidents",
 )
 _ROW = (
     "pattern_key",
@@ -468,6 +475,7 @@ def _summary(call: _Call, from_table: bool, totals: dict[str, Any]) -> dict[str,
         "entries_total": count("entries_total"),
         "incidents_total": count("incidents_total"),
         "largest_incident_entries": count("largest_entries"),
+        "incident_days": count("incident_days"),
     }
     if call.is_bgl:
         summary |= {
@@ -476,6 +484,7 @@ def _summary(call: _Call, from_table: bool, totals: dict[str, Any]) -> dict[str,
             "midplanes_total": count("midplanes_total"),
             "racks_total": count("racks_total"),
             "widest_incident_nodes": count("widest_nodes"),
+            "widest_incidents": count("widest_incidents"),
             "incidents_by_shape": {
                 label: count(f"shape:{label}") for label in SHAPES if count(f"shape:{label}")
             },
@@ -486,6 +495,7 @@ def _summary(call: _Call, from_table: bool, totals: dict[str, Any]) -> dict[str,
             "instances_total": count("instances_total"),
             "hosts_total": count("hosts_total"),
             "widest_incident_sources": count("widest_nodes"),
+            "widest_incidents": count("widest_incidents"),
         }
     return summary
 
@@ -497,6 +507,10 @@ def _notes(call: _Call, from_table: bool, summary: dict[str, Any]) -> list[str]:
         + ("across every source" if call.merge_scope == "all" else "per source (a Burst)")
         + ". entries_total counts the Log Entries of all listed Incidents, incidents_total the Incidents: "
         "quote both, because one source can write thousands of Log Entries about one problem.",
+        "incident_days counts the distinct calendar days the Incidents start on, by t0 as listed"
+        + (" (BGL ts as logged, US Pacific time)" if call.is_bgl else " (UTC)")
+        + "; widest_incidents counts the Incidents that reach the widest Spread, widest_incident_"
+        + ("nodes." if call.is_bgl else "sources."),
     ]
     if from_table:
         notes.append(
@@ -910,7 +924,8 @@ def register(server: MCPServer) -> None:
         components, levels, sources, alert_categories, pattern_ids, family_id and similar_to.
         Outputs: the Evidence envelope. rows: one per Incident with pattern_key, incident_id, t0, t1,
         duration_s, entries, bursts and the Spread columns. summary: entries_total, incidents_total,
-        the Spread totals (BGL nodes_total, nodecards_total, midplanes_total, racks_total and
+        incident_days (distinct days of t0), widest_incidents (Incidents at the widest Spread), the
+        Spread totals (BGL nodes_total, nodecards_total, midplanes_total, racks_total and
         incidents_by_shape; OpenStack sources_total, instances_total, hosts_total) and computed
         (precomputed table or chained at query time); with similar_to, the reference Incident, its
         reference_patterns, candidates_total and scored_total. total_matches counts Incidents.

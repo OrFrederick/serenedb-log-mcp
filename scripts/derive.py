@@ -30,6 +30,8 @@ SQL files use two kinds of placeholders, replaced before execution:
 
 Environment: DATABASE_URL, SLM_SCHEMA (default slm), SLM_RAW_SCHEMA (default public),
 SLM_DATA_DIR and SLM_PATTERN_TIER1 (default 1; 0 derives Patterns without the Loghub-2.0 files).
+Only a run that includes a step with ${pattern_tier1} reads the Loghub-2.0 files, so
+`--only 90_indexes` works without them.
 """
 
 from __future__ import annotations
@@ -260,6 +262,12 @@ def select_steps(files: Sequence[Path], names: Sequence[str]) -> list[Path]:
         if name not in derive_steps:
             raise DeriveError(f"unknown derive step {name!r}; derive steps: {', '.join(derive_steps)}")
     return [p for p in files if p.parent.name == "derive" and p.stem in names]
+
+
+def needs_tier1(files: Sequence[Path]) -> bool:
+    """Whether any of `files` uses the ${pattern_tier1} placeholder, so the run needs the Loghub-2.0
+    templates; `--only 90_indexes` does not."""
+    return any("${pattern_tier1}" in path.read_text() for path in files)
 
 
 def load_tier1(enabled: bool, data_dir: Path) -> dict[str, list[Template]] | None:
@@ -520,7 +528,12 @@ def main(argv: Sequence[str] | None = None) -> int:
                 f"{files[0].relative_to(SQL_DIR.parent)} has no statements yet: TODO(organiser), "
                 "it is filled in when the organisers' loader arrives (T25)"
             )
-        tier1 = load_tier1(settings.pattern_tier1, settings.data_dir)
+        # A run without the Pattern step renders ${pattern_tier1} nowhere, so it needs no files.
+        tier1 = (
+            load_tier1(settings.pattern_tier1, settings.data_dir)
+            if needs_tier1(files if only is None else only)
+            else None
+        )
         started = time.perf_counter()
         with psycopg.connect(
             settings.database_url, autocommit=True, connect_timeout=CONNECT_TIMEOUT_S

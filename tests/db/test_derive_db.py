@@ -330,6 +330,7 @@ GENUINE_PATTERN_TEXT = {
     ("pattern_dict", "message"),
     ("pattern_dict", "template_text"),
     ("pattern", "template_text"),
+    ("pattern", "display_text"),
 }
 
 

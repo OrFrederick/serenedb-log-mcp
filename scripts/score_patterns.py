@@ -11,7 +11,8 @@ SLM_RAW_SCHEMA), and the EventId it picks is compared with the gold EventId:
 
     agreement            lines whose chosen EventId equals the gold one, over all labelled lines
                          (a line no template matches counts as a disagreement); this is the gate
-    Tier 1 coverage      labelled lines that the chain gives any template
+    Tier 1 coverage      labelled lines that the chain gives any template, over all labelled
+                         lines (not over the Log Entries of the corpus; see the coverage table)
     agreement on Tier 1  agreeing lines over the lines the chain covers
 
 It also checks that every row of pattern_dict carries the EventId the chain gives its message, and
@@ -139,7 +140,8 @@ def report(
     out = [
         f"### Agreement with the Loghub-2.0 labels (schema `{schema}`, labels in `{labels}`)",
         "",
-        "| Dataset | Labelled lines | Agreeing | Agreement | Tier 1 coverage | Agreement on Tier 1 lines |",
+        "| Dataset | Labelled lines | Agreeing | Agreement | Tier 1 coverage of labelled lines "
+        "| Agreement on Tier 1 lines |",
         "|---|---:|---:|---:|---:|---:|",
     ]
     for s in scores:

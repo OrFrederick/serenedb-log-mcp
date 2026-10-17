@@ -108,3 +108,34 @@ def test_same_test_file_name_in_two_directories_collects(pytester: pytest.Pytest
     result = pytester.runpytest()
 
     result.assert_outcomes(passed=2)
+
+
+REMOTE_SUITE = """
+import pytest
+
+pytestmark = [pytest.mark.db, pytest.mark.remote]
+
+def test_reads_s3():
+    pass
+"""
+
+
+def test_remote_tests_skip_unless_asked_for_even_when_the_db_is_required(
+    pytester: pytest.Pytester, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Remote tests read the public S3 text_bench file from the SereneDB server: slow, and outside our
+    # control, so they never run by accident, also not under SLM_REQUIRE_DB=1 (`make test-remote`).
+    monkeypatch.setenv("SLM_REQUIRE_DB", "1")
+    monkeypatch.delenv("SLM_REMOTE_TESTS", raising=False)
+    monkeypatch.setenv("DATABASE_URL", UNREACHABLE)
+    pytester.makeconftest(ROOT_CONFTEST.read_text())
+    pytester.makepyfile(test_remote=REMOTE_SUITE)
+
+    result = pytester.runpytest("-rs", "--strict-markers")
+
+    result.assert_outcomes(skipped=1)
+    assert any("SLM_REMOTE_TESTS=1" in line for line in result.outlines)
+
+
+def test_the_remote_marker_is_registered(suite: pytest.Pytester) -> None:
+    suite.runpytest("--markers").stdout.fnmatch_lines(["@pytest.mark.remote:*"])

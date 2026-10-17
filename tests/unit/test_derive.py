@@ -164,9 +164,16 @@ def test_the_repository_steps_start_with_the_dev_adapter_and_end_with_the_indexe
     assert steps[-1].name.endswith("_indexes.sql")
 
 
+def derive_sql_files() -> list[Path]:
+    """Every SQL file `make derive` can run. sql/remote/ is `make huge-setup`'s (T20): it reads one
+    remote Parquet file through a view by design and never touches the Base Corpus or its labels
+    (tests/unit/test_huge_setup.py checks it)."""
+    return sorted(path for path in (ROOT / "sql").rglob("*.sql") if path.parent.name != "remote")
+
+
 def test_every_repository_sql_file_renders_and_splits() -> None:
     values = derive.variables("slm", "public", (26, 10, 1))
-    for path in sorted((ROOT / "sql").rglob("*.sql")):
+    for path in derive_sql_files():
         statements = derive.split_statements(derive.render(path.read_text(), values))
         if path.name == "official.sql":
             assert statements == [], "official.sql stays a comment-only stub until T25"
@@ -203,7 +210,7 @@ def test_the_official_adapter_is_a_todo_stub_that_lists_every_required_column() 
 
 
 def test_no_sql_file_reads_the_ground_truth_labels() -> None:
-    for path in (ROOT / "sql").rglob("*.sql"):
+    for path in derive_sql_files():
         text = path.read_text().lower()
         assert "anomaly_labels" not in text, path
         assert "abnormal" not in text, path
@@ -275,7 +282,7 @@ def test_the_dev_adapter_creates_only_temporary_tables() -> None:
 
 
 def test_no_sql_file_creates_a_view() -> None:
-    for path in (ROOT / "sql").rglob("*.sql"):
+    for path in derive_sql_files():
         text = derive.render(path.read_text(), derive.variables("slm", "public", (26, 10, 1)))
         for statement in derive.split_statements(text):
             for _, kind, name in CREATE_RE.findall(statement):

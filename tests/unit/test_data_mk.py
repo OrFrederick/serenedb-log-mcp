@@ -39,3 +39,10 @@ def test_derive_runs_the_dev_adapter_by_default() -> None:
 
 def test_derive_adapter_can_be_switched_to_official() -> None:
     assert "--adapter official" in make("-n", "derive", "ADAPTER=official")
+
+
+def test_huge_setup_registers_text_bench_in_the_huge_schema_by_default() -> None:
+    out = make("-n", "huge-setup")
+
+    assert "scripts/huge_setup.py --schema huge" in out
+    assert "scripts/huge_setup.py --schema slm" in make("-n", "huge-setup", "HUGE_SCHEMA=slm")

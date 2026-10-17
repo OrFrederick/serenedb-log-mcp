@@ -11,3 +11,12 @@ fetch-data: ## Download BGL, OpenStack and Loghub-2.0 into SLM_DATA_DIR (idempot
 
 derive: ## Build canonical tables, Ownership stub and indexes in SLM_SCHEMA (ADAPTER=dev|official)
 	$(UV) run python scripts/derive.py --adapter $(ADAPTER)
+
+# The remote Dataset text_bench (T20): a view over one remote Parquet file plus its facts. Not part of
+# `make derive`: the SereneDB server needs outbound HTTPS, and the facts pass reads the whole file once.
+HUGE_SCHEMA ?= huge
+
+.PHONY: huge-setup
+
+huge-setup: ## Register text_bench (remote Parquet, 1B rows) in HUGE_SCHEMA (default huge; set HUGE_SCHEMA=slm for the server)
+	$(UV) run python scripts/huge_setup.py --schema $(HUGE_SCHEMA)

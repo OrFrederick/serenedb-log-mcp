@@ -33,9 +33,10 @@ EVIDENCE_ID_PATTERN = r"^E[1-9][0-9]*$"
 
 ROLE_DESCRIPTION = (
     "Who is asking: 'engineer' investigates one failure and needs example Log Entries and nearby "
-    "events; 'team_lead' needs recurring problems with counts and trends per Component and Team; "
-    "'manager' needs measured frequency and affected Components only, with no raw Log Entries. "
-    "The Role shapes the defaults, the returned fields and the suggested Next Step."
+    "events; 'team_lead' needs recurring problems with counts and trends per Component and Team, and "
+    "receives at most 3 sample Log Entries from a search; 'manager' needs measured frequency and "
+    "affected Components only, and receives no raw Log Entries (totals and facets, no rows). Every "
+    "result carries the answer_frame for this Role; get_role_brief(role) has the full playbook."
 )
 
 RoleParam = Annotated[Role, Field(description=ROLE_DESCRIPTION)]

@@ -296,12 +296,21 @@ def _create(conn: psycopg.Connection[Any], schema: str, table: str, columns: tup
     conn.execute(sql.SQL("INSERT INTO {} VALUES {}").format(target, values))
 
 
-def build(database_url: str, schema: str) -> None:
-    """Create the synthetic canonical tables, the Ownership Table and the indexes in `schema`."""
+def build(
+    database_url: str,
+    schema: str,
+    *,
+    bgl: list[dict[str, Any]] | None = None,
+    openstack: list[dict[str, Any]] | None = None,
+) -> None:
+    """Create the synthetic canonical tables, the Ownership Table and the indexes in `schema`.
+
+    `bgl` and `openstack` replace the rows above, for test corpora that build on this one.
+    """
     with psycopg.connect(database_url, autocommit=True) as conn:
         conn.execute(sql.SQL("CREATE SCHEMA {}").format(sql.Identifier(schema)))
-        _create(conn, schema, "bgl_entry", BGL_COLUMNS, bgl_rows())
-        _create(conn, schema, "os_entry", OS_COLUMNS, os_rows())
+        _create(conn, schema, "bgl_entry", BGL_COLUMNS, bgl_rows() if bgl is None else bgl)
+        _create(conn, schema, "os_entry", OS_COLUMNS, os_rows() if openstack is None else openstack)
         owners = [{"dataset": d, "component": c, "team": t} for d, c, t in OWNERSHIP]
         _create(
             conn,

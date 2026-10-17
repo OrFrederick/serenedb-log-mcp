@@ -4,12 +4,28 @@ Unmarked tests are pure and run everywhere (`make test`).
 
 - `db`: needs a reachable SereneDB at DATABASE_URL (`make test-db`).
 - `corpus`: needs the full Base Corpus in the raw tables of SLM_RAW_SCHEMA (`make test-corpus`).
+- `loghub2(*tables)`: also reads the optional Loghub-2.0 label tables (default lh2_bgl and
+  lh2_openstack) from SLM_RAW_SCHEMA. Put it on a db or corpus test.
 
 Tests under tests/db/ and tests/corpus/ get the marker of their directory automatically.
 
 A missing prerequisite skips the test with the reason. Set SLM_REQUIRE_DB=1 (CI, PR gates) to turn
-those skips into failures. Later fixtures go into per-directory conftest.py files (plan section 5),
-not here.
+the skips for the database, the Base Corpus and the derived schema into failures. A missing
+optional Loghub-2.0 file or table stays a skip even then (#66). Later fixtures go into
+per-directory conftest.py files (plan section 5), not here.
+
+Which data each suite needs, so that a missing optional download is not mistaken for a failure:
+
+- `make test`: nothing. tests/unit/test_fetch_data.py checks each Zenodo record that SLM_DATA_DIR
+  holds any file of, and skips a record it holds none of.
+- `make test-db`: SereneDB, and the Loghub 2k samples (downloaded into SLM_DATA_DIR/sample on first
+  use). The Pattern Tier 1 tests also need the Loghub-2.0 template files in SLM_DATA_DIR/lh2
+  (`make fetch-data`). Without them every derive in the db tests runs with SLM_PATTERN_TIER1=0 and
+  only the Tier 1 tests skip.
+- `make test-corpus`: the full Base Corpus (Zenodo 8196385; `make fetch-data`, `make load-dev`) and
+  a `make derive` into SLM_SCHEMA. tests/corpus/test_patterns_corpus.py also needs Loghub-2.0
+  (Zenodo 8275861): Tier 1 Patterns in SLM_SCHEMA, or the template files to derive them, and, for
+  the scorer test, the tables lh2_bgl and lh2_openstack (`make load-dev`).
 """
 
 from __future__ import annotations
@@ -20,6 +36,7 @@ from pathlib import Path
 
 import psycopg
 import pytest
+from optional_data import LOGHUB2_TABLES
 from psycopg import sql
 from psycopg.conninfo import conninfo_to_dict
 
@@ -49,6 +66,11 @@ def pytest_configure(config: pytest.Config) -> None:
         "corpus: needs the full Base Corpus (raw bgl and openstack tables in SLM_RAW_SCHEMA); "
         "skips with the reason otherwise",
     )
+    config.addinivalue_line(
+        "markers",
+        "loghub2(*tables): also reads these optional Loghub-2.0 tables from SLM_RAW_SCHEMA (default: "
+        f"{', '.join(LOGHUB2_TABLES)}); skips with the reason when one is missing, even with SLM_REQUIRE_DB",
+    )
 
 
 @pytest.hookimpl(tryfirst=True)
@@ -69,11 +91,20 @@ def pytest_runtest_setup(item: pytest.Item) -> None:
         problem = _db_problem() or _corpus_problem()
     elif item.get_closest_marker("db") is not None:
         problem = _db_problem()
-    if problem is None:
+    if problem is not None:
+        if _require_db():
+            pytest.fail(f"SLM_REQUIRE_DB is set, so this does not skip: {problem}", pytrace=False)
+        pytest.skip(problem)
+    tables = {t for marker in item.iter_markers("loghub2") for t in (marker.args or LOGHUB2_TABLES)}
+    if not tables:
         return
-    if _require_db():
-        pytest.fail(f"SLM_REQUIRE_DB is set, so this does not skip: {problem}", pytrace=False)
-    pytest.skip(problem)
+    settings = load_settings()
+    optional = _db_problem() or _loghub2_problem(
+        settings.database_url, settings.raw_schema, tuple(sorted(tables))
+    )
+    if optional is not None:
+        # An optional download, so a skip even under SLM_REQUIRE_DB.
+        pytest.skip(optional)
 
 
 def _require_db() -> bool:
@@ -146,3 +177,22 @@ def _corpus_problem() -> str | None:
                     f"more than {floor:,}. Load it with `make load-dev`."
                 )
     return None
+
+
+@functools.cache
+def _loghub2_problem(database_url: str, schema: str, tables: tuple[str, ...]) -> str | None:
+    """Which of the optional Loghub-2.0 `tables` are missing in `schema`, or None."""
+    with psycopg.connect(database_url, connect_timeout=CONNECT_TIMEOUT_S, autocommit=True) as conn:
+        present = {
+            r[0]
+            for r in conn.execute(
+                "SELECT table_name FROM information_schema.tables WHERE table_schema = %s", [schema]
+            ).fetchall()
+        }
+    missing = [f"{schema}.{t} is missing" for t in tables if t not in present]
+    if not missing:
+        return None
+    return (
+        f"optional Loghub-2.0 labels missing: {'; '.join(missing)}. Fetch Zenodo 8275861 with "
+        f'`make fetch-data`, then load them with `make load-dev LOAD_ARGS="{" ".join(LOGHUB2_TABLES)}"`.'
+    )

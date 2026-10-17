@@ -21,9 +21,8 @@ from pathlib import Path
 import psycopg
 import pytest
 from psycopg import sql
-from psycopg.conninfo import conninfo_to_dict
 
-from serenedb_log_mcp.config import load_settings
+from serenedb_log_mcp.config import error_detail, load_settings, safe_dsn
 
 # The corpus gate only checks that the raw tables exist and are clearly the full corpus, not a
 # 2k sample. The exact golden numbers (4,747,963 and 207,820 rows) live in the corpus tests, so a
@@ -86,15 +85,6 @@ def database_url() -> str:
     return load_settings().database_url
 
 
-def _safe_dsn(dsn: str) -> str:
-    """The DSN without its password, for skip reasons and logs."""
-    try:
-        parts = conninfo_to_dict(dsn)
-    except psycopg.ProgrammingError:
-        return "<unparseable DATABASE_URL>"
-    return " ".join(f"{key}={value}" for key, value in parts.items() if key != "password")
-
-
 @functools.cache
 def _db_problem() -> str | None:
     dsn = load_settings().database_url
@@ -102,9 +92,8 @@ def _db_problem() -> str | None:
         with psycopg.connect(dsn, connect_timeout=CONNECT_TIMEOUT_S, autocommit=True) as conn:
             conn.execute("SELECT 1")
     except psycopg.Error as exc:
-        detail = str(exc).strip().splitlines()[0] if str(exc).strip() else type(exc).__name__
         return (
-            f"SereneDB not reachable at {_safe_dsn(dsn)} ({detail}). "
+            f"SereneDB not reachable at {safe_dsn(dsn)} ({error_detail(exc)}). "
             "Start one with `make db-up` or point DATABASE_URL at a running instance."
         )
     return None

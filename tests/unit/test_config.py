@@ -6,7 +6,7 @@ import pytest
 from pydantic import ValidationError
 
 from serenedb_log_mcp import config
-from serenedb_log_mcp.config import ConfigError, Settings, load_settings
+from serenedb_log_mcp.config import ConfigError, Settings, error_detail, load_settings, safe_dsn
 
 
 def test_defaults_when_environment_is_empty() -> None:
@@ -215,3 +215,50 @@ def test_database_url_error_never_echoes_the_value() -> None:
 
 def test_uri_database_url_is_accepted() -> None:
     assert load_settings({"DATABASE_URL": "postgresql://postgres@localhost:7890/postgres"}).database_url
+
+
+@pytest.mark.parametrize(
+    ("dsn", "secret"),
+    [
+        ("host=h dbname=d password=hunter2", "hunter2"),
+        ("host=h dbname=d sslpassword=keysecret", "keysecret"),
+        ("postgresql://bob:hunter2@db.example:7890/postgres", "hunter2"),
+        # libpq refuses this one and quotes the offending fragment, which is the password itself.
+        ("postgres://bob:hun ter2@h/d", "hun ter2"),
+    ],
+)
+def test_safe_dsn_never_shows_a_secret(dsn: str, secret: str) -> None:
+    assert secret not in safe_dsn(dsn)
+
+
+def test_safe_dsn_keeps_the_connection_target() -> None:
+    out = safe_dsn("host=db.example port=7890 dbname=postgres user=bob password=hunter2")
+
+    assert "host=db.example" in out
+    assert "port=7890" in out
+    assert "dbname=postgres" in out
+    assert "user=bob" in out
+    assert "password" not in out
+
+
+def test_safe_dsn_reports_the_parse_error_without_the_value() -> None:
+    out = safe_dsn("host=h nonsensetoken")
+
+    assert "nonsensetoken" not in out
+    assert out.startswith("<unparseable DSN:")
+    assert "connection info string" in out
+
+
+def test_safe_dsn_drops_the_parse_error_when_a_secret_could_still_show() -> None:
+    # The password is a single character, so redacting the quoted fragments is not enough: any
+    # English word in the libpq message contains an "a". The helper then reports the class only.
+    assert safe_dsn("password=a nonsensetoken") == "<unparseable DSN: ProgrammingError>"
+
+
+def test_safe_dsn_of_an_empty_dsn_says_so() -> None:
+    assert safe_dsn("") == "<empty DSN>"
+
+
+def test_error_detail_is_the_first_line_or_the_class_name() -> None:
+    assert error_detail(ValueError("one\ntwo")) == "one"
+    assert error_detail(ValueError("")) == "ValueError"

@@ -159,3 +159,18 @@ def test_full_text_drops_the_previous_period_the_agent_index_does_not_hold() -> 
     assert "agent index" in span.previous_problem
     text, _ = stats_text(prepared)
     assert '"agent_idx_text_bench_0a1b2c3d"' in text
+
+
+def test_a_named_baseline_that_would_read_past_the_span_is_dropped_with_its_reason() -> None:
+    prepared = call(
+        "2025-09-23T00:20:00",
+        "2025-09-23T00:20:10",
+        baseline_from="2025-09-23T00:05:00",
+        baseline_to="2025-09-23T00:05:10",
+    )
+    span = prepared.parts[0].window
+
+    assert span.previous is None
+    assert not span.previous_named
+    assert span.previous_problem is not None
+    assert "60 seconds" in span.previous_problem

@@ -452,14 +452,14 @@ def _remote_baseline(
             f"more than the {limit:g} seconds a call reads in place; a slice of at most half that length "
             "gets a previous-period baseline"
         )
-        return replace(span, previous=None, previous_problem=problem), rel
+        return replace(span, previous=None, previous_problem=problem, previous_named=False), rel
     if filters.query and whole.agent_index is None:
         problem = (
             f"the agent index that answers the full-text query on {name} does not hold the previous "
             f"period {span.previous[0].isoformat()} to {span.previous[1].isoformat()}; build it over a "
             "slice that also covers the period just before the Data Scope to get a baseline"
         )
-        return replace(span, previous=None, previous_problem=problem), rel
+        return replace(span, previous=None, previous_problem=problem, previous_named=False), rel
     return span, whole
 
 

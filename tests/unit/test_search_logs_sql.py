@@ -118,7 +118,7 @@ def test_relevance_sorts_by_the_bm25_score_alone_and_returns_it() -> None:
 def test_the_rows_carry_the_highlighted_message_when_there_is_a_text_query() -> None:
     text = Search(BGL, text="error").rows_statement().text
 
-    assert "ts_highlight(e.\"message\", 'StartSel=**, StopSel=**, MaxWords=40') AS snippet" in text
+    assert "ts_highlight(e.\"message\", 'StartSel=**, StopSel=**, HighlightAll=true') AS snippet" in text
 
 
 def test_a_pattern_only_search_has_no_text_predicate_and_no_highlight() -> None:

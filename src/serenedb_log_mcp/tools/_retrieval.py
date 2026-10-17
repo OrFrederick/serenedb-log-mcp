@@ -6,12 +6,12 @@ Both return Log Entries as rows. What a row shows is decided once here:
   handed on: `entry_id` to get_context, `template_id` to count_by(pattern_ids=...), the node,
   request or instance to a narrower search;
 - `shape_message`: the message capped at `MESSAGE_CHARS` characters (plan section 2.3), with the
-  words a full-text query matched marked `**like this**` by SereneDB's `ts_highlight`.
+  words a full-text query matched marked `**like this**` by SereneDB's `ts_highlight`, and the cut
+  placed so the first match stays in view.
 """
 
 from __future__ import annotations
 
-import re
 from collections.abc import Mapping, Sequence
 from datetime import datetime
 from types import MappingProxyType
@@ -37,10 +37,15 @@ MESSAGE_CHARS = 240
 MARK = "**"
 """The marker ts_highlight puts on both sides of a matched word."""
 ELLIPSIS = "…"
-_WORD_RE = re.compile(r"\w")
-HIGHLIGHT_OPTIONS = "StartSel=**, StopSel=**, MaxWords=40"
-"""ts_highlight options: Markdown bold marks, and a passage of at most 40 words around the matches
-(the options must be a constant, so they are a literal in the SQL, never a parameter)."""
+MARK_BY = 180
+"""A first match that starts after this many characters moves the window of a long message."""
+MARK_LEAD = 60
+"""Characters of context the moved window shows before the first match."""
+HIGHLIGHT_OPTIONS = "StartSel=**, StopSel=**, HighlightAll=true"
+"""ts_highlight options: Markdown bold marks around the matched words of the whole message. The
+default passage selection (MaxWords) trimmed messages that fit the cap ('… (spawning). Skip.' came
+back as '**Skip**' on 26.10.1), so `shape_message` picks the window itself. The options must be a
+constant, so they are a literal in the SQL, never a parameter."""
 
 ENTRY_COLUMNS: Mapping[str, tuple[str, ...]] = MappingProxyType(
     {
@@ -62,35 +67,36 @@ def entry_values(values: Sequence[Any]) -> list[Any]:
 
 
 def shape_message(message: str | None, highlighted: str | None = None) -> str | None:
-    """The message for a row: the highlighted passage when there is one, capped at MESSAGE_CHARS.
+    """The message for a row: the highlighted message when there is one, capped at MESSAGE_CHARS.
 
-    ts_highlight returns the best passage of at most 40 words around the matches, so for a long
-    message it can leave out the start or the end; an ellipsis then marks the side that is missing.
-    It also leaves out punctuation at the edges (a leading '[', a trailing '.', measured on
-    26.10.1), which is put back as it was, because nothing else is missing there.
+    `highlighted` is the whole message with its matches marked (ts_highlight with HighlightAll).
     """
     if message is None:
         return None
-    if not highlighted:
-        return _cap(message)
-    plain = highlighted.replace(MARK, "")
-    at = message.find(plain) if plain else -1
-    if at < 0:
-        return _cap(highlighted)
-    head, tail = message[:at], message[at + len(plain) :]
-    before = head if not _WORD_RE.search(head) else ELLIPSIS
-    after = tail if not _WORD_RE.search(tail) else ELLIPSIS
-    return _cap(f"{before}{highlighted}{after}")
+    return _cap(highlighted or message)
 
 
 def _cap(text: str) -> str:
-    """`text` cut to MESSAGE_CHARS with a trailing ellipsis, never leaving a mark open."""
+    """`text` cut to at most MESSAGE_CHARS characters, keeping the first mark in view.
+
+    A long message is cut at the end with an ellipsis. When its first match starts after MARK_BY
+    characters, the window starts MARK_LEAD characters before the match instead (or later, so the
+    end of the message fits), with a leading ellipsis. A mark cut in half is dropped.
+    """
     if len(text) <= MESSAGE_CHARS:
         return text
-    cut = text[: MESSAGE_CHARS - len(ELLIPSIS)]
+    first = text.find(MARK)
+    start = 0
+    if first > MARK_BY:
+        start = min(first - MARK_LEAD, len(text) - (MESSAGE_CHARS - len(ELLIPSIS)))
+    head = ELLIPSIS if start > 0 else ""
+    rest = text[start:]
+    if len(head) + len(rest) <= MESSAGE_CHARS:
+        return head + rest
+    cut = rest[: MESSAGE_CHARS - len(head) - len(ELLIPSIS)]
     if cut.endswith("*") and not cut.endswith(MARK):
         cut = cut[:-1]  # half of a mark
     if cut.count(MARK) % 2:  # the cut ends inside a marked word: drop its opening mark
         at = cut.rfind(MARK)
         cut = cut[:at] + cut[at + len(MARK) :]
-    return cut + ELLIPSIS
+    return head + cut + ELLIPSIS

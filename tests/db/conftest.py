@@ -7,20 +7,18 @@ both schemas at the end of the session. It never touches the shared raw tables i
 
 from __future__ import annotations
 
-import os
 import uuid
 from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import datetime
-from urllib.error import URLError
 
 import psycopg
 import pytest
 from psycopg import sql
+from sample_files import samples_or_skip
 
 import derive
 import dev_loader
-from serenedb_log_mcp.config import load_settings
 
 # Synthetic BGL rows (line_no, alert_tag, epoch, ts, node, component, level, message). The epoch is
 # UTC; ts is US Pacific local time. The two 2005-10-30 01:30:00.5 rows have the same local time,
@@ -98,13 +96,7 @@ def _add_synthetic_rows(database_url: str, raw: str) -> None:
 @pytest.fixture(scope="session")
 def derived_sample(database_url: str) -> Iterator[Schemas]:
     """The samples (plus synthetic rows) derived into a scratch schema; dropped afterwards."""
-    try:
-        dev_loader.ensure_samples(load_settings().data_dir / "sample")
-    except (URLError, OSError) as exc:
-        problem = f"cannot download the Loghub 2k samples: {exc}"
-        if os.environ.get("SLM_REQUIRE_DB", "").strip().lower() in {"1", "true", "yes", "on"}:
-            pytest.fail(f"SLM_REQUIRE_DB is set, so this does not skip: {problem}", pytrace=False)
-        pytest.skip(problem)
+    samples_or_skip()
     suffix = uuid.uuid4().hex[:8]
     schemas = Schemas(raw=f"scratch_t4_{suffix}_raw", slm=f"scratch_t4_{suffix}")
     try:

@@ -138,7 +138,18 @@ def test_time_filters_are_score_neutral_and_half_open() -> None:
 
 
 @pytest.mark.parametrize(
-    "value", ["1-2", "0-0", "2005-06-03", "1-2.5", "11111111-1111-1111-1111-111111111111"]
+    "value",
+    [
+        "1-2",
+        "0-0",
+        "2005-06-03",
+        "1-2.5",
+        "11111111-1111-1111-1111-111111111111",
+        # Also XX000 on 26.10.1 (#61 review): a digit, a hyphen and a digit anywhere in the value.
+        "1-2x",
+        "2005-06-03T10",
+        "12345678-1234-5678-9012-34567890abcd",
+    ],
 )
 def test_numbers_joined_by_hyphens_use_a_plain_comparison(value: str) -> None:
     # SereneDB 26.10.1 fails such a TSQUERY term on a verbatim column with XX000 "Attempted to
@@ -150,7 +161,7 @@ def test_numbers_joined_by_hyphens_use_a_plain_comparison(value: str) -> None:
 
 
 @pytest.mark.parametrize(
-    "value", ["1--2", "-1", "1-", "1-2-a", "b9000564-fe1a-409b-b8cc-1e88b294cd1d", "12345"]
+    "value", ["1--2", "-1", "1-", "x-1", "1-x", "b9000564-fe1a-409b-b8cc-1e88b294cd1d", "12345"]
 )
 def test_other_values_keep_the_score_neutral_tsquery(value: str) -> None:
     predicate, _ = filter_any(COMPONENT, [value])

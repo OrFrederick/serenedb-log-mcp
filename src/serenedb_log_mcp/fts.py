@@ -78,7 +78,7 @@ _PARSERS: dict[str, sql.SQL] = {
 # ('dat32k_060205' and '172.16.96.116' are one token each).
 _WORD_RE = re.compile(r"\w+(?:\.\w+)*")
 _HAS_WORD_RE = re.compile(r"\w")
-_HYPHENATED_NUMBERS_RE = re.compile(r"[0-9.]+(?:-[0-9.]+)+")
+_DIGIT_HYPHEN_DIGIT_RE = re.compile(r"[0-9]-[0-9]")
 
 
 def normalise_query(query: str | None) -> str | None:
@@ -144,14 +144,15 @@ def filter_any(column: sql.Composable, values: Sequence[Any]) -> tuple[sql.Compo
     `column` must be indexed verbatim (one token per value), as every filter column of the entry
     indexes is (sql/derive/90_indexes.sql).
 
-    SereneDB 26.10.1 fails a TSQUERY term on a verbatim column whose value is numbers joined by
-    hyphens ('1-2', '2005-06-03', an all-digit UUID) with XX000 "Attempted to dereference shared_ptr
-    that is NULL!" (measured on the dev instance). For such values the filter is a plain `= ANY`
+    SereneDB 26.10.1 fails a TSQUERY term on a verbatim column whose value has a digit, a hyphen and
+    a digit in it ('1-2', '1-2x', '2005-06-03T10', a UUID such as '12345678-1234-…') with XX000
+    "Attempted to dereference shared_ptr that is NULL!" (measured on the dev instance; '1-x', 'x-1'
+    and '1--2' work). For such values the filter is a plain `= ANY`
     comparison on the same index relation, which returns the same rows and, also measured, leaves
     every BM25 score unchanged (178,284 'ciod error' matches with component 'APP').
     """
     listed = list(values)
-    if any(isinstance(value, str) and _HYPHENATED_NUMBERS_RE.fullmatch(value) for value in listed):
+    if any(isinstance(value, str) and _DIGIT_HYPHEN_DIGIT_RE.search(value) for value in listed):
         return sql.SQL("{} = ANY(%s::VARCHAR[])").format(column), [listed]
     return sql.SQL("{} @@ ts_any(%s::VARCHAR[])::score(NULL)").format(column), [listed]
 

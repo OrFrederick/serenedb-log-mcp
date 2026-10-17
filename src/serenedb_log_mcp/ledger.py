@@ -14,6 +14,11 @@ attached `groups_total` and a true number then looked ungrounded.
 The lock has two halves: a `threading.Lock` for the tool calls the SDK runs in parallel worker
 threads inside one server process, and the advisory file lock for other server processes.
 
+A process killed during an append leaves an unterminated last line. Reads ignore it, and the next
+append cuts it off, so one interrupted write does not make the ledger unreadable for ever. Any
+other unparseable line is still a `LedgerError`, because that means `LEDGER_PATH` points at the
+wrong file.
+
 `fcntl` is POSIX-only, which covers the supported platforms (macOS for development, Linux in CI).
 """
 
@@ -26,7 +31,7 @@ import threading
 from collections.abc import Callable, Iterator, Mapping
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any
+from typing import IO, Any
 
 from serenedb_log_mcp.config import get_settings
 from serenedb_log_mcp.evidence import EVIDENCE_ID_PATTERN
@@ -91,7 +96,9 @@ class Ledger:
                 fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
                 try:
                     handle.seek(0)
-                    written = self._parse(handle.read())
+                    text = handle.read()
+                    written = self._parse(text)
+                    _drop_a_torn_tail(handle, text)
 
                     def write(record: LedgerRecord) -> None:
                         handle.write(json.dumps(record, ensure_ascii=False, default=str) + "\n")
@@ -125,7 +132,7 @@ class Ledger:
 
     def _parse(self, text: str) -> list[LedgerRecord]:
         records: list[LedgerRecord] = []
-        for number, line in enumerate(text.splitlines(), start=1):
+        for number, line in enumerate(_complete_lines(text), start=1):
             if not line.strip():
                 continue
             where = f"{self.path}:{number}"
@@ -143,6 +150,32 @@ class Ledger:
                 )
             records.append(record)
         return records
+
+
+def _complete_lines(text: str) -> list[str]:
+    """The lines that were written whole, so a torn append does not break every later read.
+
+    A process killed during an append leaves an unterminated last line. Every record this module
+    writes ends in a newline, so a file that does not end in one ends in a fragment, and a fragment
+    is not a record. Any other unparseable line still fails loudly: that means `LEDGER_PATH` points
+    at the wrong file.
+    """
+    lines = text.splitlines()
+    return lines[:-1] if lines and not text.endswith("\n") else lines
+
+
+def _drop_a_torn_tail(handle: IO[str], text: str) -> None:
+    """Cut a torn last line off the file, under the lock, before the next record is appended.
+
+    Writing the next record after the fragment would turn the fragment into a terminated line, and
+    `_complete_lines` only forgives the last one, so every later read would raise again. Nothing a
+    reader can use is lost: the bytes removed are the tail of a record that was never finished.
+    """
+    if not text or text.endswith("\n"):
+        return
+    whole = text[: text.rindex("\n") + 1] if "\n" in text else ""
+    handle.truncate(len(whole.encode("utf-8")))
+    handle.flush()
 
 
 def _next_id(records: list[LedgerRecord]) -> str:

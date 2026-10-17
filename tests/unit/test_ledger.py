@@ -151,6 +151,54 @@ def test_a_record_without_an_evidence_id_fails_loudly(tmp_path: Path) -> None:
         Ledger(path)
 
 
+def half_written(tmp_path: Path) -> Path:
+    """A ledger whose last append was cut off, as a killed process leaves it."""
+    path = tmp_path / "ledger.jsonl"
+    complete = json.dumps({"evidence_id": "E1", "tool": "count_by"}) + "\n"
+    torn = json.dumps({"evidence_id": "E2", "tool": "search_logs"})[:24]
+    path.write_text(complete + torn, encoding="utf-8")
+    return path
+
+
+def test_a_torn_last_line_from_a_killed_process_is_ignored_when_reading(tmp_path: Path) -> None:
+    # A process killed mid-append leaves an unterminated last line. Every read and append used to
+    # raise LedgerError from then on, so the ledger was unusable until someone edited the file.
+    path = half_written(tmp_path)
+
+    ledger = Ledger(path)
+
+    assert ledger.loaded == 1
+    assert [record["evidence_id"] for record in ledger.all()] == ["E1"]
+    assert ledger.last_id == "E1"
+    assert ledger.get("E1") is not None
+
+
+def test_the_next_append_recovers_a_torn_last_line_for_good(tmp_path: Path) -> None:
+    path = half_written(tmp_path)
+    ledger = Ledger(path)
+
+    stored = store(ledger, tool="trend")
+
+    assert stored["evidence_id"] == "E2"
+    # The fragment is gone, so the next read does not trip over it as a terminated broken line.
+    lines = path.read_text(encoding="utf-8").splitlines()
+    assert [json.loads(line)["evidence_id"] for line in lines] == ["E1", "E2"]
+    assert [record["evidence_id"] for record in Ledger(path).all()] == ["E1", "E2"]
+
+
+def test_a_torn_line_that_is_not_the_last_still_fails_loudly(tmp_path: Path) -> None:
+    # Only an unterminated final line is a torn append; a complete line that is not a record means
+    # LEDGER_PATH points at the wrong file, and that must still be loud.
+    path = tmp_path / "ledger.jsonl"
+    path.write_text(
+        '{"evidence_id": "E1", "tool": "count_by"}\n{"evidence_id": "E2", "to\n',
+        encoding="utf-8",
+    )
+
+    with pytest.raises(LedgerError, match="is not JSON"):
+        Ledger(path)
+
+
 def test_blank_lines_are_tolerated(tmp_path: Path) -> None:
     path = tmp_path / "ledger.jsonl"
     path.write_text(json.dumps({"evidence_id": "E1", "tool": "trend"}) + "\n\n", encoding="utf-8")

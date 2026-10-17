@@ -12,7 +12,6 @@ from datetime import datetime, timedelta
 import pytest
 from latency_corpus import (
     DELETE_SERVER,
-    END,
     GET_DETAIL,
     GET_PATTERN,
     LONE_DELETE,
@@ -28,6 +27,8 @@ from latency_corpus import (
     stats,
     uuid_of,
 )
+
+from serenedb_log_mcp.tools import latency_stats
 
 
 def by_key(key: str) -> dict[str, list[float]]:
@@ -198,6 +199,55 @@ def test_a_baseline_period_replaces_the_scope_median() -> None:
     assert result["data_scope"]["filters"]["baseline_from"] == "2017-05-16T00:00:00"
 
 
+def test_an_empty_baseline_period_says_it_is_empty() -> None:
+    result = call(
+        role="engineer",
+        metric="api",
+        group_by="bucket",
+        bucket="hour",
+        baseline_from="2017-05-10T00:00:00",
+        baseline_to="2017-05-11T00:00:00",
+    )
+
+    assert result["summary"]["baseline_p95_s"] is None
+    assert result["summary"]["baseline_samples"] == 0
+    assert not any(row["rise"] for row in row_dicts(result))
+    notes = " ".join(result["notes"])
+    assert "the baseline period holds no API requests" in notes
+    assert "wider bucket" not in notes
+
+
+def test_a_sparse_baseline_period_points_at_the_bucket_width() -> None:
+    # The baseline holds GET requests, but its 5-minute buckets hold ten each, below the minimum.
+    result = call(
+        role="engineer",
+        metric="api",
+        group_by="bucket",
+        bucket="5min",
+        endpoint=GET_DETAIL,
+        baseline_from="2017-05-16T02:50:00",
+        baseline_to="2017-05-16T03:10:00",
+    )
+
+    assert result["summary"]["baseline_p95_s"] is None
+    assert result["summary"]["baseline_samples"] > 0
+    notes = " ".join(result["notes"])
+    assert "wider bucket" in notes
+    assert "holds no API requests" not in notes
+
+
+def test_an_endpoint_lookup_is_recorded_in_the_evidence(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(latency_stats, "_endpoints", {})
+
+    first = call(role="engineer", metric="api", group_by="none", endpoint=GET_DETAIL)
+    cached = call(role="engineer", metric="api", group_by="none", endpoint=GET_DETAIL)
+
+    # The cache miss runs SELECT DISTINCT endpoint; the Evidence must carry it, the hit runs nothing.
+    assert len(first["sql"]) == len(cached["sql"]) + 1
+    assert any(statement.startswith("SELECT DISTINCT") for statement in first["sql"])
+    assert not any(statement.startswith("SELECT DISTINCT") for statement in cached["sql"])
+
+
 def test_small_buckets_never_rise() -> None:
     # Ten-minute GET windows: the 5-minute buckets hold ten requests each, below the minimum.
     result = call(
@@ -320,4 +370,4 @@ def test_time_range_selects_instances_by_their_first_log_entry() -> None:
 
     expected = [i for i in instances() if i.first_ts < START + timedelta(hours=1)]
     assert result["total_matches"] == len(expected) == 5
-    assert END > START
+    assert {row[0] for row in result["rows"]} == {i.instance_id for i in expected}

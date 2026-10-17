@@ -300,7 +300,7 @@ def run_session(
 ) -> Session:
     ledger = (options.out / "ledger.jsonl").resolve()
     stem = f"{index + 1}-{question.role.value}"
-    config = options.out / f"{stem}.mcp.json"
+    config = (options.out / f"{stem}.mcp.json").resolve()
     command = options.server_command or (sys.executable, "-m", "serenedb_log_mcp", "--transport", "stdio")
     config.write_text(json.dumps(mcp_config(ledger, command, environ), indent=1) + "\n", encoding="utf-8")
     before = {r["evidence_id"] for r in Ledger(ledger).all()} if ledger.exists() else set()
@@ -450,8 +450,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         options = Options(
             model=pinned_model(args.model),
-            out=args.out,
-            report=args.report,
+            # Absolute, because claude runs from an empty temporary directory (see #101).
+            out=args.out.resolve(),
+            report=args.report.resolve(),
             budget_usd=args.budget_usd,
             max_turns=args.max_turns,
             timeout_s=args.timeout_s,

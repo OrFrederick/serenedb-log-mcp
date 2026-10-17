@@ -195,3 +195,18 @@ def test_the_committed_report_is_the_export_of_the_committed_ledger_and_answers(
     assert wi.main(["--export-only", "--report", str(out)]) == 0
 
     assert out.read_text(encoding="utf-8") == wi.DEFAULT_REPORT.read_text(encoding="utf-8")
+
+
+def test_a_relative_out_dir_reaches_claude_as_an_absolute_path(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """claude runs from an empty temporary directory, so --mcp-config must not be relative."""
+    claude = _fake_claude(tmp_path)
+    monkeypatch.chdir(tmp_path)
+
+    wi.main(["--out", "wi", "--report", "r.md", "--claude-bin", str(claude)])
+
+    argv = json.loads((tmp_path / "calls.jsonl").read_text().splitlines()[0])["argv"]
+    config = argv[argv.index("--mcp-config") + 1]
+    assert Path(config).is_absolute()
+    assert Path(config).parent == (tmp_path / "wi").resolve()

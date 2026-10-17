@@ -86,6 +86,39 @@ OS_COLUMNS = (
     "pattern_key",
 )
 
+# The default Incident table (T10, plan section 2.2). `dataset`, `pattern_key` and `incident_id`
+# together identify one Incident, because the id is the running sum() within one Pattern (#1).
+# `gap_s` and `merge_scope` record how the table was built, so Evidence can quote them, and
+# `t0_utc`/`t1_utc` carry the UTC bounds, so no tool re-derives an epoch from the local timestamp.
+INCIDENT_COLUMNS = (
+    "dataset",
+    "incident_id",
+    "pattern_key",
+    "gap_s",
+    "merge_scope",
+    "t0",
+    "t1",
+    "t0_utc",
+    "t1_utc",
+    "entries",
+    "bursts",
+    "nodes",
+    "nodecards",
+    "midplanes",
+    "racks",
+    "top_node",
+    "top_node_share",
+    "shape",
+)
+# The Shape labels of the Glossary; exactly one per Incident.
+SHAPES = (
+    "single-node storm",
+    "single-node isolated",
+    "one midplane",
+    "multi-midplane",
+    "machine-wide",
+)
+
 # Concepts that tools use across Datasets, mapped to each Dataset's column. Every canonical column
 # also maps to itself. "source" is what a Burst runs on (#1): a BGL node, an OpenStack instance.
 _COMMON_CONCEPTS = {"time": "ts", "epoch": "epoch_utc", "pattern": "template_id"}

@@ -245,6 +245,7 @@ def test_build_scope_fills_the_data_scope() -> None:
         components=["KERNEL"],
         query="ciod failed",
         levels=None,
+        source="",
     )
 
     assert isinstance(scope, DataScope)

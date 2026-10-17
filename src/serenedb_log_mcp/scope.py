@@ -12,6 +12,8 @@ the `describe_corpus` cache, and binds the resolved values in its own SQL.
   Evidence tool accepts.
 
 Every input error is a `ScopeError`, a `ToolError` whose text tells the agent how to fix the call.
+A tool that fails to pass `corpus_end` for a relative time has a bug, not a bad input, and gets a
+`ValueError` instead.
 """
 
 from __future__ import annotations
@@ -299,9 +301,10 @@ def build_scope(
 
     `datasets` names the Datasets (checked against `known_datasets` when given). The time inputs
     go through `resolve_time`; `corpus_end` is needed only for a relative `time_from`. The shared
-    filters `pattern_ids` and `family_id` are validated, and the tool's own `filters` (for example
-    `query`, `components` or `levels`, already validated) are recorded as given; None and empty
-    lists are left out, because they filter nothing.
+    filters `pattern_ids` and `family_id` are validated. `filters` are the filters the tool actually
+    applied, after validation (for example `query`, `components` or `levels`); the raw call inputs
+    are recorded separately in `Evidence.arguments`, so do not pass them here a second time. None,
+    empty strings and empty lists are left out, because they filter nothing.
     """
     names = list(dict.fromkeys([datasets] if isinstance(datasets, str) else datasets))
     if not names:
@@ -311,7 +314,7 @@ def build_scope(
     if known_datasets is not None:
         names = validate_choices("dataset", names, known_datasets) or names
     time = resolve_time(time_from, time_to, datasets=names, corpus_end=corpus_end)
-    given = {key: value for key, value in filters.items() if value is not None and value != []}
+    given = {key: value for key, value in filters.items() if value not in (None, "", [], ())}
     return DataScope(
         datasets=names,
         time_from=None if time.start is None else time.start.isoformat(),

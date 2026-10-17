@@ -45,6 +45,7 @@ def evidence(
     total: int = 120,
     notes: list[str] | None = None,
     role: Role = Role.ENGINEER,
+    summary: dict[str, Any] | None = None,
 ) -> Evidence:
     """A stored record the way toolkit._store builds it: the truncation note comes first."""
     rows = [[1, "a"], [2, "b"], [3, "c"], [4, "d"], [5, "e"]] if rows is None else rows
@@ -61,7 +62,7 @@ def evidence(
         query_ms=1.0,
         columns=["entry_id", "message"] if columns is None else columns,
         rows=rows,
-        summary={"entries_total": total, "distinct_sources": 3},
+        summary={"entries_total": total, "distinct_sources": 3} if summary is None else summary,
         notes=[*stored_notes, *(notes or ["The rows are examples."])],
     )
 
@@ -331,3 +332,79 @@ def test_the_role_parameter_tells_the_agent_what_each_role_receives() -> None:
     assert "at most 3 sample Log Entries" in ROLE_DESCRIPTION
     assert "answer_frame" in ROLE_DESCRIPTION
     assert "get_role_brief" in ROLE_DESCRIPTION
+
+
+# Row-level summary keys follow the rows the Role receives (review round 1 on #63) --------------------
+
+
+def context_evidence() -> Evidence:
+    """A get_context record: 5 Log Entries before the anchor and 4 after, of 40 in the scope."""
+    rows = [[i, f"2005-08-0{i}T10:00:00", float(i - 5), "n", f"m{i}", i == 5] for i in range(10)]
+    summary = {
+        "anchor_entry_id": 5,
+        "scope_value": "n",
+        "entries_in_scope": 40,
+        "before_returned": 5,
+        "after_returned": 4,
+        "first_ts": rows[0][1],
+        "last_ts": rows[-1][1],
+    }
+    return evidence(tool="get_context", columns=CONTEXT_COLUMNS, rows=rows, total=40, summary=summary)
+
+
+def test_the_manager_context_summary_counts_no_rows() -> None:
+    shaped = shape_for_role(context_evidence(), Role.MANAGER)
+
+    assert shaped.summary["before_returned"] == 0
+    assert shaped.summary["after_returned"] == 0
+    assert shaped.summary["first_ts"] is None
+    assert shaped.summary["last_ts"] is None
+    # Scope-level values stay: they describe the context, not the returned rows.
+    assert shaped.summary["entries_in_scope"] == 40
+    assert shaped.summary["anchor_entry_id"] == 5
+
+
+def test_the_team_lead_context_summary_describes_its_three_rows() -> None:
+    shaped = shape_for_role(context_evidence(), Role.TEAM_LEAD)
+
+    assert [row[0] for row in shaped.rows] == [4, 5, 6]
+    assert shaped.summary["before_returned"] == 1
+    assert shaped.summary["after_returned"] == 1
+    assert shaped.summary["first_ts"] == shaped.rows[0][1]
+    assert shaped.summary["last_ts"] == shaped.rows[-1][1]
+
+
+def test_the_engineer_context_summary_is_unchanged() -> None:
+    stored = context_evidence()
+
+    assert shape_for_role(stored, Role.ENGINEER).summary == stored.summary
+
+
+def test_a_search_summary_is_scope_level_and_never_recomputed() -> None:
+    stored = evidence(summary={"entries_total": 120, "first_seen": "x", "last_seen": "y"})
+
+    for role in Role:
+        assert shape_for_role(stored, role).summary == stored.summary
+
+
+# The notes the Manager keeps --------------------------------------------------------------------------
+
+
+def test_the_withheld_note_says_get_context_returns_no_rows_either() -> None:
+    first = shape_for_role(evidence(), Role.MANAGER).notes[0]
+
+    assert "get_context and get_evidence return no rows to this Role either" in first
+
+
+def test_a_first_note_that_is_not_the_truncation_note_is_kept_and_logged(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    # toolkit puts its truncation note first; if that ever changes, the shaping must not drop
+    # another note silently.
+    stored = evidence().model_copy(update={"notes": ["Retried once after a database restart."]})
+
+    with caplog.at_level("WARNING", logger="serenedb_log_mcp.roles.shaping"):
+        shaped = shape_for_role(stored, Role.MANAGER)
+
+    assert "Retried once after a database restart." in shaped.notes
+    assert "truncation note" in caplog.text

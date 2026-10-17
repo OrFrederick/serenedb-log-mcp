@@ -56,6 +56,11 @@ def test_get_context_keeps_the_anchor_for_the_team_lead_and_nothing_for_the_mana
     assert [r["anchor"] for r in row_dicts(team_lead)] == [False, True, False]
     assert manager["rows"] == []
     assert manager["summary"]["scope_value"] == NODE_B
+    # get_context's own truncation sentence ("Showing 3 Log Entries before ...") counted the
+    # Engineer's rows, so the shaping drops it for the Roles that get fewer.
+    assert any(note.startswith("Showing 3 Log Entries before") for note in engineer["notes"])
+    assert not any(note.startswith("Showing 3 Log Entries before") for note in manager["notes"])
+    assert not any(note.startswith("Showing 3 Log Entries before") for note in team_lead["notes"])
     assert engineer["total_matches"] == team_lead["total_matches"] == manager["total_matches"]
 
 
@@ -77,3 +82,19 @@ def test_count_by_reaches_the_manager_whole(shaped: str) -> None:
     assert manager["rows"] == engineer["rows"]
     assert manager["rows"]
     assert manager["not_measured"] == list(NOT_MEASURED)
+
+
+def test_the_get_context_summary_agrees_with_the_rows_each_role_receives(shaped: str) -> None:
+    # Review round 1 on #63: before_returned, after_returned, first_ts and last_ts describe the
+    # returned rows, so they must follow the rows the shaping leaves, or a Manager answer could quote
+    # "5 Log Entries before the failure" from Evidence that holds none.
+    found = call("search_logs", role="engineer", dataset="bgl", query="TLB error", limit=20)
+    anchor = row_dicts(found)[10]["entry_id"]
+
+    for role in Role:
+        result = call("get_context", role=role.value, dataset="bgl", entry_id=anchor, before=5, after=5)
+        rows, summary = row_dicts(result), result["summary"]
+        anchors = sum(1 for r in rows if r["anchor"])
+        assert summary["before_returned"] + summary["after_returned"] + anchors == result["returned"], role
+        assert summary["first_ts"] == (rows[0]["ts"] if rows else None), role
+        assert summary["last_ts"] == (rows[-1]["ts"] if rows else None), role

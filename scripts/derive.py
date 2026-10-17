@@ -49,8 +49,8 @@ import psycopg
 
 import gen_pattern_sql
 from gen_pattern_sql import Template
-from serenedb_log_mcp.config import SCHEMA_RE, ConfigError, load_settings
-from serenedb_log_mcp.corpus.datasets import OWNERSHIP_NOTE, OWNERSHIP_STUB_SOURCE
+from serenedb_log_mcp.config import ROLES, SCHEMA_RE, ConfigError, load_settings
+from serenedb_log_mcp.corpus.datasets import OWNERSHIP_NOTE, OWNERSHIP_STUB_SOURCE, role_schema
 
 SQL_DIR = Path(__file__).resolve().parent.parent / "sql"
 SPLIT_TEXT_SINCE = (26, 10, 1)
@@ -382,6 +382,25 @@ def check_adapter(conn: psycopg.Connection[Any], adapter: str) -> None:
         raise DeriveError(f"sql/adapters/{adapter}.sql breaks the adapter contract: " + "; ".join(problems))
 
 
+def drop_role_views(conn: psycopg.Connection[Any], slm: str) -> list[str]:
+    """Drop the per-Role view schemas of `slm` (T22, `make access`); return the ones dropped.
+
+    Their views block CREATE OR REPLACE TABLE on the tables a run rebuilds (DependentObjectsStillExist
+    on SereneDB 26.10.1), and their inverted indexes are snapshots that would go stale, so they go
+    first and `make access` re-creates them. The LOGIN roles stay; they own nothing.
+    """
+    dropped = []
+    for role in ROLES:
+        schema = role_schema(slm, role)
+        row = conn.execute(
+            "SELECT count(*) FROM information_schema.schemata WHERE schema_name = %s", [schema]
+        ).fetchone()
+        if row and row[0]:
+            conn.execute(f"DROP SCHEMA {_quoted(schema)} CASCADE")
+            dropped.append(schema)
+    return dropped
+
+
 def drop_adapter_relations(conn: psycopg.Connection[Any], slm: str) -> None:
     """Drop this session's temporary adapter tables, and the persistent adapter views that derives
     before T4's review left in `slm` (they block every reload of the raw tables)."""
@@ -394,7 +413,7 @@ def report(conn: psycopg.Connection[Any], slm: str) -> list[str]:
     """Row counts and coverage of the derived columns, one line each."""
     s = _quoted(slm)
     lines = []
-    for table in ("bgl_entry", "os_entry", "ownership"):
+    for table in ("bgl_entry", "os_entry", "os_instance", "ownership"):
         (count,) = _rows(conn, f"SELECT count(*) FROM {s}.{table}")[0]
         lines.append(f"{slm}.{table}: {count:,} rows")
     no_card, no_mid, no_rack = _rows(
@@ -543,6 +562,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"SereneDB {'.'.join(map(str, version))}: deriving {raw} -> {slm} ({args.adapter})")
             conn.execute(f"CREATE SCHEMA IF NOT EXISTS {slm_q}")
             values = variables(slm, raw, version, tier1)
+            if dropped := drop_role_views(conn, slm):
+                print(
+                    f"Dropped the per-Role views in {', '.join(dropped)}: they depend on the tables this "
+                    "run rebuilds. Run `make access` again afterwards."
+                )
             began = True
             if only is not None:
                 run(conn, only, values)

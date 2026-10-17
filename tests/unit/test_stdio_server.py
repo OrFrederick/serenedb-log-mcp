@@ -3,6 +3,7 @@
 import json
 import os
 import queue
+import shutil
 import subprocess
 import sys
 import threading
@@ -15,6 +16,7 @@ import pytest
 
 PROTOCOL_VERSION = "2025-11-25"
 TIMEOUT_S = 30
+SCRIPT_NAME = "serenedb-log-mcp"
 
 
 class StdioPeer:
@@ -41,6 +43,15 @@ class StdioPeer:
         for line in stderr:
             self.stderr_lines.append(line)
 
+    def wait_for_stderr(self, text: str, timeout_s: float = TIMEOUT_S) -> bool:
+        """Did `text` appear on the child's stderr within `timeout_s`? The drain thread is async."""
+        deadline = time.monotonic() + timeout_s
+        while time.monotonic() < deadline:
+            if any(text in line for line in self.stderr_lines):
+                return True
+            time.sleep(0.05)
+        return False
+
     def fail(self, reason: str) -> NoReturn:
         if self.proc.poll() is not None:
             self._stderr_thread.join(timeout=2)
@@ -66,13 +77,25 @@ class StdioPeer:
         self.fail(f"no response to request {request_id} within {TIMEOUT_S}s")
 
 
+def console_script() -> str:
+    """The installed `serenedb-log-mcp` command, from PATH or from this interpreter's bin directory.
+
+    `uv run` puts `.venv/bin` on PATH, so PATH alone usually finds it. The interpreter's own
+    directory is the fallback for a layout where it does not, and a test run against an
+    interpreter that has no console script skips instead of failing: the script is a packaging
+    artefact, not behaviour this test is about.
+    """
+    found = shutil.which(SCRIPT_NAME) or shutil.which(SCRIPT_NAME, path=str(Path(sys.executable).parent))
+    if found is None:
+        pytest.skip(f"console script {SCRIPT_NAME} is not on PATH or next to {sys.executable}; run uv sync")
+    return found
+
+
 @pytest.fixture
 def server() -> Iterator[StdioPeer]:
-    script = Path(sys.executable).with_name("serenedb-log-mcp")
-    assert script.exists(), f"console script missing at {script}; run uv sync"
     env = {**os.environ, "PYTHONUNBUFFERED": "1"}
     proc = subprocess.Popen(
-        [str(script), "--transport", "stdio"],
+        [console_script(), "--transport", "stdio"],
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -129,3 +152,72 @@ def test_a_crashing_server_reports_its_stderr() -> None:
 
     with pytest.raises(pytest.fail.Exception, match=r"(?s)code 3.*boom: bad config"):
         peer.response(1)
+
+
+def initialize(server: StdioPeer) -> dict[str, Any]:
+    server.send(
+        {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "initialize",
+            "params": {
+                "protocolVersion": PROTOCOL_VERSION,
+                "capabilities": {},
+                "clientInfo": {"name": "pytest", "version": "0"},
+            },
+        }
+    )
+    init = server.response(1)
+    assert "error" not in init, init
+    server.send({"jsonrpc": "2.0", "method": "notifications/initialized"})
+    return init["result"]
+
+
+def test_role_prompts_tools_and_instructions_over_stdio(server: StdioPeer) -> None:
+    # The smoke run of T7: what Claude Code sees when it starts the server.
+    result = initialize(server)
+    assert "prompts" in result["capabilities"]
+    assert "get_role_brief" in result["instructions"]
+    assert len(result["instructions"]) <= 4096
+
+    server.send({"jsonrpc": "2.0", "id": 2, "method": "prompts/list"})
+    prompts = server.response(2)["result"]["prompts"]
+    assert sorted(prompt["name"] for prompt in prompts) == ["engineer", "manager", "team_lead"]
+
+    server.send({"jsonrpc": "2.0", "id": 3, "method": "tools/list"})
+    tools = {tool["name"]: tool for tool in server.response(3)["result"]["tools"]}
+    for name in ("describe_corpus", "search_logs", "get_context", "count_by", "trend", "get_evidence"):
+        assert name in tools, name
+    assert tools["get_role_brief"]["_meta"] == {"anthropic/alwaysLoad": True}
+
+    server.send(
+        {
+            "jsonrpc": "2.0",
+            "id": 4,
+            "method": "prompts/get",
+            "params": {"name": "manager", "arguments": {"dataset": "bgl", "period": "30d"}},
+        }
+    )
+    (message,) = server.response(4)["result"]["messages"]
+    assert message["role"] == "user"
+    assert "not measurable from these logs" in message["content"]["text"]
+
+    server.send(
+        {
+            "jsonrpc": "2.0",
+            "id": 5,
+            "method": "tools/call",
+            "params": {"name": "get_role_brief", "arguments": {"role": "manager"}},
+        }
+    )
+    brief = server.response(5)["result"]
+    assert brief["isError"] is False
+    assert brief["structuredContent"]["brief"] in message["content"]["text"]
+
+
+def test_the_startup_line_goes_to_stderr_and_never_to_stdout(server: StdioPeer) -> None:
+    # Under the stdio transport stdout carries JSON-RPC, so the startup line has to go to stderr.
+    # `response` parses every stdout line as JSON, so a line printed there fails this test.
+    initialize(server)
+
+    assert server.wait_for_stderr("resolved configuration"), "".join(server.stderr_lines)

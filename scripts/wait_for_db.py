@@ -16,17 +16,8 @@ import time
 from collections.abc import Sequence
 
 import psycopg
-from psycopg.conninfo import conninfo_to_dict
 
-from serenedb_log_mcp.config import load_settings
-
-
-def _safe(dsn: str) -> str:
-    try:
-        parts = conninfo_to_dict(dsn)
-    except psycopg.ProgrammingError:
-        return "<unparseable DSN>"
-    return " ".join(f"{key}={value}" for key, value in parts.items() if "password" not in key)
+from serenedb_log_mcp.config import error_detail, load_settings, safe_dsn
 
 
 def _positive_seconds(text: str) -> float:
@@ -52,7 +43,7 @@ def wait(dsn: str, timeout_s: float, interval_s: float) -> tuple[str | None, str
                 row = conn.execute("SELECT version()").fetchone()
             return (str(row[0]) if row else "unknown version"), ""
         except psycopg.Error as exc:
-            last_error = str(exc).strip().splitlines()[0] if str(exc).strip() else type(exc).__name__
+            last_error = error_detail(exc)
         remaining = deadline - time.monotonic()
         if remaining <= 0:
             return None, last_error
@@ -71,12 +62,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     version, error = wait(dsn, args.timeout, args.interval)
     if version is None:
         print(
-            f"wait_for_db: SereneDB at {_safe(dsn)} did not answer within {args.timeout:g} s. "
+            f"wait_for_db: SereneDB at {safe_dsn(dsn)} did not answer within {args.timeout:g} s. "
             f"Last error: {error}",
             file=sys.stderr,
         )
         return 1
-    print(f"SereneDB is ready at {_safe(dsn)}: {version}")
+    print(f"SereneDB is ready at {safe_dsn(dsn)}: {version}")
     return 0
 
 

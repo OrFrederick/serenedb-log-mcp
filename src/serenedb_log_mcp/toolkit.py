@@ -6,7 +6,7 @@ Evidence tool is written once here:
 
 - `role` is required on every tool (#4), and a server started with `--role` rejects every other Role;
 - the tool is registered with a title, the read-only annotations and `_meta["anthropic/alwaysLoad"]`,
-  so Claude Code loads it without ToolSearch;
+  so Claude Code loads it without ToolSearch, plus `_meta.ui` when it has an MCP Apps visual;
 - the Evidence envelope goes out as `structuredContent`, with the same JSON in one text block;
 - the finished envelope is appended to the Evidence Ledger before it is returned, so every cited
   `[E<n>]` exists;
@@ -37,6 +37,7 @@ from serenedb_log_mcp.config import get_settings
 from serenedb_log_mcp.evidence import DataScope, Evidence, Role
 from serenedb_log_mcp.ledger import LedgerError, get_ledger
 from serenedb_log_mcp.roles import shape_for_role
+from serenedb_log_mcp.visuals import ui_meta
 
 READ_ONLY = ToolAnnotations(
     read_only_hint=True, destructive_hint=False, idempotent_hint=True, open_world_hint=False
@@ -250,9 +251,9 @@ def role_tool(
         tool.__signature__ = signature.replace(  # type: ignore[attr-defined]
             return_annotation=Annotated[CallToolResult, output_model]
         )
-        server.add_tool(
-            tool, name=tool_name, title=title, annotations=annotations, meta=dict(ALWAYS_LOAD_META)
-        )
+        # A tool with an MCP Apps visual also links its `ui://` resource (visuals, T23).
+        meta = {**ALWAYS_LOAD_META, **(ui_meta(tool_name) or {})}
+        server.add_tool(tool, name=tool_name, title=title, annotations=annotations, meta=meta)
         return tool
 
     return register

@@ -379,7 +379,7 @@ def report(conn: psycopg.Connection[Any], slm: str) -> list[str]:
     """Row counts and coverage of the derived columns, one line each."""
     s = _quoted(slm)
     lines = []
-    for table in ("bgl_entry", "os_entry", "ownership"):
+    for table in ("bgl_entry", "os_entry", "os_instance", "ownership"):
         (count,) = _rows(conn, f"SELECT count(*) FROM {s}.{table}")[0]
         lines.append(f"{slm}.{table}: {count:,} rows")
     no_card, no_mid, no_rack = _rows(

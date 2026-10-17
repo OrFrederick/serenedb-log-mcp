@@ -9,6 +9,7 @@ from typing import Annotated, Any, Literal
 from mcp.server.mcpserver import MCPServer
 from pydantic import Field
 
+from serenedb_log_mcp.clock import utc_time
 from serenedb_log_mcp.evidence import RoleParam
 from serenedb_log_mcp.scope import ScopeError
 from serenedb_log_mcp.toolkit import ToolOutcome, evidence_tool
@@ -29,8 +30,8 @@ from serenedb_log_mcp.tools._aggregate import (
     QueryParam,
     Ranked,
     SourcesParam,
-    TimeFromParam,
-    TimeToParam,
+    UtcTimeFromParam,
+    UtcTimeToParam,
     baseline_of,
     baseline_summary,
     bound,
@@ -68,7 +69,7 @@ TrendGroupBy = Literal["component", "team", "level", "node", "rack", "midplane",
 
 
 def bucket_start(ts: datetime, bucket: str) -> datetime:
-    """The start of the bucket `ts` falls in, as `time_bucket` computes it."""
+    """The start of the bucket `ts` (UTC) falls in, as `time_bucket` computes it."""
     step = BUCKETS[bucket][1]
     return ANCHOR + ((ts - ANCHOR) // step) * step
 
@@ -134,7 +135,11 @@ def handoff_notes(series: Sequence[str], family_rows: Sequence[Sequence[Any]]) -
 
 
 def bucket_statement(part: Part, keys: Sequence[str], bucket: str) -> Q:
-    """Zero-filled counts per bucket and series: a generate_series grid crossed with the series."""
+    """Zero-filled counts per bucket and series: a generate_series grid crossed with the series.
+
+    The buckets are UTC: `Part.clock` is epoch_utc where ts is local time, so the hour BGL's local
+    time repeats on 2005-10-30 is two buckets, not one bucket with two hours in it (#65).
+    """
     interval = BUCKETS[bucket][0]
     span = part.window
     return q(
@@ -155,7 +160,7 @@ FROM grid CROSS JOIN series
 LEFT JOIN counted ON counted.bucket = grid.bucket AND counted.k = series.k
 ORDER BY grid.bucket, series.k""",
         part.key,
-        part.col("time"),
+        part.clock,
         part.source,
         part.conditions(in_window=True),
         part.key,
@@ -170,11 +175,12 @@ ORDER BY grid.bucket, series.k""",
 
 
 def family_statement(part: Part, template_ids: Sequence[str]) -> Q:
-    """Every Pattern of the Dataset that shares a Pattern Family with one of `template_ids`."""
+    """Every Pattern of the Dataset that shares a Pattern Family with one of `template_ids`, with its
+    first and last Log Entry in UTC."""
     rel = part.rel
-    family, template, ts = rel.column("family_id"), rel.column("pattern"), rel.column("time")
+    family, template, ts = rel.column("family_id"), rel.column("pattern"), utc_time(rel)
     return q(
-        """SELECT e.{}, e.{}, count(*) AS n, min(e.{}) AS first_seen, max(e.{}) AS last_seen
+        """SELECT e.{}, e.{}, count(*) AS n, min({}) AS first_seen, max({}) AS last_seen
 FROM {} AS e
 WHERE e.{} IN (SELECT f.{} FROM {} AS f WHERE f.{} = ANY({}) AND f.{} IS NOT NULL)
 GROUP BY e.{}, e.{}
@@ -224,8 +230,8 @@ def register(server: MCPServer) -> None:
             ),
         ] = None,
         query: QueryParam = None,
-        time_from: TimeFromParam = None,
-        time_to: TimeToParam = None,
+        time_from: UtcTimeFromParam = None,
+        time_to: UtcTimeToParam = None,
         components: ComponentsParam = None,
         levels: LevelsParam = None,
         sources: SourcesParam = None,
@@ -245,7 +251,9 @@ def register(server: MCPServer) -> None:
         """Zero-filled counts of matching Log Entries per time bucket, optionally one series per group.
 
         Purpose: show whether a problem is rising, steady, a one-off burst or gone, over a stated
-        period of one Dataset. Counts are Log Entries, not Incidents.
+        period of one Dataset. Counts are Log Entries, not Incidents. Buckets and time inputs are UTC
+        for every Dataset: BGL's ts is US Pacific local time, so its buckets are computed on
+        epoch_utc (data_scope.time_columns) and the hour its clocks went back is two buckets.
         Quote exact numbers, never round, and quote each series' count, peak and baseline instead
         of adding buckets yourself. Use count_by for totals per group and search_logs for example
         Log Entries. With
@@ -255,8 +263,8 @@ def register(server: MCPServer) -> None:
         Inputs: role, dataset, bucket, and optional group_by, query (all words; "quoted phrase"),
         time_from, time_to, components, levels, sources, alert_categories, pattern_ids, family_id
         and top. More than 400 buckets is an error that names a bucket that fits.
-        Outputs: the Evidence envelope. rows: one per bucket, columns bucket and one column per
-        series ('(all)' without group_by). summary: bucket, buckets, total, groups_total,
+        Outputs: the Evidence envelope. rows: one per bucket, columns bucket (its UTC start) and
+        one column per series ('(all)' without group_by). summary: bucket, buckets, total, groups_total,
         series_total, other_count, and per series its count, share_pct, peak_bucket, peak_count,
         prev_period, median_week, expected, baseline_basis, baseline_flag and any handoff. notes:
         the baseline
@@ -287,7 +295,7 @@ def _trend(prepared: Prepared, bucket: str, top: int) -> ToolOutcome:
     if span.end <= span.start:
         raise ScopeError(
             f"The time range does not overlap the {part.dataset} Log Entries, which run from "
-            f"{span.first.isoformat()} to {span.dataset_end.isoformat()}. Pass time_from and time_to "
+            f"{span.first.isoformat()} to {span.dataset_end.isoformat()} UTC. Pass time_from and time_to "
             "inside that range, or call describe_corpus for the Datasets' time ranges."
         )
     check_buckets(part.dataset, span.start, span.end, bucket)
@@ -346,7 +354,7 @@ def _trend(prepared: Prepared, bucket: str, top: int) -> ToolOutcome:
         entries.append(entry)
 
     weeks = whole_weeks(stats, [part])
-    notes = [*common_notes(prepared, weeks), f"Buckets follow ts: {part.rel.dataset.time_note}"]
+    notes = common_notes(prepared, weeks)
     if group_by is not None and groups_total > len(keys):
         notes.append(
             f"Showing the {len(keys)} largest of {groups_total:,} groups as series; other_count = "

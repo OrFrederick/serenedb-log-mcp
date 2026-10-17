@@ -58,6 +58,18 @@ Earlier, uncontrolled run: 3 agents using this project's own MCP tools (`count_b
 - **No families.** `family_id` is one per template, so 30 `ciod` variants and about 200 register-dump templates stay separate.
 - **No episodes.** Nothing turns lines into occurrences. That is the step every agent skipped.
 
+### Follow-up: parameters are now in the database
+
+After this experiment, `sql/derive/25_params.sql` extracts every `<*>` value in SereneDB:
+- **`slm.pattern_param(dataset, template_id, pos, slots, context, …)`** describes the slots. One row per `<*>`, where `context` is the literal text just before the slot (e.g. `files for program`).
+- **`slm.entry_param(dataset, entry_id, template_id, pos, context, value)`** holds the values. It has 7,445,615 BGL values for 4,303,938 Log Entries, and 798,815 OpenStack values for 205,666 Log Entries. It joins to `bgl_entry` / `os_entry` on `entry_id`.
+
+Each value is cut out with a regex in which only that slot captures: strict (`\S+`) when the message matches the strict form of its Pattern, loose (`.*?`) otherwise. This works around RE2's 9-group limit, since some Patterns have 25 slots. Every slot of every distinct message matched, and the DB tests check that putting the values back into the template gives the message.
+
+Example: `Lustre mount FAILED : <*> : point <*>` has `point` = `/p/gb1` on all 26,426 lines. The top program among core-dump summaries is `/home/germann2/BGL-demo/SPaSM_mpi` (12,480 lines).
+
+The agent runs above were done **before** these tables existed.
+
 ## Implications for the MCP server
 
 - Report each Pattern's concentration: the top source's share and distinct days, not only `distinct_sources`.

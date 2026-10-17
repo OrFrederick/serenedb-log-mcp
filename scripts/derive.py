@@ -388,6 +388,26 @@ def report(conn: psycopg.Connection[Any], slm: str) -> list[str]:
     )
     sources = _rows(conn, f"SELECT source_id, count(*) FROM {s}.os_entry GROUP BY 1 ORDER BY 1")
     lines.append("os_entry sources: " + ", ".join(f"{sid} {count:,}" for sid, count in sources))
+    # entry_param is missing after `--only 20_patterns` on a schema derived before 25_params existed.
+    has_params = _rows(
+        conn,
+        "SELECT count(*) FROM information_schema.tables "
+        "WHERE table_schema = %s AND table_name = 'entry_param'",
+        [slm],
+    )[0][0]
+    for dataset, values, entries, patterns in (
+        _rows(
+            conn,
+            f"SELECT dataset, count(*), count(DISTINCT entry_id), count(DISTINCT template_id) "
+            f"FROM {s}.entry_param GROUP BY 1 ORDER BY 1",
+        )
+        if has_params
+        else []
+    ):
+        lines.append(
+            f"entry_param {dataset}: {values:,} parameter values for {entries:,} Log Entries "
+            f"of {patterns:,} Patterns"
+        )
     unmapped = _rows(
         conn,
         f"SELECT e.dataset, e.component FROM ("

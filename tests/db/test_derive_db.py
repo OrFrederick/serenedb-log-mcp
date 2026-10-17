@@ -372,13 +372,16 @@ def test_the_genuine_bgl_text_is_kept(database_url: str, derived_sample: Schemas
 
 def test_no_label_relation_or_file_name_column_exists(database_url: str, derived_sample: Schemas) -> None:
     # os_instance: the OpenStack instance phases (T11), computed from timing only.
+    # entry_param, pattern_param: Pattern parameters (25_params), cut from the messages only.
     assert relations(database_url, derived_sample.slm) == [
         "bgl_entry",
+        "entry_param",
         "os_entry",
         "os_instance",
         "ownership",
         "pattern",
         "pattern_dict",
+        "pattern_param",
     ]
     names = {column for _, column in text_columns(database_url, derived_sample.slm)}
     assert not names & {"source_file", "raw", "label", "anomaly", "is_anomaly"}

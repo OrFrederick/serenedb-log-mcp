@@ -394,7 +394,8 @@ def _load_table(conn: psycopg.Connection[Any], schema: str, source: Source) -> N
     conn.commit()
     started = time.monotonic()
     count = copy_rows(conn, staging, [name for name, _ in COLUMNS[source.table]], source.rows())
-    # Schema changes are transactional on SereneDB 26.10.1: the swap commits as one unit.
+    # Schema changes are transactional on SereneDB 26.10.1 and 26.09.1.3 (checked in the PR #12
+    # review): the DROP and RENAME commit as one unit, and a rollback restores the old table.
     conn.execute(sql.SQL("DROP TABLE IF EXISTS {}").format(target))
     conn.execute(sql.SQL("ALTER TABLE {} RENAME TO {}").format(staging, sql.Identifier(source.table)))
     conn.commit()

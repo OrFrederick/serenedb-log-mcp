@@ -3,9 +3,19 @@
 SHELL := /bin/bash
 
 UV ?= uv
+# serenedb/serenedb:26.10.1 is published for linux/amd64 only. Under emulation on Apple Silicon it
+# starts but crashes before it listens, so arm64 hosts default to 26.09.1.3, the newest arm64 build.
+# Override with SERENEDB_IMAGE and SERENEDB_PLATFORM.
+HOST_ARCH := $(shell uname -m)
+ifneq ($(filter arm64 aarch64,$(HOST_ARCH)),)
+SERENEDB_IMAGE ?= serenedb/serenedb:26.09.1.3
+SERENEDB_PLATFORM ?= linux/arm64
+else
 SERENEDB_IMAGE ?= serenedb/serenedb:26.10.1
-# 26.10.1 is published for linux/amd64 only; Apple Silicon runs it under emulation.
 SERENEDB_PLATFORM ?= linux/amd64
+endif
+# Seconds `make db-up` waits for the server to answer SELECT 1.
+SERENEDB_WAIT_S ?= 90
 SERENEDB_CONTAINER ?= serenedb-log-mcp-db
 SERENEDB_PORT ?= 7890
 # Extra arguments for the dev loader, for example LOAD_ARGS="--replace" or LOAD_ARGS="--schema scratch".
@@ -44,10 +54,12 @@ check: lint typecheck test ## Run lint, typecheck and the pure tests
 run: ## Start the MCP server over stdio
 	$(UV) run serenedb-log-mcp --transport stdio
 
-db-up: ## Start a local SereneDB container on port 7890 (trust auth)
+db-up: ## Start a local SereneDB container on port 7890 (trust auth) and wait until it answers
 	docker run -d --platform $(SERENEDB_PLATFORM) --name $(SERENEDB_CONTAINER) -p $(SERENEDB_PORT):7890 \
 		-e SERENEDB_HOST_AUTH_METHOD=trust $(SERENEDB_IMAGE)
-	@echo "SereneDB starting at host=localhost port=$(SERENEDB_PORT) dbname=postgres user=postgres"
+	@$(UV) run python scripts/wait_for_db.py --timeout $(SERENEDB_WAIT_S) \
+		--dsn "host=localhost port=$(SERENEDB_PORT) dbname=postgres user=postgres" \
+		|| { docker logs --tail 20 $(SERENEDB_CONTAINER); exit 1; }
 
 db-down: ## Stop and remove the local SereneDB container
 	docker rm -f $(SERENEDB_CONTAINER)

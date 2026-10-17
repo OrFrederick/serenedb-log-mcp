@@ -85,6 +85,47 @@ def register_sample_tools(server: MCPServer) -> None:
         return sample_outcome(groups=groups)
 
 
+SEARCH_SQL = "SELECT entry_id, ts, node, component, level, message FROM bgl_entry_idx WHERE message @@ %s"
+SEARCH_COLUMNS = ["entry_id", "ts", "node", "component", "level", "message"]
+SEARCH_ROWS: list[list[Any]] = [
+    [100 + i, f"2005-06-11T10:00:0{i}", "R30-M0-N9-C:J16-U01", "KERNEL", "FATAL", "data TLB error interrupt"]
+    for i in range(5)
+]
+SEARCH_TOTAL = 152_182
+SEARCH_SUMMARY: dict[str, Any] = {
+    "entries_total": SEARCH_TOTAL,
+    "distinct_sources": 1,
+    "top_components": {"KERNEL": SEARCH_TOTAL},
+}
+
+
+def search_outcome(limit: int = len(SEARCH_ROWS)) -> ToolOutcome:
+    """What a retrieval tool hands to the wrapper: raw Log Entries, a sample of an exact total."""
+    rows = [list(row) for row in SEARCH_ROWS[:limit]]
+    return ToolOutcome(
+        result=FakeQueryResult(
+            total=SEARCH_TOTAL, rows=rows, truncated=True, sql=[SEARCH_SQL], params=[["TLB error"]]
+        ),
+        scope=DataScope(datasets=["bgl"], filters=ScopeFilters.of(query="TLB error")),
+        columns=list(SEARCH_COLUMNS),
+        summary=dict(SEARCH_SUMMARY),
+        notes=["The rows are examples; use count_by or trend for how often."],
+    )
+
+
+def register_sample_search(server: MCPServer) -> None:
+    """Register a sample retrieval tool: its rows are raw Log Entries (it has a message column)."""
+
+    @evidence_tool(server, title="Sample: search Log Entries")
+    def sample_search(role: RoleParam, limit: int = len(SEARCH_ROWS)) -> ToolOutcome:
+        """Find example Log Entries for 'TLB error', from fixed sample rows.
+
+        Inputs: role, limit (how many of the five sample rows to return).
+        Outputs: the Evidence envelope with columns entry_id, ts, node, component, level and message.
+        """
+        return search_outcome(limit)
+
+
 def build_sample_server() -> MCPServer:
     """The product server plus the sample Evidence tool."""
     server = create_server()

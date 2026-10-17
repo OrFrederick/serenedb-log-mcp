@@ -20,8 +20,13 @@ def slm_schema(database_url: str) -> str:
             "AND table_name IN ('bgl_entry', 'os_entry', 'ownership')",
             [schema],
         ).fetchone()
-    if not row or row[0] < 3:
-        problem = f"the canonical tables are missing in schema {schema!r}; run `make derive`"
+        indexes = conn.execute(
+            "SELECT count(*) FROM pg_indexes WHERE schemaname = %s "
+            "AND indexname IN ('bgl_entry_idx', 'os_entry_idx')",
+            [schema],
+        ).fetchone()
+    if not row or row[0] < 3 or not indexes or indexes[0] < 2:
+        problem = f"the canonical tables or indexes are missing in schema {schema!r}; run `make derive`"
         if os.environ.get("SLM_REQUIRE_DB", "").strip().lower() in {"1", "true", "yes", "on"}:
             pytest.fail(f"SLM_REQUIRE_DB is set, so this does not skip: {problem}", pytrace=False)
         pytest.skip(problem)

@@ -233,9 +233,7 @@ def test_alert_lines_set_alert_tag_and_pattern_key(database_url: str, derived_sa
 # ----------------------------------------------------------------- OpenStack derived columns
 
 UUID = r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
-REQUEST_RE = re.compile(
-    r'"(GET|POST|PUT|DELETE|PATCH|HEAD) ([^ ?"]+)[^"]*" status: (\d+) len: \d+ time: ([0-9.]+)'
-)
+REQUEST_RE = re.compile(r'"([A-Z]+) ([^ ?"]+)[^"]*" status: (\d+) len: \d+ time: ([0-9.]+)')
 INSTANCE_RES = (
     re.compile(rf"\[instance: ({UUID})\]"),
     re.compile(rf"/servers/({UUID})"),
@@ -491,7 +489,7 @@ def test_numeric_and_time_columns_answer_range_filters(database_url: str, derive
         ["2005-06-03 00:00:00", "2005-06-04 00:00:00"],
     )
 
-    assert slow == table_count(database_url, derived_sample, "os_entry", "latency_s >= %s", [0.5])
+    assert slow == table_count(database_url, derived_sample, "os_entry", "latency_s >= %s", [0.5]) > 0
     assert window == table_count(
         database_url,
         derived_sample,

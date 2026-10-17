@@ -12,7 +12,8 @@ pytestmark = pytest.mark.skipif(shutil.which("make") is None, reason="make is no
 
 
 def make(*args: str) -> str:
-    proc = subprocess.run(["make", *args], cwd=ROOT, capture_output=True, text=True, timeout=30, check=True)
+    proc = subprocess.run(["make", *args], cwd=ROOT, capture_output=True, text=True, timeout=30, check=False)
+    assert proc.returncode == 0, f"make {' '.join(args)} failed:\n{proc.stdout}\n{proc.stderr}"
     return proc.stdout
 
 

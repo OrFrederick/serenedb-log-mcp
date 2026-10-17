@@ -245,5 +245,5 @@ def relation(
     if role is not None and role not in ROLES:
         raise ValueError(f"unknown Role {role!r}; valid: {', '.join(ROLES)}")
     entry = dataset(dataset_name)
-    schema = (settings or get_settings()).slm_schema
+    schema = (settings if settings is not None else get_settings()).slm_schema
     return Relation(dataset=entry, schema=schema, table_ident=entry.table, index_ident=entry.index)

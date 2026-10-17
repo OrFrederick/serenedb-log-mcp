@@ -7,6 +7,7 @@ both schemas at the end of the session. It never touches the shared raw tables i
 
 from __future__ import annotations
 
+import os
 import uuid
 from collections.abc import Iterator
 from dataclasses import dataclass
@@ -100,7 +101,10 @@ def derived_sample(database_url: str) -> Iterator[Schemas]:
     try:
         dev_loader.ensure_samples(load_settings().data_dir / "sample")
     except (URLError, OSError) as exc:
-        pytest.skip(f"cannot download the Loghub 2k samples: {exc}")
+        problem = f"cannot download the Loghub 2k samples: {exc}"
+        if os.environ.get("SLM_REQUIRE_DB", "").strip().lower() in {"1", "true", "yes", "on"}:
+            pytest.fail(f"SLM_REQUIRE_DB is set, so this does not skip: {problem}", pytrace=False)
+        pytest.skip(problem)
     suffix = uuid.uuid4().hex[:8]
     schemas = Schemas(raw=f"scratch_t4_{suffix}_raw", slm=f"scratch_t4_{suffix}")
     try:

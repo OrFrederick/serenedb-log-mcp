@@ -190,6 +190,22 @@ def test_dry_run_prints_the_commands_and_calls_nothing(
     assert not (tmp_path / "run.json").exists()
 
 
+def test_a_relative_out_still_reaches_claude_from_its_empty_working_directory(
+    tmp_path: Path, fake_claude: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """`make eval` passes --out eval/runs/...; each trial runs claude in an empty temporary working
+    directory, so the config and ledger paths it is given must be absolute."""
+    monkeypatch.chdir(tmp_path)
+    argv = ["--model", "claude-haiku-5-5", "--k", "1", "--ids", "eng-01", "--claude-bin", str(fake_claude)]
+
+    assert main([*argv, "--out", "run"]) == 0
+
+    trial = json.loads((tmp_path / "run" / "trials" / "eng-01__t0.json").read_text())
+    assert trial["exit_code"] == 0, trial["stderr_tail"]
+    argv_seen = json.loads((tmp_path / "fake.json").read_text())["argv"]
+    assert Path(argv_seen[argv_seen.index("--mcp-config") + 1]).is_absolute()
+
+
 def test_main_rejects_an_alias(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     assert main(["--model", "haiku", "--out", str(tmp_path)]) == 2
     assert "pinned" in capsys.readouterr().err

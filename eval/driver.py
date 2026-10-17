@@ -2,11 +2,11 @@
 """Eval driver (T17): run each question through `claude -p` against our MCP server, k trials each.
 
 Usage (DATABASE_URL and SLM_SCHEMA from the environment reach the server):
-    uv run python eval/driver.py --model claude-haiku-5-5 --k 3 --out eval/runs/haiku-k3
+    uv run python eval/driver.py --model claude-haiku-4-5-20251001 --k 3 --out eval/runs/haiku-k3
     uv run python eval/driver.py --model claude-sonnet-5-5 --k 1 --ids eng-01,mgr-02 --split holdout
-    uv run python eval/driver.py --model claude-haiku-5-5 --k 1 --ids eng-01 --dry-run   # no LLM call
+    uv run python eval/driver.py --model claude-haiku-4-5-20251001 --k 1 --ids eng-01 --dry-run  # no call
 
-or `make eval MODEL=claude-haiku-5-5 K=3`, which also grades the trials and writes the report.
+or `make eval MODEL=claude-haiku-4-5-20251001 K=3`, which also grades the trials and writes the report.
 
 The setup is the client the judges use, with nothing of the developer's own Claude Code leaking in
 (#3 research):
@@ -16,7 +16,7 @@ The setup is the client the judges use, with nothing of the developer's own Clau
         --allowedTools "mcp__serenedb-log__*" --max-budget-usd <B> --max-turns <T>
         --model <pinned id> --no-session-persistence
 
-- The model id is pinned (`claude-haiku-5-5`, not `haiku`): aliases resolve differently in the CLI
+- The model id is pinned (`claude-haiku-4-5-20251001`, not `haiku`): aliases resolve differently in the CLI
   and the Agent SDK (#3).
 - Every trial gets a fresh Evidence Ledger (`LEDGER_PATH` in the server's environment) and a fresh
   empty working directory, so its `[E<n>]` citations resolve against its own Evidence only.
@@ -54,7 +54,7 @@ from transcript import SERVER, Trial, parse_stream
 
 ROOT = Path(__file__).resolve().parent.parent
 MODEL_RE = re.compile(r"^claude-[a-z]+-[0-9]+(?:-[0-9]+)*(?:-[0-9]{8})?$")
-"""A pinned model id such as claude-haiku-5-5 or claude-sonnet-4-5-20250929; aliases are refused."""
+"""A pinned model id such as claude-haiku-4-5-20251001 or claude-sonnet-4-5-20250929; aliases are refused."""
 STRIPPED_PREFIX = "CLAUDE_CODE_"
 STRIPPED_NAMES = frozenset({"CLAUDECODE"})
 SERVER_ENV = ("DATABASE_URL", "SLM_SCHEMA", "SLM_RAW_SCHEMA", "SLM_QUERY_TIMEOUT_S", "SLM_PATTERN_TIER1")
@@ -88,8 +88,9 @@ class Options:
 def pinned_model(model: str) -> str:
     if not MODEL_RE.fullmatch(model):
         raise DriverError(
-            f"--model {model!r} is not a pinned model id. Pass a full id such as claude-haiku-5-5 or "
-            "claude-sonnet-5-5: aliases like 'haiku' resolve differently in the CLI and the Agent SDK."
+            f"--model {model!r} is not a pinned model id. Pass a full id such as "
+            "claude-haiku-4-5-20251001 or claude-sonnet-5-5: aliases like 'haiku' resolve differently "
+            "in the CLI and the Agent SDK."
         )
     return model
 
@@ -262,7 +263,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="driver.py", description=__doc__.splitlines()[0] if __doc__ else None
     )
-    parser.add_argument("--model", required=True, help="pinned model id, for example claude-haiku-5-5")
+    parser.add_argument("--model", required=True, help="pinned model id, e.g. claude-haiku-4-5-20251001")
     parser.add_argument("--k", type=int, default=3, help="trials per question (default 3)")
     parser.add_argument("--out", type=Path, required=True, help="run directory (trials/ goes inside)")
     parser.add_argument("--questions", type=Path, default=DEFAULT_PATH, help="the question file")
@@ -296,7 +297,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         options = Options(
             model=pinned_model(args.model),
             k=args.k,
-            out=args.out,
+            # Absolute: each trial runs claude in an empty temporary directory (`make eval` passes a
+            # relative --out), so a relative config or ledger path would not be found there.
+            out=args.out.resolve(),
             budget_usd=args.budget_usd,
             max_turns=args.max_turns,
             timeout_s=args.timeout_s,

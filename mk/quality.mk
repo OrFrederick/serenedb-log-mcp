@@ -12,7 +12,7 @@
 # Trials already in the run directory are kept, so an interrupted run resumes. `make eval-report`
 # grades the run again without calling a model; `make eval-dry-run` prints the commands only.
 
-MODEL ?= claude-haiku-5-5
+MODEL ?= claude-haiku-4-5-20251001
 K ?= 3
 # Extra arguments for eval/driver.py, for example EVAL_ARGS="--ids eng-01,mgr-02" or "--split holdout".
 EVAL_ARGS ?=

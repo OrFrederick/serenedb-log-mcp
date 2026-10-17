@@ -16,3 +16,6 @@ overnight/state/
 .ruff_cache/
 .pytest_cache/
 exports/
+
+# eval runs (transcripts, ledgers); results that matter go to docs/results/eval.md
+eval/runs/

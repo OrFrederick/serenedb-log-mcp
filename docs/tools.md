@@ -10,6 +10,7 @@ Every tool takes a required `role` (`engineer`, `team_lead` or `manager`), which
 |---|---|---|
 | [`count_by`](#count_by) | Count Log Entries by one dimension, with baselines | [Evidence](#output-evidence) |
 | [`describe_corpus`](#describe_corpus) | Describe the Datasets: size, time range, Components, Teams | [Evidence](#output-evidence) |
+| [`export_investigation`](#export_investigation) | Export the investigation as a Markdown report | InvestigationExport |
 | [`find_precursors`](#find_precursors) | Patterns that precede a target Pattern, with support and lift | [Evidence](#output-evidence) |
 | [`get_context`](#get_context) | Log Entries just before and after one entry | [Evidence](#output-evidence) |
 | [`get_evidence`](#get_evidence) | Get stored Evidence by id | [Evidence](#output-evidence) |
@@ -21,6 +22,7 @@ Every tool takes a required `role` (`engineer`, `team_lead` or `manager`), which
 | [`search_patterns`](#search_patterns) | Search the Pattern catalogue by words (BM25, stemming, synonyms) | [Evidence](#output-evidence) |
 | [`top_patterns`](#top_patterns) | Rank Patterns by Log Entries, Incidents, sources, recency or priority | [Evidence](#output-evidence) |
 | [`trend`](#trend) | Trend of Log Entries per time bucket, with baselines | [Evidence](#output-evidence) |
+| [`verify_answer`](#verify_answer) | Check a draft answer against the Evidence | VerifyResult |
 
 ## `count_by`
 
@@ -76,12 +78,17 @@ the baseline method. total_matches counts groups, not Log Entries.
 ### Limits
 
 - `query`: at most 500 characters
+- `time_from`: at most 64 characters
+- `time_to`: at most 64 characters
 - `components`: at most 50 items
 - `levels`: at most 20 items
 - `sources`: at most 100 items
 - `alert_categories`: at most 50 items
 - `pattern_ids`: at most 100 items
+- `family_id`: at most 32 characters
 - `top`: 1 to 100
+- `baseline_from`: at most 64 characters
+- `baseline_to`: at most 64 characters
 
 ### Output
 
@@ -125,6 +132,62 @@ No bounds in the input schema; the description states any other limits.
 ### Output
 
 `structuredContent` is the [Evidence](#output-evidence) object; the description says what its rows and summary hold for this tool.
+
+## `export_investigation`
+
+**Export the investigation as a Markdown report**
+
+Annotations: read-only, idempotent, closed world, `anthropic/alwaysLoad` (Claude Code loads it without ToolSearch).
+
+Description, as the agent reads it:
+
+```text
+Render the investigation as a Markdown report: questions, tool calls, SQL, results and answers.
+
+Purpose: turn the final answers and the Evidence Ledger behind them into the reproducible report
+of an investigation. Per answering Role it shows the question, every tool call with its
+parameters and Data Scope, the SQL with its bound parameters, the result tables (totals,
+truncated, first 10 rows), the answer with its verify_answer check, and a closing section "What
+the data does and does not establish" (Observed Facts and Data Scopes, then Hypotheses, Unknowns,
+samples and what these logs do not measure). Call it once every answer is final. It is
+read-only: it returns the Markdown and writes no file; scripts/export_report.py writes the same
+report to disk, and scripts/replay_ledger.py re-runs its SQL.
+Inputs: role (the audience of the report, not of the answers: 'manager' leaves raw Log Entry
+rows out of every table while counts, SQL and Data Scope stay; 'engineer' and 'team_lead' get
+the first 10 rows; export the worked investigation with role='engineer'), title, answers (each
+with role, question and the final answer as sent), evidence_ids (optional subset of the ledger).
+Outputs: role, title, markdown (the report), size_chars and size_bytes (its size), evidence_ids
+(the Evidence shown in full) and notes (cited Evidence the ledger does not hold, size hints).
+```
+
+### Inputs
+
+| Name | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `role` | one of `engineer`, `team_lead`, `manager` | yes |  | The audience of the report: 'manager' gets no raw Log Entry rows in any table (counts, summaries, SQL and Data Scopes stay); 'engineer' and 'team_lead' get tables with the first 10 rows of each result. Export the worked investigation with role='engineer'. |
+| `title` | string | yes |  | The report title. |
+| `answers` | list of object | yes |  | The answers of the investigation in the order it was handed on, each with role (the Role that asked), question and answer (the final answer exactly as sent, with its [E&lt;n&gt;] citations). |
+| `evidence_ids` | list of string or null | no | `null` | Optional: only these Evidence ids, for example ['E1', 'E2']; Evidence an answer cites is always included. Omit it to include every record of the Evidence Ledger. |
+
+### Limits
+
+- `title`: at least 1 characters, at most 200 characters
+- `answers`: at least 1 items, at most 20 items
+- `evidence_ids`: at most 500 items
+
+### Output
+
+`structuredContent` is a `InvestigationExport` object:
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `role` | one of `engineer`, `team_lead`, `manager` | yes | The audience the report was rendered for. |
+| `title` | string | yes | The report title. |
+| `markdown` | string | yes | The report in Markdown. |
+| `size_chars` | integer | yes | Length of markdown in characters. |
+| `size_bytes` | integer | yes | Length of markdown in UTF-8 bytes. |
+| `evidence_ids` | list of string | yes | The Evidence ids shown in full in the report, in ledger order. |
+| `notes` | list of string | yes | What to know about the report: cited or requested Evidence ids the ledger does not hold, and a hint when the report is too long to read in a tool result. |
 
 ## `find_precursors`
 
@@ -183,6 +246,8 @@ total_matches counts passing precursors.
 - `min_support`: at least 1
 - `min_lift`: 1.0 to 1000000.0
 - `limit`: 1 to 50
+- `time_from`: at most 64 characters
+- `time_to`: at most 64 characters
 - `sources`: at most 100 items
 
 ### Output
@@ -465,11 +530,14 @@ reference_patterns, candidates_total and scored_total. total_matches counts Inci
 - `gap_s`: 1 to 86400
 - `limit`: 1 to 100
 - `query`: at most 500 characters
+- `time_from`: at most 64 characters
+- `time_to`: at most 64 characters
 - `components`: at most 50 items
 - `levels`: at most 20 items
 - `sources`: at most 100 items
 - `alert_categories`: at most 50 items
 - `pattern_ids`: at most 100 items
+- `family_id`: at most 32 characters
 - `similar_to`: at least 1
 
 ### Output
@@ -520,6 +588,7 @@ page_components and components; total_matches counts Patterns, not Log Entries.
 
 - `component`: at most 200 characters
 - `pattern_ids`: at most 100 items
+- `family_id`: at most 32 characters
 - `page`: 1 to 100
 
 ### Output
@@ -577,6 +646,9 @@ No match returns a hint in notes, not an error.
 
 - `query`: at most 500 characters
 - `pattern_ids`: at most 100 items
+- `family_id`: at most 32 characters
+- `time_from`: at most 64 characters
+- `time_to`: at most 64 characters
 - `components`: at most 50 items
 - `levels`: at most 20 items
 - `sources`: at most 100 items
@@ -684,11 +756,14 @@ patterns_total. notes: the rules behind every flag. total_matches counts Pattern
 
 - `top`: 1 to 50
 - `query`: at most 500 characters
+- `time_from`: at most 64 characters
+- `time_to`: at most 64 characters
 - `components`: at most 50 items
 - `levels`: at most 20 items
 - `sources`: at most 100 items
 - `alert_categories`: at most 50 items
 - `pattern_ids`: at most 100 items
+- `family_id`: at most 32 characters
 
 ### Output
 
@@ -748,16 +823,80 @@ method. total_matches counts buckets, not Log Entries.
 ### Limits
 
 - `query`: at most 500 characters
+- `time_from`: at most 64 characters
+- `time_to`: at most 64 characters
 - `components`: at most 50 items
 - `levels`: at most 20 items
 - `sources`: at most 100 items
 - `alert_categories`: at most 50 items
 - `pattern_ids`: at most 100 items
+- `family_id`: at most 32 characters
 - `top`: 1 to 5
 
 ### Output
 
 `structuredContent` is the [Evidence](#output-evidence) object; the description says what its rows and summary hold for this tool.
+
+## `verify_answer`
+
+**Check a draft answer against the Evidence**
+
+Annotations: read-only, idempotent, closed world, `anthropic/alwaysLoad` (Claude Code loads it without ToolSearch).
+
+Description, as the agent reads it:
+
+```text
+Check a draft answer against the Evidence Ledger. Call it before every final answer.
+
+Purpose: call it with your full draft before every final answer, fix every problem it reports,
+and call it again until ok is true. It checks that every [E<n>] exists in the Evidence Ledger
+(this session and earlier ones on the same LEDGER_PATH); that every number appears exactly in
+the Evidence its sentence cites (rows, summary, totals, parameters), never rounded, bracketed
+as a range or bound, or added up by hand, unless the sentence is marked "(derived from [E1],[E2])"
+and the number recomputes from those records; that the sections Observed Facts, Hypotheses,
+Unknowns and Next Step are all there, in that order; and that a count called Incidents cites
+list_incidents or top_patterns Evidence. For team_lead and manager, Log Entry counts must stand
+next to Incident and Spread Evidence (once list_incidents or top_patterns is offered), and money
+or time impact (cost, downtime) belongs in Unknowns or in a sentence saying the logs cannot
+establish it. For manager, customer and SLA terms too, no raw-line Evidence (search_logs,
+get_context) may be cited, and Unknowns must name cost, downtime and customer impact. Matching:
+a number must equal a value of the cited Evidence after thousands separators and k or M suffixes
+are read, and a number followed by a counted noun ("83 racks") a value of a field that may count
+it; a percentage may quote a stored fraction (100% for 1.0), and "half" or "a third" is a
+percentage too; a derived sum or difference must be exact and a derived share or ratio right to
+its printed precision. Drafts over 50,000 characters and sentences over 2,000 are reported, not
+checked. It runs no query and adds nothing to the Evidence Ledger.
+Inputs: role (the Role the answer is for), draft (the full answer text in Markdown).
+Outputs: ok (true when there is nothing to fix), role, summary (the verdict in one line),
+problems (each with kind, section, the offending text and a fix hint), checked_numbers (every
+number checked, with its status and the Evidence ids that hold it), cited_evidence and notes
+(checks that were skipped, and why).
+```
+
+### Inputs
+
+| Name | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `role` | one of `engineer`, `team_lead`, `manager` | yes |  | Who is asking: 'engineer' investigates one failure and needs example Log Entries and nearby events; 'team_lead' needs recurring problems with counts and trends per Component and Team, and receives at most 3 sample Log Entries from a search; 'manager' needs measured frequency and affected Components only, and receives no raw Log Entries (totals and facets, no rows). Every result carries the answer_frame for this Role; get_role_brief(role) has the full playbook. |
+| `draft` | string | yes |  | The full draft answer in Markdown, exactly as you would send it: the four sections Observed Facts, Hypotheses, Unknowns and Next Step, with [E&lt;n&gt;] next to every number. |
+
+### Limits
+
+- `draft`: at most 50000 characters
+
+### Output
+
+`structuredContent` is a `VerifyResult` object:
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `ok` | boolean | yes | True when no problem was found: send the draft as your answer. |
+| `role` | one of `engineer`, `team_lead`, `manager` | yes | The Role the draft was checked for. |
+| `summary` | string | yes | One line: the verdict, the problem counts by kind and what to do next. |
+| `problems` | list of object | yes | Every problem found, in answer order: kind, section, the offending text and a fix hint. |
+| `checked_numbers` | list of object | yes | Every number that was checked: as written, its value, section, cited Evidence ids, status and the Evidence ids that hold it. |
+| `cited_evidence` | list of string | yes | The Evidence ids the draft cites, in order of first use. |
+| `notes` | list of string | yes | Checks that were skipped, and why. |
 
 ## Output: Evidence
 

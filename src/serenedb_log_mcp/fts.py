@@ -128,6 +128,7 @@ def text_match(
     """`column @@ <query in mode>` and its parameter list; `column` must be an indexed text column."""
     if mode == "all_words":
         _check_unquoted_words(query)
+        _check_quoted_phrases(query)
     if mode in _PARSERS:
         return sql.SQL("{} @@ {}(%s)").format(column, _PARSERS[mode]), [query]
     if mode == "any_words":
@@ -163,6 +164,23 @@ def _check_unquoted_words(query: str) -> None:
             "words and numbers, so no Log Entry contains such a word, and a query that requires it "
             f"matches none. Remove {it}; punctuation attached to a word, as in 'ciod:', is ignored."
         )
+
+
+def _check_quoted_phrases(query: str) -> None:
+    """ScopeError for a double-quoted part of an all_words query that holds no letter or digit.
+
+    SereneDB 26.10.1's `websearch_to_tsquery` turns each quoted part, closed or open to the end of
+    the query, into `ts_phrase(part)` and fails with 22023 ("produced no tokens after analysis") when
+    the part has characters but no word, for example `error ";"` or `error " "`; an empty `""` and a
+    lone `"` are accepted. Splitting at the quotes puts the quoted parts at the odd positions.
+    """
+    for part in query.split('"')[1::2]:
+        if part and not _LETTER_OR_DIGIT_RE.search(part):
+            raise ScopeError(
+                f'query={query!r} has a quoted phrase without a word ("{part}"): a phrase in double '
+                "quotes must hold the words to find in order. Remove those quotes, or put words "
+                "between them."
+            )
 
 
 def _fuzzy(column: sql.Composable, query: str) -> tuple[sql.Composed, list[Any]]:

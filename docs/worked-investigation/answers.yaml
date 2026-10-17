@@ -1,0 +1,221 @@
+title: Start-up path failures
+answers:
+- role: engineer
+  question: On 2005-09-02 the BGL I/O nodes reported Lustre mount failures for the filesystem /p/gb1. What failed,
+    on which nodes and in which Component, and what happened on the machine just before and just after the burst
+    that started at 12:39 (ts as logged)? Start with a full-text search for the failure, then look at the context
+    around one of the failures, and say what the next check should be.
+  answer: "## Observed Facts\n\nData Scope: BGL, the logged day 2005-09-02 (UTC 2005-09-02T07:00:00 to 2005-09-03T07:00:00),\
+    \ full-text query `\"/p/gb1\" lustre mount failed`.\n\n- **What failed:** I/O nodes could not mount the Lustre\
+    \ filesystem /p/gb1. Over the whole logged day, 3,344 Log Entries matched, from 1,024 distinct nodes in 64 racks\
+    \ [E2]. Every one is Component KERNEL, level FATAL [E2]. The rows carry alert category KERNMNTF and Pattern\
+    \ 0feda536dd45d5b3 [E2]. The day's first match was at 2005-09-02T11:15:01.129890 (ts as logged) on R00-M0-NC-I:J18-U11:\
+    \ `Lustre mount FAILED : bglio11 : point /p/gb1` [E2]. 10 of 3,344 rows shown [E2].\n- **Hourly shape (UTC):**\
+    \ 136 Log Entries in the 18:00 hour, 1,024 in 19:00, 2,040 in 20:00, 16 in 21:00, and 128 in 2005-09-03T03:00\
+    \ [E4]. The median week for this query is 0 and the baseline_flag is unusual_high [E4].\n- **The burst at 12:39\
+    \ (logged):** from 12:39:00 to 12:45:00 logged time (UTC 19:39:00 to 19:45:00) there are 1,024 matching Log\
+    \ Entries from 1,024 distinct nodes in 64 racks [E3]. All are KERNEL FATAL [E3]. That is one line per I/O node.\n\
+    \  - It runs from `2005-09-02T12:39:01.763282 R23-M0-NC-I:J18-U11 KERNEL FATAL KERNMNTF Lustre mount FAILED\
+    \ : bglio315 : point /p/gb1` [E3] to `2005-09-02T12:41:27.158967 R01-M1-N8-I:J18-U01 KERNEL FATAL KERNMNTF Lustre\
+    \ mount FAILED : bglio30 : point /p/gb1` [E9].\n  - The next entries arrive within a second, for example `12:39:02.076091\
+    \ R22-M0-NC-I:J18-U11 … bglio299 : point /p/gb1` and `12:39:02.093953 R23-M0-NC-I:J18-U01 … bglio316 : point\
+    \ /p/gb1` [E6].\n- **Just before (every source):** no Log Entry from any node in the 600 s before the first\
+    \ failure [E6]. The ±600 s window holds 1,024 Log Entries, all from the burst, and 0 precede the anchor [E6].\
+    \ The last earlier lines on the machine are corrected-error messages from other compute nodes, for example:\n\
+    \  - `12:17:30.702918 R56-M0-ND-C:J06-U11 KERNEL INFO CE sym 33, at 0x106f1ee0, mask 0x08`\n  - `12:18:57.825373\
+    \ R53-M1-N0-C:J04-U11 KERNEL INFO 3 tree receiver 2 in re-synch state event(s) (dcr 0x019a) detected`\n\n  The\
+    \ second line is -1203.938 s before the anchor [E7].\n- **Just after (every source):** after the last failure\
+    \ at 12:41:27.158967, nothing is logged until `12:49:26.904959 R01-M0-N4-C:J03-U11 KERNEL INFO critical input\
+    \ interrupt (unit=0x0b bit=0x13): warning for tree B1 wire`, 479.746 s later [E10]. Then come:\n  - torus wire\
+    \ interrupt warnings\n  - `12:55:52.121692 R63-M0-L2-U21-A LINKCARD FATAL LINKIAP MidplaneSwitchController::receiveTrain()\
+    \ iap failed: R63-M0-L2-U21-A, status=ffbffbff ec000000` [E10]\n- **Over the 2 hours around the burst** (UTC\
+    \ 18:39 to 20:39), the Lustre Pattern 0feda536dd45d5b3 has 2,048 of 2,432 Log Entries (84.21%), from 1,024 nodes,\
+    \ with baseline_flag unusual_high [E8]. A second wave of the same Pattern ends at 20:24:02.893789 UTC [E8].\n\
+    - **On the anchor node R23-M0-NC-I:J18-U11 (bglio315):** this node has 389 Log Entries in total [E5]. Earlier\
+    \ it logged:\n  - `2005-08-30T09:47:27.556796 NFS Mount failed on bglio315, slept 23 seconds, retrying (1)`\n\
+    \  - the same Lustre failure at 2005-08-31T22:29:52.477558 and 2005-09-01T04:49:49.641478\n\n  After the burst\
+    \ it failed again at 2005-09-02T13:21:38.337679 and 13:51:11.195899 [E5].\n\n## Hypotheses\n\n- **The /p/gb1\
+    \ Lustre service was not reachable from the I/O nodes when they tried to mount it.** Possible reasons are the\
+    \ Lustre servers (MDS/OSS) being down or the I/O network path failing. The Evidence fits this: every I/O node\
+    \ fails once between 12:39:01.763282 and 12:41:27.158967, and nothing else is logged on the machine [E3][E9][E6].\
+    \ To confirm, look for Lustre server or network outage records at 19:39 UTC. To rule it out, find a successful\
+    \ /p/gb1 mount at the same time.\n- **The burst is a block or partition boot of all I/O nodes, with the mount\
+    \ failing at boot.** One line per node in a tight window looks like a synchronized mount attempt. To confirm,\
+    \ find the MMCS or job-control records of a boot at about 12:38 (logged), which BGL does not show in this window\
+    \ [E6].\n- **The CE/DDR and torus interrupt messages before and after, and the LINKIAP failure after, are unrelated\
+    \ background.** They come from other nodes or link cards, minutes away [E7][E10]. A precursor analysis would\
+    \ show whether any of them precedes KERNMNTF more often than chance.\n\n## Unknowns\n\n- Why the mount failed.\
+    \ The line carries no error code, and the Lustre server, client and network logs are not in this Dataset.\n\
+    - Whether a boot or job launch triggered the attempt. No control-system entry is in the 600 s window [E6].\n\
+    - Whether /p/gb1 was mounted successfully later. The logs record failures, not successes.\n\n## Next Step\n\n\
+    1. `list_incidents(role='engineer', dataset='bgl', pattern_key='KERNMNTF', time_from='2005-09-02T07:00:00',\
+    \ time_to='2005-09-03T07:00:00', sort='time')`, to separate the waves of the day and see their Spread.\n2. `find_precursors(role='engineer',\
+    \ dataset='bgl', target_pattern='KERNMNTF', window_s=3600, same_source=false)`, to test whether any Pattern\
+    \ reliably precedes these mount failures.\n3. Outside these logs: on the Lustre servers behind /p/gb1 and on\
+    \ I/O node bglio315 (R23-M0-NC-I:J18-U11), check the server, LNET and syslog records for 2005-09-02 19:35 to\
+    \ 19:45 UTC.\n"
+- role: team_lead
+  question: 'Is the /p/gb1 Lustre mount failure a recurring problem? Over the wave from 2005-08-31 to 2005-09-18
+    (UTC), give its Log Entries next to its Incidents and their Spread: how many Incidents, on how many days, and
+    how many of them reached every I/O node; show the daily trend and when the wave ended, and whether KERNMNTF
+    Log Entries go on after it. Then the start-up path on the second Dataset: the OpenStack benchmark labels four
+    instances as anomalous (a445709b-6ad0-40ec-8860-bec60b6ca0c2, 544fd51c-4edc-4780-baae-ba1d80a0acfc, ae651dff-c7ad-43d6-ac96-bbcd820ccca8,
+    1643649d-2f42-4303-bfcd-7798baec19f9). Does nova''s spawn timing find them, and does a full-text search for
+    errors on those instances find anything? Finish with an aggregation over the whole Base Corpus, Log Entries
+    by Team, with its Data Scope, and say which Teams to involve first. Say whether the BGL and OpenStack start-up
+    problems are linked, and whether such a link would be causal or only thematic.'
+  answer: "## Observed Facts\n\n**BGL: the /p/gb1 Lustre mount failure, wave 2005-08-31 to 2005-09-18 (UTC), Component\
+    \ KERNEL, owned by the Kernel Team [E11]**\n- The failure is Pattern 0feda536dd45d5b3, \"Lustre mount FAILED\
+    \ : <*> : point <*>\", alert category KERNMNTF, level FATAL [E23]. Every one of the 26,426 KERNMNTF Log Entries\
+    \ that name \"/p/gb1\" belongs to this Pattern, on 1,024 nodes, from 2005-09-01T01:41:43 to 2005-09-17T03:35:26\
+    \ UTC, over the whole Dataset [E24].\n- Log Entries and Incidents in the wave: 26,426 Log Entries in 83 Incidents\
+    \ (gap 300 s), starting on 12 distinct days (by the Incident start as logged, US Pacific time) [E15]. Spread:\
+    \ 1,024 nodes, 128 midplanes and 64 racks in total; by Shape, 33 machine-wide, 22 multi-midplane, 27 one-midplane\
+    \ and 1 single-node isolated [E15]. 7 Incidents reached the widest Spread, all 1,024 I/O nodes; the largest\
+    \ held 1,024 Log Entries [E15].\n- It recurs: the wave is a series of separate Incidents across the period,\
+    \ not one burst [E15].\n- Daily trend (UTC, Log Entries) [E13]: 0 on 2005-08-31, 4,014 on 09-01, 3,216 on 09-02,\
+    \ 4,336 on 09-03 (the peak), 1,933 on 09-04, 2,890 on 09-05, 2,130 on 09-06, 1,452 on 09-07, 2,941 on 09-08,\
+    \ 19 on 09-09, 0 from 09-10 to 09-12, 2,210 on 09-13, 13 on 09-14, 421 on 09-15, 0 on 09-16 and 851 on 09-17.\
+    \ Against its baseline it is unusual_high: 0 in the previous 18 days and a median week of 0 [E13].\n- When the\
+    \ wave ended: its last Log Entry is at 2005-09-17T03:35:26 UTC [E16]. Weekly the Pattern counts 13,499 in the\
+    \ week of 2005-08-29, 9,432 in the week of 2005-09-05 and 3,495 in the week of 2005-09-12, then 0 in every week\
+    \ to the corpus end [E14]. It is **gone** after the wave.\n- An earlier engineer drill-down on one day (2005-09-02\
+    \ local time) found 3,344 such Log Entries on 1,024 nodes in 64 racks [E2]. In the hour from 2005-09-02T20:00\
+    \ UTC there were 2,040 [E4]. One Incident reached 1,024 nodes between 2005-09-02T19:39:01 and 19:41:27 UTC [E3],\
+    \ with nothing logged before it in a 600 s window [E6].\n- KERNMNTF does go on after the wave, but as a different\
+    \ Pattern: bf7199bacf24f151, \"Lustre mount FAILED : <*> : block_id : location\" [E23]. From 2005-09-18 to the\
+    \ corpus end it has 4,107 Log Entries on 1,022 nodes, from 2005-10-06T17:55:50 to 2006-01-03T21:11:16 UTC, flagged\
+    \ unusual_high (median week 0) [E17]. Over the whole Dataset, KERNMNTF has 31,531 Log Entries: 26,426 (83.81%)\
+    \ are the /p/gb1 Pattern and 5,105 (16.19%) are the block_id Pattern [E16]. That later Pattern peaks at 889\
+    \ in the week of 2005-11-28 [E14].\n\n**OpenStack: the four benchmark-labelled instances**\n- nova's spawn timing\
+    \ finds all four. Of 2,066 instances (median spawn 19.74 s, MAD 0.42 s), 5 are flagged as Phase-Duration Anomalies\
+    \ at z of 5 or more [E18]. The four labelled instances are the four slowest, all on host os-3 [E18]:\n  - a445709b:\
+    \ 50.72 s, z 49.8 [E18]\n  - 544fd51c: 41.81 s, z 35.4 [E18]\n  - 1643649d: 31.27 s, z 18.5 [E18]\n  - ae651dff:\
+    \ 29.46 s, z 15.6 [E18]\n- The fifth flagged instance, d7d68893 (26.69 s, z 11.2, also on os-3), is not on the\
+    \ benchmark list [E18].\n- For all four, the time went into image creation and boot: image_s z 113.8, 78.2,\
+    \ 44 and 34 [E18]. Network wait stayed ordinary, with paused_s z between -1 and 0.9 [E18].\n- Full-text search\
+    \ finds nothing on them. A search for their UUIDs at levels ERROR or CRITICAL returns 0 Log Entries [E19], and\
+    \ a search for error, failed, exception or timeout on these instances returns 0 [E21]. All 112 of their Log\
+    \ Entries are INFO, on 4 instances, between 2017-05-14T21:07:37 and 21:47:43 [E22].\n\n**Whole Base Corpus,\
+    \ Log Entries by Team.** Data Scope: both Datasets, all time, no filter, 4,955,783 Log Entries; no Team is unmapped\
+    \ [E20].\n\n| Dataset | Team | Log Entries | Share |\n|---|---|---|---|\n| BGL | Kernel Team | 4,324,967 | 87.27%\
+    \ |\n| BGL | Application Runtime Team | 228,536 | 4.61% |\n| BGL | Control System Team | 186,458 | 3.76% |\n\
+    | OpenStack | Cloud API Team | 102,862 | 2.08% |\n| OpenStack | Hypervisor Team | 55,634 | 1.12% |\n| OpenStack\
+    \ | Compute Service Team | 48,452 | 0.9777% |\n| BGL | Hardware Operations Team | 6,829 | 0.1378% |\n| BGL |\
+    \ Interconnect Team | 1,173 | 0.02367% |\n| OpenStack | Scheduler Team | 866 | 0.01747% |\n| OpenStack | Identity\
+    \ Team | 6 | 0.0001211% |\n\nThere is no baseline, because the Data Scope covers each Dataset whole [E20].\n\
+    \n## Hypotheses\n- **The /p/gb1 wave and the later block_id Pattern.** Both are KERNMNTF Lustre mount failures\
+    \ on almost the same set of nodes (1,024 and 1,022) [E16][E17]. One reading is that the same mount path failed\
+    \ again under different wording. This is an association only: the two Patterns are not in one Pattern Family\
+    \ [E23].\n- **The slow OpenStack starts.** The four slow instances share one host (os-3) and an early time window,\
+    \ and the extra time sits in image creation and boot [E18]. That points towards host load or the image backend\
+    \ on os-3, as a Hypothesis only, because these Log Entries carry no error [E19][E22].\n- **BGL and OpenStack.**\
+    \ The two start-up problems are not linked causally. They come from different systems whose time ranges do not\
+    \ overlap [E11], and they share no source, host or Component. Any link is **only thematic**: both are start-up\
+    \ path problems (a file-system mount at I/O-node boot, an image or boot phase at instance spawn). Nothing in\
+    \ these logs could show a causal link.\n\n## Unknowns\n- The Ownership Table is a stub with fictional Teams\
+    \ [E20], so the Team names need confirming.\n- The logs do not show why the /p/gb1 mounts failed (the Lustre\
+    \ server side is not in BGL), why they stopped after 2005-09-17, or whether the block_id Pattern is the same\
+    \ fault.\n- The 12 Incident days are counted on Pacific logged time [E15], while the daily trend uses UTC days,\
+    \ so the two can differ at the day edges.\n- For OpenStack there is no error text for the slow spawns, and there\
+    \ is no way to tell what the benchmark injected.\n- These logs cannot show downtime, cost or user impact.\n\n\
+    ## Next Step\n1. **Kernel Team first:** investigate the /p/gb1 Lustre mount failure (Component KERNEL). The\
+    \ measured factor that puts it first is its Spread: 83 Incidents on 12 days, 33 of them machine-wide, and 7\
+    \ that reached all 1,024 I/O nodes [E15]. Ask them to check whether the later block_id KERNMNTF Pattern, at\
+    \ 4,107 Log Entries since 2005-10-06, is the same failure [E17].\n2. **Then the Hypervisor Team and Compute\
+    \ Service Team** for the os-3 slow spawns. The factor is 5 flagged instances, with image_s z up to 113.8 [E18].\n"
+- role: manager
+  question: 'Which observed problems deserve attention first? Answer for two Data Scopes: the /p/gb1 wave''s window
+    (2005-08-31 to 2005-09-18, UTC), and the whole BGL Dataset over alert categories, where the top 5 by priority
+    are a band, not an order. The KERNDTLB storm has by far the most Log Entries of any alert category: does that
+    make it the top priority? State it as two sentences exactly in this form, with nothing added inside them and
+    the numbers from list_incidents: "The largest KERNDTLB Incident has <N> Log Entries on <N> node (<date>). The
+    category has <N> Log Entries." And how much downtime and money did these failures cost us?'
+  answer: '## Observed Facts
+
+
+    **Data Scope 1: the /p/gb1 wave''s window, BGL, 2005-08-31 to 2005-09-18 (UTC), alert categories.** 15 alert
+    categories were active, with 32,937 Log Entries and 196 Incidents in total [E27]. The top-5 priority band, read
+    as a set, not an order [E27]:
+
+    - KERNMNTF (Component KERNEL, Kernel Team [E25]): 26,722 Log Entries in 85 Incidents on 128 midplanes [E27].
+    It holds most of the window''s Log Entries and the most Incidents of any category in it [E27].
+
+    - APPSEV (Component APP, Application Runtime Team [E25]): 4,875 Log Entries in 11 Incidents on 128 midplanes
+    [E27].
+
+    - KERNRTSP: 460 Log Entries in 39 Incidents on 21 midplanes [E27].
+
+    - KERNMC: 23 Log Entries in 22 Incidents on 19 midplanes [E27].
+
+    - KERNCON: 3 Log Entries in 3 Incidents on 3 midplanes [E27].
+
+
+    Inside this window the filesystem mount failure (KERNMNTF) is the problem to act on first: it is in the band
+    and dwarfs the others in both Log Entries and Incidents [E27].
+
+
+    **Data Scope 2: the whole BGL Dataset, alert categories, 2005-06-03 to 2006-01-04 (UTC).** 41 alert categories,
+    348,460 Log Entries and 1,202 Incidents over 31 weeks [E26]. The top-5 priority band, read as a set, not an
+    order [E26]:
+
+    - APPSEV (APP): 49,651 Log Entries in 136 Incidents on 128 midplanes, active in 21 weeks, flagged chronic [E26].
+
+    - KERNMC (KERNEL): 342 Log Entries in 291 Incidents on 109 midplanes, active in 31 weeks, flagged chronic [E26].
+
+    - KERNRTSP (KERNEL): 3,983 Log Entries in 260 Incidents on 103 midplanes, active in 31 weeks [E26].
+
+    - KERNMNTF (KERNEL): 31,531 Log Entries in 105 Incidents on 128 midplanes, active in 14 weeks [E26].
+
+    - KERNSOCK (KERNEL): 209 Log Entries in 39 Incidents on 91 midplanes, active in 15 weeks [E26].
+
+
+    All five logged within 1 day of the end of the Dataset, so they are still active [E26]. KERNMNTF is in the band
+    in both Data Scopes [E26][E27].
+
+
+    **KERNDTLB is not the top priority.** The largest KERNDTLB Incident has 152,182 Log Entries on 1 node (2005-06-11)
+    [E28]. The category has 152,734 Log Entries [E28]. It has 37 Incidents, and only 1 of them is a single-node
+    storm [E28]. Over the whole Dataset it ranks outside the band [E26]. Its volume is one node repeating itself,
+    not a problem that recurs or spreads.
+
+
+    ## Hypotheses
+
+
+    - The order inside each band is not meaningful: the band was stable under random reweighting of the five priority
+    factors, the order within it was not [E26]. Treat the five as equals.
+
+    - In the wave''s window, KERNCON (3 Log Entries [E27]) may be in the band only because that window is too short
+    for the trend factor to separate the categories [E27].
+
+    - KERNMNTF''s place in the whole-Dataset band may come mostly from the /p/gb1 wave, since most of its Log Entries
+    fall in that window [E26][E27]; whether its later Incidents are the same fault is not established.
+
+
+    ## Unknowns
+
+
+    - Downtime and money: these logs cannot establish what the failures cost in downtime or money, and any figure
+    would be invented. They hold no uptime or outage records and no prices, billing or job accounting. Customer
+    impact and SLA breaches are not measured either. The measured alternative is above: Log Entries, Incidents,
+    midplanes, active weeks and the Teams affected. Uptime monitoring, job accounting and support tickets would
+    answer the cost question.
+
+    - Root cause: the logs show which categories recur and spread, not why.
+
+    - The Teams come from a stub Ownership Table, so the Team names are placeholders [E25].
+
+
+    ## Next Step
+
+
+    1. Kernel Team: treat the Lustre mount failure (KERNMNTF) as priority 1 for the wave period, and review it together
+    with KERNMC, KERNRTSP and KERNSOCK as the whole-Dataset band.
+
+    2. Application Runtime Team: review APPSEV, the chronic category in the whole-Dataset band.
+
+    3. Keep KERNDTLB off the priority list unless it recurs beyond one node; ask operations for uptime and job-accounting
+    data before any cost or downtime estimate.
+
+    '

@@ -18,6 +18,8 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Literal, get_args
 
+import psycopg
+from psycopg.conninfo import conninfo_to_dict
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_serializer, field_validator
 
 RoleName = Literal["engineer", "team_lead", "manager"]
@@ -32,6 +34,7 @@ _FALSE = frozenset({"0", "false", "no", "off"})
 # Field name -> environment variable, for error messages.
 ENV_NAMES = {
     "database_url": "DATABASE_URL",
+    "role_database_urls": "DATABASE_URL_<ROLE>",
     "slm_schema": "SLM_SCHEMA",
     "raw_schema": "SLM_RAW_SCHEMA",
     "data_dir": "SLM_DATA_DIR",
@@ -80,9 +83,16 @@ class Settings(BaseModel):
             raise ValueError(f"{value!r} is not a finite number of seconds greater than 0")
         return value
 
+    @field_validator("database_url")
+    @classmethod
+    def _valid_dsn(cls, value: str) -> str:
+        return _check_dsn("DATABASE_URL", value)
+
     @field_validator("role_database_urls", mode="after")
     @classmethod
     def _read_only(cls, value: Mapping[RoleName, str]) -> Mapping[RoleName, str]:
+        for role, dsn in value.items():
+            _check_dsn(f"DATABASE_URL_{role.upper()}", dsn)
         return MappingProxyType(dict(value))
 
     @field_serializer("role_database_urls")
@@ -142,6 +152,17 @@ def _describe(exc: ValidationError, overrides: Mapping[str, Any]) -> str:
         source = field if field in overrides else ENV_NAMES.get(field, field)
         problems.append(f"{source}: {error['msg']}")
     return "; ".join(problems)
+
+
+def _check_dsn(name: str, value: str) -> str:
+    # The message never repeats the value, because a DSN can carry a password.
+    try:
+        conninfo_to_dict(value)
+    except psycopg.ProgrammingError:
+        raise ValueError(
+            f"{name} is not a valid libpq connection string (key=value pairs or a postgresql:// URI)"
+        ) from None
+    return value
 
 
 def _flag(name: str, value: str) -> bool:

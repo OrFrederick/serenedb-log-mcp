@@ -193,3 +193,25 @@ def test_settings_still_serialise() -> None:
 
     assert s.model_dump()["role_database_urls"] == {"manager": "host=mgr"}
     assert '"role_database_urls":{"manager":"host=mgr"}' in s.model_dump_json()
+
+
+@pytest.mark.parametrize("value", ["host=db port", "host='db", "postgresql://u@h:7890/db?bad_option=1"])
+def test_malformed_database_url_names_the_variable(value: str) -> None:
+    with pytest.raises(ConfigError, match="DATABASE_URL"):
+        load_settings({"DATABASE_URL": value})
+
+
+def test_malformed_role_database_url_names_the_role_variable() -> None:
+    with pytest.raises(ConfigError, match="DATABASE_URL_MANAGER"):
+        load_settings({"DATABASE_URL_MANAGER": "host=db port"})
+
+
+def test_database_url_error_never_echoes_the_value() -> None:
+    with pytest.raises(ConfigError) as exc_info:
+        load_settings({"DATABASE_URL": "host=db password=hunter2 port"})
+
+    assert "hunter2" not in str(exc_info.value)
+
+
+def test_uri_database_url_is_accepted() -> None:
+    assert load_settings({"DATABASE_URL": "postgresql://postgres@localhost:7890/postgres"}).database_url

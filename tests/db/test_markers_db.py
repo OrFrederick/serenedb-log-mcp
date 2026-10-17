@@ -118,3 +118,48 @@ def test_corpus_gate_skips_tables_from_a_different_loader(
     result.stdout.fnmatch_lines(
         [f"SKIPPED*{raw_schema}.bgl has no column alert_tag*different loader*Reload with `make load-dev`*"]
     )
+
+
+# A conftest that rewrites SLM_RAW_SCHEMA between the two tests, to prove the corpus verdict is
+# cached per schema and not once per session. The copied root hook is called at the end.
+PER_TEST_SCHEMA = """
+import os
+
+_root_gate = pytest_runtest_setup
+PER_TEST = {"test_first": "slm_no_schema_a", "test_second": "slm_no_schema_b"}
+
+
+def pytest_runtest_setup(item):
+    os.environ["SLM_RAW_SCHEMA"] = PER_TEST[item.name]
+    _root_gate(item)
+"""
+
+TWO_CORPUS_TESTS = """
+import pytest
+
+@pytest.mark.corpus
+def test_first():
+    pass
+
+@pytest.mark.corpus
+def test_second():
+    pass
+"""
+
+
+def test_the_corpus_verdict_is_cached_per_schema_not_per_session(
+    pytester: pytest.Pytester, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.delenv("SLM_REQUIRE_DB", raising=False)
+    monkeypatch.setenv("SLM_RAW_SCHEMA", "slm_no_schema_a")
+    pytester.makeconftest(ROOT_CONFTEST.read_text() + PER_TEST_SCHEMA)
+    pytester.makepyfile(test_suite=TWO_CORPUS_TESTS)
+
+    result = pytester.runpytest("-rs")
+
+    result.assert_outcomes(skipped=2)
+    skips = [line for line in result.outlines if line.startswith("SKIPPED")]
+    assert len(skips) == 2, skips
+    # The second test changed the schema, so it must get its own verdict, not the first one's.
+    assert "slm_no_schema_a.bgl" in skips[0]
+    assert "slm_no_schema_b.bgl" in skips[1]

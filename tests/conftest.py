@@ -63,11 +63,15 @@ def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
 
 
 def pytest_runtest_setup(item: pytest.Item) -> None:
-    problem = None
-    if item.get_closest_marker("corpus") is not None:
-        problem = _db_problem() or _corpus_problem()
-    elif item.get_closest_marker("db") is not None:
-        problem = _db_problem()
+    corpus = item.get_closest_marker("corpus") is not None
+    if not corpus and item.get_closest_marker("db") is None:
+        return
+    # Resolved here, so the verdicts below are cached per DSN and schema rather than once per
+    # session: a test that changes DATABASE_URL or SLM_RAW_SCHEMA gets a fresh verdict.
+    settings = load_settings()
+    problem = _db_problem(settings.database_url)
+    if problem is None and corpus:
+        problem = _corpus_problem(settings.database_url, settings.raw_schema)
     if problem is None:
         return
     if _require_db():
@@ -86,8 +90,8 @@ def database_url() -> str:
 
 
 @functools.cache
-def _db_problem() -> str | None:
-    dsn = load_settings().database_url
+def _db_problem(dsn: str) -> str | None:
+    """Can we connect to `dsn` and run `SELECT 1`? Cached per DSN, so a changed DSN is retried."""
     try:
         with psycopg.connect(dsn, connect_timeout=CONNECT_TIMEOUT_S, autocommit=True) as conn:
             conn.execute("SELECT 1")
@@ -100,10 +104,9 @@ def _db_problem() -> str | None:
 
 
 @functools.cache
-def _corpus_problem() -> str | None:
-    settings = load_settings()
-    schema = settings.raw_schema
-    with psycopg.connect(settings.database_url, connect_timeout=CONNECT_TIMEOUT_S, autocommit=True) as conn:
+def _corpus_problem(dsn: str, schema: str) -> str | None:
+    """Is the full Base Corpus in `schema`? Cached per DSN and schema, not once per session."""
+    with psycopg.connect(dsn, connect_timeout=CONNECT_TIMEOUT_S, autocommit=True) as conn:
         for table, floor in BASE_CORPUS_FLOOR.items():
             exists = conn.execute(
                 "SELECT count(*) FROM information_schema.tables WHERE table_schema = %s AND table_name = %s",

@@ -108,3 +108,51 @@ def test_same_test_file_name_in_two_directories_collects(pytester: pytest.Pytest
     result = pytester.runpytest()
 
     result.assert_outcomes(passed=2)
+
+
+# A conftest that rewrites DATABASE_URL between the two tests, to prove the gate's verdict is
+# cached per resolved DSN and not once per session. The copied root hook is called at the end.
+PER_TEST_DSN = """
+import os
+
+_root_gate = pytest_runtest_setup
+PER_TEST = {
+    "test_first": "host=127.0.0.1 port=9 dbname=postgres user=postgres",
+    "test_second": "host=127.0.0.1 port=10 dbname=postgres user=postgres",
+}
+
+
+def pytest_runtest_setup(item):
+    os.environ["DATABASE_URL"] = PER_TEST[item.name]
+    _root_gate(item)
+"""
+
+TWO_DB_TESTS = """
+import pytest
+
+@pytest.mark.db
+def test_first():
+    pass
+
+@pytest.mark.db
+def test_second():
+    pass
+"""
+
+
+def test_the_db_verdict_is_cached_per_dsn_not_per_session(
+    pytester: pytest.Pytester, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.delenv("SLM_REQUIRE_DB", raising=False)
+    monkeypatch.setenv("DATABASE_URL", UNREACHABLE)
+    pytester.makeconftest(ROOT_CONFTEST.read_text() + PER_TEST_DSN)
+    pytester.makepyfile(test_suite=TWO_DB_TESTS)
+
+    result = pytester.runpytest("-rs")
+
+    result.assert_outcomes(skipped=2)
+    skips = [line for line in result.outlines if line.startswith("SKIPPED")]
+    assert len(skips) == 2, skips
+    # The second test changed the DSN, so it must get its own verdict, not the first one's.
+    assert "port=9" in skips[0]
+    assert "port=10" in skips[1]

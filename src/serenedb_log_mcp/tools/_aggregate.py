@@ -668,7 +668,12 @@ def iso(value: datetime | None) -> str | None:
 
 
 def share(count: int, total: int) -> float:
-    return round(100 * count / total, 2) if total else 0.0
+    """`count` as a percentage of `total`: two decimals from 1 %, four significant digits below it,
+    so a small group never reads as 0.0."""
+    if not total or not count:
+        return 0.0
+    pct = 100 * count / total
+    return round(pct, 2) if pct >= 1 else float(f"{pct:.4g}")
 
 
 def whole_weeks(stats: Mapping[tuple[str, str], GroupStats], parts: Sequence[Part]) -> dict[str, int]:

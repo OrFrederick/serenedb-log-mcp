@@ -123,9 +123,10 @@ def test_the_managers_views_hold_no_message(granted: Access) -> None:
     with connect(granted.admin_dsn) as conn:
         own_index = conn.execute(
             "SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace "
-            "WHERE n.nspname = %s AND c.relkind = 'i'",
+            "WHERE n.nspname = %s AND c.relkind = 'i' AND c.relname <> 'pattern_idx'",
             [own],
         ).fetchone()
+    # No full-text index over Log Entries; the Pattern catalogue's pattern_idx holds no Log Entry text.
     assert own_index == (0,)
 
 
@@ -238,6 +239,8 @@ TOOL_CALLS: dict[str, CallSpec] = {
     "get_role_brief": lambda role, granted: {},
     "list_incidents": lambda role, granted: {"dataset": "bgl"},
     "find_precursors": lambda role, granted: {"dataset": "bgl", "target_pattern": a_pattern_key(granted)},
+    "list_patterns": lambda role, granted: {"dataset": "bgl"},
+    "search_patterns": lambda role, granted: {"dataset": "bgl", "query": "error"},
 }
 """One call per registered tool, run as every Role. A new tool must add its call here, so it is
 checked through each Role's login and views."""

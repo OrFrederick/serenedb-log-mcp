@@ -206,3 +206,64 @@ def test_the_updates_touch_only_log_entries_whose_pattern_changes() -> None:
         assert "e.template_id IS DISTINCT FROM d.template_id" in update
         assert "e.family_id IS DISTINCT FROM d.family_id" in update
         assert "e.pattern_key IS NULL" in update
+
+
+# ----------------------------------------------------------------- the Pattern search index (T14)
+
+
+@pytest.mark.parametrize("version", [(26, 10, 1), (26, 11), (27, 0, 0)])
+def test_the_pattern_text_dictionary_lowercases_and_stems_english_on_26_10_1(
+    version: tuple[int, ...],
+) -> None:
+    ddl = derive.pattern_dictionary_ddl('"slm".pattern_text', version)
+
+    assert ddl == (
+        "CREATE TEXT SEARCH DICTIONARY \"slm\".pattern_text AS split_text(case := 'lower') "
+        "| stem_words('en_US.UTF-8') WITH (frequency, norm)"
+    )
+
+
+@pytest.mark.parametrize("version", [(26, 9, 1, 3), (26, 10, 0)])
+def test_older_servers_get_the_legacy_stemming_dictionary(version: tuple[int, ...]) -> None:
+    ddl = derive.pattern_dictionary_ddl('"slm".pattern_text', version)
+
+    assert ddl.startswith("CREATE TEXT SEARCH DICTIONARY \"slm\".pattern_text (TEMPLATE = 'text'")
+    for option in ("locale = 'en_US.UTF-8'", "\"case\" = 'lower'", "stemming = true", "frequency = true",
+                   "norm = true"):  # fmt: skip
+        assert option in ddl
+    assert " AS " not in ddl
+
+
+def test_variables_carry_the_pattern_text_dictionary() -> None:
+    values = derive.variables("slm_t14", "public", (26, 10, 1))
+
+    assert values["create_pattern_text_dictionary"].startswith(
+        'CREATE TEXT SEARCH DICTIONARY "slm_t14".pattern_text AS'
+    )
+
+
+def test_the_pattern_step_indexes_the_catalogue_after_building_it() -> None:
+    # In 20_patterns, not 90_indexes: `derive.py --only 20_patterns` rebuilds the pattern table with
+    # CREATE OR REPLACE, which drops its index, so the step must build the index again itself.
+    values = derive.variables("slm", "public", (26, 10, 1))
+    statements = derive.split_statements(derive.render(PATTERNS_SQL.read_text(), values))
+
+    def position(prefix: str) -> int:
+        found = [i for i, s in enumerate(statements) if s.startswith(prefix)]
+        assert len(found) == 1, prefix
+        return found[0]
+
+    table = position('CREATE OR REPLACE TABLE "slm".pattern AS')
+    drop_index = position('DROP INDEX IF EXISTS "slm".pattern_idx')
+    drop_dictionary = position('DROP TEXT SEARCH DICTIONARY IF EXISTS "slm".pattern_text')
+    dictionary = position('CREATE TEXT SEARCH DICTIONARY "slm".pattern_text')
+    index = position('CREATE INDEX pattern_idx ON "slm".pattern USING inverted')
+    refresh = position('VACUUM (REFRESH_TABLE) "slm".pattern')
+    # An index that uses the dictionary blocks DROP TEXT SEARCH DICTIONARY.
+    assert table < drop_index < drop_dictionary < dictionary < index < refresh
+    assert 'template_text "slm".pattern_text' in statements[index]
+    assert "dataset" in statements[index]
+
+
+def test_a_derived_schema_without_the_pattern_index_is_not_usable() -> None:
+    assert "pattern_idx" in derive.REQUIRED_INDEXES

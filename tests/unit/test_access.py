@@ -201,10 +201,12 @@ def test_the_role_indexes_index_what_the_canonical_index_does(index: str) -> Non
         assert index_columns(create, index) == [c.replace("${slm}", "slm") for c in canonical]
 
 
-def test_the_manager_gets_no_full_text_index() -> None:
+def test_the_manager_gets_no_full_text_index_over_log_entries() -> None:
     own = role_schema("slm", Role.MANAGER)
+    indexes = [s for s in statements() if s.startswith("CREATE INDEX") and f" {own}." in plain(s)]
 
-    assert not [s for s in statements() if s.startswith("CREATE INDEX") and f" {own}." in plain(s)]
+    # Only the Pattern catalogue's index: Pattern texts name the problems the Manager ranks.
+    assert [plain(s).split(" ON ")[1].split(" ")[0] for s in indexes] == [f"{own}.pattern"]
 
 
 def test_the_drop_statements_remove_the_views_and_the_logins_only() -> None:

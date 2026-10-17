@@ -65,6 +65,7 @@ def test_shared_tables_live_in_the_same_schema() -> None:
     assert text(rel.ownership_table) == '"slm"."ownership"'
     assert text(rel.pattern_dict_table) == '"slm"."pattern_dict"'
     assert text(rel.patterns_table) == '"slm"."pattern"'
+    assert text(rel.patterns_index) == '"slm"."pattern_idx"'
     assert text(rel.incidents_table) == '"slm"."incident"'
     assert text(rel.instances_table) == '"slm"."os_instance"'
 
@@ -230,7 +231,7 @@ def test_the_registry_lists_every_canonical_table_and_index_name() -> None:
         "os_instance",
         "ownership",
     }
-    assert indexes == {"bgl_entry_idx", "os_entry_idx"}
+    assert indexes == {"bgl_entry_idx", "os_entry_idx", "pattern_idx"}
 
 
 # ----------------------------------------------------------------- per-Role views (T22)

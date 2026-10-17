@@ -51,6 +51,8 @@ CREATE INDEX os_entry_idx ON ${engineer_schema}.os_entry USING inverted (
     endpoint, http_status, latency_s,
     pattern_key, template_id, family_id
 );
+-- The Pattern catalogue index (sql/derive/20_patterns.sql), for search_patterns (T14).
+CREATE INDEX pattern_idx ON ${engineer_schema}.pattern USING inverted (dataset, template_text ${slm}.pattern_text);
 GRANT USAGE ON SCHEMA ${engineer_schema} TO ${engineer_login};
 GRANT SELECT ON ${engineer_schema}.bgl_entry TO ${engineer_login};
 GRANT SELECT ON ${engineer_schema}.os_entry TO ${engineer_login};
@@ -82,6 +84,7 @@ CREATE INDEX os_entry_idx ON ${team_lead_schema}.os_entry USING inverted (
     endpoint, http_status, latency_s,
     pattern_key, template_id, family_id
 );
+CREATE INDEX pattern_idx ON ${team_lead_schema}.pattern USING inverted (dataset, template_text ${slm}.pattern_text);
 GRANT USAGE ON SCHEMA ${team_lead_schema} TO ${team_lead_login};
 GRANT SELECT ON ${team_lead_schema}.bgl_entry TO ${team_lead_login};
 GRANT SELECT ON ${team_lead_schema}.os_entry TO ${team_lead_login};
@@ -93,7 +96,8 @@ GRANT SELECT ON ${team_lead_schema}.incident TO ${team_lead_login};
 
 -- Manager: decides from measured frequency and affected Components, so its views hold no Log Entry
 -- text: every canonical column but message (corpus.datasets.ROLE_WITHHELD_COLUMNS), and no
--- full-text index. Pattern texts stay: they name the problems the Manager ranks. Node names stay
+-- full-text index over Log Entries. Pattern texts stay, with their catalogue index: they name the
+-- problems the Manager ranks. Node names stay
 -- too, because count_by and trend count distinct sources on them; the Role shaping and the Manager
 -- playbook keep them out of the answer body.
 CREATE SCHEMA ${manager_schema};
@@ -112,6 +116,7 @@ CREATE VIEW ${manager_schema}.pattern_dict AS SELECT
 FROM ${slm}.pattern_dict;
 CREATE VIEW ${manager_schema}.os_instance AS SELECT * FROM ${slm}.os_instance;
 CREATE VIEW ${manager_schema}.incident AS SELECT * FROM ${slm}.incident;
+CREATE INDEX pattern_idx ON ${manager_schema}.pattern USING inverted (dataset, template_text ${slm}.pattern_text);
 GRANT USAGE ON SCHEMA ${manager_schema} TO ${manager_login};
 GRANT SELECT ON ${manager_schema}.bgl_entry TO ${manager_login};
 GRANT SELECT ON ${manager_schema}.os_entry TO ${manager_login};

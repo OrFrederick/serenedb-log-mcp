@@ -109,6 +109,29 @@ therefore writes only Log Entries whose Pattern changes, so a re-run is cheap. T
 into a schema that is indexed but has none yet, run the full `make derive` (14 s) rather than
 `--only 20_patterns`.
 
+## The catalogue and its search index (T14)
+
+The `pattern` table is the catalogue behind `list_patterns`. The Pattern step also builds
+`pattern_idx`, an inverted index over `pattern.template_text` (dictionary `pattern_text`: lower-case
+words with English Snowball stemming, `frequency` and `norm` for BM25) and `dataset`, which
+`search_patterns` reads. It lives in this step rather than in `90_indexes`, because
+`CREATE OR REPLACE TABLE pattern` drops it, and `--only 20_patterns` must leave a searchable
+catalogue. The step's legacy dictionary form for servers before 26.10.1 (`stemming = true`) is
+untested, like the one of `log_text`.
+
+Size of the catalogue as `list_patterns` returns it (Evidence JSON per page, counted on 2026-10-17
+with `claude -p` and a fixed system prompt; Opus, Sonnet and Haiku 5.5 gave the same counts):
+
+| Dataset | Patterns | Pages | Tokens per page | Tokens in total |
+|---|---:|---:|---|---:|
+| bgl | 465 | 8 | 3,968 to 8,453 (KERNEL alone fills pages 4 to 7) | 52,872 |
+| openstack | 73 | 1 | 8,075 | 8,075 |
+
+The #7 estimate of about 6.6k tokens for BGL counted 320 Loghub EventIds with their text only; a
+`list_patterns` row adds the 16-hex `template_id`, the Log Entry count and first and last seen, at
+about 2 characters per token. Reading BGL therefore goes by Component (`component='KERNEL'`, four
+pages) or starts from `search_patterns`.
+
 ## SereneDB versions
 
 Measured on 26.10.1 only. The step avoids temporary views (a temporary table carries the Tier 1

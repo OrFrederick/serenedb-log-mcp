@@ -1,0 +1,233 @@
+{
+  "filters": {
+    "warnings_plus_errors": [
+      [
+        "nova.virt.libvirt.imagecache",
+        3059
+      ],
+      [
+        "oslo_service.periodic_task",
+        184
+      ],
+      [
+        "nova.compute.manager",
+        45
+      ],
+      [
+        "nova.virt.libvirt.driver",
+        12
+      ],
+      [
+        "keystonemiddleware.auth_token",
+        6
+      ]
+    ],
+    "error_and_critical_only": [
+      [
+        "oslo_service.periodic_task",
+        184
+      ],
+      [
+        "keystonemiddleware.auth_token",
+        4
+      ]
+    ]
+  },
+  "hypothetical_score": "w*log1p(flagged_count)/max(log1p(flagged_count))+(1-w)*flagged_count/all_component_entries",
+  "score_is": "a sensitivity illustration, not chosen priority rule; all-component-entry fraction is not an outage or user error rate",
+  "rankings": {
+    "0": [
+      {
+        "component": "keystonemiddleware.auth_token",
+        "count": 6,
+        "all_component_entries": 6,
+        "fraction": 1.0,
+        "score": 1.0
+      },
+      {
+        "component": "oslo_service.periodic_task",
+        "count": 184,
+        "all_component_entries": 184,
+        "fraction": 1.0,
+        "score": 1.0
+      },
+      {
+        "component": "nova.virt.libvirt.imagecache",
+        "count": 3059,
+        "all_component_entries": 45298,
+        "fraction": 0.06753057530133781,
+        "score": 0.06753057530133781
+      },
+      {
+        "component": "nova.compute.manager",
+        "count": 45,
+        "all_component_entries": 24784,
+        "fraction": 0.001815687540348612,
+        "score": 0.001815687540348612
+      },
+      {
+        "component": "nova.virt.libvirt.driver",
+        "count": 12,
+        "all_component_entries": 10336,
+        "fraction": 0.0011609907120743034,
+        "score": 0.0011609907120743034
+      }
+    ],
+    "0.25": [
+      {
+        "component": "oslo_service.periodic_task",
+        "count": 184,
+        "all_component_entries": 184,
+        "fraction": 1.0,
+        "score": 0.9126041965932037
+      },
+      {
+        "component": "keystonemiddleware.auth_token",
+        "count": 6,
+        "all_component_entries": 6,
+        "fraction": 1.0,
+        "score": 0.8106114155877397
+      },
+      {
+        "component": "nova.virt.libvirt.imagecache",
+        "count": 3059,
+        "all_component_entries": 45298,
+        "fraction": 0.06753057530133781,
+        "score": 0.3006479314760033
+      },
+      {
+        "component": "nova.compute.manager",
+        "count": 45,
+        "all_component_entries": 24784,
+        "fraction": 0.001815687540348612,
+        "score": 0.12061669370611906
+      },
+      {
+        "component": "nova.virt.libvirt.driver",
+        "count": 12,
+        "all_component_entries": 10336,
+        "fraction": 0.0011609907120743034,
+        "score": 0.08076405750290801
+      }
+    ],
+    "0.5": [
+      {
+        "component": "oslo_service.periodic_task",
+        "count": 184,
+        "all_component_entries": 184,
+        "fraction": 1.0,
+        "score": 0.8252083931864075
+      },
+      {
+        "component": "keystonemiddleware.auth_token",
+        "count": 6,
+        "all_component_entries": 6,
+        "fraction": 1.0,
+        "score": 0.6212228311754796
+      },
+      {
+        "component": "nova.virt.libvirt.imagecache",
+        "count": 3059,
+        "all_component_entries": 45298,
+        "fraction": 0.06753057530133781,
+        "score": 0.5337652876506689
+      },
+      {
+        "component": "nova.compute.manager",
+        "count": 45,
+        "all_component_entries": 24784,
+        "fraction": 0.001815687540348612,
+        "score": 0.23941769987188952
+      },
+      {
+        "component": "nova.virt.libvirt.driver",
+        "count": 12,
+        "all_component_entries": 10336,
+        "fraction": 0.0011609907120743034,
+        "score": 0.16036712429374173
+      }
+    ],
+    "0.75": [
+      {
+        "component": "nova.virt.libvirt.imagecache",
+        "count": 3059,
+        "all_component_entries": 45298,
+        "fraction": 0.06753057530133781,
+        "score": 0.7668826438253344
+      },
+      {
+        "component": "oslo_service.periodic_task",
+        "count": 184,
+        "all_component_entries": 184,
+        "fraction": 1.0,
+        "score": 0.7378125897796113
+      },
+      {
+        "component": "keystonemiddleware.auth_token",
+        "count": 6,
+        "all_component_entries": 6,
+        "fraction": 1.0,
+        "score": 0.43183424676321935
+      },
+      {
+        "component": "nova.compute.manager",
+        "count": 45,
+        "all_component_entries": 24784,
+        "fraction": 0.001815687540348612,
+        "score": 0.35821870603766
+      },
+      {
+        "component": "nova.virt.libvirt.driver",
+        "count": 12,
+        "all_component_entries": 10336,
+        "fraction": 0.0011609907120743034,
+        "score": 0.23997019108457543
+      }
+    ],
+    "1": [
+      {
+        "component": "nova.virt.libvirt.imagecache",
+        "count": 3059,
+        "all_component_entries": 45298,
+        "fraction": 0.06753057530133781,
+        "score": 1.0
+      },
+      {
+        "component": "oslo_service.periodic_task",
+        "count": 184,
+        "all_component_entries": 184,
+        "fraction": 1.0,
+        "score": 0.650416786372815
+      },
+      {
+        "component": "nova.compute.manager",
+        "count": 45,
+        "all_component_entries": 24784,
+        "fraction": 0.001815687540348612,
+        "score": 0.4770197122034304
+      },
+      {
+        "component": "nova.virt.libvirt.driver",
+        "count": 12,
+        "all_component_entries": 10336,
+        "fraction": 0.0011609907120743034,
+        "score": 0.31957325787540913
+      },
+      {
+        "component": "keystonemiddleware.auth_token",
+        "count": 6,
+        "all_component_entries": 6,
+        "fraction": 1.0,
+        "score": 0.24244566235095916
+      }
+    ]
+  },
+  "selected_rule": "Rank exact Components by WARNING|ERROR|CRITICAL matching Log Entry count descending; retain tied rank and alphabetize display; disclose severity filter and all ties. Show severe-only comparison alongside it.",
+  "limits": [
+    "No causal or financial risk ordering established",
+    "Team/spread metrics unavailable without official Ownership Table",
+    "All candidates here have affected Component count 1 by construction; spread adds no discrimination",
+    "Unmatched lines excluded from Component ranking but disclosed",
+    "No statistically valid temporal trend from unequal archive slices"
+  ]
+}

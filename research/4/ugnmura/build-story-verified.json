@@ -1,0 +1,675 @@
+{
+  "label_source": "anomaly_labels.txt in archive; labels indicate injected anomaly instances, not a root cause",
+  "labels": [
+    "1643649d-2f42-4303-bfcd-7798baec19f9",
+    "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+    "a445709b-6ad0-40ec-8860-bec60b6ca0c2",
+    "ae651dff-c7ad-43d6-ac96-bbcd820ccca8"
+  ],
+  "labelled_builds": [
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 11983,
+      "instance": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+      "seconds": 42.81,
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:08:19.900 2931 INFO nova.compute.manager [req-d6143bd4-9784-4e95-a0c8-83fba00530b6 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Took 42.81 seconds to build instance."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 12089,
+      "instance": "ae651dff-c7ad-43d6-ac96-bbcd820ccca8",
+      "seconds": 30.32,
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:09:11.213 2931 INFO nova.compute.manager [req-16d20912-7091-4f34-98c5-c48af9cfb809 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: ae651dff-c7ad-43d6-ac96-bbcd820ccca8] Took 30.32 seconds to build instance."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 16731,
+      "instance": "a445709b-6ad0-40ec-8860-bec60b6ca0c2",
+      "seconds": 51.59,
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:43:33.901 2931 INFO nova.compute.manager [req-5b5b0c22-ccce-41fc-8438-ceb520b5a8c2 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] Took 51.59 seconds to build instance."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 17237,
+      "instance": "1643649d-2f42-4303-bfcd-7798baec19f9",
+      "seconds": 32.12,
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:47:20.726 2931 INFO nova.compute.manager [req-1f32a51e-24e0-4848-9e29-14127a9a6d9a 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 1643649d-2f42-4303-bfcd-7798baec19f9] Took 32.12 seconds to build instance."
+    }
+  ],
+  "labelled_entries": [
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 11901,
+      "instance": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:07:37.102 2931 INFO nova.compute.claims [req-d6143bd4-9784-4e95-a0c8-83fba00530b6 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Attempting claim: memory 2048 MB, disk 20 GB, vcpus 1 CPU"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 11902,
+      "instance": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:07:37.103 2931 INFO nova.compute.claims [req-d6143bd4-9784-4e95-a0c8-83fba00530b6 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Total memory: 64172 MB, used: 512.00 MB"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 11903,
+      "instance": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:07:37.103 2931 INFO nova.compute.claims [req-d6143bd4-9784-4e95-a0c8-83fba00530b6 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] memory limit: 96258.00 MB, free: 95746.00 MB"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 11904,
+      "instance": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:07:37.104 2931 INFO nova.compute.claims [req-d6143bd4-9784-4e95-a0c8-83fba00530b6 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Total disk: 15 GB, used: 0.00 GB"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 11905,
+      "instance": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:07:37.105 2931 INFO nova.compute.claims [req-d6143bd4-9784-4e95-a0c8-83fba00530b6 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] disk limit not specified, defaulting to unlimited"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 11906,
+      "instance": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:07:37.105 2931 INFO nova.compute.claims [req-d6143bd4-9784-4e95-a0c8-83fba00530b6 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Total vcpu: 16 VCPU, used: 0.00 VCPU"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 11907,
+      "instance": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:07:37.106 2931 INFO nova.compute.claims [req-d6143bd4-9784-4e95-a0c8-83fba00530b6 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] vcpu limit not specified, defaulting to unlimited"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 11908,
+      "instance": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:07:37.138 2931 INFO nova.compute.claims [req-d6143bd4-9784-4e95-a0c8-83fba00530b6 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Claim successful"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 11911,
+      "instance": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:07:37.924 2931 INFO nova.virt.libvirt.driver [req-d6143bd4-9784-4e95-a0c8-83fba00530b6 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Creating image"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 11960,
+      "instance": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:08:12.571 2931 INFO nova.compute.manager [req-3ea4052c-895d-4b64-9e2d-04d64c4d94ab - - - - -] [instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] VM Started (Lifecycle Event)"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 11961,
+      "instance": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:08:12.636 2931 INFO nova.compute.manager [req-3ea4052c-895d-4b64-9e2d-04d64c4d94ab - - - - -] [instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] VM Paused (Lifecycle Event)"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 11962,
+      "instance": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:08:12.757 2931 INFO nova.compute.manager [req-3ea4052c-895d-4b64-9e2d-04d64c4d94ab - - - - -] [instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] During sync_power_state the instance has a pending task (spawning). Skip."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 11978,
+      "instance": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:08:19.729 2931 INFO nova.compute.manager [req-3ea4052c-895d-4b64-9e2d-04d64c4d94ab - - - - -] [instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] VM Resumed (Lifecycle Event)"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 11979,
+      "instance": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:08:19.735 2931 INFO nova.virt.libvirt.driver [-] [instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Instance spawned successfully."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 11980,
+      "instance": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:08:19.736 2931 INFO nova.compute.manager [req-d6143bd4-9784-4e95-a0c8-83fba00530b6 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Took 41.81 seconds to spawn the instance on the hypervisor."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 11981,
+      "instance": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:08:19.873 2931 INFO nova.compute.manager [req-3ea4052c-895d-4b64-9e2d-04d64c4d94ab - - - - -] [instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] During sync_power_state the instance has a pending task (spawning). Skip."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 11982,
+      "instance": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:08:19.874 2931 INFO nova.compute.manager [req-3ea4052c-895d-4b64-9e2d-04d64c4d94ab - - - - -] [instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] VM Resumed (Lifecycle Event)"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 11983,
+      "instance": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:08:19.900 2931 INFO nova.compute.manager [req-d6143bd4-9784-4e95-a0c8-83fba00530b6 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Took 42.81 seconds to build instance."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 12005,
+      "instance": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:08:27.296 2931 INFO nova.compute.manager [req-483e1cca-e99f-4342-bee7-8b1c7a6b36e1 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Terminating instance"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 12007,
+      "instance": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:08:27.511 2931 INFO nova.virt.libvirt.driver [-] [instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Instance destroyed successfully."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 12009,
+      "instance": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:08:28.178 2931 INFO nova.virt.libvirt.driver [req-483e1cca-e99f-4342-bee7-8b1c7a6b36e1 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Deleting instance files /var/lib/nova/instances/544fd51c-4edc-4780-baae-ba1d80a0acfc_del"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 12010,
+      "instance": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:08:28.179 2931 INFO nova.virt.libvirt.driver [req-483e1cca-e99f-4342-bee7-8b1c7a6b36e1 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Deletion of /var/lib/nova/instances/544fd51c-4edc-4780-baae-ba1d80a0acfc_del complete"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 12011,
+      "instance": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:08:28.299 2931 INFO nova.compute.manager [req-483e1cca-e99f-4342-bee7-8b1c7a6b36e1 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Took 1.00 seconds to destroy the instance on the hypervisor."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 12013,
+      "instance": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:08:28.836 2931 INFO nova.compute.manager [req-483e1cca-e99f-4342-bee7-8b1c7a6b36e1 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Took 0.54 seconds to deallocate network for instance."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 12024,
+      "instance": "ae651dff-c7ad-43d6-ac96-bbcd820ccca8",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:08:40.907 2931 INFO nova.compute.claims [req-16d20912-7091-4f34-98c5-c48af9cfb809 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: ae651dff-c7ad-43d6-ac96-bbcd820ccca8] Attempting claim: memory 2048 MB, disk 20 GB, vcpus 1 CPU"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 12025,
+      "instance": "ae651dff-c7ad-43d6-ac96-bbcd820ccca8",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:08:40.908 2931 INFO nova.compute.claims [req-16d20912-7091-4f34-98c5-c48af9cfb809 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: ae651dff-c7ad-43d6-ac96-bbcd820ccca8] Total memory: 64172 MB, used: 512.00 MB"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 12026,
+      "instance": "ae651dff-c7ad-43d6-ac96-bbcd820ccca8",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:08:40.908 2931 INFO nova.compute.claims [req-16d20912-7091-4f34-98c5-c48af9cfb809 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: ae651dff-c7ad-43d6-ac96-bbcd820ccca8] memory limit: 96258.00 MB, free: 95746.00 MB"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 12027,
+      "instance": "ae651dff-c7ad-43d6-ac96-bbcd820ccca8",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:08:40.909 2931 INFO nova.compute.claims [req-16d20912-7091-4f34-98c5-c48af9cfb809 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: ae651dff-c7ad-43d6-ac96-bbcd820ccca8] Total disk: 15 GB, used: 0.00 GB"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 12028,
+      "instance": "ae651dff-c7ad-43d6-ac96-bbcd820ccca8",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:08:40.909 2931 INFO nova.compute.claims [req-16d20912-7091-4f34-98c5-c48af9cfb809 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: ae651dff-c7ad-43d6-ac96-bbcd820ccca8] disk limit not specified, defaulting to unlimited"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 12029,
+      "instance": "ae651dff-c7ad-43d6-ac96-bbcd820ccca8",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:08:40.910 2931 INFO nova.compute.claims [req-16d20912-7091-4f34-98c5-c48af9cfb809 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: ae651dff-c7ad-43d6-ac96-bbcd820ccca8] Total vcpu: 16 VCPU, used: 0.00 VCPU"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 12030,
+      "instance": "ae651dff-c7ad-43d6-ac96-bbcd820ccca8",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:08:40.910 2931 INFO nova.compute.claims [req-16d20912-7091-4f34-98c5-c48af9cfb809 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: ae651dff-c7ad-43d6-ac96-bbcd820ccca8] vcpu limit not specified, defaulting to unlimited"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 12031,
+      "instance": "ae651dff-c7ad-43d6-ac96-bbcd820ccca8",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:08:40.950 2931 INFO nova.compute.claims [req-16d20912-7091-4f34-98c5-c48af9cfb809 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: ae651dff-c7ad-43d6-ac96-bbcd820ccca8] Claim successful"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 12033,
+      "instance": "ae651dff-c7ad-43d6-ac96-bbcd820ccca8",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:08:41.622 2931 INFO nova.virt.libvirt.driver [req-16d20912-7091-4f34-98c5-c48af9cfb809 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: ae651dff-c7ad-43d6-ac96-bbcd820ccca8] Creating image"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 12035,
+      "instance": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:08:42.508 2931 INFO nova.compute.manager [-] [instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] VM Stopped (Lifecycle Event)"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 12064,
+      "instance": "ae651dff-c7ad-43d6-ac96-bbcd820ccca8",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:09:04.066 2931 INFO nova.compute.manager [req-3ea4052c-895d-4b64-9e2d-04d64c4d94ab - - - - -] [instance: ae651dff-c7ad-43d6-ac96-bbcd820ccca8] VM Started (Lifecycle Event)"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 12065,
+      "instance": "ae651dff-c7ad-43d6-ac96-bbcd820ccca8",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:09:04.145 2931 INFO nova.compute.manager [req-3ea4052c-895d-4b64-9e2d-04d64c4d94ab - - - - -] [instance: ae651dff-c7ad-43d6-ac96-bbcd820ccca8] VM Paused (Lifecycle Event)"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 12066,
+      "instance": "ae651dff-c7ad-43d6-ac96-bbcd820ccca8",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:09:04.268 2931 INFO nova.compute.manager [req-3ea4052c-895d-4b64-9e2d-04d64c4d94ab - - - - -] [instance: ae651dff-c7ad-43d6-ac96-bbcd820ccca8] During sync_power_state the instance has a pending task (spawning). Skip."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 12084,
+      "instance": "ae651dff-c7ad-43d6-ac96-bbcd820ccca8",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:09:11.073 2931 INFO nova.compute.manager [req-3ea4052c-895d-4b64-9e2d-04d64c4d94ab - - - - -] [instance: ae651dff-c7ad-43d6-ac96-bbcd820ccca8] VM Resumed (Lifecycle Event)"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 12085,
+      "instance": "ae651dff-c7ad-43d6-ac96-bbcd820ccca8",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:09:11.080 2931 INFO nova.virt.libvirt.driver [-] [instance: ae651dff-c7ad-43d6-ac96-bbcd820ccca8] Instance spawned successfully."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 12086,
+      "instance": "ae651dff-c7ad-43d6-ac96-bbcd820ccca8",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:09:11.081 2931 INFO nova.compute.manager [req-16d20912-7091-4f34-98c5-c48af9cfb809 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: ae651dff-c7ad-43d6-ac96-bbcd820ccca8] Took 29.46 seconds to spawn the instance on the hypervisor."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 12087,
+      "instance": "ae651dff-c7ad-43d6-ac96-bbcd820ccca8",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:09:11.189 2931 INFO nova.compute.manager [req-3ea4052c-895d-4b64-9e2d-04d64c4d94ab - - - - -] [instance: ae651dff-c7ad-43d6-ac96-bbcd820ccca8] During sync_power_state the instance has a pending task (spawning). Skip."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 12088,
+      "instance": "ae651dff-c7ad-43d6-ac96-bbcd820ccca8",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:09:11.189 2931 INFO nova.compute.manager [req-3ea4052c-895d-4b64-9e2d-04d64c4d94ab - - - - -] [instance: ae651dff-c7ad-43d6-ac96-bbcd820ccca8] VM Resumed (Lifecycle Event)"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 12089,
+      "instance": "ae651dff-c7ad-43d6-ac96-bbcd820ccca8",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:09:11.213 2931 INFO nova.compute.manager [req-16d20912-7091-4f34-98c5-c48af9cfb809 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: ae651dff-c7ad-43d6-ac96-bbcd820ccca8] Took 30.32 seconds to build instance."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 12101,
+      "instance": "ae651dff-c7ad-43d6-ac96-bbcd820ccca8",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:09:18.366 2931 INFO nova.compute.manager [req-0b12097e-0fb6-4027-a9e5-2ca95ddf35f6 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: ae651dff-c7ad-43d6-ac96-bbcd820ccca8] Terminating instance"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 12103,
+      "instance": "ae651dff-c7ad-43d6-ac96-bbcd820ccca8",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:09:18.581 2931 INFO nova.virt.libvirt.driver [-] [instance: ae651dff-c7ad-43d6-ac96-bbcd820ccca8] Instance destroyed successfully."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 12105,
+      "instance": "ae651dff-c7ad-43d6-ac96-bbcd820ccca8",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:09:19.282 2931 INFO nova.virt.libvirt.driver [req-0b12097e-0fb6-4027-a9e5-2ca95ddf35f6 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: ae651dff-c7ad-43d6-ac96-bbcd820ccca8] Deleting instance files /var/lib/nova/instances/ae651dff-c7ad-43d6-ac96-bbcd820ccca8_del"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 12106,
+      "instance": "ae651dff-c7ad-43d6-ac96-bbcd820ccca8",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:09:19.285 2931 INFO nova.virt.libvirt.driver [req-0b12097e-0fb6-4027-a9e5-2ca95ddf35f6 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: ae651dff-c7ad-43d6-ac96-bbcd820ccca8] Deletion of /var/lib/nova/instances/ae651dff-c7ad-43d6-ac96-bbcd820ccca8_del complete"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 12107,
+      "instance": "ae651dff-c7ad-43d6-ac96-bbcd820ccca8",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:09:19.401 2931 INFO nova.compute.manager [req-0b12097e-0fb6-4027-a9e5-2ca95ddf35f6 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: ae651dff-c7ad-43d6-ac96-bbcd820ccca8] Took 1.03 seconds to destroy the instance on the hypervisor."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 12109,
+      "instance": "ae651dff-c7ad-43d6-ac96-bbcd820ccca8",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:09:19.846 2931 INFO nova.compute.manager [req-0b12097e-0fb6-4027-a9e5-2ca95ddf35f6 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: ae651dff-c7ad-43d6-ac96-bbcd820ccca8] Took 0.44 seconds to deallocate network for instance."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 12138,
+      "instance": "ae651dff-c7ad-43d6-ac96-bbcd820ccca8",
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 21:09:33.816 2931 INFO nova.compute.manager [-] [instance: ae651dff-c7ad-43d6-ac96-bbcd820ccca8] VM Stopped (Lifecycle Event)"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 16633,
+      "instance": "a445709b-6ad0-40ec-8860-bec60b6ca0c2",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:42:42.319 2931 INFO nova.compute.claims [req-5b5b0c22-ccce-41fc-8438-ceb520b5a8c2 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] Attempting claim: memory 2048 MB, disk 20 GB, vcpus 1 CPU"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 16634,
+      "instance": "a445709b-6ad0-40ec-8860-bec60b6ca0c2",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:42:42.320 2931 INFO nova.compute.claims [req-5b5b0c22-ccce-41fc-8438-ceb520b5a8c2 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] Total memory: 64172 MB, used: 512.00 MB"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 16635,
+      "instance": "a445709b-6ad0-40ec-8860-bec60b6ca0c2",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:42:42.321 2931 INFO nova.compute.claims [req-5b5b0c22-ccce-41fc-8438-ceb520b5a8c2 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] memory limit: 96258.00 MB, free: 95746.00 MB"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 16636,
+      "instance": "a445709b-6ad0-40ec-8860-bec60b6ca0c2",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:42:42.322 2931 INFO nova.compute.claims [req-5b5b0c22-ccce-41fc-8438-ceb520b5a8c2 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] Total disk: 15 GB, used: 0.00 GB"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 16637,
+      "instance": "a445709b-6ad0-40ec-8860-bec60b6ca0c2",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:42:42.324 2931 INFO nova.compute.claims [req-5b5b0c22-ccce-41fc-8438-ceb520b5a8c2 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] disk limit not specified, defaulting to unlimited"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 16638,
+      "instance": "a445709b-6ad0-40ec-8860-bec60b6ca0c2",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:42:42.324 2931 INFO nova.compute.claims [req-5b5b0c22-ccce-41fc-8438-ceb520b5a8c2 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] Total vcpu: 16 VCPU, used: 0.00 VCPU"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 16639,
+      "instance": "a445709b-6ad0-40ec-8860-bec60b6ca0c2",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:42:42.325 2931 INFO nova.compute.claims [req-5b5b0c22-ccce-41fc-8438-ceb520b5a8c2 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] vcpu limit not specified, defaulting to unlimited"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 16640,
+      "instance": "a445709b-6ad0-40ec-8860-bec60b6ca0c2",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:42:42.360 2931 INFO nova.compute.claims [req-5b5b0c22-ccce-41fc-8438-ceb520b5a8c2 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] Claim successful"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 16642,
+      "instance": "a445709b-6ad0-40ec-8860-bec60b6ca0c2",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:42:43.044 2931 INFO nova.virt.libvirt.driver [req-5b5b0c22-ccce-41fc-8438-ceb520b5a8c2 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] Creating image"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 16710,
+      "instance": "a445709b-6ad0-40ec-8860-bec60b6ca0c2",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:43:27.498 2931 INFO nova.compute.manager [req-3ea4052c-895d-4b64-9e2d-04d64c4d94ab - - - - -] [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] VM Started (Lifecycle Event)"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 16711,
+      "instance": "a445709b-6ad0-40ec-8860-bec60b6ca0c2",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:43:27.561 2931 INFO nova.compute.manager [req-3ea4052c-895d-4b64-9e2d-04d64c4d94ab - - - - -] [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] VM Paused (Lifecycle Event)"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 16712,
+      "instance": "a445709b-6ad0-40ec-8860-bec60b6ca0c2",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:43:27.679 2931 INFO nova.compute.manager [req-3ea4052c-895d-4b64-9e2d-04d64c4d94ab - - - - -] [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] During sync_power_state the instance has a pending task (spawning). Skip."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 16726,
+      "instance": "a445709b-6ad0-40ec-8860-bec60b6ca0c2",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:43:33.752 2931 INFO nova.compute.manager [req-3ea4052c-895d-4b64-9e2d-04d64c4d94ab - - - - -] [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] VM Resumed (Lifecycle Event)"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 16727,
+      "instance": "a445709b-6ad0-40ec-8860-bec60b6ca0c2",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:43:33.761 2931 INFO nova.virt.libvirt.driver [-] [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] Instance spawned successfully."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 16728,
+      "instance": "a445709b-6ad0-40ec-8860-bec60b6ca0c2",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:43:33.762 2931 INFO nova.compute.manager [req-5b5b0c22-ccce-41fc-8438-ceb520b5a8c2 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] Took 50.72 seconds to spawn the instance on the hypervisor."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 16729,
+      "instance": "a445709b-6ad0-40ec-8860-bec60b6ca0c2",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:43:33.869 2931 INFO nova.compute.manager [req-3ea4052c-895d-4b64-9e2d-04d64c4d94ab - - - - -] [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] During sync_power_state the instance has a pending task (spawning). Skip."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 16730,
+      "instance": "a445709b-6ad0-40ec-8860-bec60b6ca0c2",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:43:33.870 2931 INFO nova.compute.manager [req-3ea4052c-895d-4b64-9e2d-04d64c4d94ab - - - - -] [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] VM Resumed (Lifecycle Event)"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 16731,
+      "instance": "a445709b-6ad0-40ec-8860-bec60b6ca0c2",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:43:33.901 2931 INFO nova.compute.manager [req-5b5b0c22-ccce-41fc-8438-ceb520b5a8c2 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] Took 51.59 seconds to build instance."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 16753,
+      "instance": "a445709b-6ad0-40ec-8860-bec60b6ca0c2",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:43:41.553 2931 INFO nova.compute.manager [req-2284fb7f-2e72-4592-a21e-d7c12479ebda 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] Terminating instance"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 16755,
+      "instance": "a445709b-6ad0-40ec-8860-bec60b6ca0c2",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:43:41.771 2931 INFO nova.virt.libvirt.driver [-] [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] Instance destroyed successfully."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 16757,
+      "instance": "a445709b-6ad0-40ec-8860-bec60b6ca0c2",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:43:42.454 2931 INFO nova.virt.libvirt.driver [req-2284fb7f-2e72-4592-a21e-d7c12479ebda 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] Deleting instance files /var/lib/nova/instances/a445709b-6ad0-40ec-8860-bec60b6ca0c2_del"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 16758,
+      "instance": "a445709b-6ad0-40ec-8860-bec60b6ca0c2",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:43:42.456 2931 INFO nova.virt.libvirt.driver [req-2284fb7f-2e72-4592-a21e-d7c12479ebda 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] Deletion of /var/lib/nova/instances/a445709b-6ad0-40ec-8860-bec60b6ca0c2_del complete"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 16759,
+      "instance": "a445709b-6ad0-40ec-8860-bec60b6ca0c2",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:43:42.575 2931 INFO nova.compute.manager [req-2284fb7f-2e72-4592-a21e-d7c12479ebda 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] Took 1.02 seconds to destroy the instance on the hypervisor."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 16761,
+      "instance": "a445709b-6ad0-40ec-8860-bec60b6ca0c2",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:43:43.198 2931 INFO nova.compute.manager [req-2284fb7f-2e72-4592-a21e-d7c12479ebda 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] Took 0.62 seconds to deallocate network for instance."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 16785,
+      "instance": "a445709b-6ad0-40ec-8860-bec60b6ca0c2",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:43:56.880 2931 INFO nova.compute.manager [-] [instance: a445709b-6ad0-40ec-8860-bec60b6ca0c2] VM Stopped (Lifecycle Event)"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 17164,
+      "instance": "1643649d-2f42-4303-bfcd-7798baec19f9",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:46:48.622 2931 INFO nova.compute.claims [req-1f32a51e-24e0-4848-9e29-14127a9a6d9a 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 1643649d-2f42-4303-bfcd-7798baec19f9] Attempting claim: memory 2048 MB, disk 20 GB, vcpus 1 CPU"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 17165,
+      "instance": "1643649d-2f42-4303-bfcd-7798baec19f9",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:46:48.624 2931 INFO nova.compute.claims [req-1f32a51e-24e0-4848-9e29-14127a9a6d9a 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 1643649d-2f42-4303-bfcd-7798baec19f9] Total memory: 64172 MB, used: 512.00 MB"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 17166,
+      "instance": "1643649d-2f42-4303-bfcd-7798baec19f9",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:46:48.624 2931 INFO nova.compute.claims [req-1f32a51e-24e0-4848-9e29-14127a9a6d9a 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 1643649d-2f42-4303-bfcd-7798baec19f9] memory limit: 96258.00 MB, free: 95746.00 MB"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 17167,
+      "instance": "1643649d-2f42-4303-bfcd-7798baec19f9",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:46:48.625 2931 INFO nova.compute.claims [req-1f32a51e-24e0-4848-9e29-14127a9a6d9a 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 1643649d-2f42-4303-bfcd-7798baec19f9] Total disk: 15 GB, used: 0.00 GB"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 17168,
+      "instance": "1643649d-2f42-4303-bfcd-7798baec19f9",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:46:48.625 2931 INFO nova.compute.claims [req-1f32a51e-24e0-4848-9e29-14127a9a6d9a 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 1643649d-2f42-4303-bfcd-7798baec19f9] disk limit not specified, defaulting to unlimited"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 17169,
+      "instance": "1643649d-2f42-4303-bfcd-7798baec19f9",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:46:48.626 2931 INFO nova.compute.claims [req-1f32a51e-24e0-4848-9e29-14127a9a6d9a 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 1643649d-2f42-4303-bfcd-7798baec19f9] Total vcpu: 16 VCPU, used: 0.00 VCPU"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 17170,
+      "instance": "1643649d-2f42-4303-bfcd-7798baec19f9",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:46:48.626 2931 INFO nova.compute.claims [req-1f32a51e-24e0-4848-9e29-14127a9a6d9a 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 1643649d-2f42-4303-bfcd-7798baec19f9] vcpu limit not specified, defaulting to unlimited"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 17171,
+      "instance": "1643649d-2f42-4303-bfcd-7798baec19f9",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:46:48.659 2931 INFO nova.compute.claims [req-1f32a51e-24e0-4848-9e29-14127a9a6d9a 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 1643649d-2f42-4303-bfcd-7798baec19f9] Claim successful"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 17174,
+      "instance": "1643649d-2f42-4303-bfcd-7798baec19f9",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:46:49.328 2931 INFO nova.virt.libvirt.driver [req-1f32a51e-24e0-4848-9e29-14127a9a6d9a 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 1643649d-2f42-4303-bfcd-7798baec19f9] Creating image"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 17212,
+      "instance": "1643649d-2f42-4303-bfcd-7798baec19f9",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:47:14.545 2931 INFO nova.compute.manager [req-3ea4052c-895d-4b64-9e2d-04d64c4d94ab - - - - -] [instance: 1643649d-2f42-4303-bfcd-7798baec19f9] VM Started (Lifecycle Event)"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 17213,
+      "instance": "1643649d-2f42-4303-bfcd-7798baec19f9",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:47:14.603 2931 INFO nova.compute.manager [req-3ea4052c-895d-4b64-9e2d-04d64c4d94ab - - - - -] [instance: 1643649d-2f42-4303-bfcd-7798baec19f9] VM Paused (Lifecycle Event)"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 17214,
+      "instance": "1643649d-2f42-4303-bfcd-7798baec19f9",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:47:14.721 2931 INFO nova.compute.manager [req-3ea4052c-895d-4b64-9e2d-04d64c4d94ab - - - - -] [instance: 1643649d-2f42-4303-bfcd-7798baec19f9] During sync_power_state the instance has a pending task (spawning). Skip."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 17232,
+      "instance": "1643649d-2f42-4303-bfcd-7798baec19f9",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:47:20.583 2931 INFO nova.compute.manager [req-3ea4052c-895d-4b64-9e2d-04d64c4d94ab - - - - -] [instance: 1643649d-2f42-4303-bfcd-7798baec19f9] VM Resumed (Lifecycle Event)"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 17233,
+      "instance": "1643649d-2f42-4303-bfcd-7798baec19f9",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:47:20.592 2931 INFO nova.virt.libvirt.driver [-] [instance: 1643649d-2f42-4303-bfcd-7798baec19f9] Instance spawned successfully."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 17234,
+      "instance": "1643649d-2f42-4303-bfcd-7798baec19f9",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:47:20.593 2931 INFO nova.compute.manager [req-1f32a51e-24e0-4848-9e29-14127a9a6d9a 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 1643649d-2f42-4303-bfcd-7798baec19f9] Took 31.27 seconds to spawn the instance on the hypervisor."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 17235,
+      "instance": "1643649d-2f42-4303-bfcd-7798baec19f9",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:47:20.705 2931 INFO nova.compute.manager [req-3ea4052c-895d-4b64-9e2d-04d64c4d94ab - - - - -] [instance: 1643649d-2f42-4303-bfcd-7798baec19f9] During sync_power_state the instance has a pending task (spawning). Skip."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 17236,
+      "instance": "1643649d-2f42-4303-bfcd-7798baec19f9",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:47:20.706 2931 INFO nova.compute.manager [req-3ea4052c-895d-4b64-9e2d-04d64c4d94ab - - - - -] [instance: 1643649d-2f42-4303-bfcd-7798baec19f9] VM Resumed (Lifecycle Event)"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 17237,
+      "instance": "1643649d-2f42-4303-bfcd-7798baec19f9",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:47:20.726 2931 INFO nova.compute.manager [req-1f32a51e-24e0-4848-9e29-14127a9a6d9a 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 1643649d-2f42-4303-bfcd-7798baec19f9] Took 32.12 seconds to build instance."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 17251,
+      "instance": "1643649d-2f42-4303-bfcd-7798baec19f9",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:47:27.813 2931 INFO nova.compute.manager [req-a5e83dff-2f62-4cc8-abec-ea9cdd87e874 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 1643649d-2f42-4303-bfcd-7798baec19f9] Terminating instance"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 17253,
+      "instance": "1643649d-2f42-4303-bfcd-7798baec19f9",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:47:28.030 2931 INFO nova.virt.libvirt.driver [-] [instance: 1643649d-2f42-4303-bfcd-7798baec19f9] Instance destroyed successfully."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 17255,
+      "instance": "1643649d-2f42-4303-bfcd-7798baec19f9",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:47:28.714 2931 INFO nova.virt.libvirt.driver [req-a5e83dff-2f62-4cc8-abec-ea9cdd87e874 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 1643649d-2f42-4303-bfcd-7798baec19f9] Deleting instance files /var/lib/nova/instances/1643649d-2f42-4303-bfcd-7798baec19f9_del"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 17256,
+      "instance": "1643649d-2f42-4303-bfcd-7798baec19f9",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:47:28.717 2931 INFO nova.virt.libvirt.driver [req-a5e83dff-2f62-4cc8-abec-ea9cdd87e874 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 1643649d-2f42-4303-bfcd-7798baec19f9] Deletion of /var/lib/nova/instances/1643649d-2f42-4303-bfcd-7798baec19f9_del complete"
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 17257,
+      "instance": "1643649d-2f42-4303-bfcd-7798baec19f9",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:47:28.841 2931 INFO nova.compute.manager [req-a5e83dff-2f62-4cc8-abec-ea9cdd87e874 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 1643649d-2f42-4303-bfcd-7798baec19f9] Took 1.02 seconds to destroy the instance on the hypervisor."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 17259,
+      "instance": "1643649d-2f42-4303-bfcd-7798baec19f9",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:47:29.282 2931 INFO nova.compute.manager [req-a5e83dff-2f62-4cc8-abec-ea9cdd87e874 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] [instance: 1643649d-2f42-4303-bfcd-7798baec19f9] Took 0.44 seconds to deallocate network for instance."
+    },
+    {
+      "file": "openstack_abnormal.log",
+      "line_no": 17281,
+      "instance": "1643649d-2f42-4303-bfcd-7798baec19f9",
+      "line": "nova-compute.log.2017-05-14_21:56:26 2017-05-14 21:47:43.028 2931 INFO nova.compute.manager [-] [instance: 1643649d-2f42-4303-bfcd-7798baec19f9] VM Stopped (Lifecycle Event)"
+    }
+  ],
+  "unlabelled_same_file": {
+    "n": 193,
+    "median_seconds": 20.61,
+    "max_seconds": 27.61
+  },
+  "normal_files": {
+    "n": 1869,
+    "median_seconds": 20.54,
+    "max_seconds": 23.34
+  },
+  "threshold_sensitivity": [
+    {
+      "threshold_seconds": 22,
+      "labelled": 4,
+      "unlabelled": 52
+    },
+    {
+      "threshold_seconds": 30,
+      "labelled": 4,
+      "unlabelled": 0
+    },
+    {
+      "threshold_seconds": 35,
+      "labelled": 2,
+      "unlabelled": 0
+    }
+  ],
+  "scope": "OpenStack raw archive; exact text Took <numeric> seconds to build instance.; one matched Log Entry per emitted build duration",
+  "limits": [
+    "Offline scan, not SQL Evidence",
+    "Thresholds evaluated after seeing labels; no out-of-sample detector claim",
+    "No evidence of financial loss, downtime or customer impact",
+    "Component involvement is not causal attribution"
+  ]
+}

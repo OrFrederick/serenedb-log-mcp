@@ -1,0 +1,299 @@
+{
+  "source": "https://zenodo.org/records/8196385/files/OpenStack.tar.gz?download=1",
+  "archive_sha256": "87c98c5ed03262e05cdb7a6f3717033df76d88fda0f7d2db23bd9fa4200f1879",
+  "parser": "anchored header regex; unmatched lines remain counted as Log Entries",
+  "total_lines": 207820,
+  "parsed_lines": 207812,
+  "unmatched_lines": 8,
+  "files": {
+    "openstack_abnormal.log": {
+      "min_timestamp": "2017-05-14 19:39:01.445",
+      "max_timestamp": "2017-05-14 21:56:25.531",
+      "physical_lines": 18434
+    },
+    "openstack_normal1.log": {
+      "min_timestamp": "2017-05-16 00:00:00.008",
+      "max_timestamp": "2017-05-16 06:25:02.870",
+      "physical_lines": 52312
+    },
+    "openstack_normal2.log": {
+      "min_timestamp": "2017-05-16 15:15:54.960",
+      "max_timestamp": "2017-05-17 12:02:35.320",
+      "physical_lines": 137074
+    }
+  },
+  "counts": [
+    {
+      "component": "nova.osapi_compute.wsgi.server",
+      "level": "INFO",
+      "count": 78330,
+      "days": {
+        "2017-05-14": 7528,
+        "2017-05-16": 49698,
+        "2017-05-17": 21104
+      }
+    },
+    {
+      "component": "nova.virt.libvirt.imagecache",
+      "level": "INFO",
+      "count": 42239,
+      "days": {
+        "2017-05-14": 2838,
+        "2017-05-16": 19133,
+        "2017-05-17": 20268
+      }
+    },
+    {
+      "component": "nova.compute.manager",
+      "level": "INFO",
+      "count": 24739,
+      "days": {
+        "2017-05-14": 2356,
+        "2017-05-16": 15717,
+        "2017-05-17": 6666
+      }
+    },
+    {
+      "component": "nova.metadata.wsgi.server",
+      "level": "INFO",
+      "count": 20403,
+      "days": {
+        "2017-05-14": 1888,
+        "2017-05-16": 12969,
+        "2017-05-17": 5546
+      }
+    },
+    {
+      "component": "nova.compute.claims",
+      "level": "INFO",
+      "count": 16520,
+      "days": {
+        "2017-05-14": 1568,
+        "2017-05-16": 10504,
+        "2017-05-17": 4448
+      }
+    },
+    {
+      "component": "nova.virt.libvirt.driver",
+      "level": "INFO",
+      "count": 10324,
+      "days": {
+        "2017-05-14": 982,
+        "2017-05-16": 6565,
+        "2017-05-17": 2777
+      }
+    },
+    {
+      "component": "nova.compute.resource_tracker",
+      "level": "INFO",
+      "count": 6956,
+      "days": {
+        "2017-05-14": 540,
+        "2017-05-16": 3576,
+        "2017-05-17": 2840
+      }
+    },
+    {
+      "component": "nova.virt.libvirt.imagecache",
+      "level": "WARNING",
+      "count": 3059,
+      "days": {
+        "2017-05-14": 270,
+        "2017-05-16": 1966,
+        "2017-05-17": 823
+      }
+    },
+    {
+      "component": "nova.api.openstack.compute.server_external_events",
+      "level": "INFO",
+      "count": 2065,
+      "days": {
+        "2017-05-14": 196,
+        "2017-05-16": 1313,
+        "2017-05-17": 556
+      }
+    },
+    {
+      "component": "nova.api.openstack.wsgi",
+      "level": "INFO",
+      "count": 2064,
+      "days": {
+        "2017-05-14": 196,
+        "2017-05-16": 1313,
+        "2017-05-17": 555
+      }
+    },
+    {
+      "component": "nova.scheduler.host_manager",
+      "level": "INFO",
+      "count": 866,
+      "days": {
+        "2017-05-14": 67,
+        "2017-05-16": 446,
+        "2017-05-17": 353
+      }
+    },
+    {
+      "component": "oslo_service.periodic_task",
+      "level": "ERROR",
+      "count": 184,
+      "days": {
+        "2017-05-16": 138,
+        "2017-05-17": 46
+      }
+    },
+    {
+      "component": "nova.compute.manager",
+      "level": "WARNING",
+      "count": 45,
+      "days": {
+        "2017-05-14": 4,
+        "2017-05-16": 28,
+        "2017-05-17": 13
+      }
+    },
+    {
+      "component": "nova.virt.libvirt.driver",
+      "level": "WARNING",
+      "count": 12,
+      "days": {
+        "2017-05-14": 1,
+        "2017-05-16": 6,
+        "2017-05-17": 5
+      }
+    },
+    {
+      "component": "keystonemiddleware.auth_token",
+      "level": "ERROR",
+      "count": 2,
+      "days": {
+        "2017-05-16": 1,
+        "2017-05-17": 1
+      }
+    },
+    {
+      "component": "keystonemiddleware.auth_token",
+      "level": "WARNING",
+      "count": 2,
+      "days": {
+        "2017-05-16": 1,
+        "2017-05-17": 1
+      }
+    },
+    {
+      "component": "keystonemiddleware.auth_token",
+      "level": "CRITICAL",
+      "count": 2,
+      "days": {
+        "2017-05-16": 1,
+        "2017-05-17": 1
+      }
+    }
+  ],
+  "first_warning_or_error_by_component": {
+    "nova.compute.manager": {
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 19:39:09.660 2931 WARNING nova.compute.manager [req-addc1839-2ed5-4778-b57e-5854eb7b8b09 - - - - -] While synchronizing instance power states, found 1 instances in the database and 0 instances on the hypervisor.",
+      "file": "openstack_abnormal.log",
+      "line_no": 15
+    },
+    "nova.virt.libvirt.imagecache": {
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 19:39:36.041 2931 WARNING nova.virt.libvirt.imagecache [req-addc1839-2ed5-4778-b57e-5854eb7b8b09 - - - - -] Unknown base file: /var/lib/nova/instances/_base/a489c868f0c37da93b76227c91bb03908ac0e742",
+      "file": "openstack_abnormal.log",
+      "line_no": 75
+    },
+    "nova.virt.libvirt.driver": {
+      "line": "nova-compute.log.2017-05-14_21:27:09 2017-05-14 19:51:01.501 2931 WARNING nova.virt.libvirt.driver [req-addc1839-2ed5-4778-b57e-5854eb7b8b09 - - - - -] couldn't obtain the vcpu count from domain id: b93203d4-c79b-41fe-8090-5f2b89b0d081, exception: Requested operation is not valid: cpu affinity is not supported",
+      "file": "openstack_abnormal.log",
+      "line_no": 1579
+    },
+    "oslo_service.periodic_task": {
+      "line": "nova-compute.log.1.2017-05-16_13:55:31 2017-05-16 03:19:45.356 2931 ERROR oslo_service.periodic_task [req-addc1839-2ed5-4778-b57e-5854eb7b8b09 - - - - -] Error during ComputeManager._run_image_cache_manager_pass",
+      "file": "openstack_normal1.log",
+      "line_no": 27179
+    },
+    "keystonemiddleware.auth_token": {
+      "line": "nova-api.log.1.2017-05-16_13:53:08 2017-05-16 06:25:02.867 25746 ERROR keystonemiddleware.auth_token [req-1cc7d50c-25a2-46b0-a668-9c00f589160c 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] Bad response code while validating token: 503",
+      "file": "openstack_normal1.log",
+      "line_no": 52309
+    }
+  },
+  "auth_context": [
+    {
+      "file": "openstack_normal1.log",
+      "line_no": 52309,
+      "line": "nova-api.log.1.2017-05-16_13:53:08 2017-05-16 06:25:02.867 25746 ERROR keystonemiddleware.auth_token [req-1cc7d50c-25a2-46b0-a668-9c00f589160c 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] Bad response code while validating token: 503",
+      "context": [
+        "nova-api.log.1.2017-05-16_13:53:08 2017-05-16 06:25:01.575 25746 INFO nova.osapi_compute.wsgi.server [req-41792640-9c20-4b6c-aaed-bd56db9e84a6 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] 10.11.10.1 \"GET /v2/54fadb412c4e40cdbaed9335e4c35a9e/servers/detail HTTP/1.1\" status: 200 len: 1893 time: 0.2725232",
+        "nova-api.log.1.2017-05-16_13:53:08 2017-05-16 06:25:01.857 25746 INFO nova.osapi_compute.wsgi.server [req-1cc7d50c-25a2-46b0-a668-9c00f589160c 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] 10.11.10.1 \"GET /v2/54fadb412c4e40cdbaed9335e4c35a9e/servers/detail HTTP/1.1\" status: 200 len: 1893 time: 0.2782719",
+        "nova-api.log.1.2017-05-16_13:53:08 2017-05-16 06:25:02.867 25746 ERROR keystonemiddleware.auth_token [req-1cc7d50c-25a2-46b0-a668-9c00f589160c 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] Bad response code while validating token: 503",
+        "nova-api.log.1.2017-05-16_13:53:08 2017-05-16 06:25:02.868 25746 WARNING keystonemiddleware.auth_token [req-1cc7d50c-25a2-46b0-a668-9c00f589160c 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] Identity response: <!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">",
+        "nova-api.log.1.2017-05-16_13:53:08 2017-05-16 06:25:02.869 25746 CRITICAL keystonemiddleware.auth_token [req-1cc7d50c-25a2-46b0-a668-9c00f589160c 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] Unable to validate token: Failed to fetch token data from identity server"
+      ]
+    },
+    {
+      "file": "openstack_normal1.log",
+      "line_no": 52310,
+      "line": "nova-api.log.1.2017-05-16_13:53:08 2017-05-16 06:25:02.868 25746 WARNING keystonemiddleware.auth_token [req-1cc7d50c-25a2-46b0-a668-9c00f589160c 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] Identity response: <!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">",
+      "context": [
+        "nova-api.log.1.2017-05-16_13:53:08 2017-05-16 06:25:01.857 25746 INFO nova.osapi_compute.wsgi.server [req-1cc7d50c-25a2-46b0-a668-9c00f589160c 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] 10.11.10.1 \"GET /v2/54fadb412c4e40cdbaed9335e4c35a9e/servers/detail HTTP/1.1\" status: 200 len: 1893 time: 0.2782719",
+        "nova-api.log.1.2017-05-16_13:53:08 2017-05-16 06:25:02.867 25746 ERROR keystonemiddleware.auth_token [req-1cc7d50c-25a2-46b0-a668-9c00f589160c 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] Bad response code while validating token: 503",
+        "nova-api.log.1.2017-05-16_13:53:08 2017-05-16 06:25:02.868 25746 WARNING keystonemiddleware.auth_token [req-1cc7d50c-25a2-46b0-a668-9c00f589160c 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] Identity response: <!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">",
+        "nova-api.log.1.2017-05-16_13:53:08 2017-05-16 06:25:02.869 25746 CRITICAL keystonemiddleware.auth_token [req-1cc7d50c-25a2-46b0-a668-9c00f589160c 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] Unable to validate token: Failed to fetch token data from identity server",
+        "nova-api.log.1.2017-05-16_13:53:08 2017-05-16 06:25:02.870 25746 INFO nova.osapi_compute.wsgi.server [req-1cc7d50c-25a2-46b0-a668-9c00f589160c 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] 10.11.10.1 \"GET /v2/54fadb412c4e40cdbaed9335e4c35a9e/servers/detail HTTP/1.1\" status: 503 len: 323 time: 0.0080531"
+      ]
+    },
+    {
+      "file": "openstack_normal1.log",
+      "line_no": 52311,
+      "line": "nova-api.log.1.2017-05-16_13:53:08 2017-05-16 06:25:02.869 25746 CRITICAL keystonemiddleware.auth_token [req-1cc7d50c-25a2-46b0-a668-9c00f589160c 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] Unable to validate token: Failed to fetch token data from identity server",
+      "context": [
+        "nova-api.log.1.2017-05-16_13:53:08 2017-05-16 06:25:02.867 25746 ERROR keystonemiddleware.auth_token [req-1cc7d50c-25a2-46b0-a668-9c00f589160c 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] Bad response code while validating token: 503",
+        "nova-api.log.1.2017-05-16_13:53:08 2017-05-16 06:25:02.868 25746 WARNING keystonemiddleware.auth_token [req-1cc7d50c-25a2-46b0-a668-9c00f589160c 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] Identity response: <!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">",
+        "nova-api.log.1.2017-05-16_13:53:08 2017-05-16 06:25:02.869 25746 CRITICAL keystonemiddleware.auth_token [req-1cc7d50c-25a2-46b0-a668-9c00f589160c 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] Unable to validate token: Failed to fetch token data from identity server",
+        "nova-api.log.1.2017-05-16_13:53:08 2017-05-16 06:25:02.870 25746 INFO nova.osapi_compute.wsgi.server [req-1cc7d50c-25a2-46b0-a668-9c00f589160c 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] 10.11.10.1 \"GET /v2/54fadb412c4e40cdbaed9335e4c35a9e/servers/detail HTTP/1.1\" status: 503 len: 323 time: 0.0080531"
+      ]
+    },
+    {
+      "file": "openstack_normal2.log",
+      "line_no": 123316,
+      "line": "nova-api.log.1.2017-05-17_12:02:19 2017-05-17 06:25:03.044 25749 ERROR keystonemiddleware.auth_token [req-abcdb287-429c-40a5-8e79-d490d4fb7410 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] Bad response code while validating token: 503",
+      "context": [
+        "nova-api.log.1.2017-05-17_12:02:19 2017-05-17 06:25:01.767 25749 INFO nova.osapi_compute.wsgi.server [req-8003850f-8d0d-4de9-96b3-2d370869e664 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] 10.11.10.1 \"GET /v2/54fadb412c4e40cdbaed9335e4c35a9e/servers/detail HTTP/1.1\" status: 200 len: 1893 time: 0.2437501",
+        "nova-api.log.1.2017-05-17_12:02:19 2017-05-17 06:25:02.033 25749 INFO nova.osapi_compute.wsgi.server [req-abcdb287-429c-40a5-8e79-d490d4fb7410 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] 10.11.10.1 \"GET /v2/54fadb412c4e40cdbaed9335e4c35a9e/servers/detail HTTP/1.1\" status: 200 len: 1893 time: 0.2618051",
+        "nova-api.log.1.2017-05-17_12:02:19 2017-05-17 06:25:03.044 25749 ERROR keystonemiddleware.auth_token [req-abcdb287-429c-40a5-8e79-d490d4fb7410 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] Bad response code while validating token: 503",
+        "nova-api.log.1.2017-05-17_12:02:19 2017-05-17 06:25:03.045 25749 WARNING keystonemiddleware.auth_token [req-abcdb287-429c-40a5-8e79-d490d4fb7410 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] Identity response: <!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">",
+        "nova-api.log.1.2017-05-17_12:02:19 2017-05-17 06:25:03.046 25749 CRITICAL keystonemiddleware.auth_token [req-abcdb287-429c-40a5-8e79-d490d4fb7410 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] Unable to validate token: Failed to fetch token data from identity server"
+      ]
+    },
+    {
+      "file": "openstack_normal2.log",
+      "line_no": 123317,
+      "line": "nova-api.log.1.2017-05-17_12:02:19 2017-05-17 06:25:03.045 25749 WARNING keystonemiddleware.auth_token [req-abcdb287-429c-40a5-8e79-d490d4fb7410 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] Identity response: <!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">",
+      "context": [
+        "nova-api.log.1.2017-05-17_12:02:19 2017-05-17 06:25:02.033 25749 INFO nova.osapi_compute.wsgi.server [req-abcdb287-429c-40a5-8e79-d490d4fb7410 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] 10.11.10.1 \"GET /v2/54fadb412c4e40cdbaed9335e4c35a9e/servers/detail HTTP/1.1\" status: 200 len: 1893 time: 0.2618051",
+        "nova-api.log.1.2017-05-17_12:02:19 2017-05-17 06:25:03.044 25749 ERROR keystonemiddleware.auth_token [req-abcdb287-429c-40a5-8e79-d490d4fb7410 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] Bad response code while validating token: 503",
+        "nova-api.log.1.2017-05-17_12:02:19 2017-05-17 06:25:03.045 25749 WARNING keystonemiddleware.auth_token [req-abcdb287-429c-40a5-8e79-d490d4fb7410 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] Identity response: <!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">",
+        "nova-api.log.1.2017-05-17_12:02:19 2017-05-17 06:25:03.046 25749 CRITICAL keystonemiddleware.auth_token [req-abcdb287-429c-40a5-8e79-d490d4fb7410 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] Unable to validate token: Failed to fetch token data from identity server",
+        "nova-api.log.1.2017-05-17_12:02:19 2017-05-17 06:25:03.049 25749 INFO nova.osapi_compute.wsgi.server [req-abcdb287-429c-40a5-8e79-d490d4fb7410 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] 10.11.10.1 \"GET /v2/54fadb412c4e40cdbaed9335e4c35a9e/servers/detail HTTP/1.1\" status: 503 len: 323 time: 0.0101860"
+      ]
+    },
+    {
+      "file": "openstack_normal2.log",
+      "line_no": 123318,
+      "line": "nova-api.log.1.2017-05-17_12:02:19 2017-05-17 06:25:03.046 25749 CRITICAL keystonemiddleware.auth_token [req-abcdb287-429c-40a5-8e79-d490d4fb7410 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] Unable to validate token: Failed to fetch token data from identity server",
+      "context": [
+        "nova-api.log.1.2017-05-17_12:02:19 2017-05-17 06:25:03.044 25749 ERROR keystonemiddleware.auth_token [req-abcdb287-429c-40a5-8e79-d490d4fb7410 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] Bad response code while validating token: 503",
+        "nova-api.log.1.2017-05-17_12:02:19 2017-05-17 06:25:03.045 25749 WARNING keystonemiddleware.auth_token [req-abcdb287-429c-40a5-8e79-d490d4fb7410 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] Identity response: <!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">",
+        "nova-api.log.1.2017-05-17_12:02:19 2017-05-17 06:25:03.046 25749 CRITICAL keystonemiddleware.auth_token [req-abcdb287-429c-40a5-8e79-d490d4fb7410 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] Unable to validate token: Failed to fetch token data from identity server",
+        "nova-api.log.1.2017-05-17_12:02:19 2017-05-17 06:25:03.049 25749 INFO nova.osapi_compute.wsgi.server [req-abcdb287-429c-40a5-8e79-d490d4fb7410 113d3a99c3da401fbd62cc2caa5b96d2 54fadb412c4e40cdbaed9335e4c35a9e - - -] 10.11.10.1 \"GET /v2/54fadb412c4e40cdbaed9335e4c35a9e/servers/detail HTTP/1.1\" status: 503 len: 323 time: 0.0101860",
+        "nova-compute.log.2017-05-17_12:02:35 2017-05-17 06:25:05.141 2931 INFO nova.virt.libvirt.imagecache [req-addc1839-2ed5-4778-b57e-5854eb7b8b09 - - - - -] image 0673dd71-34c5-4fbb-86c4-40623fbe45b4 at (/var/lib/nova/instances/_base/a489c868f0c37da93b76227c91bb03908ac0e742): checking"
+      ]
+    }
+  ],
+  "limits": [
+    "Offline Python scan; not a SereneDB query",
+    "Concatenated raw files may include repeated underlying entries; no deduplication performed",
+    "Calendar day slices have unequal coverage; no growth conclusion",
+    "No official Ownership Table supplied"
+  ]
+}

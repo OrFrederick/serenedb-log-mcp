@@ -26,8 +26,8 @@ from serenedb_log_mcp.config import get_settings, load_settings
 
 pytestmark = [pytest.mark.db, pytest.mark.remote]
 
-TRACE = "b60c4584ee2689aaa9751261d1b9d800"
-"""The trace of the worked investigation: a payment "Visa cache full" error during checkout."""
+TRACE = "d6b63ab9999f356c9ff320454f1bf23a"
+"""The trace of docs/results/multimodal.md: a payment "Visa cache full" error during checkout."""
 
 
 def rows(query: sql.Composable) -> list[tuple[Any, ...]]:
@@ -114,12 +114,12 @@ def test_the_investigated_trace_ends_in_the_payment_cache_error(views: str) -> N
     result = call("get_trace", role="engineer", trace_id=TRACE)
 
     summary = result["summary"]
-    assert summary["spans_total"] == 29
+    assert summary["spans_total"] == 25
     assert summary["error_spans"] == 8
     assert [(origin["service"], origin["operation"]) for origin in summary["error_origin_spans"]] == [
         ("payment", "Error: Visa cache full: cannot add new item.")
     ]
-    assert summary["log_entries_total"] == 13
+    assert summary["log_entries_total"] == 12
     assert summary["error_log_entries"] == 5
     logs = [row for row in row_dicts(result) if row["signal"] == "log"]
     assert any(

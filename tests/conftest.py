@@ -4,8 +4,8 @@ Unmarked tests are pure and run everywhere (`make test`).
 
 - `db`: needs a reachable SereneDB at DATABASE_URL (`make test-db`).
 - `corpus`: needs the full Base Corpus in the raw tables of SLM_RAW_SCHEMA (`make test-corpus`).
-- `remote`: reads the public S3 text_bench file from the SereneDB server (T20). Skipped unless
-  SLM_REMOTE_TESTS=1, also under SLM_REQUIRE_DB=1, because it depends on S3 and is slow
+- `remote`: reads the public S3 text_bench and otel_demo files from the SereneDB server (T20, T21).
+  Skipped unless SLM_REMOTE_TESTS=1, also under SLM_REQUIRE_DB=1, because it depends on S3 and is slow
   (`make test-remote`). Mark such tests `db` too, so `make test` never collects them.
 
 Tests under tests/db/ and tests/corpus/ get the marker of their directory automatically.
@@ -54,7 +54,7 @@ def pytest_configure(config: pytest.Config) -> None:
     )
     config.addinivalue_line(
         "markers",
-        "remote: reads the public S3 text_bench file from the SereneDB server; skipped unless "
+        "remote: reads the public S3 text_bench and otel_demo files from the SereneDB server; skipped unless "
         "SLM_REMOTE_TESTS=1 (make test-remote)",
     )
 
@@ -74,7 +74,8 @@ def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
 def pytest_runtest_setup(item: pytest.Item) -> None:
     if item.get_closest_marker("remote") is not None and not _flag("SLM_REMOTE_TESTS"):
         pytest.skip(
-            "reads the public S3 text_bench file; set SLM_REMOTE_TESTS=1 (make test-remote) to run it"
+            "reads the public S3 text_bench or otel_demo files; set SLM_REMOTE_TESTS=1 (make test-remote) "
+            "to run it"
         )
     problem = None
     if item.get_closest_marker("corpus") is not None:

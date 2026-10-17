@@ -503,3 +503,10 @@ def test_the_metric_window_covers_whole_minutes_around_the_trace() -> None:
         datetime(2025, 5, 25, 19, 59),
         datetime(2025, 5, 25, 20, 6),
     )
+
+
+def test_the_metric_note_warns_that_a_long_state_reads_normal(database: FakeDatabase) -> None:
+    notes = " ".join(evidence(trace_id=TRACE)["notes"])
+
+    assert "a large part of the run" in notes
+    assert "baseline_median" in notes

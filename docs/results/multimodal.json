@@ -1,0 +1,2132 @@
+{
+ "files": [
+  {
+   "signal": "logs",
+   "url": "https://public-pme.s3.eu-west-3.amazonaws.com/otel_demo/otel_logs.parquet",
+   "size": 4344647502,
+   "rows": 91559064,
+   "row_groups": 120
+  },
+  {
+   "signal": "traces",
+   "url": "https://public-pme.s3.eu-west-3.amazonaws.com/otel_demo/otel_traces.parquet",
+   "size": 12934790411,
+   "rows": 216701061,
+   "row_groups": 354
+  },
+  {
+   "signal": "metrics_gauge",
+   "url": "https://public-pme.s3.eu-west-3.amazonaws.com/otel_demo/otel_metrics_gauge.parquet",
+   "size": 435453837,
+   "rows": 60433304,
+   "row_groups": 81
+  },
+  {
+   "signal": "metrics_sum",
+   "url": "https://public-pme.s3.eu-west-3.amazonaws.com/otel_demo/otel_metrics_sum.parquet",
+   "size": 470529503,
+   "rows": 61483572,
+   "row_groups": 59
+  },
+  {
+   "signal": "metrics_histogram",
+   "url": "https://public-pme.s3.eu-west-3.amazonaws.com/otel_demo/otel_metrics_histogram.parquet",
+   "size": 39007528,
+   "rows": 1256191,
+   "row_groups": 3
+  }
+ ],
+ "roll_up_rows": 3086697,
+ "roll_up_series": 1121,
+ "count_by": {
+  "evidence_id": "E1",
+  "tool": "count_by",
+  "role": "engineer",
+  "arguments": {
+   "group_by": "component",
+   "dataset": "otel_demo",
+   "query": null,
+   "time_from": null,
+   "time_to": null,
+   "components": null,
+   "levels": [
+    "error"
+   ],
+   "sources": null,
+   "alert_categories": null,
+   "pattern_ids": null,
+   "family_id": null,
+   "top": 25,
+   "baseline_from": null,
+   "baseline_to": null
+  },
+  "sql": [
+   "WITH matching AS (\n    SELECT 'otel_demo' AS dataset, coalesce(e.\"component\", '(no component)') AS k FROM \"huge\".\"otel_log\" AS e WHERE e.\"level\" = ANY(%s::VARCHAR[]) AND e.\"ts\" >= %s AND e.\"ts\" < %s\n),\ngrouped AS (SELECT dataset, k, count(*) AS n FROM matching GROUP BY dataset, k),\nranked AS (SELECT dataset, k, n, row_number() OVER (ORDER BY n DESC, dataset, k) AS rnk FROM grouped),\nmarked AS (\n    SELECT dataset, k, n, rnk,\n           sum(CASE WHEN rnk > %s THEN 1 ELSE 0 END) OVER (PARTITION BY dataset) AS hidden\n    FROM ranked\n)\nSELECT dataset, k, n, rnk, CAST(NULL AS BIGINT) AS groups FROM marked WHERE rnk <= %s OR hidden = 1\nUNION ALL\nSELECT dataset, CAST(NULL AS VARCHAR), sum(n), CAST(NULL AS BIGINT), count(*) FROM grouped GROUP BY dataset\nORDER BY rnk NULLS LAST, dataset",
+   "WITH matching AS (\n    SELECT 'otel_demo' AS dataset, CASE WHEN coalesce(e.\"component\", '(no component)') = ANY(%s::VARCHAR[]) THEN coalesce(e.\"component\", '(no component)') ELSE '(other)' END AS k, e.\"component\" AS src, e.\"ts\" AS ts, (e.\"ts\" >= %s AND e.\"ts\" < %s) AS in_scope, FALSE AS in_prev FROM \"huge\".\"otel_log\" AS e WHERE e.\"level\" = ANY(%s::VARCHAR[]) AND e.\"ts\" >= %s AND e.\"ts\" < %s\n),\ncur AS (\n    SELECT dataset, k, count(*) AS n, count(DISTINCT src) AS sources, min(ts) AS first_seen,\n           max(ts) AS last_seen\n    FROM matching WHERE in_scope GROUP BY dataset, k\n),\nweekly AS (\n    SELECT dataset, k, time_bucket(INTERVAL '7 days', ts) AS week, count(*) AS n,\n           count(*) FILTER (WHERE in_prev) AS prev\n    FROM matching GROUP BY dataset, k, week\n),\ngrid AS (\n    SELECT 'otel_demo' AS dataset, week FROM (SELECT unnest(generate_series(time_bucket(INTERVAL '7 days', %s::TIMESTAMP) + INTERVAL '7 days', time_bucket(INTERVAL '7 days', %s::TIMESTAMP) - INTERVAL '7 days', INTERVAL '7 days')) AS week) AS whole WHERE week + INTERVAL '7 days' <= %s::TIMESTAMP OR week >= %s::TIMESTAMP\n),\nwanted AS (\n    SELECT 'otel_demo' AS dataset, unnest(%s::VARCHAR[]) AS k\n),\nmed AS (\n    SELECT wanted.dataset, wanted.k, median(coalesce(weekly.n, 0)) AS median_week, count(*) AS weeks\n    FROM wanted JOIN grid ON grid.dataset = wanted.dataset\n    LEFT JOIN weekly ON weekly.dataset = wanted.dataset AND weekly.k = wanted.k AND weekly.week = grid.week\n    GROUP BY wanted.dataset, wanted.k\n),\nprev AS (SELECT dataset, k, sum(prev) AS prev_period FROM weekly GROUP BY dataset, k)\nSELECT wanted.dataset, wanted.k, coalesce(cur.n, 0) AS n, coalesce(cur.sources, 0) AS sources,\n       cur.first_seen, cur.last_seen, coalesce(prev.prev_period, 0) AS prev_period, med.median_week,\n       coalesce(med.weeks, 0) AS weeks\nFROM wanted\nLEFT JOIN cur ON cur.dataset = wanted.dataset AND cur.k = wanted.k\nLEFT JOIN prev ON prev.dataset = wanted.dataset AND prev.k = wanted.k\nLEFT JOIN med ON med.dataset = wanted.dataset AND med.k = wanted.k\nORDER BY wanted.dataset, wanted.k"
+  ],
+  "params": [
+   [
+    [
+     "error"
+    ],
+    "2025-05-24T20:30:00",
+    "2025-05-26T18:30:00",
+    25,
+    25
+   ],
+   [
+    [
+     "frontend",
+     "payment",
+     "",
+     "email",
+     "artillery-loadgen"
+    ],
+    "2025-05-24T20:30:00",
+    "2025-05-26T18:30:00",
+    [
+     "error"
+    ],
+    "2025-05-24T20:30:00",
+    "2025-05-26T18:30:00",
+    "2025-05-24T20:30:00",
+    "2025-05-26T18:29:59",
+    "2025-05-24T20:30:00",
+    "2025-05-26T18:30:00",
+    [
+     "frontend",
+     "payment",
+     "",
+     "email",
+     "artillery-loadgen"
+    ]
+   ]
+  ],
+  "data_scope": {
+   "datasets": [
+    "otel_demo"
+   ],
+   "time_from": null,
+   "time_to": null,
+   "time_input": null,
+   "resolved_against": null,
+   "filters": {
+    "pattern_ids": null,
+    "family_id": null,
+    "levels": [
+     "error"
+    ]
+   },
+   "agent_indexes": null
+  },
+  "total_matches": 5,
+  "returned": 5,
+  "truncated": false,
+  "query_ms": 818.0,
+  "columns": [
+   "dataset",
+   "component",
+   "count",
+   "share_pct",
+   "distinct_sources",
+   "first_seen",
+   "last_seen",
+   "prev_period",
+   "median_week",
+   "expected",
+   "baseline_basis",
+   "baseline_flag"
+  ],
+  "rows": [
+   [
+    "otel_demo",
+    "frontend",
+    388312,
+    66.68,
+    1,
+    "2025-05-24T20:30:45",
+    "2025-05-26T18:25:32",
+    null,
+    null,
+    null,
+    "none",
+    "no_baseline"
+   ],
+   [
+    "otel_demo",
+    "payment",
+    193920,
+    33.3,
+    1,
+    "2025-05-24T20:30:45",
+    "2025-05-26T18:25:32",
+    null,
+    null,
+    null,
+    "none",
+    "no_baseline"
+   ],
+   [
+    "otel_demo",
+    "",
+    66,
+    0.01133,
+    1,
+    "2025-05-24T21:30:11",
+    "2025-05-26T17:04:59",
+    null,
+    null,
+    null,
+    "none",
+    "no_baseline"
+   ],
+   [
+    "otel_demo",
+    "email",
+    55,
+    0.009444,
+    1,
+    "2025-05-24T23:35:19",
+    "2025-05-26T15:18:27",
+    null,
+    null,
+    null,
+    "none",
+    "no_baseline"
+   ],
+   [
+    "otel_demo",
+    "artillery-loadgen",
+    38,
+    0.006525,
+    1,
+    "2025-05-25T01:05:45",
+    "2025-05-26T11:55:48",
+    null,
+    null,
+    null,
+    "none",
+    "no_baseline"
+   ]
+  ],
+  "summary": {
+   "group_by": "component",
+   "total": 582391,
+   "groups_total": 5,
+   "top_n": 5,
+   "top_n_sum": 582391,
+   "top_n_share_pct": 100.0,
+   "other_count": 0,
+   "other_groups": 0,
+   "baseline": {
+    "otel_demo": {
+     "from": "2025-05-24T20:30:00",
+     "to": "2025-05-26T18:30:00",
+     "days": 1.92,
+     "previous_from": null,
+     "previous_to": null,
+     "whole_weeks_outside_scope": 0
+    }
+   }
+  },
+  "notes": [
+   "Every count here is Log Entries, not Incidents: one failing node can write thousands of lines about a single problem, so a large count is not many failures. Quote the numbers exactly as given; never round them.",
+   "Baselines, per row: prev_period is the count with the same filters in the period of equal length just before the Data Scope, or in the named baseline period (otel_demo: null, because the Data Scope starts at the first Log Entry of otel_demo, so there is no previous period). median_week is the median of the zero-filled weekly counts (Monday-start weeks) with the same filters over the Dataset's whole weeks outside the Data Scope (otel_demo 0). expected is the named baseline period's count scaled to the Data Scope's length when baseline_from and baseline_to are given, else median_week scaled to it, else prev_period scaled to it when fewer than 4 such weeks exist; baseline_basis names the one used (named_period, median_week, previous_period or none). baseline_flag is unusual_high when the count is at least 3 times expected and at least 10 Log Entries above it, unusual_low when it is at most expected / 3 and at least 10 below it, normal otherwise, and no_baseline when neither baseline exists.",
+   "otel_demo has fewer than 4 whole weeks outside the Data Scope (0), so median_week is null there and the flag falls back to the previous period, or is no_baseline without one. To see which weeks stand out, call trend over otel_demo, or narrow the time range.",
+   "distinct_sources counts BGL nodes, OpenStack instances (instance_ref) and text_bench services (component); OpenStack Log Entries that name no instance are not counted as a source."
+  ],
+  "answer_frame": [],
+  "not_measured": []
+ },
+ "trend": {
+  "evidence_id": "E2",
+  "tool": "trend",
+  "role": "engineer",
+  "arguments": {
+   "dataset": "otel_demo",
+   "bucket": "hour",
+   "group_by": null,
+   "query": null,
+   "time_from": null,
+   "time_to": null,
+   "components": [
+    "payment"
+   ],
+   "levels": [
+    "error"
+   ],
+   "sources": null,
+   "alert_categories": null,
+   "pattern_ids": null,
+   "family_id": null,
+   "top": 5
+  },
+  "sql": [
+   "WITH matching AS (\n    SELECT '(all)' AS k, e.\"ts\" AS ts FROM \"huge\".\"otel_log\" AS e WHERE e.\"component\" = ANY(%s::VARCHAR[]) AND e.\"level\" = ANY(%s::VARCHAR[]) AND e.\"ts\" >= %s AND e.\"ts\" < %s AND '(all)' = ANY(%s::VARCHAR[])\n),\ngrid AS (\n    SELECT unnest(generate_series(\n        time_bucket(%s::INTERVAL, %s::TIMESTAMP), %s::TIMESTAMP, %s::INTERVAL\n    )) AS bucket\n),\nseries AS (SELECT unnest(%s::VARCHAR[]) AS k),\ncounted AS (\n    SELECT time_bucket(%s::INTERVAL, ts) AS bucket, k, count(*) AS n FROM matching GROUP BY bucket, k\n)\nSELECT grid.bucket, series.k, coalesce(counted.n, 0) AS n\nFROM grid CROSS JOIN series\nLEFT JOIN counted ON counted.bucket = grid.bucket AND counted.k = series.k\nORDER BY grid.bucket, series.k",
+   "WITH matching AS (\n    SELECT 'otel_demo' AS dataset, CASE WHEN '(all)' = ANY(%s::VARCHAR[]) THEN '(all)' ELSE '(other)' END AS k, e.\"component\" AS src, e.\"ts\" AS ts, (e.\"ts\" >= %s AND e.\"ts\" < %s) AS in_scope, FALSE AS in_prev FROM \"huge\".\"otel_log\" AS e WHERE e.\"component\" = ANY(%s::VARCHAR[]) AND e.\"level\" = ANY(%s::VARCHAR[]) AND e.\"ts\" >= %s AND e.\"ts\" < %s\n),\ncur AS (\n    SELECT dataset, k, count(*) AS n, count(DISTINCT src) AS sources, min(ts) AS first_seen,\n           max(ts) AS last_seen\n    FROM matching WHERE in_scope GROUP BY dataset, k\n),\nweekly AS (\n    SELECT dataset, k, time_bucket(INTERVAL '7 days', ts) AS week, count(*) AS n,\n           count(*) FILTER (WHERE in_prev) AS prev\n    FROM matching GROUP BY dataset, k, week\n),\ngrid AS (\n    SELECT 'otel_demo' AS dataset, week FROM (SELECT unnest(generate_series(time_bucket(INTERVAL '7 days', %s::TIMESTAMP) + INTERVAL '7 days', time_bucket(INTERVAL '7 days', %s::TIMESTAMP) - INTERVAL '7 days', INTERVAL '7 days')) AS week) AS whole WHERE week + INTERVAL '7 days' <= %s::TIMESTAMP OR week >= %s::TIMESTAMP\n),\nwanted AS (\n    SELECT 'otel_demo' AS dataset, unnest(%s::VARCHAR[]) AS k\n),\nmed AS (\n    SELECT wanted.dataset, wanted.k, median(coalesce(weekly.n, 0)) AS median_week, count(*) AS weeks\n    FROM wanted JOIN grid ON grid.dataset = wanted.dataset\n    LEFT JOIN weekly ON weekly.dataset = wanted.dataset AND weekly.k = wanted.k AND weekly.week = grid.week\n    GROUP BY wanted.dataset, wanted.k\n),\nprev AS (SELECT dataset, k, sum(prev) AS prev_period FROM weekly GROUP BY dataset, k)\nSELECT wanted.dataset, wanted.k, coalesce(cur.n, 0) AS n, coalesce(cur.sources, 0) AS sources,\n       cur.first_seen, cur.last_seen, coalesce(prev.prev_period, 0) AS prev_period, med.median_week,\n       coalesce(med.weeks, 0) AS weeks\nFROM wanted\nLEFT JOIN cur ON cur.dataset = wanted.dataset AND cur.k = wanted.k\nLEFT JOIN prev ON prev.dataset = wanted.dataset AND prev.k = wanted.k\nLEFT JOIN med ON med.dataset = wanted.dataset AND med.k = wanted.k\nORDER BY wanted.dataset, wanted.k"
+  ],
+  "params": [
+   [
+    [
+     "payment"
+    ],
+    [
+     "error"
+    ],
+    "2025-05-24T20:30:00",
+    "2025-05-26T18:30:00",
+    [
+     "(all)"
+    ],
+    "1 hour",
+    "2025-05-24T20:30:00",
+    "2025-05-26T18:29:59.999999",
+    "1 hour",
+    [
+     "(all)"
+    ],
+    "1 hour"
+   ],
+   [
+    [
+     "(all)"
+    ],
+    "2025-05-24T20:30:00",
+    "2025-05-26T18:30:00",
+    [
+     "payment"
+    ],
+    [
+     "error"
+    ],
+    "2025-05-24T20:30:00",
+    "2025-05-26T18:30:00",
+    "2025-05-24T20:30:00",
+    "2025-05-26T18:29:59",
+    "2025-05-24T20:30:00",
+    "2025-05-26T18:30:00",
+    [
+     "(all)"
+    ]
+   ]
+  ],
+  "data_scope": {
+   "datasets": [
+    "otel_demo"
+   ],
+   "time_from": null,
+   "time_to": null,
+   "time_input": null,
+   "resolved_against": null,
+   "filters": {
+    "pattern_ids": null,
+    "family_id": null,
+    "components": [
+     "payment"
+    ],
+    "levels": [
+     "error"
+    ]
+   },
+   "agent_indexes": null
+  },
+  "total_matches": 47,
+  "returned": 47,
+  "truncated": false,
+  "query_ms": 689.7,
+  "columns": [
+   "bucket",
+   "(all)"
+  ],
+  "rows": [
+   [
+    "2025-05-24T20:00",
+    6
+   ],
+   [
+    "2025-05-24T21:00",
+    8
+   ],
+   [
+    "2025-05-24T22:00",
+    18
+   ],
+   [
+    "2025-05-24T23:00",
+    12
+   ],
+   [
+    "2025-05-25T00:00",
+    6
+   ],
+   [
+    "2025-05-25T01:00",
+    12
+   ],
+   [
+    "2025-05-25T02:00",
+    10
+   ],
+   [
+    "2025-05-25T03:00",
+    8
+   ],
+   [
+    "2025-05-25T04:00",
+    6
+   ],
+   [
+    "2025-05-25T05:00",
+    10
+   ],
+   [
+    "2025-05-25T06:00",
+    16
+   ],
+   [
+    "2025-05-25T07:00",
+    10
+   ],
+   [
+    "2025-05-25T08:00",
+    16
+   ],
+   [
+    "2025-05-25T09:00",
+    6
+   ],
+   [
+    "2025-05-25T10:00",
+    0
+   ],
+   [
+    "2025-05-25T11:00",
+    8
+   ],
+   [
+    "2025-05-25T12:00",
+    10
+   ],
+   [
+    "2025-05-25T13:00",
+    14
+   ],
+   [
+    "2025-05-25T14:00",
+    12
+   ],
+   [
+    "2025-05-25T15:00",
+    12
+   ],
+   [
+    "2025-05-25T16:00",
+    14
+   ],
+   [
+    "2025-05-25T17:00",
+    36612
+   ],
+   [
+    "2025-05-25T18:00",
+    40398
+   ],
+   [
+    "2025-05-25T19:00",
+    41304
+   ],
+   [
+    "2025-05-25T20:00",
+    41212
+   ],
+   [
+    "2025-05-25T21:00",
+    34000
+   ],
+   [
+    "2025-05-25T22:00",
+    12
+   ],
+   [
+    "2025-05-25T23:00",
+    12
+   ],
+   [
+    "2025-05-26T00:00",
+    14
+   ],
+   [
+    "2025-05-26T01:00",
+    10
+   ],
+   [
+    "2025-05-26T02:00",
+    4
+   ],
+   [
+    "2025-05-26T03:00",
+    8
+   ],
+   [
+    "2025-05-26T04:00",
+    12
+   ],
+   [
+    "2025-05-26T05:00",
+    8
+   ],
+   [
+    "2025-05-26T06:00",
+    6
+   ],
+   [
+    "2025-05-26T07:00",
+    8
+   ],
+   [
+    "2025-05-26T08:00",
+    10
+   ],
+   [
+    "2025-05-26T09:00",
+    10
+   ],
+   [
+    "2025-05-26T10:00",
+    12
+   ],
+   [
+    "2025-05-26T11:00",
+    6
+   ],
+   [
+    "2025-05-26T12:00",
+    8
+   ],
+   [
+    "2025-05-26T13:00",
+    6
+   ],
+   [
+    "2025-05-26T14:00",
+    2
+   ],
+   [
+    "2025-05-26T15:00",
+    14
+   ],
+   [
+    "2025-05-26T16:00",
+    8
+   ],
+   [
+    "2025-05-26T17:00",
+    2
+   ],
+   [
+    "2025-05-26T18:00",
+    8
+   ]
+  ],
+  "summary": {
+   "bucket": "hour",
+   "buckets": 47,
+   "group_by": null,
+   "total": 193920,
+   "groups_total": 1,
+   "series_total": 193920,
+   "other_count": 0,
+   "series": [
+    {
+     "series": "(all)",
+     "count": 193920,
+     "share_pct": 100.0,
+     "peak_bucket": "2025-05-25T19:00",
+     "peak_count": 41304,
+     "prev_period": null,
+     "median_week": null,
+     "expected": null,
+     "baseline_basis": "none",
+     "baseline_flag": "no_baseline"
+    }
+   ],
+   "baseline": {
+    "otel_demo": {
+     "from": "2025-05-24T20:30:00",
+     "to": "2025-05-26T18:30:00",
+     "days": 1.92,
+     "previous_from": null,
+     "previous_to": null,
+     "whole_weeks_outside_scope": 0
+    }
+   }
+  },
+  "notes": [
+   "Every count here is Log Entries, not Incidents: one failing node can write thousands of lines about a single problem, so a large count is not many failures. Quote the numbers exactly as given; never round them.",
+   "Baselines, per row: prev_period is the count with the same filters in the period of equal length just before the Data Scope, or in the named baseline period (otel_demo: null, because the Data Scope starts at the first Log Entry of otel_demo, so there is no previous period). median_week is the median of the zero-filled weekly counts (Monday-start weeks) with the same filters over the Dataset's whole weeks outside the Data Scope (otel_demo 0). expected is the named baseline period's count scaled to the Data Scope's length when baseline_from and baseline_to are given, else median_week scaled to it, else prev_period scaled to it when fewer than 4 such weeks exist; baseline_basis names the one used (named_period, median_week, previous_period or none). baseline_flag is unusual_high when the count is at least 3 times expected and at least 10 Log Entries above it, unusual_low when it is at most expected / 3 and at least 10 below it, normal otherwise, and no_baseline when neither baseline exists.",
+   "otel_demo has fewer than 4 whole weeks outside the Data Scope (0), so median_week is null there and the flag falls back to the previous period, or is no_baseline without one. To see which weeks stand out, call trend over otel_demo, or narrow the time range.",
+   "Buckets follow ts: ts is the OTel TimestampTime in UTC, to the second; ts_exact is the Timestamp to the microsecond (both cast in the server's time zone, which is UTC)."
+  ],
+  "answer_frame": [],
+  "not_measured": []
+ },
+ "burst": {
+  "evidence_id": "E3",
+  "tool": "count_by",
+  "role": "engineer",
+  "arguments": {
+   "group_by": "component",
+   "dataset": "otel_demo",
+   "query": null,
+   "time_from": "2025-05-25T17:00:00",
+   "time_to": "2025-05-25T22:00:00",
+   "components": [
+    "payment"
+   ],
+   "levels": [
+    "error"
+   ],
+   "sources": null,
+   "alert_categories": null,
+   "pattern_ids": null,
+   "family_id": null,
+   "top": 25,
+   "baseline_from": null,
+   "baseline_to": null
+  },
+  "sql": [
+   "WITH matching AS (\n    SELECT 'otel_demo' AS dataset, coalesce(e.\"component\", '(no component)') AS k FROM \"huge\".\"otel_log\" AS e WHERE e.\"component\" = ANY(%s::VARCHAR[]) AND e.\"level\" = ANY(%s::VARCHAR[]) AND e.\"ts\" >= %s AND e.\"ts\" < %s\n),\ngrouped AS (SELECT dataset, k, count(*) AS n FROM matching GROUP BY dataset, k),\nranked AS (SELECT dataset, k, n, row_number() OVER (ORDER BY n DESC, dataset, k) AS rnk FROM grouped),\nmarked AS (\n    SELECT dataset, k, n, rnk,\n           sum(CASE WHEN rnk > %s THEN 1 ELSE 0 END) OVER (PARTITION BY dataset) AS hidden\n    FROM ranked\n)\nSELECT dataset, k, n, rnk, CAST(NULL AS BIGINT) AS groups FROM marked WHERE rnk <= %s OR hidden = 1\nUNION ALL\nSELECT dataset, CAST(NULL AS VARCHAR), sum(n), CAST(NULL AS BIGINT), count(*) FROM grouped GROUP BY dataset\nORDER BY rnk NULLS LAST, dataset",
+   "WITH matching AS (\n    SELECT 'otel_demo' AS dataset, CASE WHEN coalesce(e.\"component\", '(no component)') = ANY(%s::VARCHAR[]) THEN coalesce(e.\"component\", '(no component)') ELSE '(other)' END AS k, e.\"component\" AS src, e.\"ts\" AS ts, (e.\"ts\" >= %s AND e.\"ts\" < %s) AS in_scope, (e.\"ts\" >= %s AND e.\"ts\" < %s) AS in_prev FROM \"huge\".\"otel_log\" AS e WHERE e.\"component\" = ANY(%s::VARCHAR[]) AND e.\"level\" = ANY(%s::VARCHAR[]) AND e.\"ts\" >= %s AND e.\"ts\" < %s\n),\ncur AS (\n    SELECT dataset, k, count(*) AS n, count(DISTINCT src) AS sources, min(ts) AS first_seen,\n           max(ts) AS last_seen\n    FROM matching WHERE in_scope GROUP BY dataset, k\n),\nweekly AS (\n    SELECT dataset, k, time_bucket(INTERVAL '7 days', ts) AS week, count(*) AS n,\n           count(*) FILTER (WHERE in_prev) AS prev\n    FROM matching GROUP BY dataset, k, week\n),\ngrid AS (\n    SELECT 'otel_demo' AS dataset, week FROM (SELECT unnest(generate_series(time_bucket(INTERVAL '7 days', %s::TIMESTAMP) + INTERVAL '7 days', time_bucket(INTERVAL '7 days', %s::TIMESTAMP) - INTERVAL '7 days', INTERVAL '7 days')) AS week) AS whole WHERE week + INTERVAL '7 days' <= %s::TIMESTAMP OR week >= %s::TIMESTAMP\n),\nwanted AS (\n    SELECT 'otel_demo' AS dataset, unnest(%s::VARCHAR[]) AS k\n),\nmed AS (\n    SELECT wanted.dataset, wanted.k, median(coalesce(weekly.n, 0)) AS median_week, count(*) AS weeks\n    FROM wanted JOIN grid ON grid.dataset = wanted.dataset\n    LEFT JOIN weekly ON weekly.dataset = wanted.dataset AND weekly.k = wanted.k AND weekly.week = grid.week\n    GROUP BY wanted.dataset, wanted.k\n),\nprev AS (SELECT dataset, k, sum(prev) AS prev_period FROM weekly GROUP BY dataset, k)\nSELECT wanted.dataset, wanted.k, coalesce(cur.n, 0) AS n, coalesce(cur.sources, 0) AS sources,\n       cur.first_seen, cur.last_seen, coalesce(prev.prev_period, 0) AS prev_period, med.median_week,\n       coalesce(med.weeks, 0) AS weeks\nFROM wanted\nLEFT JOIN cur ON cur.dataset = wanted.dataset AND cur.k = wanted.k\nLEFT JOIN prev ON prev.dataset = wanted.dataset AND prev.k = wanted.k\nLEFT JOIN med ON med.dataset = wanted.dataset AND med.k = wanted.k\nORDER BY wanted.dataset, wanted.k"
+  ],
+  "params": [
+   [
+    [
+     "payment"
+    ],
+    [
+     "error"
+    ],
+    "2025-05-25T17:00:00",
+    "2025-05-25T22:00:00",
+    25,
+    25
+   ],
+   [
+    [
+     "payment"
+    ],
+    "2025-05-25T17:00:00",
+    "2025-05-25T22:00:00",
+    "2025-05-25T12:00:00",
+    "2025-05-25T17:00:00",
+    [
+     "payment"
+    ],
+    [
+     "error"
+    ],
+    "2025-05-25T12:00:00",
+    "2025-05-25T22:00:00",
+    "2025-05-24T20:30:00",
+    "2025-05-26T18:29:59",
+    "2025-05-25T17:00:00",
+    "2025-05-25T22:00:00",
+    [
+     "payment"
+    ]
+   ]
+  ],
+  "data_scope": {
+   "datasets": [
+    "otel_demo"
+   ],
+   "time_from": "2025-05-25T17:00:00",
+   "time_to": "2025-05-25T22:00:00",
+   "time_input": null,
+   "resolved_against": null,
+   "filters": {
+    "pattern_ids": null,
+    "family_id": null,
+    "components": [
+     "payment"
+    ],
+    "levels": [
+     "error"
+    ]
+   },
+   "agent_indexes": null
+  },
+  "total_matches": 1,
+  "returned": 1,
+  "truncated": false,
+  "query_ms": 672.6,
+  "columns": [
+   "dataset",
+   "component",
+   "count",
+   "share_pct",
+   "distinct_sources",
+   "first_seen",
+   "last_seen",
+   "prev_period",
+   "median_week",
+   "expected",
+   "baseline_basis",
+   "baseline_flag"
+  ],
+  "rows": [
+   [
+    "otel_demo",
+    "payment",
+    193526,
+    100.0,
+    1,
+    "2025-05-25T17:03:32",
+    "2025-05-25T21:49:43",
+    62,
+    null,
+    62.0,
+    "previous_period",
+    "unusual_high"
+   ]
+  ],
+  "summary": {
+   "group_by": "component",
+   "total": 193526,
+   "groups_total": 1,
+   "top_n": 1,
+   "top_n_sum": 193526,
+   "top_n_share_pct": 100.0,
+   "other_count": 0,
+   "other_groups": 0,
+   "baseline": {
+    "otel_demo": {
+     "from": "2025-05-25T17:00:00",
+     "to": "2025-05-25T22:00:00",
+     "days": 0.21,
+     "previous_from": "2025-05-25T12:00:00",
+     "previous_to": "2025-05-25T17:00:00",
+     "whole_weeks_outside_scope": 0
+    }
+   }
+  },
+  "notes": [
+   "Every count here is Log Entries, not Incidents: one failing node can write thousands of lines about a single problem, so a large count is not many failures. Quote the numbers exactly as given; never round them.",
+   "Baselines, per row: prev_period is the count with the same filters in the period of equal length just before the Data Scope, or in the named baseline period (otel_demo: 2025-05-25T12:00:00 to 2025-05-25T17:00:00). median_week is the median of the zero-filled weekly counts (Monday-start weeks) with the same filters over the Dataset's whole weeks outside the Data Scope (otel_demo 0). expected is the named baseline period's count scaled to the Data Scope's length when baseline_from and baseline_to are given, else median_week scaled to it, else prev_period scaled to it when fewer than 4 such weeks exist; baseline_basis names the one used (named_period, median_week, previous_period or none). baseline_flag is unusual_high when the count is at least 3 times expected and at least 10 Log Entries above it, unusual_low when it is at most expected / 3 and at least 10 below it, normal otherwise, and no_baseline when neither baseline exists.",
+   "otel_demo has fewer than 4 whole weeks outside the Data Scope (0), so median_week is null there and the flag falls back to the previous period, or is no_baseline without one. To see which weeks stand out, call trend over otel_demo, or narrow the time range.",
+   "distinct_sources counts BGL nodes, OpenStack instances (instance_ref) and text_bench services (component); OpenStack Log Entries that name no instance are not counted as a source."
+  ],
+  "answer_frame": [],
+  "not_measured": []
+ },
+ "entry": {
+  "row": 6287714,
+  "ts": "2025-05-25T21:49:43.625000",
+  "service": "payment",
+  "level": "error",
+  "trace_id": "d6b63ab9999f356c9ff320454f1bf23a",
+  "span_id": "d799c56ba6261388",
+  "message": "Visa cache full: cannot add new item."
+ },
+ "selection": [
+  {
+   "label": "selection, phase 1: row numbers from narrow columns",
+   "statement": "SELECT file_row_number FROM read_parquet('https://public-pme.s3.eu-west-3.amazonaws.com/otel_demo/otel_logs.parquet', file_row_number = true) WHERE \"ServiceName\" = 'payment' AND \"SeverityText\" = 'error' AND \"TimestampTime\" >= CAST('2025-05-25 21:00:00+00' AS TIMESTAMPTZ) AND \"TimestampTime\" < CAST('2025-05-25 22:00:00+00' AS TIMESTAMPTZ) ORDER BY \"TimestampTime\" DESC, file_row_number DESC LIMIT 4",
+   "plan": {
+    "total_ms": 120.0,
+    "rows_scanned": 34000,
+    "row_groups": [
+     118,
+     120
+    ],
+    "http_in": 0,
+    "http_gets": 0,
+    "data_read": null
+   }
+  },
+  {
+   "label": "selection, phase 2: the picked rows",
+   "statement": "SELECT file_row_number, CAST(\"Timestamp\" AS TIMESTAMP) AS ts, \"ServiceName\", \"SeverityText\", \"TraceId\", \"SpanId\", \"Body\" FROM read_parquet('https://public-pme.s3.eu-west-3.amazonaws.com/otel_demo/otel_logs.parquet', file_row_number = true) WHERE file_row_number IN (6287715, 6287714, 6287711, 6287710) ORDER BY file_row_number",
+   "plan": {
+    "total_ms": 4050.0,
+    "rows_scanned": 2048,
+    "row_groups": [
+     1,
+     120
+    ],
+    "http_in": 25480397,
+    "http_gets": 14,
+    "data_read": 25500000
+   }
+  }
+ ],
+ "trace": {
+  "evidence_id": "E4",
+  "tool": "get_trace",
+  "role": "engineer",
+  "arguments": {
+   "trace_id": "d6b63ab9999f356c9ff320454f1bf23a",
+   "span_limit": 50,
+   "log_limit": 20,
+   "metric_limit": 20,
+   "pad_minutes": 2
+  },
+  "sql": [
+   "SELECT service, count(*) AS spans, count(*) FILTER (WHERE status = 'Error') AS error_spans,\n       min(ts) AS first_start, max(ts + to_microseconds(duration_ns // 1000)) AS last_end\nFROM \"huge\".\"otel_span\"\nWHERE trace_id = %s\nGROUP BY service\nORDER BY first_start, service",
+   "WITH RECURSIVE s AS (\n    SELECT ts, span_id, parent_span_id, service, operation, kind, duration_ns, status, status_message\n    FROM \"huge\".\"otel_span\"\n    WHERE trace_id = %s\n), tree(span_id, depth, path) AS (\n    SELECT span_id, 0, [span_id] FROM s WHERE parent_span_id NOT IN (SELECT span_id FROM s)\n    UNION ALL\n    SELECT s.span_id, tree.depth + 1, list_append(tree.path, s.span_id)\n    FROM s JOIN tree ON s.parent_span_id = tree.span_id\n    WHERE tree.depth < 64\n), children AS (\n    SELECT parent_span_id AS span_id, sum(duration_ns) AS child_ns FROM s GROUP BY parent_span_id\n), spans AS (\n    SELECT s.*, tree.depth, tree.path, greatest(s.duration_ns - coalesce(children.child_ns, 0), 0) AS self_ns\n    FROM s\n    LEFT JOIN tree ON tree.span_id = s.span_id\n    LEFT JOIN children ON children.span_id = s.span_id\n), marked AS (\n    SELECT spans.*,\n           spans.status = 'Error' AND NOT EXISTS (\n               SELECT 1 FROM spans AS below\n               WHERE below.status = 'Error' AND below.span_id <> spans.span_id\n                 AND list_contains(below.path, spans.span_id)\n           ) AS error_origin,\n           row_number() OVER (ORDER BY spans.self_ns DESC, spans.ts) = 1 AS slowest\n    FROM spans\n)\nSELECT ts, service, operation, kind, status, round(duration_ns / 1e6, 3) AS duration_ms,\n       round(self_ns / 1e6, 3) AS self_ms, depth, span_id, parent_span_id,\n       left(status_message, 240) AS status_message, error_origin,\n       count(*) FILTER (WHERE error_origin) OVER () AS error_origins, slowest\nFROM marked\nORDER BY error_origin DESC, slowest DESC, status = 'Error' DESC, self_ns DESC, ts\nLIMIT %s",
+   "SELECT \"component\", \"level\", count(*) AS n, min(\"ts_exact\") AS first, max(\"ts_exact\") AS last\nFROM \"huge\".\"otel_log\"\nWHERE \"trace_id\" = %s\nGROUP BY component, level\nORDER BY first, component, level",
+   "SELECT \"ts_exact\", \"component\", \"level\", \"span_id\", left(\"message\", 240) AS message\nFROM \"huge\".\"otel_log\"\nWHERE \"trace_id\" = %s\nORDER BY lower(\"level\") IN ('error', 'fatal', 'critical') DESC, \"ts_exact\"\nLIMIT %s",
+   "WITH w AS (\n    SELECT service, metric, unit, kind, count(*) AS minutes,\n           CASE WHEN kind = 'counter' THEN avg(value) ELSE sum(total) / nullif(sum(n), 0) END AS value\n    FROM \"huge\".\"otel_metric_minute\"\n    WHERE service = ANY(%s::VARCHAR[]) AND minute >= %s AND minute < %s\n    GROUP BY service, metric, unit, kind\n), judged AS (\n    SELECT w.service, w.metric, w.unit, w.kind, w.value, b.p05, b.median, b.p95, w.minutes,\n           CASE WHEN w.value IS NULL OR coalesce(b.minutes, 0) < 30 THEN 'no_baseline'\n                WHEN w.value > b.p95 + 1e-09 * greatest(abs(b.p95), 1) THEN 'unusual_high'\n                WHEN w.value < b.p05 - 1e-09 * greatest(abs(b.p05), 1) THEN 'unusual_low'\n                ELSE 'normal' END AS flag,\n           b.p95 > b.p05 AS varies,\n           CASE WHEN b.p95 > b.p05 THEN abs(w.value - b.median) / (b.p95 - b.p05)\n                ELSE abs(w.value - b.median) / greatest(abs(b.median), 1e-9) END AS deviation\n    FROM w\n    LEFT JOIN \"huge\".\"otel_metric_baseline\" AS b\n      ON b.service = w.service AND b.metric = w.metric AND b.unit = w.unit AND b.kind = w.kind\n)\nSELECT service, metric, unit, kind, round(value, 6) AS value, round(p05, 6) AS p05,\n       round(median, 6) AS median, round(p95, 6) AS p95, flag, minutes,\n       count(*) OVER () AS series_total,\n       count(*) FILTER (WHERE flag IN ('unusual_high', 'unusual_low')) OVER () AS unusual_total\nFROM judged\nORDER BY flag IN ('unusual_high', 'unusual_low') DESC, varies DESC NULLS LAST, deviation DESC NULLS LAST, service, metric\nLIMIT %s"
+  ],
+  "params": [
+   [
+    "d6b63ab9999f356c9ff320454f1bf23a"
+   ],
+   [
+    "d6b63ab9999f356c9ff320454f1bf23a",
+    50
+   ],
+   [
+    "d6b63ab9999f356c9ff320454f1bf23a"
+   ],
+   [
+    "d6b63ab9999f356c9ff320454f1bf23a",
+    20
+   ],
+   [
+    [
+     "load-generator",
+     "frontend-proxy",
+     "frontend",
+     "checkout",
+     "cart",
+     "product-catalog",
+     "currency",
+     "shipping",
+     "quote",
+     "payment"
+    ],
+    "2025-05-25T21:47:00",
+    "2025-05-25T21:52:00",
+    20
+   ]
+  ],
+  "data_scope": {
+   "datasets": [
+    "otel_demo"
+   ],
+   "time_from": null,
+   "time_to": null,
+   "time_input": null,
+   "resolved_against": null,
+   "filters": {
+    "pattern_ids": null,
+    "family_id": null,
+    "trace_id": "d6b63ab9999f356c9ff320454f1bf23a",
+    "metrics_window": {
+     "from": "2025-05-25T21:47:00",
+     "to": "2025-05-25T21:52:00"
+    },
+    "metrics_services": [
+     "load-generator",
+     "frontend-proxy",
+     "frontend",
+     "checkout",
+     "cart",
+     "product-catalog",
+     "currency",
+     "shipping",
+     "quote",
+     "payment"
+    ],
+    "pad_minutes": 2
+   },
+   "agent_indexes": null
+  },
+  "total_matches": 545,
+  "returned": 57,
+  "truncated": true,
+  "query_ms": 2919.3,
+  "columns": [
+   "signal",
+   "ts",
+   "service",
+   "name",
+   "kind",
+   "status",
+   "duration_ms",
+   "self_ms",
+   "depth",
+   "span_id",
+   "parent_span_id",
+   "text",
+   "value",
+   "unit",
+   "baseline_p05",
+   "baseline_median",
+   "baseline_p95"
+  ],
+  "rows": [
+   [
+    "span",
+    "2025-05-25T21:49:43.508598",
+    "load-generator",
+    "POST",
+    "Client",
+    "Error",
+    175.115,
+    8.736,
+    0,
+    "cf8eacfdaecfceb4",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "span",
+    "2025-05-25T21:49:43.516031",
+    "frontend-proxy",
+    "ingress",
+    "Server",
+    "Error",
+    166.379,
+    0.184,
+    1,
+    "f06293a8b7e51a13",
+    "cf8eacfdaecfceb4",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "span",
+    "2025-05-25T21:49:43.516174",
+    "frontend-proxy",
+    "router frontend egress",
+    "Client",
+    "Error",
+    166.195,
+    53.815,
+    2,
+    "02818a13393f68d2",
+    "f06293a8b7e51a13",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "span",
+    "2025-05-25T21:49:43.573000",
+    "frontend",
+    "POST",
+    "Server",
+    "Error",
+    112.38,
+    10.271,
+    3,
+    "5b5509639d251d14",
+    "02818a13393f68d2",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "span",
+    "2025-05-25T21:49:43.575000",
+    "frontend",
+    "grpc.oteldemo.CheckoutService/PlaceOrder",
+    "Client",
+    "Error",
+    102.109,
+    56.407,
+    4,
+    "7eaa7571e346dc01",
+    "5b5509639d251d14",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "span",
+    "2025-05-25T21:49:43.581345",
+    "checkout",
+    "oteldemo.CheckoutService/PlaceOrder",
+    "Server",
+    "Error",
+    45.702,
+    1.115,
+    5,
+    "ca0e2fbe6fc9954e",
+    "7eaa7571e346dc01",
+    "failed to charge card: could not charge the card: rpc error: code = Unknown desc = Visa cache full: cannot add new item.",
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "span",
+    "2025-05-25T21:49:43.582060",
+    "checkout",
+    "prepareOrderItemsAndShippingQuoteFromCart",
+    "Internal",
+    "Unset",
+    24.467,
+    0.522,
+    6,
+    "644f13f5400448db",
+    "ca0e2fbe6fc9954e",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "span",
+    "2025-05-25T21:49:43.582367",
+    "checkout",
+    "oteldemo.CartService/GetCart",
+    "Client",
+    "Unset",
+    2.766,
+    1.432,
+    7,
+    "cabe906093bc21db",
+    "644f13f5400448db",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "span",
+    "2025-05-25T21:49:43.583475",
+    "cart",
+    "POST /oteldemo.CartService/GetCart",
+    "Server",
+    "Unset",
+    1.334,
+    0.463,
+    8,
+    "91d6efc7ce5fe1df",
+    "cabe906093bc21db",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "span",
+    "2025-05-25T21:49:43.583585",
+    "cart",
+    "HGET",
+    "Client",
+    "Unset",
+    0.872,
+    0.872,
+    9,
+    "a355c38de601a031",
+    "91d6efc7ce5fe1df",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "span",
+    "2025-05-25T21:49:43.585180",
+    "checkout",
+    "oteldemo.ProductCatalogService/GetProduct",
+    "Client",
+    "Unset",
+    2.433,
+    0.964,
+    7,
+    "4aec52f454634dcc",
+    "644f13f5400448db",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "span",
+    "2025-05-25T21:49:43.585871",
+    "product-catalog",
+    "oteldemo.ProductCatalogService/GetProduct",
+    "Server",
+    "Unset",
+    1.469,
+    1.469,
+    8,
+    "4cd4e312ddc3cba5",
+    "4aec52f454634dcc",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "span",
+    "2025-05-25T21:49:43.587656",
+    "checkout",
+    "oteldemo.CurrencyService/Convert",
+    "Client",
+    "Unset",
+    4.996,
+    2.665,
+    7,
+    "2725a9ce5795d1d6",
+    "644f13f5400448db",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "span",
+    "2025-05-25T21:49:43.588763",
+    "currency",
+    "Currency/Convert",
+    "Server",
+    "Ok",
+    2.331,
+    2.331,
+    8,
+    "22c2a038f5c7ab6f",
+    "2725a9ce5795d1d6",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "span",
+    "2025-05-25T21:49:43.592694",
+    "checkout",
+    "oteldemo.ShippingService/GetQuote",
+    "Client",
+    "Unset",
+    6.214,
+    0.922,
+    7,
+    "9d3aea9cd7b36493",
+    "644f13f5400448db",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "span",
+    "2025-05-25T21:49:43.593100",
+    "shipping",
+    "oteldemo.ShippingService/GetQuote",
+    "Server",
+    "Unset",
+    5.292,
+    0.324,
+    8,
+    "ba6c64298cf08a8b",
+    "9d3aea9cd7b36493",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "span",
+    "2025-05-25T21:49:43.593135",
+    "shipping",
+    "POST",
+    "Client",
+    "Unset",
+    4.968,
+    4.42,
+    9,
+    "2ed1244649525b25",
+    "ba6c64298cf08a8b",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "span",
+    "2025-05-25T21:49:43.596830",
+    "quote",
+    "POST /getquote",
+    "Server",
+    "Unset",
+    0.548,
+    0.245,
+    10,
+    "6bd3a66572502844",
+    "2ed1244649525b25",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "span",
+    "2025-05-25T21:49:43.597029",
+    "quote",
+    "{closure}",
+    "Internal",
+    "Unset",
+    0.303,
+    0.255,
+    11,
+    "43232d1eed57d059",
+    "6bd3a66572502844",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "span",
+    "2025-05-25T21:49:43.597118",
+    "quote",
+    "calculate-quote",
+    "Internal",
+    "Unset",
+    0.048,
+    0.048,
+    12,
+    "26bc553a5273c766",
+    "43232d1eed57d059",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "span",
+    "2025-05-25T21:49:43.598947",
+    "checkout",
+    "oteldemo.CurrencyService/Convert",
+    "Client",
+    "Unset",
+    7.537,
+    4.877,
+    7,
+    "d05e9ce07487a788",
+    "644f13f5400448db",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "span",
+    "2025-05-25T21:49:43.600354",
+    "currency",
+    "Currency/Convert",
+    "Server",
+    "Ok",
+    2.66,
+    2.66,
+    8,
+    "d49aa6ad99f4f5ff",
+    "d05e9ce07487a788",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "span",
+    "2025-05-25T21:49:43.606587",
+    "checkout",
+    "oteldemo.PaymentService/Charge",
+    "Client",
+    "Error",
+    20.12,
+    10.427,
+    6,
+    "92b4c3720a6e4fdd",
+    "ca0e2fbe6fc9954e",
+    "Visa cache full: cannot add new item.",
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "span",
+    "2025-05-25T21:49:43.615000",
+    "payment",
+    "grpc.oteldemo.PaymentService/Charge",
+    "Server",
+    "Unset",
+    9.693,
+    9.693,
+    7,
+    "d799c56ba6261388",
+    "92b4c3720a6e4fdd",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "span",
+    "2025-05-25T21:49:43.625000",
+    "payment",
+    "Error: Visa cache full: cannot add new item.",
+    "Internal",
+    "Error",
+    0.0,
+    0.0,
+    8,
+    "27b214520c1d25d8",
+    "d799c56ba6261388",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "log",
+    "2025-05-25T21:49:43.516031",
+    "frontend-proxy",
+    null,
+    null,
+    "info",
+    null,
+    null,
+    null,
+    "f06293a8b7e51a13",
+    null,
+    "[2025-05-25T21:49:43.516Z] \"POST /api/checkout HTTP/1.1\" 500 - via_upstream - \"-\" 391 21 166 166 \"-\" \"python-requests/2.32.3\" \"2dbe4301-4f33-9397-8ad3-e8c44b4dc294\" \"frontend-proxy:8080\" \"34.118.237.126:8080\" frontend 10.32.11.25:51040 10.3",
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "log",
+    "2025-05-25T21:49:43.574000",
+    "frontend",
+    null,
+    null,
+    "info",
+    null,
+    null,
+    null,
+    "5b5509639d251d14",
+    null,
+    "Checkout",
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "log",
+    "2025-05-25T21:49:43.583580",
+    "cart",
+    null,
+    null,
+    "Information",
+    null,
+    null,
+    null,
+    "91d6efc7ce5fe1df",
+    null,
+    "GetCartAsync called with userId={userId}",
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "log",
+    "2025-05-25T21:49:43.588801",
+    "currency",
+    null,
+    null,
+    "INFO",
+    null,
+    null,
+    null,
+    "22c2a038f5c7ab6f",
+    null,
+    "Convert conversion successful",
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "log",
+    "2025-05-25T21:49:43.597220",
+    "quote",
+    null,
+    null,
+    "INFO",
+    null,
+    null,
+    null,
+    "43232d1eed57d059",
+    null,
+    "Calculated quote",
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "log",
+    "2025-05-25T21:49:43.600395",
+    "currency",
+    null,
+    null,
+    "INFO",
+    null,
+    null,
+    null,
+    "d49aa6ad99f4f5ff",
+    null,
+    "Convert conversion successful",
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "log",
+    "2025-05-25T21:49:43.616000",
+    "payment",
+    null,
+    null,
+    "info",
+    null,
+    null,
+    null,
+    "d799c56ba6261388",
+    null,
+    "Charge request received.",
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "log",
+    "2025-05-25T21:49:43.625000",
+    "payment",
+    null,
+    null,
+    "error",
+    null,
+    null,
+    null,
+    "d799c56ba6261388",
+    null,
+    "Visa cache full: cannot add new item.",
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "log",
+    "2025-05-25T21:49:43.677000",
+    "frontend",
+    null,
+    null,
+    "error",
+    null,
+    null,
+    null,
+    "5b5509639d251d14",
+    null,
+    "{\"error\":{\"code\":13,\"details\":\"failed to charge card: could not charge the card: rpc error: code = Unknown desc = Visa cache full: cannot add new item.\",\"metadata\":{\"content-type\":[\"application/grpc\"]}},\"message\":\"Failed to place order {\\\"e",
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "log",
+    "2025-05-25T21:49:43.679000",
+    "frontend",
+    null,
+    null,
+    "error",
+    null,
+    null,
+    null,
+    "5b5509639d251d14",
+    null,
+    "Failed to place order",
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "log",
+    "2025-05-25T21:49:43.679000",
+    "frontend",
+    null,
+    null,
+    "error",
+    null,
+    null,
+    null,
+    "5b5509639d251d14",
+    null,
+    "{\"code\":13,\"details\":\"failed to charge card: could not charge the card: rpc error: code = Unknown desc = Visa cache full: cannot add new item.\",\"metadata\":{\"content-type\":[\"application/grpc\"]}}",
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "log",
+    "2025-05-25T21:49:43.682000",
+    "frontend",
+    null,
+    null,
+    "error",
+    null,
+    null,
+    null,
+    "5b5509639d251d14",
+    null,
+    " \u2a2f {\"code\":13,\"details\":\"failed to charge card: could not charge the card: rpc error: code = Unknown desc = Visa cache full: cannot add new item.\",\"metadata\":{\"content-type\":[\"application/grpc\"]}}",
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "metric",
+    "2025-05-25T21:47:00",
+    "payment",
+    "k8s.pod.memory.rss",
+    "gauge",
+    "unusual_high",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    106443025.066667,
+    "By",
+    86892339.2,
+    89525589.333333,
+    105244057.6
+   ],
+   [
+    "metric",
+    "2025-05-25T21:47:00",
+    "payment",
+    "container.memory.rss",
+    "gauge",
+    "unusual_high",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    106369297.066667,
+    "By",
+    86866397.866667,
+    89482581.333333,
+    105190809.6
+   ],
+   [
+    "metric",
+    "2025-05-25T21:47:00",
+    "payment",
+    "container.memory.page_faults",
+    "gauge",
+    "unusual_high",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    12921300.066667,
+    "1",
+    560197.566667,
+    4417287.0,
+    11105383.366667
+   ],
+   [
+    "metric",
+    "2025-05-25T21:47:00",
+    "payment",
+    "k8s.pod.memory.page_faults",
+    "gauge",
+    "unusual_high",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    12921659.8,
+    "1",
+    560907.666667,
+    4418586.833333,
+    11106820.833333
+   ],
+   [
+    "metric",
+    "2025-05-25T21:47:00",
+    "payment",
+    "visa_validation_cache.size",
+    "gauge",
+    "normal",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    100000.0,
+    "entries",
+    0.0,
+    2067.0,
+    100000.0
+   ],
+   [
+    "metric",
+    "2025-05-25T21:47:00",
+    "payment",
+    "k8s.pod.memory.working_set",
+    "gauge",
+    "normal",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    118412083.2,
+    "By",
+    97355025.066667,
+    101000533.333333,
+    125258478.933333
+   ],
+   [
+    "metric",
+    "2025-05-25T21:47:00",
+    "payment",
+    "k8s.pod.memory.available",
+    "gauge",
+    "normal",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    301018316.8,
+    "By",
+    294171921.066667,
+    318429866.666667,
+    322075374.933333
+   ],
+   [
+    "metric",
+    "2025-05-25T21:47:00",
+    "payment",
+    "container.memory.working_set",
+    "gauge",
+    "normal",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    118100787.2,
+    "By",
+    97083392.0,
+    100716544.0,
+    125036134.4
+   ],
+   [
+    "metric",
+    "2025-05-25T21:47:00",
+    "payment",
+    "container.memory.available",
+    "gauge",
+    "normal",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    301329612.8,
+    "By",
+    294394265.6,
+    318713856.0,
+    322347008.0
+   ],
+   [
+    "metric",
+    "2025-05-25T21:47:00",
+    "checkout",
+    "rpc.server.responses_per_rpc",
+    "histogram",
+    "normal",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    0.547741,
+    "{count}",
+    0.198545,
+    1.0,
+    1.0
+   ],
+   [
+    "metric",
+    "2025-05-25T21:47:00",
+    "checkout",
+    "rpc.client.responses_per_rpc",
+    "histogram",
+    "normal",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    0.948526,
+    "{count}",
+    0.901096,
+    1.0,
+    1.0
+   ],
+   [
+    "metric",
+    "2025-05-25T21:47:00",
+    "payment",
+    "app.payment.transactions",
+    "counter",
+    "normal",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    224.2,
+    "",
+    84.0,
+    414.0,
+    457.25
+   ],
+   [
+    "metric",
+    "2025-05-25T21:47:00",
+    "product-catalog",
+    "rpc.server.response.size",
+    "histogram",
+    "normal",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    908.810615,
+    "By",
+    861.634387,
+    883.239847,
+    912.957031
+   ],
+   [
+    "metric",
+    "2025-05-25T21:47:00",
+    "checkout",
+    "rpc.client.request.size",
+    "histogram",
+    "normal",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    37.552486,
+    "By",
+    35.011733,
+    40.27991,
+    40.487883
+   ],
+   [
+    "metric",
+    "2025-05-25T21:47:00",
+    "product-catalog",
+    "rpc.server.request.size",
+    "histogram",
+    "normal",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    10.963817,
+    "By",
+    10.953038,
+    11.029124,
+    11.08537
+   ],
+   [
+    "metric",
+    "2025-05-25T21:47:00",
+    "checkout",
+    "http.client.request.size",
+    "counter",
+    "normal",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    133922.6,
+    "By",
+    47533.65,
+    235647.0,
+    260755.8
+   ],
+   [
+    "metric",
+    "2025-05-25T21:47:00",
+    "quote",
+    "container.memory.rss",
+    "gauge",
+    "normal",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    18785348.266667,
+    "By",
+    18400597.333333,
+    18601301.333333,
+    18799274.666667
+   ],
+   [
+    "metric",
+    "2025-05-25T21:47:00",
+    "checkout",
+    "container.cpu.utilization",
+    "gauge",
+    "normal",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    0.04657,
+    "1",
+    0.042994,
+    0.057613,
+    0.068166
+   ],
+   [
+    "metric",
+    "2025-05-25T21:47:00",
+    "checkout",
+    "k8s.container.cpu_limit_utilization",
+    "gauge",
+    "normal",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    0.186281,
+    "1",
+    0.171976,
+    0.230452,
+    0.272662
+   ],
+   [
+    "metric",
+    "2025-05-25T21:47:00",
+    "checkout",
+    "k8s.container.cpu_request_utilization",
+    "gauge",
+    "normal",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    0.465703,
+    "1",
+    0.42994,
+    0.57613,
+    0.681655
+   ]
+  ],
+  "summary": {
+   "trace_id": "d6b63ab9999f356c9ff320454f1bf23a",
+   "spans_total": 25,
+   "spans_returned": 25,
+   "error_spans": 8,
+   "services": [
+    {
+     "service": "load-generator",
+     "spans": 1,
+     "error_spans": 1
+    },
+    {
+     "service": "frontend-proxy",
+     "spans": 2,
+     "error_spans": 2
+    },
+    {
+     "service": "frontend",
+     "spans": 2,
+     "error_spans": 2
+    },
+    {
+     "service": "checkout",
+     "spans": 8,
+     "error_spans": 2
+    },
+    {
+     "service": "cart",
+     "spans": 2,
+     "error_spans": 0
+    },
+    {
+     "service": "product-catalog",
+     "spans": 1,
+     "error_spans": 0
+    },
+    {
+     "service": "currency",
+     "spans": 2,
+     "error_spans": 0
+    },
+    {
+     "service": "shipping",
+     "spans": 2,
+     "error_spans": 0
+    },
+    {
+     "service": "quote",
+     "spans": 3,
+     "error_spans": 0
+    },
+    {
+     "service": "payment",
+     "spans": 2,
+     "error_spans": 1
+    }
+   ],
+   "error_origin_spans": [
+    {
+     "span_id": "27b214520c1d25d8",
+     "service": "payment",
+     "operation": "Error: Visa cache full: cannot add new item.",
+     "depth": 8,
+     "status_message": ""
+    }
+   ],
+   "slowest_self_span": {
+    "span_id": "7eaa7571e346dc01",
+    "service": "frontend",
+    "operation": "grpc.oteldemo.CheckoutService/PlaceOrder",
+    "self_ms": 56.407,
+    "duration_ms": 102.109
+   },
+   "log_entries_total": 12,
+   "log_entries_returned": 12,
+   "log_levels": {
+    "info": 3,
+    "Information": 1,
+    "INFO": 3,
+    "error": 5
+   },
+   "error_log_entries": 5,
+   "metrics_window": {
+    "from": "2025-05-25T21:47:00",
+    "to": "2025-05-25T21:52:00"
+   },
+   "metric_series_total": 508,
+   "metric_series_returned": 20,
+   "metric_series_unusual": 4,
+   "trace_start": "2025-05-25T21:49:43.508598",
+   "trace_end": "2025-05-25T21:49:43.685379",
+   "trace_duration_ms": 176.781
+  },
+  "notes": [
+   "Showing 20 of 508 metric series (the most unusual first). summary holds the exact totals; raise span_limit, log_limit or metric_limit to see more.",
+   "Spans and Log Entries were read in place from the remote Parquet files; their TraceId bloom filters limit the read to the row groups that hold this trace.",
+   "error_origin_spans are Error spans with no Error span below them in this trace: the deepest point where the request failed. Where the error surfaced is an Observed Fact; why it failed is a Hypothesis.",
+   "Metric rows: the services on this trace, 2025-05-25T21:47:00 to 2025-05-25T21:52:00 (the trace's minutes widened by pad_minutes), from the per-minute roll-up. value: gauge = mean data point, counter = mean increase per minute, histogram = mean observation; baseline_p05, baseline_median and baseline_p95 are the same series' per-minute values over the whole run, and status unusual_high or unusual_low means outside p05 to p95. A metric that moved in these minutes is consistent with the failure; it does not establish a cause."
+  ],
+  "answer_frame": [],
+  "not_measured": []
+ },
+ "trace_reads": [
+  {
+   "label": "get_trace: spans per service",
+   "statement": "SELECT service, count(*) AS spans, count(*) FILTER (WHERE status = 'Error') AS error_spans,\n       min(ts) AS first_start, max(ts + to_microseconds(duration_ns // 1000)) AS last_end\nFROM \"huge\".\"otel_span\"\nWHERE trace_id = 'd6b63ab9999f356c9ff320454f1bf23a'\nGROUP BY service\nORDER BY first_start, service",
+   "plan": {
+    "total_ms": 28330.0,
+    "rows_scanned": 25,
+    "row_groups": [
+     22,
+     354
+    ],
+    "http_in": 197027430,
+    "http_gets": 111,
+    "data_read": 197000000
+   }
+  },
+  {
+   "label": "get_trace: spans with depth and self time",
+   "statement": "WITH RECURSIVE s AS (\n    SELECT ts, span_id, parent_span_id, service, operation, kind, duration_ns, status, status_message\n    FROM \"huge\".\"otel_span\"\n    WHERE trace_id = 'd6b63ab9999f356c9ff320454f1bf23a'\n), tree(span_id, depth, path) AS (\n    SELECT span_id, 0, [span_id] FROM s WHERE parent_span_id NOT IN (SELECT span_id FROM s)\n    UNION ALL\n    SELECT s.span_id, tree.depth + 1, list_append(tree.path, s.span_id)\n    FROM s JOIN tree ON s.parent_span_id = tree.span_id\n    WHERE tree.depth < 64\n), children AS (\n    SELECT parent_span_id AS span_id, sum(duration_ns) AS child_ns FROM s GROUP BY parent_span_id\n), spans AS (\n    SELECT s.*, tree.depth, tree.path, greatest(s.duration_ns - coalesce(children.child_ns, 0), 0) AS self_ns\n    FROM s\n    LEFT JOIN tree ON tree.span_id = s.span_id\n    LEFT JOIN children ON children.span_id = s.span_id\n), marked AS (\n    SELECT spans.*,\n           spans.status = 'Error' AND NOT EXISTS (\n               SELECT 1 FROM spans AS below\n               WHERE below.status = 'Error' AND below.span_id <> spans.span_id\n                 AND list_contains(below.path, spans.span_id)\n           ) AS error_origin,\n           row_number() OVER (ORDER BY spans.self_ns DESC, spans.ts) = 1 AS slowest\n    FROM spans\n)\nSELECT ts, service, operation, kind, status, round(duration_ns / 1e6, 3) AS duration_ms,\n       round(self_ns / 1e6, 3) AS self_ms, depth, span_id, parent_span_id,\n       left(status_message, 240) AS status_message, error_origin,\n       count(*) FILTER (WHERE error_origin) OVER () AS error_origins, slowest\nFROM marked\nORDER BY error_origin DESC, slowest DESC, status = 'Error' DESC, self_ns DESC, ts\nLIMIT 50",
+   "plan": {
+    "total_ms": 28640.0,
+    "rows_scanned": 25,
+    "row_groups": [
+     22,
+     354
+    ],
+    "http_in": 197446861,
+    "http_gets": 111,
+    "data_read": 197500000
+   }
+  },
+  {
+   "label": "get_trace: Log Entries per level",
+   "statement": "SELECT \"component\", \"level\", count(*) AS n, min(\"ts_exact\") AS first, max(\"ts_exact\") AS last\nFROM \"huge\".\"otel_log\"\nWHERE \"trace_id\" = 'd6b63ab9999f356c9ff320454f1bf23a'\nGROUP BY component, level\nORDER BY first, component, level",
+   "plan": {
+    "total_ms": 6110.0,
+    "rows_scanned": 12,
+    "row_groups": [
+     6,
+     120
+    ],
+    "http_in": 40475034,
+    "http_gets": 25,
+    "data_read": 40500000
+   }
+  },
+  {
+   "label": "get_trace: Log Entries",
+   "statement": "SELECT \"ts_exact\", \"component\", \"level\", \"span_id\", left(\"message\", 240) AS message\nFROM \"huge\".\"otel_log\"\nWHERE \"trace_id\" = 'd6b63ab9999f356c9ff320454f1bf23a'\nORDER BY lower(\"level\") IN ('error', 'fatal', 'critical') DESC, \"ts_exact\"\nLIMIT 20",
+   "plan": {
+    "total_ms": 13920.0,
+    "rows_scanned": 12300,
+    "row_groups": [
+     12,
+     240
+    ],
+    "http_in": 94686413,
+    "http_gets": 49,
+    "data_read": 94700000
+   }
+  }
+ ],
+ "environment": {
+  "Date (UTC)": "2026-10-17 07:14",
+  "SereneDB": "PostgreSQL 18.3 (SereneDB 26.10.1)",
+  "Server": "localhost:7890 (shared dev instance reached through an SSH tunnel; it fetches the S3 files itself)",
+  "Server threads": "12",
+  "Server memory_limit": "28.0 GiB",
+  "External file cache": "on",
+  "Schema": "huge",
+  "Files": "https://public-pme.s3.eu-west-3.amazonaws.com/otel_demo/",
+  "SLM_TRACE_TIMEOUT_S": "120",
+  "Client": "macOS-26.5-arm64-arm-64bit-Mach-O, Python 3.13.13, psycopg 3.3.6"
+ },
+ "ledger_file": "docs/results/multimodal.ledger.jsonl",
+ "notes": []
+}

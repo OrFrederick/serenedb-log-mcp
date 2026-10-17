@@ -84,8 +84,8 @@ LOG_ENTRIES_NOTE = (
     "given; never round them."
 )
 SOURCES_NOTE = (
-    "distinct_sources counts BGL nodes, OpenStack instances (instance_ref) and text_bench services "
-    "(component); OpenStack Log Entries that name no instance are not counted as a source."
+    "distinct_sources counts BGL nodes, OpenStack instances (instance_ref) and the services (component) "
+    "of text_bench and otel_demo; OpenStack Log Entries that name no instance are not counted as a source."
 )
 NO_MATCH_NOTE = (
     "No Log Entries matched this Data Scope. Widen the time range, drop a filter, or check the query "

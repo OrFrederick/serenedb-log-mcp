@@ -17,8 +17,12 @@ share TraceId (`corpus.datasets`, `make otel-setup`). Five statements, each a re
 
 Statements 1 to 4 read the remote files. None is sorted by TraceId or time, but both carry TraceId
 bloom filters, so `trace_id = %s` reads only the row groups that hold the trace. That is still
-slow on a cold cache (the bloom filters plus about 25 MB per row group from S3), so they run with
-`SLM_TRACE_TIMEOUT_S` instead of the default limit. Statement 5 is local and fast.
+slow on a cold cache: about 20 MB per row group from S3 (measured on the shared dev server, which
+reads S3 at about 7 MB/s: 648 MB and 97 s of server time for a trace in 23 of 354 span row groups and
+6 of 120 log row groups, about 2 s once cached). So they run with `SLM_TRACE_TIMEOUT_S` (per
+statement) instead of the default limit. Keeping spans and Log Entries in two statements each costs
+no extra bytes (each reads the columns it needs; merging them read as many) and keeps every cold
+statement near 40 s. Statement 5 is local and fast.
 """
 
 from __future__ import annotations
@@ -83,9 +87,10 @@ NOT_SET_UP = (
 TIMEOUT = (
     "Reading trace {trace} from the remote otel_demo files ran longer than the {limit:g} s limit "
     "(SLM_TRACE_TIMEOUT_S) and was cancelled. A cold lookup reads the TraceId bloom filters of the log "
-    "and trace files (about 425 MiB) and about 25 MB for every row group that holds the trace from S3: "
-    "on the shared dev server that took up to 71 s, and under a second once cached. Run `make "
-    "otel-setup` (it warms the bloom filters) or raise SLM_TRACE_TIMEOUT_S, then call get_trace again."
+    "and trace files (about 425 MiB) and about 20 MB for every row group that holds the trace from S3: "
+    "on the shared dev server one statement took up to 40 s for a trace in 23 row groups, and the whole "
+    "lookup about 2 s once cached. Run `make otel-setup` (it warms the bloom filters) or raise "
+    "SLM_TRACE_TIMEOUT_S, then call get_trace again."
 )
 ROLL_UP_MISSING = (
     "No metric rows: the per-minute metric roll-up is missing in this database. Run `make otel-setup` "
@@ -104,8 +109,9 @@ METRICS_NOTE = (
     "pad_minutes), from the per-minute roll-up. value: gauge = mean data point, counter = mean "
     "increase per minute, histogram = mean observation; baseline_p05, baseline_median and baseline_p95 "
     "are the same series' per-minute values over the whole run, and status unusual_high or unusual_low "
-    "means outside p05 to p95. A metric that moved in these minutes is consistent with the failure; it "
-    "does not establish a cause."
+    "means outside p05 to p95. A state that lasts a large part of the run (more than 5% of its minutes) "
+    "is part of its own baseline and reads normal, so compare value with baseline_median too. A metric "
+    "that moved in these minutes is consistent with the failure; it does not establish a cause."
 )
 
 
@@ -171,7 +177,9 @@ def register(server: MCPServer) -> None:
         a time window, including unrelated requests. Use get_context for BGL and OpenStack, which
         have no traces, or for what else a service logged around the failure. One trace is one
         example, not a frequency: use count_by or trend on otel_demo for how often errors occur.
-        A cold lookup can take up to a minute (remote files); a cached one takes under a second.
+        Reads are remote: a lookup the server has not cached reads about 20 MB from S3 for every
+        row group that holds the trace (about 100 s for a 30-service-hop trace on the shared dev
+        server); a cached one takes about 2 s.
         Inputs: role, trace_id, and optional span_limit, log_limit, metric_limit, pad_minutes.
         Outputs: the Evidence envelope. rows: one per span, Log Entry or metric series, told apart
         by signal ('span', 'log', 'metric'), with columns signal, ts, service, name, kind, status,

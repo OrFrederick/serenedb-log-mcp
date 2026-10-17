@@ -102,9 +102,21 @@ class CatalogIndex:
     def agent(self) -> AgentIndex | None:
         """The agent index this is: generated name, valid marker, on its Dataset's canonical table."""
         found = AgentIndex.from_marker(self.schema, self.name, self.comment)
-        if found is None or ENTRY_TABLES.get(found.dataset) != self.table:  # type: ignore[call-overload]
+        if found is None or _entry_table(found.dataset) != self.table:
             return None
         return found
+
+
+def _entry_table(dataset: str) -> str | None:
+    """The canonical Log Entry table of a Dataset name; None for a name the registry does not know.
+
+    This check is what refuses a valid-looking marker on another table (a forged
+    `dataset: openstack` marker on bgl_entry), so it is spelt out instead of a typed lookup.
+    """
+    for name, table in ENTRY_TABLES.items():
+        if name == dataset:
+            return table
+    return None
 
 
 @dataclass(frozen=True)
@@ -158,6 +170,13 @@ def _count_slice(rel: Relation, start: datetime, end: datetime) -> QueryResult:
     ts = rel.column("time")
     statement = sql.SQL("SELECT count(*) FROM {} WHERE {} >= %s AND {} < %s").format(rel.table, ts, ts)
     return fetch_all(statement.as_string(None), [start, end])
+
+
+def _single_count(result: QueryResult, what: str) -> int:
+    """The one integer a count(*) returned; ToolError when the result has another shape."""
+    if len(result.rows) != 1 or len(result.rows[0]) != 1 or not isinstance(result.rows[0][0], int):
+        raise ToolError(f"counting {what} returned {len(result.rows)} rows instead of one count")
+    return int(result.rows[0][0])
 
 
 def _count_index(schema: str, name: str) -> QueryResult:
@@ -263,7 +282,7 @@ def create_agent_index(
     rel = relation(dataset, settings=settings)
     schema = rel.schema
     counted = _count_slice(rel, start, end)
-    rows = int(counted.rows[0][0])
+    rows = _single_count(counted, "the slice")
     _check_slice(rows, rel.dataset.name, start, end, MAX_SLICE_ROWS if max_rows is None else max_rows)
     with _lock:
         listing, found = _catalog(schema)
@@ -360,7 +379,7 @@ def _publish(session: _WriteSession, rel: Relation, index: AgentIndex) -> tuple[
         for _ in range(2):
             refresh_ms += session.run(refresh)
             verified.append(_count_index(index.schema, index.name))
-            held = int(verified[-1].rows[0][0])
+            held = _single_count(verified[-1], f"the agent index {index.qualified_name}")
             if held == index.rows:
                 return refresh_ms, verified
         problem = f"it holds {held:,} of the slice's {index.rows:,} Log Entries after two refreshes"

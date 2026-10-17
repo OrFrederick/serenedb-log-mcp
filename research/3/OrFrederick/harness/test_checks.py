@@ -146,3 +146,69 @@ def test_ip_addresses_and_http_codes_are_not_measurements():
 def test_uncited_count_with_http_code_still_fails():
     text = GOOD.replace("on 2005-06-11 [E2]", "on 2005-06-11 with HTTP 503")
     assert not C.check_numbers_grounded(tr(text))[0]
+
+
+# --- regressions found in the Sonnet 5.5 k=3 baseline (grader false positives) ---
+TEXT_LEDGER = LEDGER + [
+    # Real shape of a search_logs Evidence row: the measurement sits in the log content cell.
+    {"evidence_id": "E3", "tool": "search_logs", "total_count": 28, "returned_count": 28,
+     "rows": [[201288, "2017-05-14 21:07:37.103000", "nova.compute.claims", "Total memory: 64172 MB, used: 512.00 MB"],
+              [52312, "2017-05-16 06:25:02.870000", "nova.osapi_compute.wsgi.server",
+               '10.11.10.1 "GET /v2/servers/detail HTTP/1.1" status: 503 len: 323 time: 0.0080531']]},
+]
+
+
+def test_numbers_inside_evidence_text_cells_count_as_grounded():
+    """Baseline false positive: "64172 not found in ['E3']" although the log line says so."""
+    text = GOOD.replace("- 152,182 of them fall on 2005-06-11 [E2].",
+                        "- The host reported 64172 MB of total memory [E3].\n- Two requests returned 503 [E3].")
+    ok, d = C.check_numbers_grounded(tr(text, ledger=TEXT_LEDGER))
+    assert ok, d
+
+
+def test_number_absent_from_evidence_text_cells_still_fails():
+    text = GOOD.replace("- 152,182 of them fall on 2005-06-11 [E2].",
+                        "- The host reported 64999 MB of total memory [E3].")
+    ok, d = C.check_numbers_grounded(tr(text, ledger=TEXT_LEDGER))
+    assert not ok and "64999" in d
+
+
+TABLE_ANSWER = """## Observed Facts
+**BGL alert labels, 348,460 Log Entries in total [E1]**
+
+| Label | Log Entries |
+|---|---|
+| KERNDTLB | 152,734 |
+| KERNSTOR | 63,491 |
+
+## Hypotheses
+- One node may be looping.
+## Unknowns
+- Cost is unknown.
+## Next Step
+- Check the node.
+"""
+
+
+def test_table_rows_inherit_citation_from_caption():
+    """Baseline false positive: "uncited number 152,734: '| 1 | KERNDTLB | 152,734 |'"."""
+    ok, d = C.check_numbers_grounded(tr(TABLE_ANSWER))
+    assert ok, d
+
+
+def test_table_rows_inherit_citation_from_header_row():
+    text = TABLE_ANSWER.replace("**BGL alert labels, 348,460 Log Entries in total [E1]**",
+                                "Breakdown:").replace("| Label | Log Entries |", "| Label | Log Entries [E1] |")
+    ok, d = C.check_numbers_grounded(tr(text))
+    assert ok, d
+
+
+def test_inherited_citation_does_not_excuse_a_wrong_number():
+    ok, d = C.check_numbers_grounded(tr(TABLE_ANSWER.replace("152,734", "152,999")))
+    assert not ok and "152,999" in d
+
+
+def test_table_without_any_citation_is_still_uncited():
+    ok, d = C.check_numbers_grounded(tr(TABLE_ANSWER.replace(
+        "**BGL alert labels, 348,460 Log Entries in total [E1]**", "Breakdown:")))
+    assert not ok and "uncited" in d

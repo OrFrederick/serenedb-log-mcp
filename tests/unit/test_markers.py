@@ -52,7 +52,7 @@ def suite(pytester: pytest.Pytester, monkeypatch: pytest.MonkeyPatch) -> pytest.
 def test_markers_are_registered(suite: pytest.Pytester) -> None:
     result = suite.runpytest("--markers")
 
-    result.stdout.fnmatch_lines(["@pytest.mark.db:*", "@pytest.mark.corpus:*"])
+    result.stdout.fnmatch_lines(["@pytest.mark.db:*", "@pytest.mark.corpus:*", "@pytest.mark.loghub2(*"])
 
 
 def test_unreachable_db_skips_db_and_corpus_tests_with_reason(
@@ -156,6 +156,16 @@ def test_second():
 """
 
 
+LOGHUB2_SUITE = """
+import pytest
+
+@pytest.mark.corpus
+@pytest.mark.loghub2("lh2_bgl", "lh2_openstack")
+def test_reads_the_labels():
+    pass
+"""
+
+
 def test_the_db_verdict_is_cached_per_dsn_not_per_session(
     pytester: pytest.Pytester, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -250,3 +260,17 @@ def test_an_unexpected_error_still_gets_the_generic_reason() -> None:
     assert "host=db.example" in reason
     assert "something new" in reason
     assert "make db-up" in reason
+def test_the_database_comes_before_the_optional_loghub2_tables_and_stays_strict(
+    suite: pytest.Pytester, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("DATABASE_URL", UNREACHABLE)
+    suite.makepyfile(test_loghub2=LOGHUB2_SUITE)
+
+    skipped = suite.runpytest("-rs", "test_loghub2.py")
+    monkeypatch.setenv("SLM_REQUIRE_DB", "1")
+    required = suite.runpytest("-ra", "test_loghub2.py")
+
+    skipped.assert_outcomes(skipped=1)
+    skipped.stdout.fnmatch_lines(["SKIPPED*SereneDB not reachable at*"])
+    required.assert_outcomes(errors=1)
+    required.stdout.fnmatch_lines(["*SLM_REQUIRE_DB is set, so this does not skip: SereneDB not reachable*"])

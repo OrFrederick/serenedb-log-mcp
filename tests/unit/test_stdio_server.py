@@ -154,9 +154,7 @@ def test_a_crashing_server_reports_its_stderr() -> None:
         peer.response(1)
 
 
-def test_the_startup_line_goes_to_stderr_and_never_to_stdout(server: StdioPeer) -> None:
-    # Under the stdio transport stdout carries JSON-RPC, so the startup line has to go to stderr.
-    # `response` parses every stdout line as JSON, so a line printed there fails this test.
+def initialize(server: StdioPeer) -> dict[str, Any]:
     server.send(
         {
             "jsonrpc": "2.0",
@@ -170,6 +168,56 @@ def test_the_startup_line_goes_to_stderr_and_never_to_stdout(server: StdioPeer) 
         }
     )
     init = server.response(1)
-
     assert "error" not in init, init
+    server.send({"jsonrpc": "2.0", "method": "notifications/initialized"})
+    return init["result"]
+
+
+def test_role_prompts_tools_and_instructions_over_stdio(server: StdioPeer) -> None:
+    # The smoke run of T7: what Claude Code sees when it starts the server.
+    result = initialize(server)
+    assert "prompts" in result["capabilities"]
+    assert "get_role_brief" in result["instructions"]
+    assert len(result["instructions"]) <= 4096
+
+    server.send({"jsonrpc": "2.0", "id": 2, "method": "prompts/list"})
+    prompts = server.response(2)["result"]["prompts"]
+    assert sorted(prompt["name"] for prompt in prompts) == ["engineer", "manager", "team_lead"]
+
+    server.send({"jsonrpc": "2.0", "id": 3, "method": "tools/list"})
+    tools = {tool["name"]: tool for tool in server.response(3)["result"]["tools"]}
+    for name in ("describe_corpus", "search_logs", "get_context", "count_by", "trend", "get_evidence"):
+        assert name in tools, name
+    assert tools["get_role_brief"]["_meta"] == {"anthropic/alwaysLoad": True}
+
+    server.send(
+        {
+            "jsonrpc": "2.0",
+            "id": 4,
+            "method": "prompts/get",
+            "params": {"name": "manager", "arguments": {"dataset": "bgl", "period": "30d"}},
+        }
+    )
+    (message,) = server.response(4)["result"]["messages"]
+    assert message["role"] == "user"
+    assert "not measurable from these logs" in message["content"]["text"]
+
+    server.send(
+        {
+            "jsonrpc": "2.0",
+            "id": 5,
+            "method": "tools/call",
+            "params": {"name": "get_role_brief", "arguments": {"role": "manager"}},
+        }
+    )
+    brief = server.response(5)["result"]
+    assert brief["isError"] is False
+    assert brief["structuredContent"]["brief"] in message["content"]["text"]
+
+
+def test_the_startup_line_goes_to_stderr_and_never_to_stdout(server: StdioPeer) -> None:
+    # Under the stdio transport stdout carries JSON-RPC, so the startup line has to go to stderr.
+    # `response` parses every stdout line as JSON, so a line printed there fails this test.
+    initialize(server)
+
     assert server.wait_for_stderr("resolved configuration"), "".join(server.stderr_lines)

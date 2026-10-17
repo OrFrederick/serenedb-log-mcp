@@ -148,6 +148,20 @@ def test_second():
 """
 
 
+LOGHUB2_SUITE = """
+import pytest
+
+@pytest.mark.corpus
+@pytest.mark.loghub2("lh2_bgl", "lh2_openstack")
+def test_reads_the_labels():
+    pass
+
+@pytest.mark.corpus
+def test_reads_the_base_corpus_only():
+    pass
+"""
+
+
 def test_the_corpus_verdict_is_cached_per_schema_not_per_session(
     pytester: pytest.Pytester, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -236,3 +250,25 @@ def test_a_role_without_connect_privilege_is_told_from_bad_credentials(
     secret = conninfo_to_dict(no_connect_privilege)["password"]
     assert isinstance(secret, str)
     assert secret not in result.stdout.str()
+def test_missing_loghub2_tables_skip_only_the_tests_that_read_them_even_when_required(
+    suite: pytest.Pytester, monkeypatch: pytest.MonkeyPatch, database_url: str, raw_schema: str
+) -> None:
+    # Loghub-2.0 (Zenodo 8275861) is an optional download: SLM_REQUIRE_DB stays strict for the
+    # database and the Base Corpus, but a missing label table is a skip.
+    make_table(database_url, raw_schema, "bgl", 1_000_001, COLUMNS["bgl"])
+    make_table(database_url, raw_schema, "openstack", 100_001, COLUMNS["openstack"])
+    make_table(database_url, raw_schema, "lh2_bgl", 10, ["content", "event_id"])
+    monkeypatch.setenv("SLM_RAW_SCHEMA", raw_schema)
+    monkeypatch.setenv("SLM_REQUIRE_DB", "1")
+    suite.makepyfile(test_loghub2=LOGHUB2_SUITE)
+
+    without = suite.runpytest("-rs", "test_loghub2.py")
+    make_table(database_url, raw_schema, "lh2_openstack", 10, ["content", "event_id"])
+    with_labels = suite.runpytest("-rs", "test_loghub2.py")
+
+    without.assert_outcomes(passed=1, skipped=1)
+    without.stdout.fnmatch_lines(
+        [f"SKIPPED*optional Loghub-2.0*{raw_schema}.lh2_openstack is missing*make fetch-data*make load-dev*"]
+    )
+    assert f"{raw_schema}.lh2_bgl " not in without.stdout.str()
+    with_labels.assert_outcomes(passed=2)

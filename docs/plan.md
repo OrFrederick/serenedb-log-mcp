@@ -114,7 +114,7 @@ Every tool queries these names only, and only through the resolver `corpus.datas
 | `pattern` | `dataset`, `template_id`, `template_text`, `template_source`, `event_id`, `family_id`, `component`, `level`, `entries`, `first_seen`, `last_seen` (one row per Pattern; the catalogue behind `list_patterns`) | T9 |
 | `incident` | `dataset`, `incident_id`, `pattern_key`, `t0`, `t1`, `entries`, `bursts`, `nodes`, `nodecards`, `midplanes`, `racks`, `top_node`, `top_node_share`, `shape` | T10 (BGL), T27 (OpenStack Request Failures) |
 | `os_instance` | `instance_id`, phase durations (spawn, build, …), robust z-scores | T11 |
-| `ownership` | `dataset`, `component`, `team` (stub, `TODO(organiser)`) | T4, replaced in T25 |
+| `ownership` | `dataset`, `component`, `team` (stub, `TODO(organiser)`), `team_source` (where the Team comes from: `stub` until T25, #48) | T4, replaced in T25 |
 
 "Pattern" is the concept and `template_id` is the column (#6 Decision proposal). `pattern_key` is the key Incidents are built on (#1). T4 sets it to `alert_tag` for BGL alert lines and to NULL for non-alert lines (`alert_tag = '-'`) and for OpenStack. T9 then fills `template_id` and `family_id`, and sets `pattern_key = template_id` wherever it is still NULL. Until T9 lands, Incidents exist only for BGL alert categories, which is enough for T10.
 
@@ -214,7 +214,7 @@ These interfaces let the two owners build in parallel. Each is owned by one tick
 | `evidence.py`: `Role`, `DataScope`, `Evidence` | T3 (O) | The Role enum, the Data Scope (Datasets, time range, `time_input`, `resolved_against`, `filters` including `pattern_ids[]` and `family_id`) and the envelope fields of section 2.3. |
 | `db.py`: `QueryResult` | T2 (N) | Every query helper returns `QueryResult(total, rows, truncated, query_ms, sql, params, notes)`. `notes` carries retry and timeout notes. The database layer never builds an `Evidence`. |
 | `scope.py` | T2 (N) | Builds T3's `DataScope` from tool inputs: enum validation with hints, corpus-relative time, shared filters. |
-| `corpus.datasets.relation(dataset, role, scope)` | T4 (N) | Returns the qualified table and index names and the column map for a Dataset, Role and Data Scope. Every tool must use it; a contract test fails if a tool module contains a table or index name. T19 (agent indexes), T20 (remote Datasets) and T22 (per-Role views) change only the resolver. |
+| `corpus.datasets.relation(dataset, role, scope)` | T4 (N) | Returns the qualified table and index names and the column map for a Dataset, Role and Data Scope. The Dataset entry also names the IANA time zone of `ts` (`ts_zone`, `ts_is_local`; #48). Every tool must use it; a contract test fails if a tool module contains a table or index name. T19 (agent indexes), T20 (remote Datasets) and T22 (per-Role views) change only the resolver. |
 | `toolkit.evidence_tool` | T3 (O) | Wraps a tool function that returns `QueryResult`, `DataScope`, `columns` and `summary`, builds the `Evidence`, writes the ledger, applies the Role hook and the `--role` pin, and maps exceptions to `ToolError`. |
 | `ledger.py` | T3 (O) | Append-only JSONL at `LEDGER_PATH`, loaded at startup, numbering continued across sessions, appends under a file lock. `get_evidence`, `verify_answer`, `export_investigation` and `scripts/replay_ledger.py` read it. |
 | `verify/checks.py` | T12 (O) | Pure answer checks shared by `verify_answer` and the eval's L2 grader. |

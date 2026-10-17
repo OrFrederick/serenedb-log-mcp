@@ -376,6 +376,75 @@ def test_a_torn_last_line_that_holds_a_separator_is_still_dropped(tmp_path: Path
     assert [record["evidence_id"] for record in Ledger(path).all()] == ["E1", "E2"]
 
 
+@pytest.mark.parametrize("cut", [1, 2], ids=["one-byte-in", "two-bytes-in"])
+def test_a_tear_inside_a_multi_byte_character_is_dropped_as_a_fragment(tmp_path: Path, cut: int) -> None:
+    # Regression for #54, defect 1: records are written with ensure_ascii=False, so raw multi-byte
+    # characters are in the file, and power loss or a full disk can tear at any byte. A tail ending
+    # inside U+2028 (e2 80 a8) did not decode, so Ledger(path) raised UnicodeDecodeError instead of
+    # running the torn-tail recovery, and the server died at startup with a traceback.
+    path = tmp_path / "ledger.jsonl"
+    first = {"evidence_id": "E1", "tool": "count_by", "sql": "SELECT\u20281"}
+    whole = json.dumps(
+        {"evidence_id": "E2", "tool": "search_logs", "sql": "SELECT\u20281 FROM bgl"}, ensure_ascii=False
+    ).encode("utf-8")
+    torn = whole[: whole.index("\u2028".encode()) + cut]
+    path.write_bytes(json.dumps(first, ensure_ascii=False).encode("utf-8") + b"\n" + torn)
+
+    ledger = Ledger(path)
+
+    assert ledger.loaded == 1
+    assert ledger.get("E1") == first
+    assert store(ledger, tool="trend")["evidence_id"] == "E2"
+    reopened = Ledger(path)
+    assert [record["evidence_id"] for record in reopened.all()] == ["E1", "E2"]
+    assert reopened.get("E1") == first
+    assert path.read_bytes().count(b"\n") == 2, "the fragment is cut off, not kept in front of E2"
+
+
+def test_a_torn_tail_of_a_crlf_ledger_is_cut_at_the_right_byte(tmp_path: Path) -> None:
+    # Regression for #54, defect 2: reading translated CRLF to "\n", so the truncate offset was
+    # computed from text one byte shorter per line than the file, the cut landed two bytes early,
+    # and the next append glued E3 onto E2. The server never writes CRLF, but a hand-made or
+    # converted ledger can have it.
+    path = tmp_path / "ledger.jsonl"
+    complete = [{"evidence_id": f"E{n}", "tool": "count_by"} for n in (1, 2)]
+    torn = json.dumps({"evidence_id": "E3", "tool": "search_logs"})[:24]
+    path.write_bytes("".join(json.dumps(record) + "\r\n" for record in complete).encode() + torn.encode())
+
+    ledger = Ledger(path)
+
+    assert ledger.loaded == 2
+    stored = store(ledger, tool="trend")
+    assert stored["evidence_id"] == "E3"
+    assert path.read_bytes().endswith(b"\r\n" + json.dumps(stored).encode() + b"\n")
+    reopened = Ledger(path)
+    assert reopened.all() == [*complete, stored]
+
+
+def test_a_ledger_with_bare_cr_line_endings_still_reads_and_appends(tmp_path: Path) -> None:
+    # Reading used to translate CR endings as well, and json.dumps escapes CR, so a bare CR cannot
+    # sit inside a record. Working on bytes must not quietly turn such a file into one torn line.
+    path = tmp_path / "ledger.jsonl"
+    complete = [{"evidence_id": f"E{n}", "tool": "count_by"} for n in (1, 2)]
+    path.write_bytes("\r".join(json.dumps(record) for record in complete).encode())
+
+    ledger = Ledger(path)
+
+    assert ledger.loaded == 2
+    assert store(ledger, tool="trend")["evidence_id"] == "E3"
+    assert [record["evidence_id"] for record in Ledger(path).all()] == ["E1", "E2", "E3"]
+
+
+def test_a_complete_line_that_is_not_utf8_fails_loudly(tmp_path: Path) -> None:
+    # Only an unterminated last line is forgiven. Undecodable bytes anywhere else are damage, and
+    # they surface as a LedgerError naming the line, which the CLI reports as a usage error.
+    path = tmp_path / "ledger.jsonl"
+    path.write_bytes(b'{"evidence_id": "E1", "sql": "\xe2\x80"}\n{"evidence_id": "E2"}\n')
+
+    with pytest.raises(LedgerError, match=r"line 1 is not UTF-8"):
+        Ledger(path)
+
+
 def test_an_unreadable_line_is_named_by_number_and_does_not_blame_the_path(tmp_path: Path) -> None:
     # LEDGER_PATH can be exactly right and the file still damaged, as #49 showed, so the message
     # names the file and the line and leaves both causes open.

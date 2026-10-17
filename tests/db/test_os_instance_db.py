@@ -11,8 +11,10 @@ from __future__ import annotations
 import math
 import re
 import statistics
+import uuid
 from collections import defaultdict
-from datetime import datetime
+from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any, Protocol
 
 import psycopg
@@ -41,6 +43,7 @@ PHASES = ("image_s", "paused_s", "spawn_s", "build_s")
 SPAWN_RE = re.compile(r"\] Took ([0-9.]+) seconds to spawn the instance on the hypervisor")
 BUILD_RE = re.compile(r"\] Took ([0-9.]+) seconds to build instance")
 MAD_TO_SIGMA = 1.4826
+OS_INSTANCE_STEP = Path(__file__).resolve().parents[2] / "sql" / "derive" / "60_os_instance.sql"
 
 
 class Schemas(Protocol):
@@ -63,8 +66,9 @@ def duration(start: float | None, end: float | None) -> float | None:
 
 
 def logged(lines: list[tuple[Any, ...]], pattern: re.Pattern[str]) -> float | None:
+    """The value of the first matching line; `lines` are in time order."""
     values = [float(m.group(1)) for _, _, _, message, _ in lines if (m := pattern.search(message or ""))]
-    return max(values) if values else None
+    return values[0] if values else None
 
 
 def expected_instances(database_url: str, schema: str) -> dict[str, dict[str, Any]]:
@@ -187,3 +191,46 @@ def test_spawn_ts_is_the_time_of_the_spawn_log_entry(database_url: str, derived_
     for row in spawned:
         assert isinstance(row["spawn_ts"], datetime)
         assert row["first_ts"] <= row["spawn_ts"] <= row["last_ts"]
+
+
+def test_a_reused_instance_takes_spawn_ts_and_spawn_s_from_the_same_line(database_url: str) -> None:
+    # No instance of the corpus spawns twice, but a reused one would: both columns must come from
+    # its first spawn line, and likewise build_s, not one from min(ts) and the other from max(value).
+    schema = f"scratch_t11_reuse_{uuid.uuid4().hex[:8]}"
+    instance = "00000001-0000-4000-8000-000000000001"
+    first, second = datetime(2017, 5, 16, 1, 0, 0), datetime(2017, 5, 16, 2, 0, 0)
+    lines = [
+        (first, f"[instance: {instance}] Took 10.00 seconds to spawn the instance on the hypervisor."),
+        (first.replace(second=1), f"[instance: {instance}] Took 11.00 seconds to build instance."),
+        (second, f"[instance: {instance}] Took 30.00 seconds to spawn the instance on the hypervisor."),
+        (second.replace(second=1), f"[instance: {instance}] Took 31.00 seconds to build instance."),
+    ]
+    try:
+        with psycopg.connect(database_url, autocommit=True) as conn:
+            conn.execute(sql.SQL("CREATE SCHEMA {}").format(sql.Identifier(schema)))
+            conn.execute(
+                sql.SQL(
+                    "CREATE TABLE {} (instance_ref VARCHAR, source_id VARCHAR, ts TIMESTAMP, "
+                    "epoch_utc DOUBLE, message VARCHAR)"
+                ).format(sql.Identifier(schema, "os_entry"))
+            )
+            for ts, message in lines:
+                conn.execute(
+                    sql.SQL("INSERT INTO {} VALUES (%s, 'os-1', %s, %s, %s)").format(
+                        sql.Identifier(schema, "os_entry")
+                    ),
+                    [instance, ts, ts.replace(tzinfo=UTC).timestamp(), message],
+                )
+            row = conn.execute("SELECT version()").fetchone()
+            version = derive.serenedb_version(str(row[0]) if row else "")
+            derive.run(conn, [OS_INSTANCE_STEP], derive.variables(schema, "public", version))
+            got = conn.execute(
+                sql.SQL("SELECT spawn_ts, spawn_s, build_s FROM {}").format(
+                    sql.Identifier(schema, "os_instance")
+                )
+            ).fetchall()
+    finally:
+        with psycopg.connect(database_url, autocommit=True) as conn:
+            conn.execute(sql.SQL("DROP SCHEMA IF EXISTS {} CASCADE").format(sql.Identifier(schema)))
+
+    assert [tuple(r) for r in got] == [(first, 10.0, 11.0)]

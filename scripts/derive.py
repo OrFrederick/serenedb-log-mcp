@@ -45,6 +45,7 @@ import psycopg
 import gen_pattern_sql
 from gen_pattern_sql import Template
 from serenedb_log_mcp.config import SCHEMA_RE, ConfigError, load_settings
+from serenedb_log_mcp.corpus.datasets import OWNERSHIP_NOTE, OWNERSHIP_STUB_SOURCE
 
 SQL_DIR = Path(__file__).resolve().parent.parent / "sql"
 SPLIT_TEXT_SINCE = (26, 10, 1)
@@ -359,7 +360,7 @@ def report(conn: psycopg.Connection[Any], slm: str) -> list[str]:
     """Row counts and coverage of the derived columns, one line each."""
     s = _quoted(slm)
     lines = []
-    for table in ("bgl_entry", "os_entry", "ownership"):
+    for table in ("bgl_entry", "os_entry", "os_instance", "ownership"):
         (count,) = _rows(conn, f"SELECT count(*) FROM {s}.{table}")[0]
         lines.append(f"{slm}.{table}: {count:,} rows")
     no_card, no_mid, no_rack = _rows(
@@ -403,6 +404,11 @@ def report(conn: psycopg.Connection[Any], slm: str) -> list[str]:
         if not unmapped
         else "WARNING: Components without a Team: " + ", ".join(f"{d}/{c}" for d, c in unmapped)
     )
+    # Where the Teams come from, so a complete mapping is not read as the organisers' mapping.
+    sources = _rows(conn, f"SELECT team_source, count(*) FROM {s}.ownership GROUP BY 1 ORDER BY 1")
+    lines.append("Ownership Table team_source: " + ", ".join(f"{src} {count:,}" for src, count in sources))
+    if any(src == OWNERSHIP_STUB_SOURCE for src, _ in sources):
+        lines.append(f"NOTE: {OWNERSHIP_NOTE}")
     return lines
 
 

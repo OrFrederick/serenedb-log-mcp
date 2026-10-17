@@ -260,6 +260,9 @@ _QTY = (
 )
 _SPAN = r"(?:hours?|hrs?|h|minutes?|mins?|days?|weeks?|seconds?|secs?|nights?|shifts?)"
 _ABOUT = r"(?:about\s+|around\s+|nearly\s+|almost\s+|over\s+|roughly\s+|some\s+|at\s+least\s+)?"
+_HEDGE = (  # modality never makes an amount a refusal: "downtime was probably around 3 hours" (#45)
+    r"(?:(?:probably|likely|perhaps|possibly|maybe|approximately|estimated\s+(?:at\s+)?|an\s+estimated)\s+)?"
+)
 _FULL = r"(?:full\s+|whole\s+|entire\s+)?"
 _DURATION = (
     rf"(?:{_ABOUT}{_QTY}\s*-?\s*{_FULL}{_SPAN}\b|half\s+an?\s+(?:hour|day|week|shift)\b|overnight\b|"
@@ -279,7 +282,7 @@ _MONEY_AMOUNTS = (
 _DOWNTIME_AMOUNTS = (
     rf"\b{_QTY}\s*-?\s*{_FULL}{_SPAN}\s+(?:of\s+)?(?:service\s+)?"
     r"(?:downtime|outages?|unavailability|recovery|disruption|degradation|interruption|idle\s+time)\b"
-    rf"|\b(?:downtime|outage|unavailability|interruption|disruption)\s*(?:of|was|lasted|:|=)?\s*{_DURATION}"
+    rf"|\b(?:downtime|outage|unavailability|interruption|disruption)\s*(?:of|was|lasted|:|=)?\s*{_HEDGE}{_DURATION}"
     rf"|\b{_FAILED}\s+(?:for\s+{_DURATION}|overnight\b|all\s+(?:night|day|afternoon|morning|evening|weekend)\b)"
     rf"|\btook\s+{_ABOUT}{_QTY}\s*-?\s*{_FULL}{_SPAN}\s+to\s+(?:recover|restore|come\s+back|be\s+restored)\b"
     rf"|\blost\s+{_DURATION}"
@@ -301,9 +304,13 @@ _DOWNTIME_TERMS = (
     r"(?:sat|stood|stayed|was|were|went|remained)\s+(?:idle|dark)|"
     r"lost\s+(?:compute|time|productivity|work|output|capacity|hours|days))\b"
 )
+_TECHNICAL_CLIENT = (  # an API client, not a customer: "a periodic client poll" (#45)
+    r"[- ](?:polls?|polling|requests?|calls?|sides?|librar(?:y|ies)|errors?|code|timeouts?|retr(?:y|ies)|"
+    r"connections?|certificates?|tools?|ids?|sdks?|versions?|tokens?)\b"
+)
 _CUSTOMER_TERMS = (
-    r"\b(?:customers?|subscribers?|clients?|end[- ]users?|users?\s+(?:were\s+|was\s+)?(?:affected|impacted)|"
-    r"user[- ](?:impact|facing)|business\s+impact)\b"
+    rf"\b(?:customers?|subscribers?|clients?(?!{_TECHNICAL_CLIENT})|end[- ]users?|"
+    r"users?\s+(?:were\s+|was\s+)?(?:affected|impacted)|user[- ](?:impact|facing)|business\s+impact)\b"
 )
 _SLA_TERMS = r"\b(?:(?-i:SLAs?|SLOs?)|service[- ]levels?)\b"
 
@@ -1567,6 +1574,11 @@ def _not_measured_claim(plain: str, rule: _ClaimRule) -> str | None:
     or its clause puts the figure outside these logs ("tracked outside these logs", "you'd need") or asks
     for it from its owners ("Get cost estimates from the owning teams"). A negation elsewhere in the clause
     does not count: "The storm cost us money that these logs don't show" still claims the cost.
+
+    Modality never excuses a claim (#45): "downtime was probably around 3 hours" and "the outage may have
+    hit customers" still state an impact the logs do not measure. What the #3 pilot's hedges excused was
+    a deferral ("SLA breaches are probably tracked outside these logs"), which the clause rule covers.
+    The problem quotes the sentence (`_Unit`) and the hint quotes the phrase that triggered it.
     """
     amount = rule.amounts.search(plain)
     if amount is not None:

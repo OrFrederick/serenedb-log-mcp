@@ -4,11 +4,12 @@ import subprocess
 import sys
 from dataclasses import dataclass, field
 from importlib.metadata import entry_points
+from pathlib import Path
 from typing import Any
 
 import pytest
 
-from serenedb_log_mcp import cli, config
+from serenedb_log_mcp import cli, config, ledger
 
 
 @dataclass
@@ -117,3 +118,41 @@ def test_settings_validation_error_exits_with_a_message(
     assert exit_info.value.code == 2
     assert "query_timeout_s" in capsys.readouterr().err
     assert fake_server.runs == []
+
+
+def test_a_malformed_ledger_path_fails_at_startup(
+    fake_server: FakeServer,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
+) -> None:
+    # The Evidence Ledger is loaded at startup, so a broken LEDGER_PATH is a usage error now
+    # instead of a ToolError in the middle of an investigation.
+    broken = tmp_path / "ledger.jsonl"
+    broken.write_text("this is not an Evidence Ledger\n", encoding="utf-8")
+    monkeypatch.setenv("LEDGER_PATH", str(broken))
+
+    with pytest.raises(SystemExit) as exit_info:
+        cli.main([])
+
+    assert exit_info.value.code == 2
+    assert "LEDGER_PATH" in capsys.readouterr().err
+    assert fake_server.runs == []
+
+
+def test_a_usable_ledger_path_is_loaded_before_the_server_runs(
+    fake_server: FakeServer, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    usable = tmp_path / "ledger.jsonl"
+    usable.write_text('{"evidence_id": "E7", "tool": "count_by"}\n', encoding="utf-8")
+    monkeypatch.setenv("LEDGER_PATH", str(usable))
+
+    cli.main([])
+
+    assert fake_server.runs == [("stdio", {})]
+    # Startup built the process-wide ledger; nothing in this test called get_ledger() itself.
+    assert ledger._active is not None
+    assert ledger._active.path == usable
+    assert ledger._active.loaded == 1
+    # Loaded, so the numbering continues where the file ends.
+    assert ledger._active.last_id == "E7"

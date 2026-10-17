@@ -7,7 +7,15 @@ from datetime import timedelta
 import pytest
 from aggregation_corpus import NODE_B, OS_FIRST, STORM, STORM_START, U1
 from aggregation_tools import call, call_error, independent, row_dicts
-from retrieval_corpus import ERROR_TS, REQ, REQ_ENTRIES, TERMINATING_TS, U1_INSTANCE_SCOPE
+from retrieval_corpus import (
+    DST_MESSAGES,
+    ERROR_TS,
+    NODE_DST,
+    REQ,
+    REQ_ENTRIES,
+    TERMINATING_TS,
+    U1_INSTANCE_SCOPE,
+)
 
 pytestmark = pytest.mark.db
 
@@ -148,3 +156,27 @@ def test_the_evidence_holds_the_lookup_count_and_rows_on_the_base_table(corpus: 
 
 def test_before_and_after_are_capped_at_50(corpus: str) -> None:
     assert "50" in call_error("get_context", role="engineer", dataset="bgl", entry_id=1, before=51)
+
+
+def test_the_window_follows_utc_time_through_the_daylight_saving_fall_back(corpus: str) -> None:
+    # Two lines share one ts but lie an hour apart: a window on ts would mix them.
+    anchor = int(independent(corpus, "SELECT entry_id FROM {bgl} WHERE message = %s", [DST_MESSAGES[0]])[0][0])
+
+    window = call("get_context", role="engineer", dataset="bgl", entry_id=anchor, scope="window", window_s=60)
+    node = call("get_context", role="engineer", dataset="bgl", entry_id=anchor)
+
+    assert [r["message"] for r in row_dicts(window)] == [DST_MESSAGES[0]]
+    assert window["total_matches"] == 1
+    assert node["summary"]["scope_value"] == NODE_DST
+    assert [(r["message"], r["offset_s"]) for r in row_dicts(node)] == [
+        (DST_MESSAGES[0], 0.0),
+        (DST_MESSAGES[1], 3600.0),
+    ]
+
+
+def test_an_anchor_on_a_placeholder_node_falls_back_to_a_window(corpus: str) -> None:
+    anchor = int(independent(corpus, "SELECT entry_id FROM {bgl} WHERE node = 'NULL' LIMIT 1")[0][0])
+
+    result = call("get_context", role="engineer", dataset="bgl", entry_id=anchor)
+
+    assert result["summary"]["scope"] == "window"

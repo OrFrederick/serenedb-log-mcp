@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import pytest
-from aggregation_corpus import APPSEV, BGL_FIRST, BGL_LAST, BGL_TOTAL, NEWCOMP, STEADY, STORM
+from aggregation_corpus import APPSEV, BGL_FIRST, BGL_LAST, NEWCOMP, STEADY, STORM
 from aggregation_tools import call, independent, row_dicts
-from retrieval_corpus import OS_TOTAL
+from retrieval_corpus import BGL_TOTAL, OS_TOTAL
 
 pytestmark = pytest.mark.db
 

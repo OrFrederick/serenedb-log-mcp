@@ -42,6 +42,8 @@ KEY_COLUMNS: Mapping[str, tuple[str, ...]] = {
 """The anchor columns a context scope can follow, per Dataset."""
 SCOPE_DATASETS: Mapping[str, str] = {"node": "bgl", "request": "openstack", "instance": "openstack"}
 """The Dataset each source scope exists in; 'window' exists in both."""
+PLACEHOLDER_NODES = frozenset({"NULL", "UNKNOWN_LOCATION", "-"})
+"""BGL node values that name no node: the Log Entries that carry them share no source."""
 
 
 @dataclass(frozen=True)
@@ -75,10 +77,11 @@ def resolve_scope(dataset: str, requested: str, anchor: Anchor) -> tuple[str, st
     else the instance, else a time window.
     """
     keys = anchor.keys
+    node = keys.get("node") if keys.get("node") not in PLACEHOLDER_NODES else None
     instance = keys.get("instance_id") or keys.get("instance_ref")
     if requested == "auto":
         if dataset == "bgl":
-            requested = "node" if keys.get("node") else "window"
+            requested = "node" if node else "window"
         elif keys.get("request_id"):
             requested = "request"
         else:
@@ -92,7 +95,7 @@ def resolve_scope(dataset: str, requested: str, anchor: Anchor) -> tuple[str, st
             f"scope='{requested}' exists only in {'BGL' if home == 'bgl' else 'OpenStack'}; for "
             f"{dataset} use scope={valid}, or scope='auto'."
         )
-    value = {"node": keys.get("node"), "request": keys.get("request_id"), "instance": instance}[requested]
+    value = {"node": node, "request": keys.get("request_id"), "instance": instance}[requested]
     if not value:
         column = {"node": "node", "request": "request_id", "instance": "instance id"}[requested]
         others = (
@@ -107,14 +110,17 @@ def resolve_scope(dataset: str, requested: str, anchor: Anchor) -> tuple[str, st
 
 @dataclass(frozen=True)
 class Context:
-    """The Log Entries that share the anchor's scope, optionally inside a time window."""
+    """The Log Entries that share the anchor's scope, optionally within `window_s` of the anchor.
+
+    The window bounds `epoch_utc`, not `ts`: BGL's ts is local time, which repeats an hour at the
+    daylight-saving fall-back, so a ts window would mix Log Entries an hour apart (#61 review).
+    """
 
     rel: Relation
     anchor: Anchor
     scope: str
     value: str | None
-    start: datetime | None = None
-    end: datetime | None = None
+    window_s: int | None = None
 
     def col(self, concept: str) -> sql.Composable:
         return entry_column(self.rel, concept)
@@ -137,9 +143,11 @@ class Context:
                     bound(f"%{self.value}%"),
                 )
             )
-        if self.start is not None and self.end is not None:
-            ts = self.col("time")
-            found.append(q("{} >= {} AND {} < {}", ts, bound(self.start), ts, bound(self.end)))
+        if self.window_s is not None:
+            epoch, centre = self.col("epoch"), self.anchor.epoch
+            found.append(
+                q("{} >= {} AND {} < {}", epoch, bound(centre - self.window_s), epoch, bound(centre + self.window_s))
+            )
         if not found:
             raise ValueError("a context needs a source scope or a time window")
         return joined(" AND ", found)
@@ -278,6 +286,8 @@ def run(
     window = DEFAULT_WINDOW_S if chosen == "window" and window_s is None else window_s
     start = end = None
     if window is not None:
+        # The Data Scope states the window in logged time, like every other time range; the filter
+        # itself is on epoch_utc, which differs from it only inside BGL's repeated fall-back hour.
         start, end = anchor.ts - timedelta(seconds=window), anchor.ts + timedelta(seconds=window)
     filters: dict[str, Any] = {"anchor_entry_id": anchor.entry_id, "context": chosen}
     if value is not None:
@@ -290,7 +300,7 @@ def run(
         known_datasets=DATASET_NAMES,
         **filters,
     )
-    context = Context(relation(dataset, role, data_scope), anchor, chosen, value, start, end)
+    context = Context(relation(dataset, role, data_scope), anchor, chosen, value, window)
     count, rows = context.count_statement(), context.rows_statement(before=before, after=after)
     neighbours = fetch_limited(
         count.text, rows.text, count.params, before + after + 1, role=role, rows_params=rows.params
@@ -314,7 +324,7 @@ def run(
     }
     where = SCOPE_WORDS[chosen].format(value=value)
     if window is not None:
-        where += f" within {window} s of the anchor"
+        where += f" within {window} s of the anchor in UTC time"
     notes = [
         f"Context: Log Entries {where}, in time order (UTC epoch, then entry_id); offset_s is the "
         "seconds from the anchor.",
@@ -358,6 +368,6 @@ def shape_row(context: Context, row: Sequence[Any]) -> list[Any]:
     width = len(ENTRY_COLUMNS[context.rel.dataset.name])
     values = entry_values(row[:width])
     message, epoch = row[width], row[width + 1]
-    offset = round(float(epoch) - context.anchor.epoch, 3)
+    offset = round(float(epoch) - context.anchor.epoch, 3) + 0.0  # + 0.0 turns -0.0 into 0.0
     is_anchor = int(values[0]) == context.anchor.entry_id
     return [values[0], values[1], offset, *values[2:], shape_message(message), is_anchor]

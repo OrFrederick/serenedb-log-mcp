@@ -2,14 +2,15 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+import math
+from datetime import datetime
 
 import pytest
 
 from serenedb_log_mcp.config import load_settings
 from serenedb_log_mcp.corpus.datasets import relation
 from serenedb_log_mcp.scope import ScopeError
-from serenedb_log_mcp.tools.get_context import Anchor, Context, anchor_statement, resolve_scope
+from serenedb_log_mcp.tools.get_context import Anchor, Context, anchor_statement, resolve_scope, shape_row
 
 SETTINGS = load_settings({}, slm_schema="slm")
 BGL = relation("bgl", settings=SETTINGS)
@@ -76,13 +77,35 @@ def test_the_instance_scope_matches_the_instance_id_or_the_uuid_in_the_message()
     assert statement.params == (UUID, f"%{UUID}%")
 
 
-def test_the_window_scope_bounds_the_time_as_logged_on_both_sides() -> None:
-    start, end = TS - timedelta(seconds=60), TS + timedelta(seconds=60)
-    context = Context(BGL, bgl_anchor(), "window", None, start=start, end=end)
+def test_the_window_bounds_the_utc_epoch_around_the_anchor() -> None:
+    # Not ts: at BGL's daylight-saving fall-back, ts repeats an hour, so a ts window would mix Log
+    # Entries an hour apart.
+    context = Context(BGL, bgl_anchor(), "window", None, window_s=60)
 
     statement = context.count_statement()
-    assert statement.text == 'SELECT count(*) FROM "slm"."bgl_entry" AS e WHERE e."ts" >= %s AND e."ts" < %s'
-    assert statement.params == (start, end)
+    assert statement.text == (
+        'SELECT count(*) FROM "slm"."bgl_entry" AS e WHERE e."epoch_utc" >= %s AND e."epoch_utc" < %s'
+    )
+    assert statement.params == (1121880300.0 - 60, 1121880300.0 + 60)
+
+
+@pytest.mark.parametrize("placeholder", ["NULL", "UNKNOWN_LOCATION", "-"])
+def test_auto_treats_a_placeholder_node_as_no_node(placeholder: str) -> None:
+    anchor = Anchor(entry_id=1, ts=TS, epoch=1121880300.0, keys={"node": placeholder})
+
+    assert resolve_scope("bgl", "auto", anchor) == ("window", None)
+    with pytest.raises(ScopeError, match="has no node"):
+        resolve_scope("bgl", "node", anchor)
+
+
+def test_an_offset_that_rounds_to_zero_is_never_negative_zero() -> None:
+    context = Context(BGL, bgl_anchor(), "node", NODE)
+    row = (41, TS, NODE, "KERNEL", "INFO", None, None, "message", 1121880300.0 - 0.0001)
+
+    offset = shape_row(context, row)[2]
+
+    assert offset == 0.0
+    assert math.copysign(1.0, offset) == 1.0
 
 
 def test_the_rows_are_the_nearest_entries_before_and_from_the_anchor_in_utc_time_order() -> None:
@@ -104,7 +127,7 @@ def test_no_context_statement_reads_the_inverted_index() -> None:
     contexts = [
         Context(BGL, bgl_anchor(), "node", NODE),
         Context(OS, os_anchor(instance_ref=UUID), "instance", UUID),
-        Context(OS, os_anchor(request_id="r"), "request", "r", start=TS, end=TS + timedelta(seconds=1)),
+        Context(OS, os_anchor(request_id="r"), "request", "r", window_s=1),
     ]
     statements = [anchor_statement(BGL, 1), anchor_statement(OS, 1)]
     for context in contexts:

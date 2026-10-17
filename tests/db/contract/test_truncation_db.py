@@ -55,11 +55,13 @@ def evidence_tools() -> list[str]:
 def limit_settings(tool: Tool) -> list[dict[str, int]]:
     """The row-limit values to try: all at their minimum, all at their maximum, and random draws."""
     bounds = {
-        name: (option["minimum"], option["maximum"])
+        name: (option.get("minimum"), option.get("maximum"))
         for name, schema in tool.input_schema.get("properties", {}).items()
         if name in ROW_LIMIT_PARAMETERS
         for option in branches(schema)[:1]
     }
+    unbounded = sorted(name for name, pair in bounds.items() if None in pair)
+    assert not unbounded, f"{tool.name}: row limits without a minimum and maximum: {unbounded}"
     if not bounds:
         return [{}]
     draw = random.Random(f"T15 truncation {tool.name}")

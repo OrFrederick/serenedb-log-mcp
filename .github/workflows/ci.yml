@@ -1,0 +1,81 @@
+# L0 checks on every pull request and every push to main (T15): no LLM, no secrets, no cost.
+#
+# checks: ruff, mypy and the pure tests (unit and contract, `make test`).
+# db:     the `db` tests, including the db contract tests (truncation, injection, leak guard,
+#         connect), against a SereneDB service container loaded with the Loghub 2k samples by the
+#         clean-checkout route: `make load-sample`, then `make derive` with Pattern Tier 1 off, so no
+#         Loghub-2.0 download is needed. The golden tests need the full Base Corpus and run locally
+#         with `make test-golden` (plan section 6, assumption 18).
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: lint, typecheck, unit and contract tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Install the locked dependencies
+        run: uv sync --locked
+      - name: Lint
+        run: make lint
+      - name: Typecheck
+        run: make typecheck
+      - name: Unit and contract tests
+        run: make test
+
+  db:
+    name: db and contract tests against SereneDB
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      serenedb:
+        # 26.10.1 is published for linux/amd64 only, which is what GitHub's ubuntu runners are.
+        image: serenedb/serenedb:26.10.1
+        ports:
+          - 7890:7890
+        env:
+          SERENEDB_HOST_AUTH_METHOD: trust
+    env:
+      DATABASE_URL: host=localhost port=7890 dbname=postgres user=postgres
+      SLM_DATA_DIR: ${{ github.workspace }}/data
+      SLM_PATTERN_TIER1: "0"
+      SLM_REQUIRE_DB: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Install the locked dependencies
+        run: uv sync --locked
+      - name: Wait until SereneDB answers
+        run: uv run python scripts/wait_for_db.py --timeout 120
+      - name: Cache the Loghub 2k samples
+        uses: actions/cache@v4
+        with:
+          path: data/sample
+          key: loghub-2k-${{ hashFiles('scripts/dev_loader.py') }}
+      - name: Load the Loghub 2k samples (dev loader, pinned commit, sha256-checked)
+        run: make load-sample
+      - name: Derive the canonical tables, Patterns and indexes (Pattern Tier 1 off)
+        run: make derive
+      - name: db and contract tests
+        run: make test-db
+      - name: SereneDB log on failure
+        if: failure()
+        run: docker logs --tail 200 "${{ job.services.serenedb.id }}"

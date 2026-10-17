@@ -61,6 +61,7 @@ __all__ = [
     "get_database",
     "int_or_float",
     "open_connection",
+    "set_connector",
 ]
 
 CONNECT_TIMEOUT_S = 10
@@ -680,6 +681,26 @@ def _is_misconfigured(exc: psycopg.Error) -> bool:
 
 _databases: dict[tuple[str, float, bool], Database] = {}
 _databases_lock = threading.Lock()
+_connector: Connector = open_connection
+
+
+def set_connector(connect: Connector | None) -> Connector:
+    """Open the connections of every process-wide layer with `connect`; None restores `open_connection`.
+
+    Returns the connector that was in place, so a caller can put it back. The ledger replay (T13,
+    `export.replay`) wraps the real connection with it, so that every statement a tool issues runs
+    with the parameters the Evidence Ledger stored for it. The layers built so far are dropped with
+    their idle connections, so no connection opened the other way is reused afterwards.
+    """
+    global _connector
+    with _databases_lock:
+        layers = list(_databases.values())
+        _databases.clear()
+        previous = _connector
+        _connector = open_connection if connect is None else connect
+    for layer in layers:
+        layer.close()
+    return previous
 
 
 def get_database(role: Role | None = None) -> Database:
@@ -694,7 +715,12 @@ def get_database(role: Role | None = None) -> Database:
     with _databases_lock:
         layer = _databases.get(key)
         if layer is None:
-            layer = Database(dsn, timeout_s=settings.query_timeout_s, client_binding=settings.client_binding)
+            layer = Database(
+                dsn,
+                timeout_s=settings.query_timeout_s,
+                client_binding=settings.client_binding,
+                connect=_connector,
+            )
             _databases[key] = layer
         return layer
 

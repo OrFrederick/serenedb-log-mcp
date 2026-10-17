@@ -266,6 +266,37 @@ def test_connections_are_reused_between_calls() -> None:
     assert len(server.connections) == 1
 
 
+def test_the_pool_keeps_at_most_max_idle_connections() -> None:
+    layer: Database
+
+    def respond(sql: str, params: Sequence[Any] | None) -> list[tuple[Any, ...]]:
+        if sql == "SELECT outer()":
+            layer.fetch_all("SELECT a FROM t")  # a second call while the first holds its connection
+        return [(1,)]
+
+    server = FakeServer(respond)
+    layer = database(server, max_idle_connections=1)
+
+    layer.fetch_all("SELECT outer()")
+
+    inner, outer = server.connections[1], server.connections[0]
+    assert not inner.closed  # pooled first
+    assert outer.closed  # the pool was full when the outer call ended
+    layer.fetch_all("SELECT a FROM t")
+    assert len(server.connections) == 2
+
+
+def test_no_connection_is_pooled_when_max_idle_connections_is_zero() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    layer = database(server, max_idle_connections=0)
+
+    layer.fetch_all("SELECT a FROM t")
+    layer.fetch_all("SELECT a FROM t")
+
+    assert len(server.connections) == 2
+    assert all(conn.closed for conn in server.connections)
+
+
 def test_binding_mode_reaches_the_connector() -> None:
     server = FakeServer(table_responder(3, ROWS))
 
@@ -701,6 +732,15 @@ def test_get_database_reads_timeout_and_binding_from_settings() -> None:
 
     assert layer.timeout_s == 2.5
     assert layer.client_binding is True
+
+
+def test_get_database_reads_the_reconnect_wait_and_pool_size_from_settings() -> None:
+    set_settings(load_settings({"SLM_RECONNECT_WAIT_S": "7.5", "SLM_MAX_IDLE_CONNECTIONS": "0"}))
+
+    layer = db.get_database(Role.ENGINEER)
+
+    assert layer.reconnect_wait_s == 7.5
+    assert layer.max_idle_connections == 0
 
 
 def test_get_database_returns_one_layer_per_connection_setting() -> None:

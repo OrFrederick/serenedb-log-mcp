@@ -41,6 +41,10 @@ RoleName = Role
 ROLES: tuple[Role, ...] = tuple(Role)
 
 DEFAULT_DATABASE_URL = "host=localhost port=7890 dbname=postgres user=postgres"
+DEFAULT_RECONNECT_WAIT_S = 30.0
+"""How long the database layer waits for `SELECT 1` after a lost connection; a restart took 2 to 3 s (#2)."""
+DEFAULT_MAX_IDLE_CONNECTIONS = 4
+"""Idle connections the database layer keeps per DSN; one connect over the dev tunnel took about 2.3 s."""
 SCHEMA_RE = re.compile(r"^[a-z_][a-z0-9_]*$")
 
 _TRUE = frozenset({"1", "true", "yes", "on"})
@@ -58,6 +62,8 @@ ENV_NAMES = {
     "ledger_path": "LEDGER_PATH",
     "export_dir": "SLM_EXPORT_DIR",
     "pattern_tier1": "SLM_PATTERN_TIER1",
+    "reconnect_wait_s": "SLM_RECONNECT_WAIT_S",
+    "max_idle_connections": "SLM_MAX_IDLE_CONNECTIONS",
 }
 
 
@@ -82,6 +88,8 @@ class Settings(BaseModel):
     ledger_path: Path | None = None
     export_dir: Path = Path("exports")
     pattern_tier1: bool = True
+    reconnect_wait_s: float = DEFAULT_RECONNECT_WAIT_S
+    max_idle_connections: int = Field(default=DEFAULT_MAX_IDLE_CONNECTIONS, ge=0)
     role: RoleName | None = None
 
     @field_validator("slm_schema", "raw_schema")
@@ -91,7 +99,7 @@ class Settings(BaseModel):
             raise ValueError(f"{value!r} is not a plain lowercase identifier ({SCHEMA_RE.pattern})")
         return value
 
-    @field_validator("query_timeout_s")
+    @field_validator("query_timeout_s", "reconnect_wait_s")
     @classmethod
     def _finite_positive(cls, value: float) -> float:
         if not math.isfinite(value) or value <= 0:
@@ -152,6 +160,10 @@ def load_settings(environ: Mapping[str, str] | None = None, **overrides: Any) ->
         values["export_dir"] = Path(export_dir)
     if (tier1 := get("SLM_PATTERN_TIER1")) is not None:
         values["pattern_tier1"] = _flag("SLM_PATTERN_TIER1", tier1)
+    if (wait := get("SLM_RECONNECT_WAIT_S")) is not None:
+        values["reconnect_wait_s"] = _number("SLM_RECONNECT_WAIT_S", wait)
+    if (idle := get("SLM_MAX_IDLE_CONNECTIONS")) is not None:
+        values["max_idle_connections"] = _whole_number("SLM_MAX_IDLE_CONNECTIONS", idle)
     values.update(overrides)
     try:
         return Settings(**values)
@@ -194,6 +206,13 @@ def _number(name: str, value: str) -> float:
         return float(value)
     except ValueError:
         raise ConfigError(f"{name}={value!r} is not a number of seconds") from None
+
+
+def _whole_number(name: str, value: str) -> int:
+    try:
+        return int(value)
+    except ValueError:
+        raise ConfigError(f"{name}={value!r} is not a whole number") from None
 
 
 _active: Settings | None = None

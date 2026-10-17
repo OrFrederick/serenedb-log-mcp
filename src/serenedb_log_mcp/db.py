@@ -40,7 +40,12 @@ from psycopg.abc import Buffer
 from psycopg.adapt import Loader
 from psycopg.conninfo import conninfo_to_dict
 
-from serenedb_log_mcp.config import Role, get_settings
+from serenedb_log_mcp.config import (
+    DEFAULT_MAX_IDLE_CONNECTIONS,
+    DEFAULT_RECONNECT_WAIT_S,
+    Role,
+    get_settings,
+)
 from serenedb_log_mcp.toolkit import ToolContractError
 
 if TYPE_CHECKING:
@@ -65,12 +70,8 @@ __all__ = [
 
 CONNECT_TIMEOUT_S = 10
 """How long one connection attempt may take (libpq `connect_timeout`)."""
-RECONNECT_WAIT_S = 30.0
-"""How long the layer waits for `SELECT 1` after a lost connection. A restart took 2 to 3 s (#2)."""
 POLL_INTERVAL_S = 1.0
 """Pause between two `SELECT 1` attempts while SereneDB restarts."""
-MAX_IDLE_CONNECTIONS = 4
-"""Idle connections kept per DSN, so a call does not pay for a new connection each time."""
 
 CANCEL_ATTEMPTS = 3
 """How often the timer sends a cancel request that failed (for example psycopg's CancellationTimeout)."""
@@ -315,7 +316,9 @@ class _Deadline:
 class Database:
     """Runs fixed SQL templates against one DSN: read-only, with a timeout and one retry.
 
-    Thread-safe: each call takes its own connection from a small idle pool.
+    Thread-safe: each call takes its own connection from a small idle pool. `reconnect_wait_s` bounds
+    the wait for a restarting server (`SLM_RECONNECT_WAIT_S`) and `max_idle_connections` caps the idle
+    pool (`SLM_MAX_IDLE_CONNECTIONS`; 0 opens a new connection for every call).
     """
 
     def __init__(
@@ -324,7 +327,8 @@ class Database:
         *,
         timeout_s: float = 15.0,
         client_binding: bool = False,
-        reconnect_wait_s: float = RECONNECT_WAIT_S,
+        reconnect_wait_s: float = DEFAULT_RECONNECT_WAIT_S,
+        max_idle_connections: int = DEFAULT_MAX_IDLE_CONNECTIONS,
         poll_interval_s: float = POLL_INTERVAL_S,
         connect: Connector = open_connection,
         sleep: Callable[[float], None] = time.sleep,
@@ -334,6 +338,7 @@ class Database:
         self.timeout_s = timeout_s
         self.client_binding = client_binding
         self.reconnect_wait_s = reconnect_wait_s
+        self.max_idle_connections = max_idle_connections
         self.poll_interval_s = poll_interval_s
         self._connect = connect
         self._sleep = sleep
@@ -562,7 +567,7 @@ class Database:
         if conn.closed or conn.broken:
             return
         with self._lock:
-            if len(self._idle) < MAX_IDLE_CONNECTIONS:
+            if len(self._idle) < self.max_idle_connections:
                 self._idle.append(conn)
                 return
         _close_quietly(conn)
@@ -678,7 +683,7 @@ def _is_misconfigured(exc: psycopg.Error) -> bool:
 
 # Process-wide layers --------------------------------------------------------------------------------
 
-_databases: dict[tuple[str, float, bool], Database] = {}
+_databases: dict[tuple[str, float, bool, float, int], Database] = {}
 _databases_lock = threading.Lock()
 
 
@@ -690,11 +695,23 @@ def get_database(role: Role | None = None) -> Database:
     """
     settings = get_settings()
     dsn = settings.database_url if role is None else settings.database_url_for(role)
-    key = (dsn, settings.query_timeout_s, settings.client_binding)
+    key = (
+        dsn,
+        settings.query_timeout_s,
+        settings.client_binding,
+        settings.reconnect_wait_s,
+        settings.max_idle_connections,
+    )
     with _databases_lock:
         layer = _databases.get(key)
         if layer is None:
-            layer = Database(dsn, timeout_s=settings.query_timeout_s, client_binding=settings.client_binding)
+            layer = Database(
+                dsn,
+                timeout_s=settings.query_timeout_s,
+                client_binding=settings.client_binding,
+                reconnect_wait_s=settings.reconnect_wait_s,
+                max_idle_connections=settings.max_idle_connections,
+            )
             _databases[key] = layer
         return layer
 

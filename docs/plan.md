@@ -183,6 +183,8 @@ Fifteen core tools (rows 1 to 14 and 6a) stay below the tool counts where select
 | `SLM_DATA_DIR` | `./data` (gitignored) | fetch script, dev loader, pattern generator |
 | `SLM_QUERY_TIMEOUT_S` | `15` | db layer |
 | `SLM_CLIENT_BINDING` | `0` (psycopg default binding) | db layer |
+| `SLM_RECONNECT_WAIT_S` | `30` | db layer: how long it waits for `SELECT 1` after a lost connection (#53) |
+| `SLM_MAX_IDLE_CONNECTIONS` | `4` | db layer: idle connections kept per DSN; `0` opens one per call (#53) |
 | `LEDGER_PATH` | unset (in-memory only) | Evidence Ledger, shared across server processes and sessions; eval harness |
 | `SLM_PATTERN_TIER1` | `1` | Pattern dictionary (T9); CI sets `0` |
 | CLI `--transport stdio|http`, `--port`, `--role <role>` | stdio, no Role pin | server entry point |

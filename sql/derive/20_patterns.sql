@@ -141,16 +141,22 @@ WHERE d.dataset = 'openstack' AND d.message IS NULL AND e.message IS NULL
 
 -- One row per Pattern: the catalogue behind list_patterns (T14). component and level are the most
 -- frequent ones among its Log Entries (ties: the first by name); first_seen and last_seen use ts
--- as logged. If a Tier 2 mask ever produced the exact text of a Tier 1 template, both would share
+-- as logged, which is US Pacific local time for BGL and UTC for OpenStack. first_epoch and
+-- last_epoch are the same moments as epoch_utc seconds: anything that compares or ranks Patterns
+-- by time across Datasets (top_patterns, T28) reads those (#64). display_text is what a ranking
+-- shows: the template text, or '(no message)' for the Pattern of NULL and blank messages, whose
+-- template text is '' (34,470 BGL Log Entries); template_text stays '' so search_patterns never
+-- matches it. If a Tier 2 mask ever produced the exact text of a Tier 1 template, both would share
 -- the template_id and the Pattern reports loghub2 (never the case on the Base Corpus).
 CREATE OR REPLACE TABLE ${slm}.pattern AS
 WITH entries AS (
-    SELECT 'bgl' AS dataset, template_id, component, level, ts FROM ${slm}.bgl_entry
+    SELECT 'bgl' AS dataset, template_id, component, level, ts, epoch_utc FROM ${slm}.bgl_entry
     UNION ALL
-    SELECT 'openstack' AS dataset, template_id, component, level, ts FROM ${slm}.os_entry
+    SELECT 'openstack' AS dataset, template_id, component, level, ts, epoch_utc FROM ${slm}.os_entry
 ),
 counts AS (
-    SELECT dataset, template_id, count(*) AS entries, min(ts) AS first_seen, max(ts) AS last_seen
+    SELECT dataset, template_id, count(*) AS entries, min(ts) AS first_seen, max(ts) AS last_seen,
+        min(epoch_utc) AS first_epoch, max(epoch_utc) AS last_epoch
     FROM entries
     GROUP BY dataset, template_id
 ),
@@ -190,11 +196,25 @@ SELECT
     l.level,
     n.entries,
     n.first_seen,
-    n.last_seen
+    n.last_seen,
+    n.first_epoch,
+    n.last_epoch,
+    CASE WHEN t.template_source = 'empty' THEN '(no message)' ELSE t.template_text END AS display_text
 FROM texts AS t
 JOIN counts AS n ON n.dataset = t.dataset AND n.template_id = t.template_id
 LEFT JOIN components AS c ON c.dataset = t.dataset AND c.template_id = t.template_id AND c.rank = 1
 LEFT JOIN levels AS l ON l.dataset = t.dataset AND l.template_id = t.template_id AND l.rank = 1;
+
+-- The catalogue's inverted index for search_patterns (T14): BM25 over template_text, whose
+-- dictionary lower-cases and stems English words ('failing' and 'failed' meet at 'fail'), and the
+-- dataset verbatim for a score-neutral Dataset filter. It is built here rather than in
+-- 90_indexes, because CREATE OR REPLACE TABLE above drops it, and `derive.py --only 20_patterns`
+-- must leave a searchable catalogue. The index goes first: it blocks dropping its dictionary.
+DROP INDEX IF EXISTS ${slm}.pattern_idx;
+DROP TEXT SEARCH DICTIONARY IF EXISTS ${slm}.pattern_text;
+${create_pattern_text_dictionary};
+CREATE INDEX pattern_idx ON ${slm}.pattern USING inverted (dataset, template_text ${slm}.pattern_text);
+VACUUM (REFRESH_TABLE) ${slm}.pattern;
 
 -- When the step runs on its own, the inverted indexes already exist; publish the updated columns.
 VACUUM (REFRESH_TABLE) ${slm}.bgl_entry;

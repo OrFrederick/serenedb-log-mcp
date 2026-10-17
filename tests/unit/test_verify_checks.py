@@ -774,3 +774,97 @@ def test_a_count_after_an_entry_id_is_still_checked() -> None:
     )
 
     assert "26,999" in only(check(Role.ENGINEER, draft), "number_not_in_evidence")
+
+
+# Follow-up #81: fractions in words, parameters, columns, range citations ---------------------------
+
+
+@pytest.mark.parametrize(
+    ("text", "value", "approximate"),
+    [
+        ("KERNDTLB is roughly half of them", 50.0, True),
+        ("half of the alert Log Entries", 50.0, False),
+        ("a third of the nodes", 100 / 3, False),
+        ("about two thirds of all entries", 200 / 3, True),
+        ("three quarters of them", 75.0, False),
+        ("one fifth of the racks", 20.0, False),
+    ],
+)
+def test_a_fraction_in_words_is_a_number(text: str, value: float, approximate: bool) -> None:
+    [number] = numbers_in(text)
+
+    assert number.percent
+    assert number.value == pytest.approx(value)
+    assert number.approximate is approximate
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "half an hour later",
+        "in the second half of June",
+        "the first half of the week",
+        "on behalf of the owners",
+        "a third party",
+        "the third week",
+        "this quarter's budget",
+        "a half-open connection",
+    ],
+)
+def test_half_and_third_that_are_not_fractions_are_not_numbers(text: str) -> None:
+    assert numbers_in(text) == []
+
+
+def test_a_number_is_matched_against_the_column_its_noun_names() -> None:
+    draft = replace(TEAM_LEAD, "- Weekly,", "- KERNMNTF hit 83 racks [E8].\n- Weekly,")
+
+    found = only(check(Role.TEAM_LEAD, draft), "number_not_in_evidence")
+    assert "83" in found
+    assert "incidents" in found
+
+
+def test_a_number_in_a_matching_or_a_generic_column_passes() -> None:
+    # 541 is distinct_sources, a column that names no counted noun; 64 is the midplanes column.
+    draft = replace(
+        TEAM_LEAD,
+        "- Weekly,",
+        "- KERNDTLB came from 541 nodes [E1].\n- KERNMNTF hit 64 midplanes [E8].\n- Weekly,",
+    )
+
+    assert check(Role.TEAM_LEAD, draft).ok
+
+
+def test_a_range_citation_cites_every_record_in_the_range() -> None:
+    draft = replace(TEAM_LEAD, "alert categories [E1].", "alert categories [E1\u2013E3].")
+
+    report = check(Role.TEAM_LEAD, draft)
+    assert report.ok, [p.model_dump() for p in report.problems]
+    assert report.cited_evidence[:3] == ["E1", "E2", "E3"]
+
+
+def test_a_range_citation_past_the_ledger_names_the_unknown_records() -> None:
+    draft = replace(TEAM_LEAD, "alert categories [E1].", "alert categories [E7-E9].")
+
+    assert "E9" in only(check(Role.TEAM_LEAD, draft), "unknown_evidence")
+
+
+def test_a_huge_range_citation_is_not_expanded_record_by_record() -> None:
+    draft = replace(TEAM_LEAD, "alert categories [E1].", "alert categories [E1\u2013E999999999].")
+
+    report = check(Role.TEAM_LEAD, draft)
+    assert len(report.cited_evidence) < 1_000
+    assert "unknown_evidence" in kinds(report)
+
+
+@pytest.mark.parametrize(
+    "step",
+    [
+        "Run count_by to confirm the 9,999 failing jobs.",
+        "Run trend over the 9,999 failing jobs from last week.",
+        "Use count_by(group_by='node') and look at the 1,234 that failed.",
+    ],
+)
+def test_a_tool_name_does_not_shield_a_number_outside_a_parameter(step: str) -> None:
+    draft = replace(ENGINEER, "## Next Step\n", f"## Next Step\n- {step}\n")
+
+    assert kinds(check(Role.ENGINEER, draft)) == ["uncited_number"]

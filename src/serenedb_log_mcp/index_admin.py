@@ -34,6 +34,9 @@ works over the view (verified on SereneDB 26.10.1), with three differences: the 
 the Dataset's scan span (so even the slice count stays a pruned read), the refresh is `REINDEX
 INDEX` (`VACUUM (REFRESH_TABLE)` takes tables only), and the index is a snapshot of the file taken
 at build time, which the notes say. The cap is the Dataset's `max_index_rows`.
+
+otel_demo (T21) is refused before anything is read: its Log Entry file is not sorted by time, so
+any slice overlaps every row group and an index over it would read the whole 1.8 GB Body column.
 """
 
 from __future__ import annotations
@@ -310,6 +313,12 @@ def create_agent_index(
     """
     settings = settings if settings is not None else get_settings()
     rel = relation(dataset, settings=settings)
+    if rel.dataset.remote is not None and rel.dataset.remote.index_refusal is not None:
+        raise ScopeError(
+            f"No agent index can be built over {rel.dataset.name}: {rel.dataset.remote.index_refusal}. "
+            "count_by and trend filter it by components, levels and time without an index, and "
+            "get_trace follows one trace_id across its Log Entries, spans and metrics."
+        )
     check_remote_slice(rel.dataset, start, end)  # before the count, so even that stays a pruned read
     schema = rel.schema
     counted = _count_slice(rel, start, end)

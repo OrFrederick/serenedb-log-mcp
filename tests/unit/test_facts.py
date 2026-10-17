@@ -126,3 +126,25 @@ def test_a_remote_dataset_that_was_never_set_up_says_how_to_set_it_up() -> None:
         facts.dataset_facts("text_bench", fetch=missing)
 
     assert "make huge-setup" in str(excinfo.value)
+
+
+def test_otel_demo_reads_its_own_facts_table_and_names_its_own_setup() -> None:
+    first, last = datetime(2025, 5, 24, 20, 30), datetime(2025, 5, 26, 18, 29, 59)
+    fetch = FakeFetch([("range", None, 91_559_064, first, last), ("level", "error", 582_391, None, None)])
+
+    found = facts.dataset_facts("otel_demo", fetch=fetch)
+
+    assert 'FROM "slm"."otel_facts"' in fetch.calls[0][0]
+    assert found.entries == 91_559_064
+    assert found.levels == {"error": 582_391}
+
+    def missing(sql: str, params: Sequence[Any] = (), *, role: Role | None = None) -> QueryResult:
+        raise QueryFailed(
+            'SereneDB rejected the query (42P01): relation "otel_facts" does not exist', "42P01"
+        )
+
+    facts.clear_cache()
+    with pytest.raises(ScopeError) as excinfo:
+        facts.dataset_facts("otel_demo", fetch=missing)
+    assert "make otel-setup" in str(excinfo.value)
+    assert "huge-setup" not in str(excinfo.value)

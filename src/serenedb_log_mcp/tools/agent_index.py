@@ -52,7 +52,10 @@ def register(server: MCPServer) -> None:
         role: RoleParam,
         dataset: Annotated[
             DatasetName,
-            Field(description="'bgl', 'openstack' or 'text_bench' (remote Parquet): the Dataset to index."),
+            Field(
+                description="'bgl', 'openstack' or 'text_bench' (remote Parquet): the Dataset to index. "
+                "otel_demo cannot be indexed (its Log Entry file is not sorted by time)."
+            ),
         ],
         time_from: Annotated[
             str,

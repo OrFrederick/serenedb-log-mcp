@@ -163,6 +163,10 @@ def test_the_routing_note_says_the_index_is_a_snapshot_refreshed_by_reindex() ->
 
 
 def test_the_remote_datasets_of_the_agent_index_module_match_the_registry() -> None:
-    assert {name for name, entry in DATASETS.items() if entry.remote} == agent_indexes.REMOTE_DATASETS
-    for name in DATASET_NAMES:
+    # Only the remote Datasets an agent index may be built over; otel_demo refuses one (T21).
+    indexable = [
+        name for name in DATASET_NAMES if not (r := DATASETS[name].remote) or r.index_refusal is None
+    ]
+    assert {name for name in indexable if DATASETS[name].remote} == agent_indexes.REMOTE_DATASETS
+    for name in indexable:
         assert agent_indexes.is_agent_name(agent_indexes.new_name(name))

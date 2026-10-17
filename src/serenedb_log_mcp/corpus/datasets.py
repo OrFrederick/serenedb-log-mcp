@@ -23,6 +23,17 @@ enforces two rules, with errors that tell the agent how to proceed:
 
 Its facts (time range, Components and levels with their counts) come from `tb_facts`, which the
 setup step computes once, because computing them per call would scan the whole file.
+
+Multimodal (T21). `otel_demo` is one OpenTelemetry demo run of 46 hours (2025-05-24 20:30 to
+2025-05-26 18:30 UTC) as remote Parquet files that share TraceId (`make otel-setup`,
+sql/remote/otel_demo.sql). It is one Dataset, as the glossary has it: its Log Entries are the OTel
+logs (91,559,064 in one 4.3 GB file), and its traces (216,701,061 spans, 12.9 GB) and metrics are
+its *signals*, which `Relation.signal()` names next to the Log Entry view. Unlike text_bench, none
+of its files is sorted by time, so a time slice prunes no row group: the view's `ts` is the OTel
+TimestampTime, a 13 MB column for the whole file, which makes any Data Scope cheap, and the
+resolver does not ask for a slice. A full-text index over any slice would read the whole 1.8 GB
+Body column, so full-text matching is refused with the reason. Trace lookups use the TraceId bloom
+filters the files carry: SereneDB reads only the row groups that hold the trace (`get_trace`).
 """
 
 from __future__ import annotations
@@ -41,7 +52,7 @@ from serenedb_log_mcp.corpus import agent_indexes
 from serenedb_log_mcp.corpus.agent_indexes import AgentIndex
 from serenedb_log_mcp.scope import ScopeError
 
-DatasetName = Literal["bgl", "openstack", "text_bench"]
+DatasetName = Literal["bgl", "openstack", "text_bench", "otel_demo"]
 DATASET_NAMES: tuple[DatasetName, ...] = get_args(DatasetName)
 """Every registered Dataset, which a tool's `dataset` parameter accepts."""
 BASE_CORPUS: tuple[DatasetName, ...] = ("bgl", "openstack")
@@ -49,7 +60,7 @@ BASE_CORPUS: tuple[DatasetName, ...] = ("bgl", "openstack")
 
 # Canonical relation names (plan section 2.2). Only this module and the SQL under sql/ name them.
 ENTRY_TABLES: Mapping[DatasetName, str] = MappingProxyType(
-    {"bgl": "bgl_entry", "openstack": "os_entry", "text_bench": "tb_entry"}
+    {"bgl": "bgl_entry", "openstack": "os_entry", "text_bench": "tb_entry", "otel_demo": "otel_log"}
 )
 ENTRY_INDEXES: Mapping[DatasetName, str] = MappingProxyType(
     {"bgl": "bgl_entry_idx", "openstack": "os_entry_idx"}
@@ -59,13 +70,42 @@ DEFAULT_MAX_INDEX_ROWS = 1_000_000
 """The agent index cap of a Dataset without its own `max_index_rows` (`index_admin.MAX_SLICE_ROWS`)."""
 REMOTE_FACTS = "tb_facts"
 """text_bench's facts (time range, Components, levels), computed once by `make huge-setup`."""
+FACTS_TABLES: Mapping[DatasetName, str] = MappingProxyType(
+    {"text_bench": REMOTE_FACTS, "otel_demo": "otel_facts"}
+)
+"""Each remote Dataset's facts table, in the shape of `corpus.facts`: (kind, value, n, first, last)."""
+SIGNAL_TABLES: Mapping[DatasetName, Mapping[str, str]] = MappingProxyType(
+    {
+        "otel_demo": MappingProxyType(
+            {
+                "spans": "otel_span",
+                "metrics_gauge": "otel_metric_gauge",
+                "metrics_sum": "otel_metric_sum",
+                "metrics_histogram": "otel_metric_histogram",
+                "metric_minutes": "otel_metric_minute",
+                "metric_baselines": "otel_metric_baseline",
+            }
+        )
+    }
+)
+"""The signals of a Dataset besides its Log Entries (T21): views over the trace and metric files,
+and the per-minute metric roll-up and its baselines that `make otel-setup` computes once."""
 OWNERSHIP = "ownership"
 PATTERN_DICT = "pattern_dict"
 PATTERNS = "pattern"
 INCIDENTS = "incident"
 INSTANCES = "os_instance"
 CANONICAL_TABLES = frozenset(
-    {*ENTRY_TABLES.values(), REMOTE_FACTS, OWNERSHIP, PATTERN_DICT, PATTERNS, INCIDENTS, INSTANCES}
+    {
+        *ENTRY_TABLES.values(),
+        *FACTS_TABLES.values(),
+        *(table for signals in SIGNAL_TABLES.values() for table in signals.values()),
+        OWNERSHIP,
+        PATTERN_DICT,
+        PATTERNS,
+        INCIDENTS,
+        INSTANCES,
+    }
 )
 CANONICAL_INDEXES = frozenset(ENTRY_INDEXES.values())
 TEXT_DICTIONARY = "log_text"
@@ -117,6 +157,12 @@ OS_COLUMNS = (
     "pattern_key",
 )
 
+OTEL_COLUMNS = ("ts", "ts_exact", "component", "level", "message", "trace_id", "span_id")
+"""The otel_demo Log Entry view's columns: ts is the OTel TimestampTime (UTC, to the second; 13 MB
+for the whole file, so filtering and bucketing on it is cheap), ts_exact the Timestamp to the
+microsecond (305 MB, read only for the row groups a trace lookup touches), then ServiceName,
+SeverityText, Body, TraceId and SpanId under canonical names."""
+
 TB_COLUMNS = ("ts", "component", "level", "message", "trace_id", "span_id")
 """The text_bench view's columns: the OTel Timestamp (as UTC), ServiceName, SeverityText, Body,
 TraceId and SpanId, renamed to canonical names inside the view. Renaming keeps the view on the
@@ -132,6 +178,7 @@ _COMMON_CONCEPTS = {"time": "ts", "epoch": "epoch_utc", "pattern": "template_id"
 _BGL_CONCEPTS = {**_COMMON_CONCEPTS, "source": "node", "alert_category": "alert_tag"}
 _OS_CONCEPTS = {**_COMMON_CONCEPTS, "source": "instance_ref", "instance": "instance_ref"}
 _TB_CONCEPTS = {"time": "ts", "source": "component", "trace": "trace_id", "span": "span_id"}
+_OTEL_CONCEPTS = _TB_CONCEPTS
 
 
 class UnknownDatasetError(ValueError):
@@ -140,6 +187,10 @@ class UnknownDatasetError(ValueError):
 
 class UnknownColumnError(ValueError):
     """The Dataset has no column for the requested concept."""
+
+
+class UnknownSignalError(ValueError):
+    """The Dataset has no such signal (traces or metrics next to its Log Entries)."""
 
 
 @dataclass(frozen=True)
@@ -154,6 +205,13 @@ class RemoteSource:
     """A valid slice (time_from, time_to) for the error messages."""
     index_rows_note: str
     """How long a slice an agent index of `max_index_rows` covers, in words."""
+    requires_slice: bool = True
+    """Whether every Data Scope must name a slice of at most `max_scan_span`. False when the file
+    is not sorted by time, so a slice would prune nothing and any Data Scope costs the same."""
+    index_refusal: str | None = None
+    """Why no agent index may be built over it, or None when one may (over a slice)."""
+    setup_command: str = "make huge-setup"
+    """The command that creates its view and facts table, for the "not set up" error."""
 
 
 @dataclass(frozen=True)
@@ -174,6 +232,10 @@ class Dataset:
     """Most Log Entries one agent index (T19) over this Dataset may hold; None for the default cap,
     `index_admin.MAX_SLICE_ROWS`."""
     remote: RemoteSource | None = None
+    facts: str | None = None
+    """A remote Dataset's facts table (`FACTS_TABLES`); None for a Dataset whose facts are counted."""
+    signals: Mapping[str, str] = field(default_factory=lambda: MappingProxyType({}))
+    """Signal name -> table or view, for traces and metrics next to the Log Entries (T21)."""
 
     @property
     def ts_is_local(self) -> bool:
@@ -200,6 +262,8 @@ def _dataset(
         title=title,
         table=ENTRY_TABLES[name],
         index=ENTRY_INDEXES.get(name),
+        facts=FACTS_TABLES.get(name),
+        signals=SIGNAL_TABLES.get(name, MappingProxyType({})),
         table_columns=table_columns,
         columns=MappingProxyType(columns),
         time_note=time_note,
@@ -216,6 +280,23 @@ TEXT_BENCH = RemoteSource(
     max_scan_span=timedelta(seconds=60),
     example_slice=("2025-09-23T00:10:00", "2025-09-23T00:10:10"),
     index_rows_note="about 8 seconds of text_bench",
+)
+
+OTEL_DEMO = RemoteSource(
+    description=(
+        "otel_demo is one OpenTelemetry demo run, 2025-05-24 20:30 to 2025-05-26 18:30 UTC: 91,559,064 Log "
+        "Entries in one 4.3 GB Parquet file on S3, queried in place without a full index, next to its traces "
+        "(216,701,061 spans) and metrics, joined on trace_id"
+    ),
+    max_scan_span=timedelta(days=2),
+    example_slice=("2025-05-25T18:00:00", "2025-05-25T19:00:00"),
+    index_rows_note="not available",
+    requires_slice=False,
+    index_refusal=(
+        "its Log Entry file is not sorted by time, so an index over any slice would read the whole 1.8 GB "
+        "Body column from S3"
+    ),
+    setup_command="make otel-setup",
 )
 
 
@@ -248,6 +329,16 @@ DATASETS: Mapping[DatasetName, Dataset] = MappingProxyType(
             "UTC",
             max_index_rows=5_000_000,
             remote=TEXT_BENCH,
+        ),
+        "otel_demo": _dataset(
+            "otel_demo",
+            "otel_demo (OTel demo run: logs, traces, metrics; remote Parquet)",
+            OTEL_COLUMNS,
+            _OTEL_CONCEPTS,
+            "ts is the OTel TimestampTime in UTC, to the second; ts_exact is the Timestamp to the "
+            "microsecond (both cast in the server's time zone, which is UTC).",
+            "UTC",
+            remote=OTEL_DEMO,
         ),
     }
 )
@@ -304,8 +395,21 @@ class Relation:
 
     @property
     def facts_table(self) -> sql.Identifier:
-        """A remote Dataset's facts: (kind, value, n, first, last), computed by `make huge-setup`."""
-        return sql.Identifier(self.schema, REMOTE_FACTS)
+        """A remote Dataset's facts: (kind, value, n, first, last), computed by its setup command."""
+        return sql.Identifier(self.schema, self.dataset.facts or REMOTE_FACTS)
+
+    def signal(self, name: str) -> sql.Identifier:
+        """The table or view of one signal next to the Log Entries, for example 'spans' (T21)."""
+        try:
+            return sql.Identifier(self.schema, self.dataset.signals[name])
+        except KeyError:
+            owners = [entry for entry, signals in SIGNAL_TABLES.items() if name in signals]
+            if owners:
+                raise UnknownSignalError(
+                    f"{self.dataset.name} has no signal {name!r}; it belongs to {', '.join(owners)}"
+                ) from None
+            known = sorted({signal for signals in SIGNAL_TABLES.values() for signal in signals})
+            raise UnknownSignalError(f"unknown signal {name!r}; known: {', '.join(known)}") from None
 
     @property
     def ownership_table(self) -> sql.Identifier:
@@ -394,7 +498,7 @@ def relation(
 def check_remote_slice(entry: Dataset, start: datetime | None, end: datetime | None) -> None:
     """ScopeError unless [start, end) is a slice a remote Dataset may be read over in place."""
     remote = entry.remote
-    if remote is None:
+    if remote is None or not remote.requires_slice:
         return
     limit = _seconds(remote.max_scan_span)
     first, last = remote.example_slice
@@ -418,6 +522,12 @@ def check_remote_slice(entry: Dataset, start: datetime | None, end: datetime | N
 
 def _no_index_message(entry: Dataset) -> str:
     remote = entry.remote
+    if remote is not None and remote.index_refusal is not None:
+        return (
+            f"{remote.description}. Full-text matching (query) is not available on {entry.name}: "
+            f"{remote.index_refusal}. Filter by components, levels and time instead (those read only "
+            "narrow columns), and follow one request across logs, spans and metrics with get_trace."
+        )
     what = f"{remote.description}" if remote is not None else f"{entry.name} has no full-text index"
     return (
         f"{what}, so full-text matching (query) needs an agent index over the slice. Call "

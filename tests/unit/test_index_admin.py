@@ -478,3 +478,20 @@ def test_an_agent_index_over_the_text_bench_view_is_adopted_from_the_catalog(
     use(monkeypatch, FakeDatabase(catalog=[(TB_NAME, built.marker(), "tb_entry")]), FakeConnection())
 
     assert index_admin.existing_agent_indexes(settings=SLM) == [built]
+
+
+# ----------------------------------------------------------------- otel_demo (T21)
+
+
+def test_otel_demo_is_never_indexed_and_nothing_is_read_or_built(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Its Log Entry file is not sorted by time: an index over any slice would read the whole Body column.
+    database = FakeDatabase(slice_rows=10)
+    opened = use(monkeypatch, database, FakeConnection())
+
+    with pytest.raises(ScopeError, match="not sorted by time"):
+        index_admin.create_agent_index(
+            "otel_demo", datetime(2025, 5, 25, 18), datetime(2025, 5, 25, 18, 0, 8), settings=SLM
+        )
+
+    assert database.asked == []
+    assert opened == []

@@ -10,8 +10,9 @@ values its filters accept, from one statement per Dataset, cached for the life o
 The cache key is the resolved table, so per-Role views (T22) or another SLM_SCHEMA get their own
 entry. T5's `describe_corpus` can build on these facts instead of counting again.
 
-A remote Dataset (T20) reads the same rows from its facts table, which `make huge-setup` computes
-once: counting a billion remote rows per call is what the Dataset must never do.
+A remote Dataset (T20, T21) reads the same rows from its facts table, which its setup command
+(`make huge-setup`, `make otel-setup`) computes once: counting remote rows per call is what such a
+Dataset must never do.
 """
 
 from __future__ import annotations
@@ -73,8 +74,8 @@ def dataset_facts(dataset: str, role: Role | None = None, *, fetch: Fetch = fetc
             raise
         raise ScopeError(
             f"{rel.dataset.name} is registered but not set up in this database ({rel.table_name} or its "
-            "facts table is missing). Run `make huge-setup` once (it creates the view over the remote "
-            "Parquet file and its facts), or use the Base Corpus Datasets bgl and openstack."
+            f"facts table is missing). Run `{rel.dataset.remote.setup_command}` once (it creates the views "
+            "over the remote Parquet files and the facts), or use the Base Corpus Datasets bgl and openstack."
         ) from exc
     found = _parse(rel.dataset.name, rows)
     with _lock:

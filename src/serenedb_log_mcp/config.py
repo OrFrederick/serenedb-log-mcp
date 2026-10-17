@@ -59,10 +59,27 @@ ENV_NAMES = {
     "export_dir": "SLM_EXPORT_DIR",
     "pattern_tier1": "SLM_PATTERN_TIER1",
     "text_bench_url": "SLM_TEXT_BENCH_URL",
+    "otel_demo_url": "SLM_OTEL_DEMO_URL",
+    "trace_timeout_s": "SLM_TRACE_TIMEOUT_S",
 }
 
 TEXT_BENCH_URL = "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_000.parquet"
 """The remote Parquet file behind the text_bench Dataset (T20): about 1B OTel Log Entries, 41 GB."""
+
+OTEL_DEMO_URL = "https://public-pme.s3.eu-west-3.amazonaws.com/otel_demo/"
+"""The directory of the otel_demo Dataset (T21): one OpenTelemetry demo run of 46 hours, as remote
+Parquet files that share TraceId. Listed with `?list-type=2&prefix=otel_demo/` on 2026-10-17."""
+OTEL_DEMO_FILES: Mapping[str, str] = MappingProxyType(
+    {
+        "logs": "otel_logs.parquet",  # 91,559,064 Log Entries, 4.3 GB
+        "traces": "otel_traces.parquet",  # 216,701,061 spans, 12.9 GB
+        "metrics_gauge": "otel_metrics_gauge.parquet",  # 60,433,304 data points, 435 MB
+        "metrics_sum": "otel_metrics_sum.parquet",  # 61,483,572 data points, 471 MB
+        "metrics_histogram": "otel_metrics_histogram.parquet",  # 1,256,191 data points, 39 MB
+    }
+)
+"""The files of otel_demo the server reads, by signal. The bucket also holds an empty exponential
+histogram file, an empty summary file and HyperDX sessions, which no tool reads."""
 
 
 class ConfigError(ValueError):
@@ -87,6 +104,8 @@ class Settings(BaseModel):
     export_dir: Path = Path("exports")
     pattern_tier1: bool = True
     text_bench_url: str = TEXT_BENCH_URL
+    otel_demo_url: str = OTEL_DEMO_URL
+    trace_timeout_s: float = 120.0
     role: RoleName | None = None
 
     @field_validator("slm_schema", "raw_schema")
@@ -96,7 +115,7 @@ class Settings(BaseModel):
             raise ValueError(f"{value!r} is not a plain lowercase identifier ({SCHEMA_RE.pattern})")
         return value
 
-    @field_validator("query_timeout_s")
+    @field_validator("query_timeout_s", "trace_timeout_s")
     @classmethod
     def _finite_positive(cls, value: float) -> float:
         if not math.isfinite(value) or value <= 0:
@@ -113,6 +132,14 @@ class Settings(BaseModel):
             raise ValueError(f"{value!r} is not the path or URL of one Parquet file (no glob)")
         return value.strip()
 
+    @field_validator("otel_demo_url")
+    @classmethod
+    def _one_directory(cls, value: str) -> str:
+        # Each signal is one file in this directory, so every view over it stays on the fast path.
+        if not value.strip() or "*" in value:
+            raise ValueError(f"{value!r} is not the URL or path of one directory (no glob)")
+        return value.strip().rstrip("/") + "/"
+
     @field_validator("database_url")
     @classmethod
     def _valid_dsn(cls, value: str) -> str:
@@ -128,6 +155,10 @@ class Settings(BaseModel):
     @field_serializer("role_database_urls")
     def _as_dict(self, value: Mapping[RoleName, str]) -> dict[RoleName, str]:
         return dict(value)
+
+    def otel_demo_files(self) -> dict[str, str]:
+        """The URL (or path) of every otel_demo file, by signal (`OTEL_DEMO_FILES`)."""
+        return {signal: f"{self.otel_demo_url}{name}" for signal, name in OTEL_DEMO_FILES.items()}
 
     def database_url_for(self, role: RoleName) -> str:
         """The DSN for one Role: `DATABASE_URL_<ROLE>` when set, otherwise `DATABASE_URL`."""
@@ -169,6 +200,10 @@ def load_settings(environ: Mapping[str, str] | None = None, **overrides: Any) ->
         values["pattern_tier1"] = _flag("SLM_PATTERN_TIER1", tier1)
     if (text_bench_url := get("SLM_TEXT_BENCH_URL")) is not None:
         values["text_bench_url"] = text_bench_url
+    if (otel_demo_url := get("SLM_OTEL_DEMO_URL")) is not None:
+        values["otel_demo_url"] = otel_demo_url
+    if (trace_timeout := get("SLM_TRACE_TIMEOUT_S")) is not None:
+        values["trace_timeout_s"] = _number("SLM_TRACE_TIMEOUT_S", trace_timeout)
     values.update(overrides)
     try:
         return Settings(**values)

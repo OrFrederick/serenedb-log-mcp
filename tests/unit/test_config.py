@@ -226,3 +226,37 @@ def test_the_text_bench_url_must_name_one_file(value: str) -> None:
     # selected (docs "Indexing External Data"), so text_bench reads exactly one file.
     with pytest.raises(ConfigError, match="text_bench_url"):
         load_settings({}, text_bench_url=value)
+
+
+def test_the_otel_demo_files_are_recorded_in_config() -> None:
+    # T21: the logs, traces and metrics of the OTel demo run, one remote Parquet file each.
+    s = load_settings({})
+
+    assert s.otel_demo_url == "https://public-pme.s3.eu-west-3.amazonaws.com/otel_demo/"
+    assert s.otel_demo_files() == {
+        "logs": "https://public-pme.s3.eu-west-3.amazonaws.com/otel_demo/otel_logs.parquet",
+        "traces": "https://public-pme.s3.eu-west-3.amazonaws.com/otel_demo/otel_traces.parquet",
+        "metrics_gauge": "https://public-pme.s3.eu-west-3.amazonaws.com/otel_demo/otel_metrics_gauge.parquet",
+        "metrics_sum": "https://public-pme.s3.eu-west-3.amazonaws.com/otel_demo/otel_metrics_sum.parquet",
+        "metrics_histogram": "https://public-pme.s3.eu-west-3.amazonaws.com/otel_demo/otel_metrics_histogram.parquet",
+    }
+
+
+def test_the_otel_demo_location_can_point_at_a_local_directory() -> None:
+    s = load_settings({"SLM_OTEL_DEMO_URL": "/tmp/otel"})
+
+    assert s.otel_demo_url == "/tmp/otel/"
+    assert s.otel_demo_files()["traces"] == "/tmp/otel/otel_traces.parquet"
+
+
+@pytest.mark.parametrize("value", ["https://example.com/otel_demo/*", "", "   "])
+def test_the_otel_demo_location_is_one_directory_without_globs(value: str) -> None:
+    with pytest.raises(ConfigError, match="otel_demo_url"):
+        load_settings({}, otel_demo_url=value)
+
+
+def test_trace_lookups_have_their_own_timeout() -> None:
+    assert load_settings({}).trace_timeout_s == 120.0
+    assert load_settings({"SLM_TRACE_TIMEOUT_S": "45"}).trace_timeout_s == 45.0
+    with pytest.raises(ConfigError, match="SLM_TRACE_TIMEOUT_S"):
+        load_settings({"SLM_TRACE_TIMEOUT_S": "0"})

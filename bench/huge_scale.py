@@ -1161,14 +1161,34 @@ def time_tool(tools: Tools, tool: str, call: str, runs: int, **arguments: Any) -
 
 @contextlib.contextmanager
 def agent_index_dropped_after(tools: Tools) -> Iterator[list[str]]:
-    """Track agent indexes the benchmark builds and drop them at the end, also after an error."""
+    """Track the agent indexes the benchmark builds and drop them at the end, also after an error.
+
+    A drop that fails is never silent: it names the index left behind on stderr, and when nothing
+    else went wrong it fails the benchmark, because an index left behind blocks the next
+    `create_index` on text_bench and `make huge-setup`.
+    """
     built: list[str] = []
+    broke = False
     try:
         yield built
+    except BaseException:
+        broke = True
+        raise
     finally:
+        left: list[str] = []
         for name in built:
-            with contextlib.suppress(Exception):
+            try:
                 tools.call("drop_index", role="engineer", name=name)
+            except Exception as exc:
+                left.append(f"{name} ({str(exc).splitlines()[0] if str(exc) else type(exc).__name__})")
+        if left:
+            message = (
+                "bench-huge could not drop the agent index it built: " + "; ".join(left) + ". Drop it by "
+                "hand (DROP INDEX <SLM_SCHEMA>.<name>) before the next run or `make huge-setup`."
+            )
+            print(message, file=sys.stderr)
+            if not broke:
+                raise BenchError(message)
 
 
 def pattern_keys(session: Session, schema: str, table: str, slices: Slices) -> dict[str, Any]:

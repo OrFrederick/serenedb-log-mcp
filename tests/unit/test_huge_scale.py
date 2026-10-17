@@ -271,3 +271,55 @@ def test_a_saved_run_renders_the_same_report_again() -> None:
     raw = json.loads(json.dumps(huge_scale.to_json(original), default=str))
 
     assert huge_scale.from_json(raw).markdown() == original.markdown()
+
+
+class DropTools:
+    """Stands in for `Tools`: drop_index fails for the names in `fail`."""
+
+    def __init__(self, fail: set[str]) -> None:
+        self.fail = fail
+        self.dropped: list[str] = []
+
+    def call(self, tool: str, **arguments: Any) -> dict[str, Any]:
+        assert tool == "drop_index"
+        if arguments["name"] in self.fail:
+            raise RuntimeError("was not built by create_index")
+        self.dropped.append(arguments["name"])
+        return {}
+
+
+def test_the_cleanup_drops_every_agent_index_it_built() -> None:
+    tools = DropTools(set())
+
+    with huge_scale.agent_index_dropped_after(tools) as built:  # type: ignore[arg-type]
+        built.append("agent_idx_text_bench_0a1b2c3d")
+
+    assert tools.dropped == ["agent_idx_text_bench_0a1b2c3d"]
+
+
+def test_a_failed_cleanup_is_loud_and_names_the_index_left_behind(capsys: pytest.CaptureFixture[str]) -> None:
+    # PR #62 review: on 26.09.1.3 drop_index refused the index, and a suppressed error let the
+    # benchmark report success while it left the index behind.
+    tools = DropTools({"agent_idx_text_bench_0a1b2c3d"})
+
+    with (
+        pytest.raises(BenchError, match="agent_idx_text_bench_0a1b2c3d"),
+        huge_scale.agent_index_dropped_after(tools) as built,  # type: ignore[arg-type]
+    ):
+        built.append("agent_idx_text_bench_0a1b2c3d")
+
+    assert "DROP INDEX" in capsys.readouterr().err
+
+
+def test_a_failed_cleanup_after_an_error_keeps_the_original_error(capsys: pytest.CaptureFixture[str]) -> None:
+    tools = DropTools({"agent_idx_text_bench_0a1b2c3d"})
+
+    def broken_run() -> None:
+        with huge_scale.agent_index_dropped_after(tools) as built:  # type: ignore[arg-type]
+            built.append("agent_idx_text_bench_0a1b2c3d")
+            raise ValueError("the benchmark broke")
+
+    with pytest.raises(ValueError, match="the benchmark broke"):
+        broken_run()
+
+    assert "agent_idx_text_bench_0a1b2c3d" in capsys.readouterr().err

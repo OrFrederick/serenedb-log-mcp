@@ -276,6 +276,8 @@ def test_an_io_error_is_a_failed_statement_not_a_restart(layer: Database) -> Non
 
     assert caught.value.sqlstate == "08000"
     assert "missing.csv" in str(caught.value)
+    assert "external source" in str(caught.value)
+    assert "describe_corpus" not in str(caught.value)
     notes = layer.fetch_all("SELECT 1").notes
     assert not any("closed the connection" in note for note in notes), notes  # no retry, no restart
 

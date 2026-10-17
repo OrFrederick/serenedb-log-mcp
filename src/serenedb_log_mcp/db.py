@@ -16,6 +16,9 @@ What is true for every statement is written once here:
   A statement that is still running then ends the call with `QueryTimeout`; its thread closes the
   connection once SereneDB returns, because closing it from another thread mid-statement would free
   the libpq connection under it (see `_Statements`);
+- each `Database` counts the statements it abandoned that are still running on SereneDB, and while
+  `MAX_ABANDONED_STATEMENTS` of them run it refuses a new call at once with `DatabaseBusy`, so calls
+  that time out cannot pile up backends on SereneDB (#68);
 - only a closed or broken connection counts as lost: SereneDB reports ordinary IO errors (a
   missing `read_csv` file, an unreachable HTTP source) as SQLSTATE `08000` on a healthy session;
 - on a lost connection (SereneDB 26.10.1 SIGSEGVs intermittently and restarts in a few seconds) the
@@ -69,6 +72,7 @@ if TYPE_CHECKING:
 
 __all__ = [
     "Database",
+    "DatabaseBusy",
     "DatabaseLayerError",
     "DatabaseMisconfigured",
     "DatabaseRestarted",
@@ -102,6 +106,11 @@ CANCEL_TIMEOUT_S = 5.0
 CANCEL_GRACE_S = 5.0
 """How long the caller still waits for the statements once the timer has sent a cancel request or
 given up on sending one. 26.10.1 ended a cancelled statement within 1.4 s in every #47 run."""
+MAX_ABANDONED_STATEMENTS = 3
+"""How many abandoned statements may still run on SereneDB, per `Database`, before a new call is
+refused with `DatabaseBusy`. Each holds a backend and a connection until it ends by itself, and on
+26.09.1.3 `trend`'s timestamp grid ignores every cancel (#58 review), so there a `trend` call that
+is too wide is abandoned each time (#68)."""
 
 NOTED_SEVERITIES = frozenset({"WARNING", "NOTICE", "INFO"})
 """Notice severities that reach `QueryResult.notes`; DEBUG and LOG are left out."""
@@ -251,6 +260,11 @@ class QueryFailed(DatabaseLayerError):
         super().__init__(message)
         self.sqlstate = sqlstate
         self.sql = sql
+
+
+class DatabaseBusy(DatabaseLayerError):
+    """Too many statements this layer abandoned are still running on SereneDB; the call was refused
+    before it sent anything."""
 
 
 class DatabaseRestarted(DatabaseLayerError):
@@ -466,12 +480,25 @@ class _Statements[T]:
     caller would free the libpq connection under the statement still waiting on it. The statement
     thread closes the connection itself once the statement returns, so an abandoned connection is
     never pooled. The price is that SereneDB may keep running the statement, holding that connection,
-    until it ends by itself; the layer cannot stop it once the cancel failed.
+    until it ends by itself; the layer cannot stop it once the cancel failed. `on_abandon` is called
+    when the caller stops waiting (it returns how many abandoned statements now run, kept in
+    `abandoned_running`) and `on_abandoned_end` once such a statement has returned, so the
+    `Database` can count them.
     """
 
-    def __init__(self, conn: ConnectionLike, work: Callable[[_Session], T], timeout_s: float):
+    def __init__(
+        self,
+        conn: ConnectionLike,
+        work: Callable[[_Session], T],
+        timeout_s: float,
+        on_abandon: Callable[[], int] = lambda: 0,
+        on_abandoned_end: Callable[[], None] = lambda: None,
+    ):
         self._conn = conn
         self._work = work
+        self._on_abandon = on_abandon
+        self._on_abandoned_end = on_abandoned_end
+        self.abandoned_running = 0  # abandoned statements running once this one was abandoned
         self._wake = threading.Event()  # the statements ended, or the deadline has done all it can
         self._done = threading.Event()
         self._lock = threading.Lock()  # decides who closes the connection: the caller or the thread
@@ -508,8 +535,10 @@ class _Statements[T]:
     def abandon(self) -> bool:
         """Leave the connection to the statement thread if it still runs; True when it does."""
         with self._lock:
-            if self._started and not self._finished:
+            if self._started and not self._finished and not self._abandoned.is_set():
                 self._abandoned.set()
+                # Under the lock, so the thread cannot report the end before the start is counted.
+                self.abandoned_running = self._on_abandon()
             return self._abandoned.is_set()
 
     def _run(self) -> None:
@@ -533,6 +562,7 @@ class _Statements[T]:
                 abandoned = self._abandoned.is_set()
             if abandoned:
                 _close_quietly(self._conn)  # this thread owns it, and its statement has returned
+                self._on_abandoned_end()
             self._done.set()
             self._wake.set()
 
@@ -544,7 +574,9 @@ class Database:
     the wait for a restarting server (`SLM_RECONNECT_WAIT_S`) and `max_idle_connections` caps the idle
     pool (`SLM_MAX_IDLE_CONNECTIONS`; 0 opens a new connection for every call). `client_binding`
     (`SLM_CLIENT_BINDING`) forces `ClientCursor` (True) or server-side binding (False); None lets the
-    first connection read the server version and choose (see `CLIENT_BINDING_BEFORE`).
+    first connection read the server version and choose (see `CLIENT_BINDING_BEFORE`). While
+    `max_abandoned_statements` (at least 1) statements it abandoned still run on SereneDB, a new call
+    is refused with `DatabaseBusy`.
     """
 
     def __init__(
@@ -557,10 +589,13 @@ class Database:
         max_idle_connections: int = DEFAULT_MAX_IDLE_CONNECTIONS,
         poll_interval_s: float = POLL_INTERVAL_S,
         cancel_grace_s: float = CANCEL_GRACE_S,
+        max_abandoned_statements: int = MAX_ABANDONED_STATEMENTS,
         connect: Connector = open_connection,
         sleep: Callable[[float], None] = time.sleep,
         monotonic: Callable[[], float] = time.monotonic,
     ) -> None:
+        if max_abandoned_statements < 1:
+            raise ValueError(f"max_abandoned_statements must be at least 1, not {max_abandoned_statements}")
         self.dsn = dsn
         self.timeout_s = timeout_s
         self.client_binding = client_binding  # as configured; None reads the server version
@@ -575,6 +610,9 @@ class Database:
         self.max_idle_connections = max_idle_connections
         self.poll_interval_s = poll_interval_s
         self.cancel_grace_s = cancel_grace_s
+        self.max_abandoned_statements = max_abandoned_statements
+        self._abandoned_running = 0  # statements abandoned after a timeout that still run on SereneDB
+        self._abandoned_lock = threading.Lock()
         self._connect = connect
         self._sleep = sleep
         self._monotonic = monotonic
@@ -653,6 +691,12 @@ class Database:
         """True when the layer binds with `ClientCursor`; None until the first connection chose."""
         return self._binding
 
+    @property
+    def abandoned_statements(self) -> int:
+        """How many statements this layer abandoned after a timeout are still running on SereneDB."""
+        with self._abandoned_lock:
+            return self._abandoned_running
+
     def close(self) -> None:
         """Close the idle connections."""
         self._drop_idle()
@@ -660,6 +704,7 @@ class Database:
     # Retry --------------------------------------------------------------------------------------
 
     def _run[T](self, work: Callable[[_Session], T]) -> tuple[T, _Session, list[str]]:
+        self._refuse_while_busy()
         try:
             value, session = self._attempt(work)
         except _ConnectionLost:
@@ -683,6 +728,28 @@ class Database:
                 "sort=time; otherwise call it again once more, or narrow the Data Scope."
             ) from cause
         return value, session, self._with_binding_note([note, *session.notes])
+
+    def _refuse_while_busy(self) -> None:
+        """Refuse the call while `max_abandoned_statements` abandoned statements still run."""
+        running = self.abandoned_statements
+        if running < self.max_abandoned_statements:
+            return
+        raise DatabaseBusy(
+            f"The call was not run: {running} statements of earlier calls are still running on "
+            f"SereneDB after they ran past the {self.timeout_s:g} s limit (SLM_QUERY_TIMEOUT_S) and "
+            "were not stopped by a cancel. Each holds a connection until it ends by itself, so the "
+            f"database layer refuses new calls while {self.max_abandoned_statements} of them run. "
+            f"Wait a minute and call the tool again. {NARROW_THE_SCOPE}"
+        )
+
+    def _abandon_started(self) -> int:
+        with self._abandoned_lock:
+            self._abandoned_running += 1
+            return self._abandoned_running
+
+    def _abandoned_ended(self) -> None:
+        with self._abandoned_lock:
+            self._abandoned_running -= 1
 
     def _with_binding_note(self, notes: list[str]) -> list[str]:
         return notes if self._binding_note is None else [*notes, self._binding_note]
@@ -730,7 +797,7 @@ class Database:
             conn = self._acquire()
         except psycopg.Error as exc:
             raise _ConnectionLost from exc
-        statements = _Statements(conn, work, self.timeout_s)
+        statements = _Statements(conn, work, self.timeout_s, self._abandon_started, self._abandoned_ended)
         session, deadline = statements.session, statements.deadline
         try:
             statements.start()
@@ -740,7 +807,9 @@ class Database:
                 f"The query ran longer than the {self.timeout_s:g} s limit (SLM_QUERY_TIMEOUT_S) and "
                 f"was not stopped, because {deadline.why_it_ran_on}. The database layer stopped "
                 f"waiting for it {self.cancel_grace_s:g} s later; the statement may still be running "
-                f"on SereneDB until it ends by itself. {NARROW_THE_SCOPE}"
+                f"on SereneDB until it ends by itself. It is {statements.abandoned_running} of at most "
+                f"{self.max_abandoned_statements} such statements; at that many, the layer refuses new "
+                f"calls until one ends. {NARROW_THE_SCOPE}"
             ) from None
         except psycopg.Error as exc:
             if _is_lost(conn):
@@ -896,6 +965,15 @@ def _rejected(exc: psycopg.Error, sql: str | None) -> QueryFailed:
             f"A value you passed cannot be sent to SereneDB: {_first_line(exc)} Remove the offending "
             f"characters from the value and call the tool again.{statement}",
             None,
+            sql,
+        )
+    if exc.sqlstate == "08000":
+        # SereneDB's IO error on a healthy connection: a missing read_csv file, an unreachable URL.
+        return QueryFailed(
+            f"SereneDB could not read an external source (08000): {_first_line(exc)} The file or URL "
+            "the query reads is missing or unreachable from the SereneDB server; check that it exists "
+            f"and that SereneDB can reach it. Your filters are not at fault.{statement}",
+            exc.sqlstate,
             sql,
         )
     if exc.sqlstate is None:

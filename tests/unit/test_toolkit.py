@@ -216,6 +216,53 @@ def test_a_truncated_result_says_so_in_the_notes(server: MCPServer) -> None:
     assert any("count_by" in note for note in data["notes"])
 
 
+def test_an_aggregation_tool_replaces_the_truncation_note_with_its_own() -> None:
+    # A top-N aggregation returns exact counts plus an (other) row, so the default note ("a sample,
+    # not a frequency; use count_by") states the opposite of the truth and points count_by at itself.
+    server = MCPServer(name="t")
+    own_note = "Showing the top 3 of 31,468 groups; the (other) row holds the rest, so the counts are exact."
+
+    @evidence_tool(server, title="Counting groups")
+    def grouping(role: RoleParam) -> ToolOutcome:
+        """Count groups. Inputs: role. Outputs: the envelope."""
+        return ToolOutcome(
+            result=FakeQueryResult(total=348_460, rows=[list(row) for row in SAMPLE_ROWS]),
+            scope=DataScope(datasets=["bgl"]),
+            columns=["alert_tag", "entries"],
+            total_matches=31_468,
+            truncation_note=own_note,
+        )
+
+    result = anyio.run(lambda: server.call_tool("grouping", {"role": "team_lead"}))
+    assert isinstance(result, CallToolResult)
+    notes = envelope(result)["notes"]
+
+    assert notes[0] == own_note
+    assert not any("sample" in note for note in notes)
+    assert not any("use count_by" in note for note in notes)
+
+
+def test_a_truncation_note_is_dropped_when_nothing_was_truncated(server: MCPServer) -> None:
+    # The note describes truncation, so a complete result must not carry it.
+    scratch = MCPServer(name="t")
+
+    @evidence_tool(scratch, title="Complete result")
+    def complete(role: RoleParam) -> ToolOutcome:
+        """Return everything. Inputs: role. Outputs: the envelope."""
+        return ToolOutcome(
+            result=FakeQueryResult(),
+            scope=DataScope(datasets=["bgl"]),
+            columns=["alert_tag", "entries"],
+            truncation_note="Showing the top 3 of 3 groups.",
+        )
+
+    result = anyio.run(lambda: scratch.call_tool("complete", {"role": "team_lead"}))
+    assert isinstance(result, CallToolResult)
+
+    assert envelope(result)["truncated"] is False
+    assert envelope(result)["notes"] == []
+
+
 def test_notes_from_the_database_layer_are_carried_through() -> None:
     server = MCPServer(name="t")
     note = "SereneDB restarted; the statement was retried once."

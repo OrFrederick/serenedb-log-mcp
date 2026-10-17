@@ -43,6 +43,11 @@ ALWAYS_LOAD_META: dict[str, Any] = {"anthropic/alwaysLoad": True}
 
 ROLE_PARAMETER = "role"
 
+SAMPLE_TRUNCATION_NOTE = (
+    "The returned rows are a sample, not a frequency; use count_by or trend for how often something happens."
+)
+"""Default second half of the truncation note: true for retrieval, wrong for a top-N aggregation."""
+
 RETRY_HINT = (
     "Retry the call once; if it fails again, narrow the Data Scope (a shorter time range or fewer "
     "filters), or call describe_corpus to check the Datasets, Components and levels you filter on."
@@ -105,6 +110,15 @@ class ToolOutcome:
     total_matches: int | None = None
     """The unit this tool counts, when it is not `result.total`: count_by counts groups, not Log
     Entries, and then carries the entry count in `summary['entries_total']`."""
+    truncation_note: str | None = None
+    """The note to add when this result is truncated, instead of `SAMPLE_TRUNCATION_NOTE`.
+
+    The default fits retrieval: the returned Log Entries are a sample, so their number is not a
+    frequency. It is wrong for a top-N aggregation, where the rows are exact counts and an `(other)`
+    row keeps the totals exact, so count_by, list_incidents, top_patterns and latency_stats pass
+    their own sentence, for example "Showing the top 25 of 31,468 groups; the (other) row holds the
+    rest, so the counts are exact." The note is dropped when nothing was truncated.
+    """
 
 
 RoleHook = Callable[[Evidence, Role], Evidence]
@@ -292,7 +306,11 @@ def _store(tool: str, role: Role, outcome: ToolOutcome) -> Evidence:
     _check_columns(tool, columns, rows)
     returned = len(rows)
     total = source.total if outcome.total_matches is None else outcome.total_matches
-    notes = [*_truncation_notes(returned, total), *source.notes, *outcome.notes]
+    notes = [
+        *_truncation_notes(returned, total, outcome.truncation_note),
+        *source.notes,
+        *outcome.notes,
+    ]
     with get_ledger().appending() as slot:
         evidence = Evidence(
             evidence_id=slot.evidence_id,
@@ -325,13 +343,13 @@ def _check_columns(tool: str, columns: list[str], rows: list[list[Any]]) -> None
         )
 
 
-def _truncation_notes(returned: int, total: int) -> list[str]:
+def _truncation_notes(returned: int, total: int, own_note: str | None) -> list[str]:
+    """The truncation note, if any: the tool's own sentence, or the retrieval default."""
     if returned >= total:
         return []
-    return [
-        f"Truncated: {returned} of {total:,} matches returned. The returned rows are a sample, "
-        "not a frequency; use count_by or trend for how often something happens."
-    ]
+    if own_note is not None:
+        return [own_note]
+    return [f"Truncated: {returned} of {total:,} matches returned. {SAMPLE_TRUNCATION_NOTE}"]
 
 
 def _detail(exc: Exception) -> str:

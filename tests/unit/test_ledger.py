@@ -1,0 +1,171 @@
+"""The Evidence Ledger: E1, E2, ... in call order, shared across sessions through LEDGER_PATH."""
+
+import json
+from pathlib import Path
+from typing import Any
+
+import pytest
+
+from serenedb_log_mcp.config import load_settings, set_settings
+from serenedb_log_mcp.ledger import Ledger, LedgerError, get_ledger, reset_ledger
+
+
+def store(ledger: Ledger, **fields: Any) -> dict[str, Any]:
+    """Append one record, letting the ledger assign the evidence id."""
+    with ledger.appending() as slot:
+        record = {"evidence_id": slot.evidence_id, "tool": "count_by", **fields}
+        slot.store(record)
+    return record
+
+
+def test_ids_are_assigned_in_call_order() -> None:
+    ledger = Ledger()
+
+    ids = [store(ledger)["evidence_id"] for _ in range(3)]
+
+    assert ids == ["E1", "E2", "E3"]
+    assert [record["evidence_id"] for record in ledger.all()] == ids
+
+
+def test_the_record_is_stored_exactly_as_handed_over() -> None:
+    # Regression for the #3 pilot bug: the ledger was written before count_by attached
+    # groups_total, so a true "31,468 nodes" looked ungrounded. The id is reserved first and the
+    # record is written last, so whatever the tool finished building is what the ledger holds.
+    ledger = Ledger()
+
+    with ledger.appending() as slot:
+        record = {"evidence_id": slot.evidence_id, "tool": "count_by", "total_matches": 3}
+        record["summary"] = {"groups_total": 31_468, "entries_total": 348_460}
+        slot.store(record)
+
+    assert ledger.get("E1") == record
+    assert ledger.get("E1")["summary"]["groups_total"] == 31_468
+
+
+def test_an_unstored_slot_consumes_no_id() -> None:
+    ledger = Ledger()
+    store(ledger)
+
+    with pytest.raises(LedgerError, match="stored"), ledger.appending():
+        pass
+
+    assert store(ledger)["evidence_id"] == "E2"
+
+
+def test_a_failed_tool_call_consumes_no_id() -> None:
+    ledger = Ledger()
+
+    with pytest.raises(ZeroDivisionError), ledger.appending():
+        raise ZeroDivisionError("the query failed after the id was reserved")
+
+    assert store(ledger)["evidence_id"] == "E1"
+
+
+def test_a_slot_rejects_a_record_with_another_id() -> None:
+    ledger = Ledger()
+
+    with pytest.raises(LedgerError, match="E1"), ledger.appending() as slot:
+        slot.store({"evidence_id": "E7", "tool": "count_by"})
+
+
+def test_an_unknown_id_is_not_found() -> None:
+    ledger = Ledger()
+    store(ledger)
+
+    assert ledger.get("E2") is None
+    assert ledger.last_id == "E1"
+    assert Ledger().last_id is None
+
+
+def test_without_a_ledger_path_the_ledger_stays_in_the_process(tmp_path: Path) -> None:
+    ledger = Ledger()
+    record = store(ledger)
+
+    assert ledger.path is None
+    assert ledger.all() == [record]
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_with_a_ledger_path_every_record_is_one_json_line(tmp_path: Path) -> None:
+    path = tmp_path / "ledger.jsonl"
+    ledger = Ledger(path)
+
+    store(ledger, total_matches=3)
+    store(ledger, total_matches=7)
+
+    lines = path.read_text(encoding="utf-8").splitlines()
+    assert [json.loads(line)["evidence_id"] for line in lines] == ["E1", "E2"]
+    assert json.loads(lines[1])["total_matches"] == 7
+
+
+def test_a_later_session_continues_the_numbering_and_reads_the_earlier_evidence(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "ledger.jsonl"
+    store(Ledger(path), total_matches=3)
+
+    later = Ledger(path)
+
+    assert later.loaded == 1
+    assert later.last_id == "E1"
+    assert later.get("E1")["total_matches"] == 3
+    assert store(later)["evidence_id"] == "E2"
+
+
+def test_the_last_id_is_re_read_under_the_lock_so_parallel_servers_do_not_collide(
+    tmp_path: Path,
+) -> None:
+    # Two Ledger instances stand in for two server processes on one LEDGER_PATH: neither may
+    # hand out an id from its own cached state.
+    path = tmp_path / "ledger.jsonl"
+    first, second = Ledger(path), Ledger(path)
+
+    ids = [
+        store(first)["evidence_id"],
+        store(second)["evidence_id"],
+        store(first)["evidence_id"],
+        store(second)["evidence_id"],
+    ]
+
+    assert ids == ["E1", "E2", "E3", "E4"]
+    assert [record["evidence_id"] for record in first.all()] == ids
+    assert second.get("E3") is not None
+
+
+def test_a_file_that_is_not_a_ledger_fails_loudly(tmp_path: Path) -> None:
+    path = tmp_path / "not-a-ledger.jsonl"
+    path.write_text("this is not JSON\n", encoding="utf-8")
+
+    with pytest.raises(LedgerError, match=r"not-a-ledger\.jsonl"):
+        Ledger(path)
+
+
+def test_a_record_without_an_evidence_id_fails_loudly(tmp_path: Path) -> None:
+    path = tmp_path / "ledger.jsonl"
+    path.write_text(json.dumps({"tool": "count_by"}) + "\n", encoding="utf-8")
+
+    with pytest.raises(LedgerError, match="evidence_id"):
+        Ledger(path)
+
+
+def test_blank_lines_are_tolerated(tmp_path: Path) -> None:
+    path = tmp_path / "ledger.jsonl"
+    path.write_text(json.dumps({"evidence_id": "E1", "tool": "trend"}) + "\n\n", encoding="utf-8")
+
+    assert Ledger(path).loaded == 1
+
+
+def test_the_process_ledger_follows_the_configured_ledger_path(tmp_path: Path) -> None:
+    path = tmp_path / "ledger.jsonl"
+    set_settings(load_settings({}, ledger_path=path))
+    reset_ledger()
+
+    store(get_ledger())
+
+    assert get_ledger() is get_ledger()
+    assert get_ledger().path == path
+    assert path.exists()
+
+    set_settings(load_settings({}))
+
+    assert get_ledger().path is None

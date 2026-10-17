@@ -1,6 +1,8 @@
 """The Evidence Ledger: E1, E2, ... in call order, shared across sessions through LEDGER_PATH."""
 
+import fcntl
 import json
+import threading
 from pathlib import Path
 from typing import Any
 
@@ -169,3 +171,27 @@ def test_the_process_ledger_follows_the_configured_ledger_path(tmp_path: Path) -
     set_settings(load_settings({}))
 
     assert get_ledger().path is None
+
+
+def test_an_append_waits_for_a_lock_another_process_holds(tmp_path: Path) -> None:
+    # flock is held per open file, so a second handle stands in for a second server process.
+    path = tmp_path / "ledger.jsonl"
+    ledger = Ledger(path)
+    finished = threading.Event()
+
+    def append() -> None:
+        store(ledger)
+        finished.set()
+
+    with path.open("a+", encoding="utf-8") as holder:
+        fcntl.flock(holder.fileno(), fcntl.LOCK_EX)
+        waiting = threading.Thread(target=append, daemon=True)
+        waiting.start()
+
+        assert not finished.wait(0.3), "the append did not wait for the lock"
+
+        fcntl.flock(holder.fileno(), fcntl.LOCK_UN)
+
+    waiting.join(timeout=5)
+    assert finished.is_set()
+    assert ledger.get("E1") is not None

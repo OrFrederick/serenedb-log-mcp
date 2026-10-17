@@ -10,6 +10,7 @@ two-process `LEDGER_PATH` test gets two real servers on one ledger.
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -56,7 +57,12 @@ def sample_outcome(groups: int = len(SAMPLE_ROWS), notes: list[str] | None = Non
             filters=ScopeFilters.of(group_by="alert_tag"),
         ),
         columns=list(SAMPLE_COLUMNS),
-        summary={"groups_total": len(SAMPLE_ROWS), "entries_total": SAMPLE_ENTRIES_TOTAL},
+        summary={
+            "groups_total": len(SAMPLE_ROWS),
+            "entries_total": SAMPLE_ENTRIES_TOTAL,
+            # Only here, so the two-process test can show the records come from two processes.
+            "server_pid": os.getpid(),
+        },
     )
 
 

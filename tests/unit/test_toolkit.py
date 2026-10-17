@@ -118,7 +118,8 @@ def test_every_call_is_appended_to_the_evidence_ledger(server: MCPServer) -> Non
     records = get_ledger().all()
     assert [record["evidence_id"] for record in records] == ["E1", "E2"]
     # The #3 pilot bug: the ledger record must hold the finished envelope, summary included.
-    assert records[0]["summary"] == {"groups_total": 3, "entries_total": 265_876}
+    assert records[0]["summary"]["groups_total"] == 3
+    assert records[0]["summary"]["entries_total"] == 265_876
     assert records[0]["rows"] == SAMPLE_ROWS
     assert Evidence.model_validate(records[0]).tool == "sample_count"
 

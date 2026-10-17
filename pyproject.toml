@@ -15,6 +15,9 @@ serenedb-log-mcp = "serenedb_log_mcp.cli:main"
 [dependency-groups]
 dev = [
     "anyio>=4.9",
+    # jsonschema: the contract tests validate a tool result against the schema the server
+    # publishes, independently of the pydantic model it was built from.
+    "jsonschema>=4.23",
     "mypy>=1.15",
     "pytest>=8.3",
     "ruff>=0.11",

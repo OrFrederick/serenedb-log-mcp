@@ -91,11 +91,13 @@ def register(server: MCPServer) -> None:
             Field(
                 description="Optional baseline period start (ISO-8601), with baseline_to. Its count, "
                 "scaled to the Data Scope's length, becomes expected and drives baseline_flag "
-                "(baseline_basis 'named_period'); without it the median week is the reference."
+                "(baseline_basis 'named_period'); without it the median week is the reference.",
+                max_length=64,
             ),
         ] = None,
         baseline_to: Annotated[
-            str | None, Field(description="Optional baseline period end, exclusive (ISO-8601).")
+            str | None,
+            Field(description="Optional baseline period end, exclusive (ISO-8601).", max_length=64),
         ] = None,
     ) -> ToolOutcome:
         """Exact counts of matching Log Entries grouped by one dimension, with a baseline per count.

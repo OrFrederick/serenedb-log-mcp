@@ -24,11 +24,15 @@ from serenedb_log_mcp.ledger import get_ledger
 from serenedb_log_mcp.toolkit import role_tool
 from serenedb_log_mcp.verify import INCIDENT_TOOLS, AnswerReport, CheckedNumber, Problem, check_answer
 
+MAX_DRAFT_CHARS = 50_000
+"""An answer is a few thousand characters; this cap only bounds the input (the checks are linear)."""
+
 DraftParam = Annotated[
     str,
     Field(
         description="The full draft answer in Markdown, exactly as you would send it: the four sections "
-        "Observed Facts, Hypotheses, Unknowns and Next Step, with [E<n>] next to every number."
+        "Observed Facts, Hypotheses, Unknowns and Next Step, with [E<n>] next to every number.",
+        max_length=MAX_DRAFT_CHARS,
     ),
 ]
 

@@ -93,14 +93,16 @@ TimeFromParam = Annotated[
     Field(
         description="Start of the time range, inclusive: ISO-8601 without a time zone, for example "
         "'2005-07-01' or '2005-07-01T12:00:00', or a relative range such as 'last 7d' or 'last 24h', "
-        "which ends at the Dataset's last Log Entry, not today. Omit it to start at the first Log Entry."
+        "which ends at the Dataset's last Log Entry, not today. Omit it to start at the first Log Entry.",
+        max_length=64,
     ),
 ]
 TimeToParam = Annotated[
     str | None,
     Field(
         description="End of the time range, exclusive, ISO-8601 without a time zone. Omit it to end "
-        "after the last Log Entry, and always omit it with a relative time_from."
+        "after the last Log Entry, and always omit it with a relative time_from.",
+        max_length=64,
     ),
 ]
 ComponentsParam = Annotated[
@@ -141,7 +143,8 @@ FamilyIdParam = Annotated[
     str | None,
     Field(
         description="Only this Pattern Family (family_id): Patterns whose wording differs only by a "
-        "known drift, counted together."
+        "known drift, counted together.",
+        max_length=32,
     ),
 ]
 

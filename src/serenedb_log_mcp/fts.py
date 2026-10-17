@@ -15,7 +15,9 @@ Modes (plan section 2.6: a bare `@@ 'a b'` is OR, which is why only `any_words` 
 verified against the docs and SereneDB 26.10.1:
 
 - `all_words` (default): `websearch_to_tsquery`. Every word must appear, in any order; a
-  "double-quoted" part is a phrase, `OR` separates alternatives and `-word` excludes a word.
+  "double-quoted" part is a phrase, `OR` separates alternatives and `-word` excludes a word. A
+  free-standing word without a letter or digit (`;`, `...`) is a term no Log Entry holds, so a
+  query with one is refused instead of silently matching nothing (#80).
 - `phrase`: `phraseto_tsquery`. The words must appear next to each other, in order.
 - `any_words`: the bare text, which the column's dictionary splits into words that are OR-ed.
 - `fuzzy`: one `ts_levenshtein` per word, AND-ed with `&&`. `ts_levenshtein` takes one term and
@@ -75,20 +77,27 @@ _PARSERS: dict[str, sql.SQL] = {
     "phrase": sql.SQL("phraseto_tsquery"),
 }
 
+# Where websearch_to_tsquery splits the text outside quotes into words, measured on 26.10.1: at ASCII
+# whitespace only. A no-break space (U+00A0) and the other Unicode spaces do not split, so 'error',
+# a no-break space and ';' are one word, which the dictionary reads as error.
+_WEBSEARCH_SPACE_RE = re.compile(r"[ \t\n\r\f\v]+")
+
 # How the log_text dictionary (split_text, case 'lower') splits words, measured on 26.10.1 with
 # exact ts_levenshtein(term, 0) lookups: hyphens, slashes, colons and spaces split
 # ('R02-M1-N0' is r02, m1, n0); underscores and dots between word characters do not
-# ('dat32k_060205' and '172.16.96.116' are one token each).
+# ('dat32k_060205' and '172.16.96.116' are one token each), and a word without a letter or digit
+# ('_', '__') is no token at all.
 _WORD_RE = re.compile(r"\w+(?:\.\w+)*")
-_HAS_WORD_RE = re.compile(r"\w")
+_LETTER_OR_DIGIT_RE = re.compile(r"[^\W_]")
 _DIGIT_HYPHEN_DIGIT_RE = re.compile(r"[0-9]-[0-9]")
 
 
 def normalise_query(query: str | None) -> str | None:
     """The query without surrounding whitespace; None when blank.
 
-    ScopeError when it is too long or has no word at all (only punctuation), which no mode can
-    search for: the dictionary drops punctuation, and `phraseto_tsquery` rejects such a query.
+    ScopeError when it is too long or has no letter or digit at all (only punctuation or
+    underscores), which no mode can search for: the dictionary drops such text, and
+    `phraseto_tsquery` rejects such a query (22023 on 26.10.1, also for `_`).
     """
     if query is None or not query.strip():
         return None
@@ -98,7 +107,7 @@ def normalise_query(query: str | None) -> str | None:
             f"query has {len(text):,} characters; pass at most {MAX_QUERY_CHARS} characters, for "
             "example the few words or the quoted phrase that the Log Entries you want contain."
         )
-    if not _HAS_WORD_RE.search(text):
+    if not _LETTER_OR_DIGIT_RE.search(text):
         raise ScopeError(
             f"query={text!r} has no words to search for: the index keeps words and numbers and "
             "drops punctuation. Pass the words the Log Entries contain, for example 'ciod failed'."
@@ -108,7 +117,8 @@ def normalise_query(query: str | None) -> str | None:
 
 def fuzzy_terms(query: str) -> list[tuple[str, int]]:
     """The words of a fuzzy query, lower-cased and deduplicated, each with its edit distance."""
-    words = list(dict.fromkeys(_WORD_RE.findall(query.lower())))
+    found = dict.fromkeys(_WORD_RE.findall(query.lower()))
+    words = [word for word in found if _LETTER_OR_DIGIT_RE.search(word)]
     return [(word, 0 if len(word) <= EXACT_FUZZY_CHARS else 1) for word in words]
 
 
@@ -116,6 +126,8 @@ def text_match(
     column: sql.Composable, query: str, mode: QueryMode = "all_words"
 ) -> tuple[sql.Composed, list[Any]]:
     """`column @@ <query in mode>` and its parameter list; `column` must be an indexed text column."""
+    if mode == "all_words":
+        _check_unquoted_words(query)
     if mode in _PARSERS:
         return sql.SQL("{} @@ {}(%s)").format(column, _PARSERS[mode]), [query]
     if mode == "any_words":
@@ -123,6 +135,34 @@ def text_match(
     if mode == "fuzzy":
         return _fuzzy(column, query)
     raise ValueError(f"unknown full-text mode {mode!r}; valid: {', '.join(QUERY_MODES)}")
+
+
+def _check_unquoted_words(query: str) -> None:
+    """ScopeError for a word outside double quotes in an all_words query that holds no letter or digit.
+
+    SereneDB 26.10.1's `websearch_to_tsquery` splits the text outside quotes into words at ASCII
+    whitespace (`_WEBSEARCH_SPACE_RE`) and keeps a word without a letter or digit (`;`, `,`, `...`,
+    `(`, `_`, `=>`, `…`) as a term, while the `log_text` dictionary indexes only words and numbers:
+    on the Base Corpus `parity error` matches 121,310 BGL Log Entries and `parity error ;` none (#80).
+    Not refused, because they change nothing: a word that starts with `-` (`-`, `--`, `->`, `-;`)
+    excludes such a term, and punctuation attached to a word (`ciod:`, `(error)`) is analysed away
+    with it. Splitting at the quotes puts the unquoted parts at the even positions.
+    """
+    found = [
+        word
+        for part in query.split('"')[::2]
+        for word in _WEBSEARCH_SPACE_RE.split(part)
+        if word and not word.startswith("-") and not _LETTER_OR_DIGIT_RE.search(word)
+    ]
+    if found:
+        words = list(dict.fromkeys(found))
+        listed = ", ".join(repr(word) for word in words)
+        what, it = ("a word", "it") if len(words) == 1 else ("words", "them")
+        raise ScopeError(
+            f"query={query!r} has {what} without a letter or digit ({listed}): the index keeps only "
+            "words and numbers, so no Log Entry contains such a word, and a query that requires it "
+            f"matches none. Remove {it}; punctuation attached to a word, as in 'ciod:', is ignored."
+        )
 
 
 def _fuzzy(column: sql.Composable, query: str) -> tuple[sql.Composed, list[Any]]:

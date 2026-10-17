@@ -258,6 +258,16 @@ def test_no_match_is_a_result_with_a_hint_not_an_error(corpus: str) -> None:
     assert not any("median_week" in note for note in result["notes"])
 
 
+def test_a_free_standing_punctuation_word_is_refused_instead_of_counting_zero(corpus: str) -> None:
+    # count_by and trend always read query as all_words, where 'TLB error ,' counted 0 (#80).
+    message = call_error("count_by", role="engineer", group_by="dataset", query="TLB error ,")
+
+    assert "has a word without a letter or digit (',')" in message
+    assert "'ciod:'" in message  # attached punctuation is fine, and the hint says so
+    rows = row_dicts(call("count_by", role="engineer", group_by="dataset", query="TLB error"))
+    assert [(r["dataset"], r["count"]) for r in rows] == [("bgl", STORM)]
+
+
 def test_the_evidence_holds_the_statements_and_says_counts_are_log_entries(corpus: str) -> None:
     result = call("count_by", role="team_lead", group_by="component", top=2)
 

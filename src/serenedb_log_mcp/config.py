@@ -84,7 +84,7 @@ class Settings(BaseModel):
     raw_schema: str = "public"
     data_dir: Path = Path("data")
     query_timeout_s: float = 15.0
-    client_binding: bool = False
+    client_binding: bool | None = None  # None (unset): the database layer chooses by server version
     ledger_path: Path | None = None
     export_dir: Path = Path("exports")
     pattern_tier1: bool = True

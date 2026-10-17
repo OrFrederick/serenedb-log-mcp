@@ -9,6 +9,7 @@ connection usable after a ROLLBACK. The real server is covered by tests/db/test_
 from __future__ import annotations
 
 import contextvars
+import logging
 import threading
 import time
 from collections.abc import Callable, Sequence
@@ -30,6 +31,12 @@ from serenedb_log_mcp.db import (
 )
 from serenedb_log_mcp.toolkit import ToolContractError
 
+NEW_SERVER = "PostgreSQL 18.3 (SereneDB 26.10.1)"
+OLD_SERVER = "PostgreSQL 18.1 (SereneDB 26.09.1.3)"
+OLD_SERVER_NOTE = (
+    "Parameters were bound client-side (psycopg ClientCursor), because SereneDB 26.09.1.3 is older "
+    "than 26.10."
+)
 COUNT_SQL = "SELECT count(*) FROM t WHERE a = %s"
 ROWS_SQL = "SELECT a, b FROM t WHERE a = %s ORDER BY b LIMIT %s"
 CONTROL = {"BEGIN READ ONLY", "ROLLBACK", "SELECT 1"}
@@ -73,6 +80,10 @@ class FakeServer:
         self.release_hung = threading.Event()  # ends `SELECT hung()`, which ignores every cancel
         self.hang_begin = False  # BEGIN READ ONLY waits for release_hung too
         self.cancel_error: BaseException | None = None  # what every cancel request raises
+        self.version = NEW_SERVER  # what `SELECT version()` returns
+        self.version_error: psycopg.Error | None = None  # what `SELECT version()` raises instead
+        self.version_crashes_left = 0  # `SELECT version()` crashes the connection this often
+        self.version_delay_s = 0.0
 
     def connect(self, dsn: str, *, client_binding: bool) -> FakeConnection:
         self.binding.append(client_binding)
@@ -129,6 +140,8 @@ class FakeConnection:
         self.executed.append((query, params))
         if query == "BEGIN READ ONLY" and self.server.hang_begin:
             self.server.release_hung.wait(10)
+        if query == "SELECT version()":
+            return self._version()
         if query == "SELECT 1" and self.server.interrupt_select_1:
             raise KeyboardInterrupt
         if query in CONTROL:
@@ -166,6 +179,16 @@ class FakeConnection:
             # psycopg refuses this before anything is sent: a bare % next to a placeholder.
             raise psycopg.ProgrammingError("only '%s', '%b', '%t' are allowed as placeholders, got \"%'\"")
         return FakeCursor(self.server.respond(query, params))
+
+    def _version(self) -> FakeCursor:
+        time.sleep(self.server.version_delay_s)
+        if self.server.version_crashes_left:
+            self.server.version_crashes_left -= 1
+            self.broken = True
+            raise psycopg.OperationalError("server closed the connection unexpectedly")
+        if self.server.version_error is not None:
+            raise self.server.version_error
+        return FakeCursor([(self.server.version,)])
 
     def cancel_safe(self, *, timeout: float = 30.0) -> None:
         self.cancel_timeouts.append(timeout)
@@ -218,7 +241,7 @@ def test_fetch_limited_runs_count_then_rows_in_one_read_only_transaction() -> No
 
     result = database(server).fetch_limited(COUNT_SQL, ROWS_SQL, [1], 2)
 
-    assert server.executed() == ["BEGIN READ ONLY", COUNT_SQL, ROWS_SQL, "ROLLBACK"]
+    assert server.executed() == ["SELECT version()", "BEGIN READ ONLY", COUNT_SQL, ROWS_SQL, "ROLLBACK"]
     assert result.total == 57
     assert result.rows == [(1, "a"), (1, "b")]
     assert result.truncated is True
@@ -233,7 +256,7 @@ def test_fetch_limited_skips_the_row_query_when_nothing_matches() -> None:
 
     result = database(server).fetch_limited(COUNT_SQL, ROWS_SQL, [1], 20)
 
-    assert server.executed() == ["BEGIN READ ONLY", COUNT_SQL, "ROLLBACK"]
+    assert server.executed() == ["SELECT version()", "BEGIN READ ONLY", COUNT_SQL, "ROLLBACK"]
     assert result.total == 0
     assert result.rows == []
     assert result.truncated is False
@@ -351,6 +374,188 @@ def test_binding_mode_reaches_the_connector() -> None:
     database(server, client_binding=True).fetch_all("SELECT a FROM t")
 
     assert server.binding == [True]
+
+
+# Binding mode by server version (#60) -------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("version", "release"),
+    [
+        (NEW_SERVER, (26, 10, 1)),
+        (OLD_SERVER, (26, 9, 1, 3)),
+        ("PostgreSQL 18.3 (SereneDB v27.1)", (27, 1)),
+        ("serenedb 26.10.1-rc1 on aarch64", (26, 10, 1)),
+        ("PostgreSQL 16.2 on x86_64-pc-linux-gnu", None),
+        ("SereneDB", None),
+        ("", None),
+    ],
+)
+def test_the_serenedb_release_is_read_from_version(version: str, release: tuple[int, ...] | None) -> None:
+    assert db.serenedb_version(version) == release
+
+
+@pytest.mark.parametrize(
+    ("version", "client_side"),
+    [
+        (OLD_SERVER, True),
+        ("PostgreSQL 18.1 (SereneDB 26.9)", True),
+        ("PostgreSQL 18.1 (SereneDB 25.12.4)", True),
+        ("PostgreSQL 18.3 (SereneDB 26.10)", False),
+        ("PostgreSQL 18.3 (SereneDB 26.10.0)", False),
+        (NEW_SERVER, False),
+        ("PostgreSQL 18.3 (SereneDB 27.0.0)", False),
+    ],
+)
+def test_servers_older_than_26_10_get_client_side_binding(version: str, client_side: bool) -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    server.version = version
+    layer = database(server)
+
+    assert layer.uses_client_binding is None  # nothing chosen before the first connection
+    layer.fetch_all("SELECT a FROM t")
+
+    assert layer.uses_client_binding is client_side
+    assert server.binding[-1] is client_side  # the connection the statements ran on
+
+
+def test_on_26_10_the_connection_that_read_the_version_runs_the_call() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    layer = database(server)
+
+    first = layer.fetch_all("SELECT a FROM t")
+    second = layer.fetch_all("SELECT a FROM t")
+
+    assert server.binding == [False]
+    assert server.executed() == [
+        "SELECT version()",
+        *("BEGIN READ ONLY", "SELECT a FROM t", "ROLLBACK") * 2,
+    ]
+    assert first.notes == second.notes == []
+
+
+def test_on_26_09_a_client_side_connection_replaces_the_one_that_read_the_version() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    server.version = OLD_SERVER
+
+    result = database(server).fetch_all("SELECT a FROM t")
+
+    probe, conn = server.connections
+    assert server.binding == [False, True]
+    assert probe.executed == [("SELECT version()", None)]
+    assert probe.closed
+    assert [sql for sql, _ in conn.executed] == ["BEGIN READ ONLY", "SELECT a FROM t", "ROLLBACK"]
+    assert result.rows == ROWS
+    assert result.notes == [OLD_SERVER_NOTE]
+
+
+def test_the_version_is_read_once_per_layer() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    server.version = OLD_SERVER
+    layer = database(server, max_idle_connections=0)  # every call opens a new connection
+
+    results = [layer.fetch_all("SELECT a FROM t") for _ in range(3)]
+
+    assert server.executed().count("SELECT version()") == 1
+    assert server.binding == [False, True, True, True]
+    assert all(result.notes == [OLD_SERVER_NOTE] for result in results)
+
+
+def test_concurrent_first_calls_read_the_version_once() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    server.version = OLD_SERVER
+    server.version_delay_s = 0.05  # the other callers arrive while the first one reads it
+    layer = database(server)
+    results: list[db.QueryResult] = []
+
+    threads = [
+        threading.Thread(target=lambda: results.append(layer.fetch_all("SELECT a FROM t"))) for _ in range(4)
+    ]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(5)
+
+    assert len(results) == 4
+    assert server.executed().count("SELECT version()") == 1
+    assert server.binding[0] is False  # the connection that read the version, then closed
+    assert server.binding[1:] == [True] * (len(server.binding) - 1)
+    assert all(result.notes == [OLD_SERVER_NOTE] for result in results)
+
+
+@pytest.mark.parametrize("client_binding", [False, True])
+def test_an_explicit_slm_client_binding_wins_over_the_server_version(client_binding: bool) -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    server.version = OLD_SERVER if not client_binding else NEW_SERVER
+
+    result = database(server, client_binding=client_binding).fetch_all("SELECT a FROM t")
+
+    assert "SELECT version()" not in server.executed()
+    assert server.binding == [client_binding]
+    explicit = "Parameters were bound client-side (psycopg ClientCursor), as SLM_CLIENT_BINDING=1 asks."
+    assert result.notes == ([explicit] if client_binding else [])
+
+
+@pytest.mark.parametrize(
+    "answer",
+    [
+        "PostgreSQL 16.2 on x86_64-pc-linux-gnu",
+        psycopg.errors.UndefinedFunction("function version() does not exist"),
+    ],
+    ids=["not-serenedb", "version-fails"],
+)
+def test_an_unknown_version_keeps_server_side_binding_and_is_logged_once(
+    answer: str | psycopg.Error, caplog: pytest.LogCaptureFixture
+) -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    if isinstance(answer, str):
+        server.version = answer
+    else:
+        server.version_error = answer
+    layer = database(server, max_idle_connections=0)
+
+    with caplog.at_level(logging.WARNING, logger="serenedb_log_mcp.db"):
+        results = [layer.fetch_all("SELECT a FROM t") for _ in range(2)]
+
+    assert layer.uses_client_binding is False
+    assert server.binding == [False, False]
+    assert all(result.rows == ROWS and result.notes == [] for result in results)
+    warnings = [record.getMessage() for record in caplog.records if record.name == "serenedb_log_mcp.db"]
+    assert len(warnings) == 1
+    assert "could not read the SereneDB release at host=fake" in warnings[0]
+    assert "SLM_CLIENT_BINDING=1" in warnings[0]
+
+
+def test_a_crash_while_reading_the_version_is_retried_like_any_lost_connection() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    server.version = OLD_SERVER
+    server.version_crashes_left = 1
+    layer = database(server)
+
+    result = layer.fetch_all("SELECT a FROM t")
+
+    assert result.rows == ROWS
+    assert server.executed().count("SELECT version()") == 2  # the crashed read, then the new one
+    assert server.binding == [False, False, True]
+    assert layer.uses_client_binding is True
+    assert result.notes[0].startswith("SereneDB closed the connection during this call")
+    assert result.notes[-1] == OLD_SERVER_NOTE
+
+
+def test_the_chosen_binding_survives_a_restart() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    server.version = OLD_SERVER
+    layer = database(server)
+    layer.fetch_all("SELECT a FROM t")
+
+    server.crashes_left = 1
+    result = layer.fetch_all("SELECT a FROM t")
+
+    assert server.executed().count("SELECT version()") == 1
+    assert server.binding == [False, True, True]  # the reconnect after the restart binds client-side
+    assert len(result.notes) == 2
+    assert result.notes[0].startswith("SereneDB closed the connection during this call")
+    assert result.notes[1] == OLD_SERVER_NOTE
 
 
 # Lost connections ---------------------------------------------------------------------------------
@@ -782,7 +987,7 @@ def test_a_begin_that_hangs_ends_the_call_after_the_cancel_window_and_the_grace_
     server.release_hung.set()
     # Once BEGIN returns, the abandoned thread runs no statement and closes its connection.
     assert wait_until(lambda: conn.closed)
-    assert [sql for sql, _ in conn.executed] == ["BEGIN READ ONLY"]
+    assert [sql for sql, _ in conn.executed] == ["SELECT version()", "BEGIN READ ONLY"]
     assert not conn.closed_while_executing
 
 
@@ -1002,6 +1207,15 @@ def test_get_database_reads_timeout_and_binding_from_settings() -> None:
 
     assert layer.timeout_s == 2.5
     assert layer.client_binding is True
+
+
+def test_get_database_leaves_the_binding_to_the_server_version_when_unset() -> None:
+    set_settings(load_settings({}))
+
+    layer = db.get_database(Role.ENGINEER)
+
+    assert layer.client_binding is None
+    assert layer.uses_client_binding is None
 
 
 def test_get_database_reads_the_reconnect_wait_and_pool_size_from_settings() -> None:

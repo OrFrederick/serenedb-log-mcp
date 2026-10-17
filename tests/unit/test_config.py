@@ -17,7 +17,7 @@ def test_defaults_when_environment_is_empty() -> None:
     assert s.raw_schema == "public"
     assert s.data_dir == Path("data")
     assert s.query_timeout_s == 15.0
-    assert s.client_binding is False
+    assert s.client_binding is None  # the database layer chooses by server version
     assert s.ledger_path is None
     assert s.export_dir == Path("exports")
     assert s.pattern_tier1 is True
@@ -86,6 +86,12 @@ def test_truthy_flags(value: str) -> None:
 @pytest.mark.parametrize("value", ["0", "false", "no", "off"])
 def test_falsy_flags(value: str) -> None:
     assert load_settings({"SLM_PATTERN_TIER1": value}).pattern_tier1 is False
+
+
+def test_an_explicit_slm_client_binding_0_is_kept_apart_from_unset() -> None:
+    """0 forces server-side binding even on SereneDB older than 26.10; unset lets the layer choose."""
+    assert load_settings({"SLM_CLIENT_BINDING": "0"}).client_binding is False
+    assert load_settings({"SLM_CLIENT_BINDING": ""}).client_binding is None
 
 
 @pytest.mark.parametrize("value", ["maybe", "2"])

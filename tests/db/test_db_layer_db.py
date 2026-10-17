@@ -254,7 +254,7 @@ def test_a_statement_whose_cancel_fails_is_abandoned_and_closed_by_its_own_threa
             layer.fetch_all("SELECT sleep_ms(8000)")
         elapsed = time.monotonic() - started
 
-        abandoned = opened[0]
+        abandoned = opened[-1]  # opened[0] only read the version on a server older than 26.10
         assert elapsed < 5.0  # long before sleep_ms returns
         assert not abandoned.closed
         assert layer.fetch_all("SELECT 1").rows == [(1,)]  # on a new connection
@@ -276,7 +276,8 @@ def test_an_io_error_is_a_failed_statement_not_a_restart(layer: Database) -> Non
 
     assert caught.value.sqlstate == "08000"
     assert "missing.csv" in str(caught.value)
-    assert layer.fetch_all("SELECT 1").notes == []
+    notes = layer.fetch_all("SELECT 1").notes
+    assert not any("closed the connection" in note for note in notes), notes  # no retry, no restart
 
 
 # Notices ----------------------------------------------------------------------------------------------
@@ -312,11 +313,32 @@ def test_a_server_warning_reaches_the_evidence_envelope(
 # Binding ----------------------------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("client_binding", [False, True], ids=["server-binding", "client-cursor"])
+REPORTS_26_09 = "SELECT 'PostgreSQL 18.1 (SereneDB 26.09.1.3)'"
+"""Stands in for `SELECT version()`, so the old-server path runs against the 26.10.1 dev instance."""
+
+
+@pytest.mark.parametrize(
+    ("client_binding", "version_sql"),
+    [(False, None), (True, None), (None, None), (None, REPORTS_26_09)],
+    ids=["server-binding", "client-cursor", "by-server-version", "by-version-reported-as-26.09"],
+)
 def test_an_injection_string_passed_as_a_value_matches_nothing(
-    client_binding: bool, scratch: str, database_url: str
+    client_binding: bool | None,
+    version_sql: str | None,
+    scratch: str,
+    database_url: str,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    layer = Database(database_url, client_binding=client_binding)
+    """In both binding modes, also when the layer chooses the mode by server version (#60)."""
+    if version_sql is not None:
+        monkeypatch.setattr(db, "SERVER_VERSION_SQL", version_sql)
+    opened: list[psycopg.Connection[tuple[object, ...]]] = []
+
+    def recording(dsn: str, *, client_binding: bool) -> psycopg.Connection[tuple[object, ...]]:
+        opened.append(db.open_connection(dsn, client_binding=client_binding))
+        return opened[-1]
+
+    layer = Database(database_url, client_binding=client_binding, connect=recording)
     where = f"FROM {scratch}.entry WHERE level = %s"
     try:
         for value in ["INFO' OR '1'='1", f"x'; DROP TABLE {scratch}.entry; --"]:
@@ -328,6 +350,18 @@ def test_an_injection_string_passed_as_a_value_matches_nothing(
     finally:
         layer.close()
 
+    client_side = layer.uses_client_binding
+    assert client_side is not None
+    if client_binding is not None:
+        assert client_side is client_binding
+    # The connection the statements ran on has the cursor of the mode the layer reports.
+    assert opened[-1].cursor_factory is (psycopg.ClientCursor if client_side else psycopg.Cursor)
+    if version_sql is not None:
+        assert client_side is True
+        assert result.notes == [
+            "Parameters were bound client-side (psycopg ClientCursor), because SereneDB 26.09.1.3 is "
+            "older than 26.10."
+        ]
     assert scratch_count(database_url, scratch) == ROWS
 
 

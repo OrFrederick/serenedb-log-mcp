@@ -79,13 +79,23 @@ def matched_nothing(record: dict[str, Any]) -> bool:
     return any(record["summary"].get(key) == 0 for key in MATCHED_COUNTS)
 
 
-def verdict(outcome: Outcome) -> str | None:
+ANY_WORD_TOOLS = frozenset({"search_patterns"})
+"""Tools that rank by any of the query's words (T14), so an injection string may match on its own
+words ('select', 'version'); for them the check is that exactly those words were searched."""
+
+
+def verdict(outcome: Outcome, name: str = "", value: str = "") -> str | None:
     """What is wrong with one injected call's result, or None."""
     if outcome.error is not None:
         return None  # an error result carries a ToolError's text; SQL errors are caught by the spy
     record = outcome.data or {}
     if set(record) != EVIDENCE_FIELDS:
         return None  # no query behind it (verify_answer): the string is only text
+    if name in ANY_WORD_TOOLS:
+        foreign = sorted(w for w in record["summary"].get("words") or [] if w not in value.lower())
+        if not foreign:
+            return None
+        return f"searched words that are not in the string: {foreign}"
     if not matched_nothing(record):
         return f"matched {record['total_matches']} units ({record['summary']})"
     return None
@@ -112,6 +122,8 @@ def test_injection_strings_match_nothing_or_raise_a_tool_error(
 
     assert sql_errors == [], f"{name}.{parameter} reached SereneDB as SQL: {sql_errors}"
     wrong = {
-        repr(value): problem for value, o in zip(INJECTIONS, outcomes, strict=True) if (problem := verdict(o))
+        repr(value): problem
+        for value, o in zip(INJECTIONS, outcomes, strict=True)
+        if (problem := verdict(o, name, value))
     }
     assert wrong == {}, f"{name}.{parameter}: an injection string changed the result: {wrong}"

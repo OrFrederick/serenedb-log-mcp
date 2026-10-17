@@ -88,7 +88,6 @@ _WEBSEARCH_SPACE_RE = re.compile(r"[ \t\n\r\f\v]+")
 # ('dat32k_060205' and '172.16.96.116' are one token each), and a word without a letter or digit
 # ('_', '__') is no token at all.
 _WORD_RE = re.compile(r"\w+(?:\.\w+)*")
-_HAS_WORD_RE = re.compile(r"\w")
 _LETTER_OR_DIGIT_RE = re.compile(r"[^\W_]")
 _DIGIT_HYPHEN_DIGIT_RE = re.compile(r"[0-9]-[0-9]")
 

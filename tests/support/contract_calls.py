@@ -124,6 +124,15 @@ REPRESENTATIVE_CALLS: Mapping[str, list[dict[str, Any]]] = {
     "get_evidence": [{"evidence_id": "E1"}],
     "get_role_brief": [{}],
     "verify_answer": [{"draft": SAMPLE_DRAFT}],
+    "search_patterns": [{"dataset": "bgl", "query": "error"}, {"dataset": "openstack", "query": "instance"}],
+    # MASABNORM is an alert category of the samples (see search_logs above).
+    "find_precursors": [{"dataset": "bgl", "target_pattern": "MASABNORM", "min_support": 1}],
+    "export_investigation": [
+        {
+            "title": "Contract check",
+            "answers": [{"role": "engineer", "question": "What is there?", "answer": SAMPLE_DRAFT}],
+        }
+    ],
 }
 
 

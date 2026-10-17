@@ -12,13 +12,18 @@ import time
 import uuid
 from collections.abc import Iterator
 
+import anyio
 import psycopg
 import pytest
+from mcp.server.mcpserver import MCPServer
+from mcp_types import CallToolResult
 from psycopg import sql
 
-from serenedb_log_mcp import db
-from serenedb_log_mcp.config import Role
+from serenedb_log_mcp import config, db, ledger
+from serenedb_log_mcp.config import Role, load_settings
 from serenedb_log_mcp.db import Database, QueryFailed, QueryTimeout
+from serenedb_log_mcp.evidence import DataScope, RoleParam
+from serenedb_log_mcp.toolkit import ToolOutcome, evidence_tool
 
 pytestmark = pytest.mark.db
 
@@ -228,6 +233,36 @@ def test_an_io_error_is_a_failed_statement_not_a_restart(layer: Database) -> Non
     assert caught.value.sqlstate == "08000"
     assert "missing.csv" in str(caught.value)
     assert layer.fetch_all("SELECT 1").notes == []
+
+
+# Notices ----------------------------------------------------------------------------------------------
+
+
+def test_a_server_warning_reaches_the_evidence_envelope(
+    layer: Database, database_url: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """SereneDB warns that it accepts statement_timeout without enforcing it (26.10.1).
+
+    `set_config(..., true)` changes the setting for this read-only transaction only, and the layer
+    rolls the transaction back.
+    """
+    monkeypatch.setattr(config, "_active", load_settings({"DATABASE_URL": database_url}))
+    monkeypatch.setattr(ledger, "_active", None)  # an in-memory Evidence Ledger, whatever LEDGER_PATH says
+    server = MCPServer(name="notices")
+
+    @evidence_tool(server, title="Warns")
+    def warns(role: RoleParam) -> ToolOutcome:
+        """Run a statement SereneDB warns about. Inputs: role. Outputs: the envelope."""
+        result = layer.fetch_all("SELECT set_config('statement_timeout', '1000', true) AS setting")
+        return ToolOutcome(result=result, scope=DataScope(datasets=["bgl"]), columns=["setting"])
+
+    result = anyio.run(lambda: server.call_tool("warns", {"role": "engineer"}))
+
+    assert isinstance(result, CallToolResult)
+    assert result.structured_content is not None
+    notes = result.structured_content["notes"]
+    warnings = [note for note in notes if note.startswith("SereneDB sent this WARNING")]
+    assert any("statement_timeout" in note for note in warnings), notes
 
 
 # Binding ----------------------------------------------------------------------------------------------

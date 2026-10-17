@@ -15,6 +15,8 @@ What is true for every statement is written once here:
 - on a lost connection (SereneDB 26.10.1 SIGSEGVs intermittently and restarts in a few seconds) the
   layer waits until `SELECT 1` answers on a new connection, retries the statements once and says
   so in `QueryResult.notes`;
+- what SereneDB sends as a WARNING, NOTICE or INFO while the statements run goes into
+  `QueryResult.notes`, so a server-side warning reaches the Evidence envelope;
 - parameters are always bound, never formatted into the SQL;
 - `numeric` results (for example `sum()` and SereneDB's `HUGEINT`) come back as `int` when they are
   integral and as `float` otherwise, never as `Decimal`, in text and in binary format, so the
@@ -80,6 +82,11 @@ CANCEL_ATTEMPTS = 3
 """How often the timer sends a cancel request that failed (for example psycopg's CancellationTimeout)."""
 CANCEL_RETRY_S = 1.0
 """Pause between two cancel requests."""
+
+NOTED_SEVERITIES = frozenset({"WARNING", "NOTICE", "INFO"})
+"""Notice severities that reach `QueryResult.notes`; DEBUG and LOG are left out."""
+MAX_NOTICE_NOTES = 5
+"""Distinct notices listed per call; the rest are counted in one more note."""
 
 _T = TypeVar("_T")
 
@@ -220,6 +227,9 @@ class CursorLike(Protocol):
     def fetchall(self) -> list[tuple[Any, ...]]: ...
 
 
+NoticeHandler = Callable[[psycopg.errors.Diagnostic], None]
+
+
 class ConnectionLike(Protocol):
     """The part of a psycopg connection the layer uses; tests pass fakes with the same shape."""
 
@@ -232,6 +242,10 @@ class ConnectionLike(Protocol):
     def execute(self, query: str, params: Sequence[Any] | None = None) -> CursorLike: ...
 
     def cancel_safe(self) -> None: ...
+
+    def add_notice_handler(self, callback: NoticeHandler) -> None: ...
+
+    def remove_notice_handler(self, callback: NoticeHandler) -> None: ...
 
     def close(self) -> None: ...
 
@@ -276,6 +290,8 @@ class _Session:
         self.notes: list[str] = []
         self.running: str | None = None  # the statement in progress, named when it fails
         self.query_ms = 0.0
+        self._notices: list[str] = []
+        self._more_notices = 0
 
     def fetch(self, sql: str, params: Sequence[Any]) -> list[tuple[Any, ...]]:
         values = list(params)
@@ -291,6 +307,27 @@ class _Session:
         self.sql.append(sql)
         self.params.append(values)
         return rows
+
+    def notice(self, diag: psycopg.errors.Diagnostic) -> None:
+        """The notice handler of this attempt: keep what SereneDB warns about, once each."""
+        severity = (diag.severity_nonlocalized or diag.severity or "").upper()
+        if severity not in NOTED_SEVERITIES:
+            return
+        message = _sentence(_compact(diag.message_primary or "", limit=300))
+        note = f"SereneDB sent this {severity} while the statements ran: {message}"
+        if note in self._notices:
+            return
+        if len(self._notices) < MAX_NOTICE_NOTES:
+            self._notices.append(note)
+        else:
+            self._more_notices += 1
+
+    def notice_notes(self) -> list[str]:
+        """The notices for `QueryResult.notes`, at most `MAX_NOTICE_NOTES` plus a count of the rest."""
+        if not self._more_notices:
+            return list(self._notices)
+        more = f"SereneDB sent {self._more_notices} more notices while the statements ran"
+        return [*self._notices, f"{more}; they are not listed."]
 
 
 class _Deadline:
@@ -512,13 +549,18 @@ class Database:
             raise _ConnectionLost from exc
         deadline = _Deadline(conn, self.timeout_s)
         session = _Session(conn, deadline)
+        on_notice = session.notice
         try:
-            conn.execute("BEGIN READ ONLY")
-            deadline.start()  # after BEGIN, so the limit covers only the statements
+            conn.add_notice_handler(on_notice)  # removed below, so a pooled connection keeps none
             try:
-                value = work(session)
+                conn.execute("BEGIN READ ONLY")
+                deadline.start()  # after BEGIN, so the limit covers only the statements
+                try:
+                    value = work(session)
+                finally:
+                    deadline.stop()
             finally:
-                deadline.stop()
+                conn.remove_notice_handler(on_notice)
         except psycopg.Error as exc:
             if _is_lost(conn):
                 _close_quietly(conn)
@@ -530,6 +572,7 @@ class Database:
         except BaseException:
             self._end(conn, discard=True)
             raise
+        session.notes.extend(session.notice_notes())
         if (note := self._overrun_note(session, deadline)) is not None:
             session.notes.append(note)
         self._end(conn, discard=deadline.fired)
@@ -671,8 +714,11 @@ def _close_quietly(conn: ConnectionLike) -> None:
 
 def _first_line(exc: BaseException) -> str:
     text = str(exc).strip()
-    line = text.splitlines()[0].strip() if text else type(exc).__name__
-    return line if line.endswith((".", "!", "?")) else f"{line}."
+    return _sentence(text.splitlines()[0].strip() if text else type(exc).__name__)
+
+
+def _sentence(text: str) -> str:
+    return text if text.endswith((".", "!", "?", "…")) else f"{text}."
 
 
 _SHOWN_DSN_KEYS = ("host", "hostaddr", "port", "dbname", "user")

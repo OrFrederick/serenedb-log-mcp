@@ -68,6 +68,7 @@ class FakeServer:
         self.binding: list[bool] = []
         self.cancel_failures_left = 0
         self.interrupt_select_1 = False
+        self.notices: list[tuple[str, str]] = []  # (severity, message) sent by `SELECT warns()`
 
     def connect(self, dsn: str, *, client_binding: bool) -> FakeConnection:
         self.binding.append(client_binding)
@@ -82,6 +83,16 @@ class FakeServer:
         return [sql for conn in self.connections for sql, _ in conn.executed]
 
 
+class FakeDiagnostic:
+    """The fields of psycopg's `errors.Diagnostic` that a notice handler reads."""
+
+    def __init__(self, severity: str, message: str) -> None:
+        self.severity = severity
+        self.severity_nonlocalized = severity
+        self.sqlstate = "01000"
+        self.message_primary = message
+
+
 class FakeConnection:
     def __init__(self, server: FakeServer) -> None:
         self.server = server
@@ -90,6 +101,13 @@ class FakeConnection:
         self.broken = False
         self.cancelled = threading.Event()
         self.cancels_while_open = 0
+        self.notice_handlers: list[Callable[[Any], None]] = []
+
+    def add_notice_handler(self, callback: Callable[[Any], None]) -> None:
+        self.notice_handlers.append(callback)
+
+    def remove_notice_handler(self, callback: Callable[[Any], None]) -> None:
+        self.notice_handlers.remove(callback)
 
     def execute(self, query: str, params: Sequence[Any] | None = None) -> FakeCursor:
         if self.closed or self.broken:
@@ -109,6 +127,11 @@ class FakeConnection:
             if self.cancelled.wait(5):
                 self.cancelled.clear()
                 raise psycopg.errors.QueryCanceled("canceling statement due to user request")
+            return FakeCursor([(1,)])
+        if query == "SELECT warns()":
+            for severity, message in self.server.notices:
+                for handler in list(self.notice_handlers):
+                    handler(FakeDiagnostic(severity, message))
             return FakeCursor([(1,)])
         if query == "SELECT stubborn()":
             time.sleep(0.2)  # finishes although the timer fired: the cancel arrived too late
@@ -711,6 +734,59 @@ def test_a_rejected_statement_raises_query_failed_without_a_retry() -> None:
     assert server.executed().count("SELECT * FROM missing") == 1
     assert server.executed()[-1] == "ROLLBACK"
     assert layer.fetch_all("SELECT a FROM t").total == 3
+    assert len(server.connections) == 1
+
+
+# Notices ----------------------------------------------------------------------------------------------
+
+TIMEOUT_WARNING = 'parameter "statement_timeout" is accepted for compatibility but is not enforced by serened'
+
+
+def test_a_server_warning_reaches_the_result_notes() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    server.notices = [("WARNING", TIMEOUT_WARNING)]
+
+    result = database(server).fetch_all("SELECT warns()")
+
+    assert result.rows == [(1,)]
+    assert result.notes == [f"SereneDB sent this WARNING while the statements ran: {TIMEOUT_WARNING}."]
+
+
+def test_notices_and_infos_are_noted_but_debug_and_log_messages_are_not() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    server.notices = [("NOTICE", "a notice"), ("DEBUG", "a debug"), ("INFO", "an info"), ("LOG", "a log")]
+
+    result = database(server).fetch_all("SELECT warns()")
+
+    assert result.notes == [
+        "SereneDB sent this NOTICE while the statements ran: a notice.",
+        "SereneDB sent this INFO while the statements ran: an info.",
+    ]
+
+
+def test_a_repeated_notice_is_noted_once_and_many_notices_are_capped() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    server.notices = [("WARNING", "same")] * 3 + [("WARNING", f"warning {i}") for i in range(7)]
+
+    result = database(server).fetch_all("SELECT warns()")
+
+    assert result.notes == [
+        "SereneDB sent this WARNING while the statements ran: same.",
+        *(f"SereneDB sent this WARNING while the statements ran: warning {i}." for i in range(4)),
+        "SereneDB sent 3 more notices while the statements ran; they are not listed.",
+    ]
+
+
+def test_a_notice_goes_only_to_the_call_that_received_it() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    server.notices = [("WARNING", TIMEOUT_WARNING)]
+    layer = database(server)
+
+    layer.fetch_all("SELECT warns()")
+
+    conn = server.connections[0]
+    assert conn.notice_handlers == []
+    assert layer.fetch_all("SELECT a FROM t").notes == []
     assert len(server.connections) == 1
 
 

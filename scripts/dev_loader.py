@@ -47,6 +47,7 @@ from __future__ import annotations
 import argparse
 import csv
 import hashlib
+import os
 import re
 import sys
 import time
@@ -344,24 +345,46 @@ def _download(url: str) -> bytes:
     return data
 
 
+def _file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1 << 20), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def _fetch_verified(sample: SampleFile, path: Path, fetch: Callable[[str], bytes]) -> None:
+    """Download `sample` and put it at `path`, or raise without touching what is already there."""
+    data = fetch(sample.url)
+    digest = hashlib.sha256(data).hexdigest()
+    if digest != sample.sha256:
+        raise LoaderError(f"{sample.url} has sha256 {digest}, expected {sample.sha256}; not saving it")
+    # The real name never carries unverified bytes: the download lands next to it and is moved in
+    # one step, so an interrupted run cannot leave half a file behind under the real name.
+    part = path.with_name(f"{path.name}.part")
+    part.write_bytes(data)
+    os.replace(part, path)
+
+
 def ensure_samples(
     directory: Path,
     samples: Sequence[SampleFile] = SAMPLES,
     fetch: Callable[[str], bytes] = _download,
 ) -> list[Path]:
-    """Return the local sample paths, downloading and checksum-verifying the missing ones."""
+    """Return the local sample paths, downloading the ones that are missing or do not match.
+
+    An existing file is hashed too: a download interrupted halfway leaves the right name and the
+    wrong bytes, and trusting the name loads a truncated corpus without a word.
+    """
     directory.mkdir(parents=True, exist_ok=True)
     paths = []
     for sample in samples:
         path = directory / sample.name
         if not path.exists():
-            data = fetch(sample.url)
-            digest = hashlib.sha256(data).hexdigest()
-            if digest != sample.sha256:
-                raise LoaderError(
-                    f"{sample.url} has sha256 {digest}, expected {sample.sha256}; not saving it"
-                )
-            path.write_bytes(data)
+            _fetch_verified(sample, path, fetch)
+        elif _file_sha256(path) != sample.sha256:
+            print(f"{path} has the wrong sha256; downloading it again", file=sys.stderr)
+            _fetch_verified(sample, path, fetch)
         paths.append(path)
     notice = directory / "LOGHUB_LICENSE.txt"
     if not notice.exists():

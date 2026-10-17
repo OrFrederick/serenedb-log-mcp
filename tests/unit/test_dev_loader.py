@@ -5,8 +5,10 @@ The log lines below are synthetic, written in the BGL and OpenStack formats of L
 """
 
 import hashlib
+import os
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -335,3 +337,71 @@ def test_schema_must_be_a_plain_identifier(capsys: pytest.CaptureFixture[str]) -
 
     assert exit_info.value.code == 2
     assert "--schema" in capsys.readouterr().err
+
+
+def test_ensure_samples_replaces_an_existing_file_with_the_wrong_bytes(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    # A download interrupted halfway leaves the right name and the wrong bytes, and was trusted.
+    sample = _sample(b"expected\n")
+    (tmp_path / "X_2k.log").write_bytes(b"trunca")
+    calls: list[str] = []
+
+    def fetch(url: str) -> bytes:
+        calls.append(url)
+        return b"expected\n"
+
+    paths = dev_loader.ensure_samples(tmp_path, [sample], fetch)
+
+    assert paths[0].read_bytes() == b"expected\n"
+    assert calls == [sample.url]
+    assert "wrong sha256" in capsys.readouterr().err
+
+
+def test_ensure_samples_does_not_refetch_a_file_that_matches(tmp_path: Path) -> None:
+    sample = _sample(b"expected\n")
+    (tmp_path / "X_2k.log").write_bytes(b"expected\n")
+
+    def fetch(url: str) -> bytes:
+        raise AssertionError("an existing file with the right sha256 must not be downloaded again")
+
+    assert dev_loader.ensure_samples(tmp_path, [sample], fetch) == [tmp_path / "X_2k.log"]
+
+
+def test_ensure_samples_leaves_no_part_file_behind(tmp_path: Path) -> None:
+    sample = _sample(b"expected\n")
+
+    dev_loader.ensure_samples(tmp_path, [sample], lambda url: b"expected\n")
+
+    assert [p.name for p in sorted(tmp_path.iterdir())] == ["LOGHUB_LICENSE.txt", "X_2k.log"]
+
+
+def test_ensure_samples_writes_the_download_through_a_part_file(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # The real name must never carry unverified bytes, so the download lands in X_2k.log.part and
+    # is moved into place with os.replace, which is atomic within one filesystem.
+    sample = _sample(b"expected\n")
+    moves: list[tuple[str, str]] = []
+    real_replace = os.replace
+
+    def spy(src: Any, dst: Any) -> None:
+        moves.append((Path(src).name, Path(dst).name))
+        real_replace(src, dst)
+
+    monkeypatch.setattr(dev_loader.os, "replace", spy)
+
+    dev_loader.ensure_samples(tmp_path, [sample], lambda url: b"expected\n")
+
+    assert moves == [("X_2k.log.part", "X_2k.log")]
+
+
+def test_ensure_samples_keeps_an_existing_file_when_the_download_is_rejected(tmp_path: Path) -> None:
+    sample = _sample(b"expected\n")
+    (tmp_path / "X_2k.log").write_bytes(b"older\n")
+
+    with pytest.raises(dev_loader.LoaderError, match="sha256"):
+        dev_loader.ensure_samples(tmp_path, [sample], lambda url: b"tampered\n")
+
+    assert (tmp_path / "X_2k.log").read_bytes() == b"older\n"
+    assert not (tmp_path / "X_2k.log.part").exists()

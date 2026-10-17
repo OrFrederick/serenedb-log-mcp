@@ -4,6 +4,10 @@ Unmarked tests are pure and run everywhere (`make test`).
 
 - `db`: needs a reachable SereneDB at DATABASE_URL (`make test-db`).
 - `corpus`: needs the full Base Corpus in the raw tables of SLM_RAW_SCHEMA (`make test-corpus`).
+- `embedding_model`: uses the real fastembed model of find_patterns (the optional `vectors` extra
+  and a model in the cache, from `make embed-patterns`); skips otherwise, even with
+  SLM_REQUIRE_DB. Every other test runs with `fake_embedder.FakeEmbedder`, so no test downloads
+  a model.
 - `loghub2(*tables)`: also reads the optional Loghub-2.0 label tables (default lh2_bgl and
   lh2_openstack) from SLM_RAW_SCHEMA. Put it on a db or corpus test.
 
@@ -33,14 +37,17 @@ from __future__ import annotations
 import functools
 import os
 import re
+from collections.abc import Iterator
 from pathlib import Path
 
 import psycopg
 import pytest
+from fake_embedder import FakeEmbedder
 from optional_data import LOGHUB2_TABLES
 from psycopg import sql
 
 from serenedb_log_mcp.config import load_settings, safe_dsn
+from serenedb_log_mcp.corpus import embeddings
 
 # The corpus gate only checks that the raw tables exist and are clearly the full corpus, not a
 # 2k sample. The exact golden numbers (4,747,963 and 207,820 rows) live in the corpus tests, so a
@@ -68,9 +75,37 @@ def pytest_configure(config: pytest.Config) -> None:
     )
     config.addinivalue_line(
         "markers",
+        "embedding_model: uses the real fastembed model of find_patterns; skips when the optional "
+        "vectors extra or its cached model is missing, even with SLM_REQUIRE_DB",
+    )
+    config.addinivalue_line(
+        "markers",
         "loghub2(*tables): also reads these optional Loghub-2.0 tables from SLM_RAW_SCHEMA (default: "
         f"{', '.join(LOGHUB2_TABLES)}); skips with the reason when one is missing, even with SLM_REQUIRE_DB",
     )
+
+
+@pytest.fixture(autouse=True)
+def _embedder(request: pytest.FixtureRequest) -> Iterator[None]:
+    """The fake embedder for every test, the real one (or a skip) for `embedding_model` tests."""
+    if request.node.get_closest_marker("embedding_model") is None:
+        embeddings.set_embedder(FakeEmbedder())
+    else:
+        embeddings.set_embedder(None)
+        if (problem := _embedding_problem()) is not None:
+            pytest.skip(problem)
+    yield
+    embeddings.set_embedder(None)
+
+
+@functools.cache
+def _embedding_problem() -> str | None:
+    """Why the real embedding model cannot run here, or None. An optional install, so always a skip."""
+    try:
+        embeddings.FastEmbedder()
+    except embeddings.EmbeddingUnavailable as exc:
+        return f"optional embedding model unavailable: {exc}"
+    return None
 
 
 @pytest.hookimpl(tryfirst=True)

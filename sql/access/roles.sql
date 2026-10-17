@@ -28,6 +28,9 @@ CREATE ROLE ${engineer_login} LOGIN PASSWORD ${engineer_password};
 CREATE ROLE ${team_lead_login} LOGIN PASSWORD ${team_lead_password};
 CREATE ROLE ${manager_login} LOGIN PASSWORD ${manager_password};
 
+-- Every Role reads the Pattern vectors of find_patterns (T26, sql/derive/25_pattern_vectors.sql):
+-- template vectors only, no Log Entry text; the table exists after `make derive`, even when empty.
+
 -- Engineer: investigates one failure, so it reads every column, raw Log Entries included, and
 -- searches the message text.
 CREATE SCHEMA ${engineer_schema};
@@ -35,6 +38,7 @@ CREATE VIEW ${engineer_schema}.bgl_entry AS SELECT * FROM ${slm}.bgl_entry;
 CREATE VIEW ${engineer_schema}.os_entry AS SELECT * FROM ${slm}.os_entry;
 CREATE VIEW ${engineer_schema}.ownership AS SELECT * FROM ${slm}.ownership;
 CREATE VIEW ${engineer_schema}.pattern AS SELECT * FROM ${slm}.pattern;
+CREATE VIEW ${engineer_schema}.pattern_vector AS SELECT * FROM ${slm}.pattern_vector;
 CREATE VIEW ${engineer_schema}.pattern_dict AS SELECT * FROM ${slm}.pattern_dict;
 CREATE VIEW ${engineer_schema}.os_instance AS SELECT * FROM ${slm}.os_instance;
 -- Incidents (T10, T27) carry counts, times and node names, no Log Entry text.
@@ -58,6 +62,7 @@ GRANT SELECT ON ${engineer_schema}.bgl_entry TO ${engineer_login};
 GRANT SELECT ON ${engineer_schema}.os_entry TO ${engineer_login};
 GRANT SELECT ON ${engineer_schema}.ownership TO ${engineer_login};
 GRANT SELECT ON ${engineer_schema}.pattern TO ${engineer_login};
+GRANT SELECT ON ${engineer_schema}.pattern_vector TO ${engineer_login};
 GRANT SELECT ON ${engineer_schema}.pattern_dict TO ${engineer_login};
 GRANT SELECT ON ${engineer_schema}.os_instance TO ${engineer_login};
 GRANT SELECT ON ${engineer_schema}.incident TO ${engineer_login};
@@ -70,6 +75,7 @@ CREATE VIEW ${team_lead_schema}.bgl_entry AS SELECT * FROM ${slm}.bgl_entry;
 CREATE VIEW ${team_lead_schema}.os_entry AS SELECT * FROM ${slm}.os_entry;
 CREATE VIEW ${team_lead_schema}.ownership AS SELECT * FROM ${slm}.ownership;
 CREATE VIEW ${team_lead_schema}.pattern AS SELECT * FROM ${slm}.pattern;
+CREATE VIEW ${team_lead_schema}.pattern_vector AS SELECT * FROM ${slm}.pattern_vector;
 CREATE VIEW ${team_lead_schema}.pattern_dict AS SELECT * FROM ${slm}.pattern_dict;
 CREATE VIEW ${team_lead_schema}.os_instance AS SELECT * FROM ${slm}.os_instance;
 CREATE VIEW ${team_lead_schema}.incident AS SELECT * FROM ${slm}.incident;
@@ -90,6 +96,7 @@ GRANT SELECT ON ${team_lead_schema}.bgl_entry TO ${team_lead_login};
 GRANT SELECT ON ${team_lead_schema}.os_entry TO ${team_lead_login};
 GRANT SELECT ON ${team_lead_schema}.ownership TO ${team_lead_login};
 GRANT SELECT ON ${team_lead_schema}.pattern TO ${team_lead_login};
+GRANT SELECT ON ${team_lead_schema}.pattern_vector TO ${team_lead_login};
 GRANT SELECT ON ${team_lead_schema}.pattern_dict TO ${team_lead_login};
 GRANT SELECT ON ${team_lead_schema}.os_instance TO ${team_lead_login};
 GRANT SELECT ON ${team_lead_schema}.incident TO ${team_lead_login};
@@ -111,6 +118,7 @@ CREATE VIEW ${manager_schema}.os_entry AS SELECT
 FROM ${slm}.os_entry;
 CREATE VIEW ${manager_schema}.ownership AS SELECT * FROM ${slm}.ownership;
 CREATE VIEW ${manager_schema}.pattern AS SELECT * FROM ${slm}.pattern;
+CREATE VIEW ${manager_schema}.pattern_vector AS SELECT * FROM ${slm}.pattern_vector;
 CREATE VIEW ${manager_schema}.pattern_dict AS SELECT
     dataset, template_id, template_text, template_source, event_id, family_id
 FROM ${slm}.pattern_dict;
@@ -122,6 +130,7 @@ GRANT SELECT ON ${manager_schema}.bgl_entry TO ${manager_login};
 GRANT SELECT ON ${manager_schema}.os_entry TO ${manager_login};
 GRANT SELECT ON ${manager_schema}.ownership TO ${manager_login};
 GRANT SELECT ON ${manager_schema}.pattern TO ${manager_login};
+GRANT SELECT ON ${manager_schema}.pattern_vector TO ${manager_login};
 GRANT SELECT ON ${manager_schema}.pattern_dict TO ${manager_login};
 GRANT SELECT ON ${manager_schema}.os_instance TO ${manager_login};
 GRANT SELECT ON ${manager_schema}.incident TO ${manager_login};

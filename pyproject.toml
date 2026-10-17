@@ -13,6 +13,11 @@ dependencies = [
 [project.scripts]
 serenedb-log-mcp = "serenedb_log_mcp.cli:main"
 
+[project.optional-dependencies]
+vectors = [
+    "fastembed>=0.7,<1",
+]
+
 [dependency-groups]
 dev = [
     "anyio>=4.9",
@@ -47,6 +52,11 @@ strict = true
 plugins = ["pydantic.mypy"]
 files = ["src", "scripts", "bench", "eval"]
 mypy_path = ["src", "eval"]
+
+[[tool.mypy.overrides]]
+# fastembed is the optional `vectors` extra (find_patterns, T26): absent from a default install.
+module = ["fastembed", "fastembed.*"]
+ignore_missing_imports = true
 
 [tool.pydantic-mypy]
 init_forbid_extra = true

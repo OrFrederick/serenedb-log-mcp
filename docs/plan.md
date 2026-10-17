@@ -146,7 +146,7 @@ The server is registered as `serenedb-log`, so Claude Code shows tools as `mcp__
 | 15 | `create_index` | Stretch, not read-only: build an inverted index over a time slice and report the build time. | T19 |
 | 16 | `drop_index` | Stretch, not read-only: remove an agent-created index. | T19 |
 | 17 | `get_trace` | Stretch: the spans, Log Entries and metrics of one OTel trace. | T21 |
-| 18 | `find_patterns` | Stretch, OTel only: semantic Pattern search with `fastembed` vectors stored in SereneDB, fused with BM25 and synonyms. | T26 |
+| 18 | `find_patterns` | Stretch, optional: semantic Pattern search over the Base Corpus catalogue with `fastembed` vectors stored in SereneDB, fused with BM25 and synonyms (scope changed for #38). | T26 |
 
 Fifteen core tools (rows 1 to 14 and 6a) stay below the tool counts where selection is reported to degrade (#2). The overlap risk among `list_patterns`, `search_patterns` and `top_patterns` is measured by the L1 eval (T17); see open points.
 
@@ -705,6 +705,7 @@ Rules for using the order: each Claude works down the list within its own ticket
   - [ ] It is registered only for Datasets whose catalogue exceeds the `list_patterns` page budget; for BGL and OpenStack the description points to `list_patterns`.
   - [ ] A short recall check on a handful of labelled OTel queries goes to `docs/results/huge-datasets.md`, labelled as indicative until a human labels fresh queries (#7).
 - **Reuse:** `research/7-OrFrederick:research/7/OrFrederick/embed.py`, `eval_retrieval.py`, `ivf_vs_exact.py`; `research/7-NoNaim95:research/7/NoNaim95/experiments/r7e_vec_sql.py`, `r7e_hybrid_check.py`.
+- **Scope change (maintainer, #38):** the OTel track (#33) and the huge-datasets work (#32) were dropped, so T26 covers the Base Corpus catalogue instead: `find_patterns` is registered for BGL and OpenStack, complements `search_patterns`, and its recall check is `docs/results/find-patterns.md` (#7's 124 labelled questions). Vectors are computed by `make embed-patterns` and stored in `pattern_vector`; the statement returns cosine distances and BM25 scores, and the tool fuses them by RRF.
 
 ### T27: `list_incidents` tool and OpenStack Request Failure Incidents
 - **Owner:** N. **Area:** data and tools. **Blocked by:** T2, T3, T9, T10. **Links:** #1 consolidated Decision proposal, #2 (`list_incidents` parameters), #7 (catalogue-first chain).

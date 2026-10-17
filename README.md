@@ -119,6 +119,8 @@ Builds everything the tools read, inside `SLM_SCHEMA` (default `slm`): the canon
 
 Patterns come in two tiers: Tier 1 matches the Loghub-2.0 templates and needs the files from step 3; `SLM_PATTERN_TIER1=0 make derive` uses only the generic masks (Tier 2) and needs no Loghub-2.0 files.
 
+Optional, for `find_patterns` (semantic Pattern search, T26): `uv sync --extra vectors`, then `make embed-patterns`. It embeds the Pattern catalogue locally with fastembed (no API key; the first run downloads a model of about 90 MB into `FASTEMBED_CACHE_PATH`, default `~/.cache/serenedb-log-mcp/fastembed`) and stores the vectors in SereneDB in about 7 s. Run it again after a derive that changed the Patterns. Without it every other tool works, and `find_patterns` answers with these setup steps.
+
 ### Quick variant: the 2,000-line samples
 
 To try the server in a few minutes, without the full download, load the Loghub 2k samples instead of steps 3 to 5. Give the sample its own schemas, so it never mixes with a full load in `public` and `slm`:
@@ -239,6 +241,7 @@ Messages in rows are cut to 240 characters. Query text goes through `websearch_t
 ## Results
 
 - [docs/results/ground-truth.md](docs/results/ground-truth.md): `latency_stats` finds **4 of 4** labelled OpenStack slow spawns by timing alone (5 flagged at the default threshold; the fifth is reported as a Hypothesis). No ERROR or WARNING line points at them, so text search alone would not find them.
+- [docs/results/find-patterns.md](docs/results/find-patterns.md): the optional `find_patterns` (local vectors fused with BM25) beats the lexical `search_patterns` on #7's 124 labelled questions by +0.055 recall@10 (95% CI [+0.016, +0.096]) and +0.071 MRR; vectors alone gain nothing significant. Reading the catalogue with `list_patterns` stays the first choice.
 - [docs/results/patterns.md](docs/results/patterns.md): the SQL Pattern dictionary agrees with the Loghub-2.0 labels on 99.99991% of BGL lines (4,631,257 of 4,631,261) and on 100% of OpenStack lines, with 465 BGL and 73 OpenStack Patterns.
 
 ## SereneDB features used
@@ -256,6 +259,7 @@ Search and analytics run in the same engine and often in the same statement: `co
 | `VACUUM (REFRESH_TABLE)` | publishes the eventually consistent index after the derive | [VACUUM](https://serenedb.com/docs/sql/statements/vacuum#refreshing--refresh_), [index lifecycle](https://serenedb.com/docs/sql/indexes/inverted#lifecycle) |
 | `time_bucket`, gap-filled with `generate_series` | `trend`, the weekly baselines, `latency_stats` buckets | [time_bucket](https://serenedb.com/docs/sql/functions/timestamp#time_bucketbucket_width-timestamp-offset) |
 | Window functions (`row_number() OVER`, `sum() OVER (PARTITION BY ...)`) | the top-N plus `(other)` row of `count_by`, the Pattern dictionary, neutral OpenStack source ids | [Window functions](https://serenedb.com/docs/sql/functions/window_functions) |
+| Vector columns (`FLOAT[384]`) and cosine distance `<=>`, in one statement with BM25 | the optional `find_patterns`: Pattern vectors in `pattern_vector`, an exact scan fused with the catalogue's BM25 matches | [Vector functions](https://serenedb.com/docs/sql/functions/vector), [vector search](https://serenedb.com/docs/sql/indexes/inverted/vector-search) |
 | Macros (`CREATE OR REPLACE MACRO`) | the Pattern masks and the Tier 1 template chains, stored in `SLM_SCHEMA` | [CREATE MACRO](https://serenedb.com/docs/sql/statements/create_macro) |
 | `regexp_full_match` (RE2) | Tier 1 Pattern assignment, in one SQL step over distinct messages | [regexp_full_match](https://serenedb.com/docs/sql/functions/regular_expressions#regexp_full_matchstring-regex-options) |
 | `quantile_cont`, `median` | latency percentiles and the robust z-scores of Phase-Duration Anomalies | [Statistical aggregates](https://serenedb.com/docs/sql/functions/aggregates#statistical-aggregates) |
@@ -316,6 +320,7 @@ All settings come from the environment; `uv run serenedb-log-mcp --help` lists t
 | `LEDGER_PATH` | unset (in memory) | JSONL file of the Evidence Ledger |
 | `SLM_EXPORT_DIR` | `./exports` | where investigation exports go (used once `export_investigation` lands) |
 | `SLM_PATTERN_TIER1` | `1` | `0` derives Patterns without the Loghub-2.0 files |
+| `FASTEMBED_CACHE_PATH` | `~/.cache/serenedb-log-mcp/fastembed` | model cache of the optional `find_patterns` (`make embed-patterns` fills it) |
 
 ## Development
 

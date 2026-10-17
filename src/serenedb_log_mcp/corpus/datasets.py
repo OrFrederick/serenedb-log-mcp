@@ -49,6 +49,7 @@ OWNERSHIP = "ownership"
 PATTERN_DICT = "pattern_dict"
 PATTERNS = "pattern"
 PATTERN_INDEX = "pattern_idx"
+PATTERN_VECTORS = "pattern_vector"
 INCIDENTS = "incident"
 INSTANCES = "os_instance"
 CANONICAL_TABLES = frozenset(
@@ -340,6 +341,11 @@ class Relation:
     def patterns_index(self) -> sql.Identifier:
         """The inverted index over the Pattern catalogue: template_text with English stemming (T14)."""
         return sql.Identifier(self.schema, PATTERN_INDEX)
+
+    @property
+    def pattern_vectors_table(self) -> sql.Identifier:
+        """The Pattern vectors for find_patterns, one row per Pattern and embedding model (T26)."""
+        return sql.Identifier(self.schema, PATTERN_VECTORS)
 
     @property
     def incidents_table(self) -> sql.Identifier:

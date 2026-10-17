@@ -374,7 +374,8 @@ def test_the_genuine_bgl_text_is_kept(database_url: str, derived_sample: Schemas
 
 def test_no_label_relation_or_file_name_column_exists(database_url: str, derived_sample: Schemas) -> None:
     # os_instance: the OpenStack instance phases (T11), computed from timing only. incident: the
-    # default Incident table (T10), built from the Pattern key and the UTC gaps only.
+    # default Incident table (T10), built from the Pattern key and the UTC gaps only. pattern_vector:
+    # the template text embeddings of find_patterns (T26).
     assert relations(database_url, derived_sample.slm) == [
         "bgl_entry",
         "incident",
@@ -383,6 +384,7 @@ def test_no_label_relation_or_file_name_column_exists(database_url: str, derived
         "ownership",
         "pattern",
         "pattern_dict",
+        "pattern_vector",
     ]
     names = {column for _, column in text_columns(database_url, derived_sample.slm)}
     assert not names & {"source_file", "raw", "label", "anomaly", "is_anomaly"}

@@ -16,7 +16,9 @@ Every tool takes a required `role` (`engineer`, `team_lead` or `manager`), which
 | [`get_role_brief`](#get_role_brief) | Get the playbook of a Role | RoleBrief |
 | [`latency_stats`](#latency_stats) | OpenStack latency, Latency Degradation and Phase-Duration Anomalies | [Evidence](#output-evidence) |
 | [`list_incidents`](#list_incidents) | Incidents with Spread and Shape, next to the Log Entry counts | [Evidence](#output-evidence) |
+| [`list_patterns`](#list_patterns) | Pattern catalogue of a Dataset: read it first to choose Patterns | [Evidence](#output-evidence) |
 | [`search_logs`](#search_logs) | Search Log Entries by text or Pattern | [Evidence](#output-evidence) |
+| [`search_patterns`](#search_patterns) | Search the Pattern catalogue by words (BM25, stemming, synonyms) | [Evidence](#output-evidence) |
 | [`trend`](#trend) | Trend of Log Entries per time bucket, with baselines | [Evidence](#output-evidence) |
 
 ## `count_by`
@@ -473,6 +475,56 @@ reference_patterns, candidates_total and scored_total. total_matches counts Inci
 
 `structuredContent` is the [Evidence](#output-evidence) object; the description says what its rows and summary hold for this tool.
 
+## `list_patterns`
+
+**Pattern catalogue of a Dataset: read it first to choose Patterns**
+
+Annotations: read-only, idempotent, closed world, `anthropic/alwaysLoad` (Claude Code loads it without ToolSearch).
+
+Description, as the agent reads it:
+
+```text
+The Pattern catalogue of one Dataset: each Pattern's id, Component, level, count and text.
+
+Read the catalogue first, before counting or searching: choose the template_id values whose
+text is direct evidence for the question and pass them as pattern_ids to count_by, trend and
+search_logs, which count and fetch by them exactly; if no Pattern is direct evidence, choose
+none and state that as an Unknown instead of stretching a near match.
+Use list_patterns to choose Patterns for a concept, search_patterns when the catalogue is too
+long to read (BGL comes in several pages), and top_patterns where available (otherwise
+count_by with group_by='pattern') to rank Patterns by frequency within a Data Scope.
+A catalogue larger than about 8k tokens is paged by Component: summary.components says which
+page holds each Component, so read the pages you need or pass component.
+Inputs: role, dataset, and optional component, pattern_ids or family_id (look up given
+Patterns, for example ids from count_by) and page (default 1).
+Outputs: the Evidence envelope, whose rows hold template_id, component, level (the most
+frequent ones), entries, first_seen, last_seen (whole Dataset, ts as logged), family_id (only
+when the Pattern Family has more than one Pattern) and template_text, grouped by Component and
+largest first; summary holds patterns_total, entries_total, page, pages_total,
+page_components and components; total_matches counts Patterns, not Log Entries.
+```
+
+### Inputs
+
+| Name | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `role` | one of `engineer`, `team_lead`, `manager` | yes |  | Who is asking: 'engineer' investigates one failure and needs example Log Entries and nearby events; 'team_lead' needs recurring problems with counts and trends per Component and Team, and receives at most 3 sample Log Entries from a search; 'manager' needs measured frequency and affected Components only, and receives no raw Log Entries (totals and facets, no rows). Every result carries the answer_frame for this Role; get_role_brief(role) has the full playbook. |
+| `dataset` | one of `bgl`, `openstack` | yes |  | 'bgl' or 'openstack': one catalogue per call. |
+| `component` | string or null | no | `null` | Optional: only the Patterns whose most frequent Component is this one, for example 'KERNEL' or 'nova.compute.manager'. summary.components lists them. |
+| `pattern_ids` | list of string or null | no | `null` | Only these Patterns: 16-hex template_id values, as list_patterns or count_by(group_by='pattern') return them. |
+| `family_id` | string or null | no | `null` | Only this Pattern Family (family_id): Patterns whose wording differs only by a known drift, counted together. |
+| `page` | integer | no | `1` | Which page of a catalogue too large for one result (default 1); summary.pages_total says how many there are. |
+
+### Limits
+
+- `component`: at most 200 characters
+- `pattern_ids`: at most 100 items
+- `page`: 1 to 100
+
+### Output
+
+`structuredContent` is the [Evidence](#output-evidence) object; the description says what its rows and summary hold for this tool.
+
 ## `search_logs`
 
 **Search Log Entries by text or Pattern**
@@ -529,6 +581,50 @@ No match returns a hint in notes, not an error.
 - `sources`: at most 100 items
 - `alert_categories`: at most 50 items
 - `limit`: 1 to 50
+
+### Output
+
+`structuredContent` is the [Evidence](#output-evidence) object; the description says what its rows and summary hold for this tool.
+
+## `search_patterns`
+
+**Search the Pattern catalogue by words (BM25, stemming, synonyms)**
+
+Annotations: read-only, idempotent, closed world, `anthropic/alwaysLoad` (Claude Code loads it without ToolSearch).
+
+Description, as the agent reads it:
+
+```text
+Find Patterns of one Dataset by words: BM25 with stemming over template texts, plus synonyms.
+
+It is the lexical fallback of the catalogue: use list_patterns to choose Patterns for a
+concept, search_patterns when the catalogue is too long to read (BGL's has several pages),
+and top_patterns where available (otherwise count_by with group_by='pattern') to rank
+Patterns by frequency within a Data Scope.
+A match only means the template shares words with the query, so read each template_text,
+keep only the ids that are direct evidence and pass them as pattern_ids to count_by, trend
+and search_logs; if none is, state that as an Unknown.
+Inputs: role, dataset, query (words) and top (default 10, at most 50).
+Outputs: the Evidence envelope, whose rows hold the list_patterns columns (template_id,
+component, level, entries, first_seen, last_seen, family_id, template_text) plus score, best
+first; summary holds patterns_total, words, synonyms (each query word with the synonyms it
+added) and ignored_words; total_matches counts Patterns. No match returns a hint in notes,
+not an error.
+```
+
+### Inputs
+
+| Name | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `role` | one of `engineer`, `team_lead`, `manager` | yes |  | Who is asking: 'engineer' investigates one failure and needs example Log Entries and nearby events; 'team_lead' needs recurring problems with counts and trends per Component and Team, and receives at most 3 sample Log Entries from a search; 'manager' needs measured frequency and affected Components only, and receives no raw Log Entries (totals and facets, no rows). Every result carries the answer_frame for this Role; get_role_brief(role) has the full playbook. |
+| `dataset` | one of `bgl`, `openstack` | yes |  | 'bgl' or 'openstack': one catalogue per call. |
+| `query` | string | yes |  | Words for the problem, for example 'memory errors' or 'instance failed to spawn'. Words are lower-cased and stemmed ('failing' matches 'failed'), stopwords such as 'the' or 'why' are dropped, and a Pattern matches when its template text holds any remaining word or one of its synonyms. |
+| `top` | integer | no | `10` | How many of the best Patterns to return (default 10, at most 50); patterns_total counts every match. |
+
+### Limits
+
+- `query`: at most 500 characters
+- `top`: 1 to 50
 
 ### Output
 
@@ -601,7 +697,7 @@ method. total_matches counts buckets, not Log Entries.
 
 ## Output: Evidence
 
-Returned by `count_by`, `describe_corpus`, `find_precursors`, `get_context`, `get_evidence`, `latency_stats`, `list_incidents`, `search_logs`, `trend`.
+Returned by `count_by`, `describe_corpus`, `find_precursors`, `get_context`, `get_evidence`, `latency_stats`, `list_incidents`, `list_patterns`, `search_logs`, `search_patterns`, `trend`.
 
 The result of one executed tool call: its query, parameters, Data Scope, counts and rows. Cite it as `[E<n>]` next to every number taken from it. `total_matches` and `truncated` say whether the rows are the whole answer or a sample; a sample is never a frequency.
 

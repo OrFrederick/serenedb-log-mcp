@@ -346,9 +346,7 @@ def test_a_whole_last_record_without_a_newline_that_holds_a_separator_is_kept(
         {"evidence_id": "E1", "tool": "count_by", "total_matches": 101},
         {"evidence_id": "E2", "tool": "search_logs", "rows": [{"message": f"a{separator}b"}]},
     ]
-    path.write_text(
-        "\n".join(json.dumps(record, ensure_ascii=False) for record in records), encoding="utf-8"
-    )
+    path.write_text("\n".join(json.dumps(record, ensure_ascii=False) for record in records), encoding="utf-8")
 
     ledger = Ledger(path)
 
@@ -360,9 +358,7 @@ def test_a_whole_last_record_without_a_newline_that_holds_a_separator_is_kept(
 
 
 @pytest.mark.parametrize("separator", RAW_SEPARATORS, ids=separator_id)
-def test_a_torn_last_line_that_holds_a_separator_is_still_dropped(
-    tmp_path: Path, separator: str
-) -> None:
+def test_a_torn_last_line_that_holds_a_separator_is_still_dropped(tmp_path: Path, separator: str) -> None:
     # The other half: a genuinely torn append whose fragment holds a separator is still a fragment,
     # so it is dropped on read and cut off by the next append.
     path = tmp_path / "ledger.jsonl"
@@ -371,9 +367,7 @@ def test_a_torn_last_line_that_holds_a_separator_is_still_dropped(
         ensure_ascii=False,
     )
     torn = whole[: whole.index("FROM")]
-    path.write_text(
-        json.dumps({"evidence_id": "E1", "tool": "count_by"}) + "\n" + torn, encoding="utf-8"
-    )
+    path.write_text(json.dumps({"evidence_id": "E1", "tool": "count_by"}) + "\n" + torn, encoding="utf-8")
 
     ledger = Ledger(path)
 

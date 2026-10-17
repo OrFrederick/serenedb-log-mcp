@@ -5,6 +5,8 @@ from __future__ import annotations
 import argparse
 from collections.abc import Sequence
 
+from pydantic import ValidationError
+
 from serenedb_log_mcp import __version__
 from serenedb_log_mcp.config import ROLES, ConfigError, load_settings, set_settings
 from serenedb_log_mcp.server import create_server
@@ -43,7 +45,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     args = parser.parse_args(argv)
     try:
         settings = load_settings(role=args.role)
-    except ConfigError as exc:
+    except (ConfigError, ValidationError) as exc:
         parser.error(str(exc))
     set_settings(settings)
     server = create_server()

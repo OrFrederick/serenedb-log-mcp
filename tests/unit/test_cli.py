@@ -101,3 +101,19 @@ def test_invalid_environment_exits_with_a_message_naming_the_variable(
     assert exit_info.value.code == 2
     assert "SLM_SCHEMA" in capsys.readouterr().err
     assert fake_server.runs == []
+
+
+def test_settings_validation_error_exits_with_a_message(
+    fake_server: FakeServer, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    def invalid_settings(**overrides: Any) -> config.Settings:
+        return config.Settings(query_timeout_s=-1)
+
+    monkeypatch.setattr(cli, "load_settings", invalid_settings)
+
+    with pytest.raises(SystemExit) as exit_info:
+        cli.main([])
+
+    assert exit_info.value.code == 2
+    assert "query_timeout_s" in capsys.readouterr().err
+    assert fake_server.runs == []

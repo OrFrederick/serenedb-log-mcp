@@ -3,6 +3,7 @@
 from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 
 from serenedb_log_mcp import config
 from serenedb_log_mcp.config import ConfigError, Settings, load_settings
@@ -131,3 +132,64 @@ def test_set_settings_replaces_the_active_settings(monkeypatch: pytest.MonkeyPat
     config.set_settings(pinned)
 
     assert config.get_settings() is pinned
+
+
+@pytest.mark.parametrize("value", ["nan", "inf", "-inf", "NaN", "Infinity"])
+def test_query_timeout_must_be_finite(value: str) -> None:
+    with pytest.raises(ConfigError, match="SLM_QUERY_TIMEOUT_S"):
+        load_settings({"SLM_QUERY_TIMEOUT_S": value})
+
+
+def test_unknown_settings_fields_are_rejected() -> None:
+    with pytest.raises(ValidationError, match="extra"):
+        Settings(no_such_field=1)  # type: ignore[call-arg]
+
+
+@pytest.mark.parametrize(
+    "fields",
+    [
+        {"slm_schema": "Bad-x"},
+        {"raw_schema": "x;y"},
+        {"query_timeout_s": 0},
+        {"query_timeout_s": float("nan")},
+        {"query_timeout_s": float("inf")},
+    ],
+)
+def test_settings_validate_fields_however_they_are_built(fields: dict[str, object]) -> None:
+    with pytest.raises(ValidationError):
+        Settings(**fields)  # type: ignore[arg-type]
+
+
+def test_overrides_are_validated_and_named_in_the_error() -> None:
+    with pytest.raises(ConfigError, match="slm_schema"):
+        load_settings({}, slm_schema="Bad-x")
+
+
+def test_passwords_stay_out_of_repr_and_str() -> None:
+    s = load_settings(
+        {
+            "DATABASE_URL": "host=db user=u password=secret1",
+            "DATABASE_URL_MANAGER": "host=db user=m password=secret2",
+        }
+    )
+
+    for text in (repr(s), str(s)):
+        assert "secret1" not in text
+        assert "secret2" not in text
+    assert s.database_url_for("manager") == "host=db user=m password=secret2"
+
+
+def test_role_database_urls_cannot_be_changed() -> None:
+    s = load_settings({"DATABASE_URL_MANAGER": "host=mgr"})
+
+    with pytest.raises(TypeError):
+        s.role_database_urls["engineer"] = "host=other"  # type: ignore[index]
+    assert s.database_url_for("engineer") == s.database_url
+
+
+@pytest.mark.filterwarnings("error")
+def test_settings_still_serialise() -> None:
+    s = load_settings({"DATABASE_URL_MANAGER": "host=mgr"})
+
+    assert s.model_dump()["role_database_urls"] == {"manager": "host=mgr"}
+    assert '"role_database_urls":{"manager":"host=mgr"}' in s.model_dump_json()

@@ -4,7 +4,7 @@ __pycache__/
 .env
 data/
 *.parquet
-*.log
+data/**/*.log
 .DS_Store
 
 # overnight run

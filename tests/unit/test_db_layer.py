@@ -21,6 +21,7 @@ from serenedb_log_mcp import db
 from serenedb_log_mcp.config import Role, load_settings, set_settings
 from serenedb_log_mcp.db import (
     Database,
+    DatabaseMisconfigured,
     DatabaseRestarted,
     DatabaseUnavailable,
     QueryFailed,
@@ -60,6 +61,9 @@ class FakeServer:
         self.respond = respond
         self.crashes_left = 0
         self.refusals_left = 0
+        self.refusal: psycopg.Error = psycopg.OperationalError(
+            "connection failed: server closed the connection unexpectedly"
+        )
         self.connections: list[FakeConnection] = []
         self.binding: list[bool] = []
         self.cancel_failures_left = 0
@@ -69,7 +73,7 @@ class FakeServer:
         self.binding.append(client_binding)
         if self.refusals_left:
             self.refusals_left -= 1
-            raise psycopg.OperationalError("connection failed: server closed the connection unexpectedly")
+            raise self.refusal
         conn = FakeConnection(self)
         self.connections.append(conn)
         return conn
@@ -363,6 +367,59 @@ def test_the_unavailable_message_never_shows_a_password() -> None:
     assert "s3cret" not in str(caught.value)
 
 
+@pytest.mark.parametrize(
+    "dsn",
+    [
+        "host=db port=7890 dbname=x user=u password=p1 sslpassword=s3cret",
+        "postgresql://u:p1@db:7890/x?sslpassword=s3cret",
+    ],
+)
+def test_the_unavailable_message_shows_only_where_it_connected(dsn: str) -> None:
+    server = FakeServer(table_responder(57, ROWS))
+    server.refusals_left = 10_000
+    clock = FakeClock()
+    layer = Database(
+        dsn, connect=server.connect, sleep=clock.sleep, monotonic=clock.monotonic, reconnect_wait_s=2.0
+    )
+
+    with pytest.raises(DatabaseUnavailable) as caught:
+        layer.fetch_all("SELECT a FROM t")
+
+    message = str(caught.value)
+    assert "host=db port=7890 dbname=x user=u" in message
+    assert "s3cret" not in message
+    assert "p1" not in message
+
+
+@pytest.mark.parametrize(
+    "refusal",
+    [
+        psycopg.ProgrammingError('invalid connection option "hostx"'),
+        psycopg.OperationalError(
+            'connection failed: connection to server at "127.0.0.1", port 7890 failed: FATAL:  role '
+            '"nobody" does not exist'
+        ),
+        psycopg.OperationalError(
+            'connection failed: connection to server at "127.0.0.1", port 7890 failed: FATAL:  database '
+            '"nope" is not accessible'
+        ),
+    ],
+)
+def test_a_misconfigured_dsn_fails_at_once_and_says_so(refusal: psycopg.Error) -> None:
+    server = FakeServer(table_responder(57, ROWS))
+    server.refusals_left = 10_000
+    server.refusal = refusal
+    clock = FakeClock()
+
+    with pytest.raises(DatabaseMisconfigured) as caught:
+        database(server, clock).fetch_all("SELECT a FROM t")
+
+    assert isinstance(caught.value, DatabaseUnavailable)
+    assert clock.sleeps == []
+    assert "DATABASE_URL" in str(caught.value)
+    assert "restarting" not in str(caught.value)
+
+
 # Timeouts and other errors --------------------------------------------------------------------------
 
 
@@ -559,6 +616,16 @@ def test_a_statement_psycopg_refuses_is_reported_as_a_template_bug() -> None:
     assert "describe_corpus" not in message
     assert "template" in message
     assert "only '%s', '%b', '%t' are allowed as placeholders" in message
+
+
+def test_query_failed_names_the_statement_that_failed() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+
+    with pytest.raises(QueryFailed) as caught:
+        database(server).fetch_limited(COUNT_SQL, "SELECT * FROM missing", [1], 5)
+
+    assert caught.value.sql == "SELECT * FROM missing"
+    assert "SELECT * FROM missing" in str(caught.value)
 
 
 def test_a_rejected_statement_raises_query_failed_without_a_retry() -> None:

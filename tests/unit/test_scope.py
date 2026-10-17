@@ -186,7 +186,8 @@ def test_last_7d_resolves_against_the_datasets_last_timestamp() -> None:
     [
         ("last 24h", 24),
         ("last 2w", 14 * 24),
-        ("last 30m", 0.5),
+        ("last 30min", 0.5),
+        ("last 30 minutes", 0.5),
         ("last week", 7 * 24),
         ("last hour", 1),
         ("last 3 days", 72),
@@ -203,7 +204,7 @@ def test_relative_forms(given: str, hours: float) -> None:
     assert resolved.time_input == given.strip()
 
 
-@pytest.mark.parametrize("given", ["last 0d", "last month", "last 7y"])
+@pytest.mark.parametrize("given", ["last 0d", "last month", "last 7y", "last 6m"])
 def test_unsupported_relative_forms_are_rejected(given: str) -> None:
     with pytest.raises(ScopeError, match="last 30d"):
         resolve_time(given, None, datasets=["bgl"], corpus_end=ENDS)
@@ -294,6 +295,17 @@ def test_time_bounds_give_back_the_datetimes_to_bind() -> None:
 
     assert time_bounds(scope) == (datetime(2005, 12, 28, 8, 0, 6), datetime(2006, 1, 4, 8, 0, 6))
     assert time_bounds(build_scope(["bgl"])) == (None, None)
+
+
+def test_a_bare_m_is_rejected_because_it_could_mean_months() -> None:
+    with pytest.raises(ScopeError, match="'min'"):
+        resolve_time("last 6m", None, datasets=["bgl"], corpus_end=ENDS)
+
+
+def test_empty_filters_of_any_type_are_left_out_and_other_values_kept() -> None:
+    scope = build_scope("bgl", components=(), levels=set(), query="", nodes=[], http_status=0, flag=False)
+
+    assert scope.filters.model_dump(exclude_none=True) == {"http_status": 0, "flag": False}
 
 
 def test_build_scope_accepts_one_dataset_name() -> None:

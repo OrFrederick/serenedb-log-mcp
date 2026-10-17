@@ -20,6 +20,7 @@ The layer never builds an `Evidence`; tools hand its `QueryResult` to `toolkit.e
 from __future__ import annotations
 
 import contextlib
+import re
 import threading
 import time
 from collections.abc import Callable, Sequence
@@ -42,6 +43,7 @@ if TYPE_CHECKING:
 __all__ = [
     "Database",
     "DatabaseLayerError",
+    "DatabaseMisconfigured",
     "DatabaseRestarted",
     "DatabaseUnavailable",
     "IntOrFloatNumericLoader",
@@ -160,11 +162,13 @@ class QueryTimeout(DatabaseLayerError):
 
 
 class QueryFailed(DatabaseLayerError):
-    """SereneDB rejected a statement; `sqlstate` says why. Not retried."""
+    """A statement did not run; `sqlstate` says why (None when psycopg refused it) and `sql` is
+    the statement. Not retried."""
 
-    def __init__(self, message: str, sqlstate: str | None) -> None:
+    def __init__(self, message: str, sqlstate: str | None, sql: str | None = None) -> None:
         super().__init__(message)
         self.sqlstate = sqlstate
+        self.sql = sql
 
 
 class DatabaseRestarted(DatabaseLayerError):
@@ -173,6 +177,10 @@ class DatabaseRestarted(DatabaseLayerError):
 
 class DatabaseUnavailable(DatabaseLayerError):
     """SereneDB did not answer `SELECT 1` within the bounded wait."""
+
+
+class DatabaseMisconfigured(DatabaseUnavailable):
+    """SereneDB answered but refused the connection settings; waiting cannot help."""
 
 
 # Connections ----------------------------------------------------------------------------------------
@@ -233,10 +241,12 @@ class _Session:
         self.sql: list[str] = []
         self.params: list[list[Any]] = []
         self.notes: list[str] = []
+        self.running: str | None = None  # the statement in progress, named when it fails
         self.query_ms = 0.0
 
     def fetch(self, sql: str, params: Sequence[Any]) -> list[tuple[Any, ...]]:
         values = list(params)
+        self.running = sql
         started = time.perf_counter()
         # No parameter list at all when there are no values, so a literal % stays a literal.
         rows = self._conn.execute(sql, values or None).fetchall()
@@ -369,7 +379,9 @@ class Database:
         """Every row of one statement, for results that are complete by construction.
 
         Use it for aggregates whose size the template bounds (trend buckets, a few scalars); the
-        total is the number of rows and the result is never truncated.
+        total is the number of rows and the result is never truncated. Never cap the rows inside a
+        `fetch_all` template: a LIMIT there would be published as the whole population. Use
+        `fetch_limited` whenever more rows can match than the call returns.
         """
         rows, session, notes = self._run(lambda session: session.fetch(sql, params))
         return QueryResult(
@@ -426,6 +438,12 @@ class Database:
             except psycopg.Error as exc:
                 if conn is not None:
                     _close_quietly(conn)
+                if _is_misconfigured(exc):
+                    raise DatabaseMisconfigured(
+                        f"SereneDB at {_safe_dsn(self.dsn)} refused the connection settings "
+                        f"({_first_line(exc)}). Check DATABASE_URL (or DATABASE_URL_<ROLE>); "
+                        "waiting will not help."
+                    ) from exc
                 now = self._monotonic()
                 if now >= deadline:
                     raise DatabaseUnavailable(
@@ -470,7 +488,7 @@ class Database:
                     "and was cancelled. Narrow the Data Scope: a shorter time range, a Component, "
                     "level or Pattern filter, or a coarser trend bucket."
                 ) from exc
-            raise _rejected(exc) from exc
+            raise _rejected(exc, session.running) from exc
         except BaseException:
             self._end(conn, discard=True)
             raise
@@ -546,22 +564,31 @@ class Database:
             _close_quietly(conn)
 
 
-def _rejected(exc: psycopg.Error) -> QueryFailed:
+def _rejected(exc: psycopg.Error, sql: str | None) -> QueryFailed:
     """The error for a statement that did not run, with the hint that fits who refused it."""
+    statement = f" Statement: {_compact(sql)}" if sql else ""
     if exc.sqlstate is None:
         # psycopg refused the statement before sending it, so no input of the agent's can fix it.
         return QueryFailed(
             f"The tool's SQL template is broken, so the query was not sent to SereneDB: "
             f"{_first_line(exc)} This is a bug in the tool, not in your inputs; use another tool "
-            "for this question.",
+            f"for this question.{statement}",
             None,
+            sql,
         )
     return QueryFailed(
         f"SereneDB rejected the query ({exc.sqlstate}): {_first_line(exc)} Check the names you "
         "filtered on with describe_corpus and call the tool again; if they are right, the tool's "
-        "SQL is at fault.",
+        f"SQL is at fault.{statement}",
         exc.sqlstate,
+        sql,
     )
+
+
+def _compact(sql: str, limit: int = 200) -> str:
+    """One line of SQL for an error message."""
+    text = " ".join(sql.split())
+    return text if len(text) <= limit else f"{text[: limit - 1]}…"
 
 
 def _count(rows: list[tuple[Any, ...]], sql: str) -> int:
@@ -594,13 +621,33 @@ def _first_line(exc: BaseException) -> str:
     return line if line.endswith((".", "!", "?")) else f"{line}."
 
 
+_SHOWN_DSN_KEYS = ("host", "hostaddr", "port", "dbname", "user")
+"""The DSN parts an error message may show; everything else (password, sslpassword, …) stays out."""
+
+
 def _safe_dsn(dsn: str) -> str:
-    """The DSN without its password, for error messages."""
+    """Where the layer connects, for error messages: only the keys in `_SHOWN_DSN_KEYS`."""
     try:
         parts = conninfo_to_dict(dsn)
     except psycopg.ProgrammingError:
         return "<unparseable DATABASE_URL>"
-    return " ".join(f"{key}={value}" for key, value in parts.items() if key != "password")
+    return " ".join(f"{key}={parts[key]}" for key in _SHOWN_DSN_KEYS if key in parts)
+
+
+_CONFIG_REFUSAL_RE = re.compile(
+    r"FATAL:\s+(?:role \S+ does not exist|database \S+ (?:does not exist|is not accessible)"
+    r"|password authentication failed|no pg_hba\.conf entry)"
+)
+
+
+def _is_misconfigured(exc: psycopg.Error) -> bool:
+    """Did SereneDB refuse the connection settings, rather than fail to answer?
+
+    An unparseable DSN raises ProgrammingError. A wrong user or database arrives as an
+    OperationalError without a SQLSTATE, so the libpq text decides (SereneDB 26.10.1 says
+    `database "x" is not accessible`).
+    """
+    return isinstance(exc, psycopg.ProgrammingError) or bool(_CONFIG_REFUSAL_RE.search(str(exc)))
 
 
 # Process-wide layers --------------------------------------------------------------------------------

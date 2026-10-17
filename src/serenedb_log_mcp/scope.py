@@ -53,7 +53,6 @@ MAX_LISTED = 20
 """How many valid values an error message lists before it says how many more there are."""
 
 _UNITS = {
-    "m": timedelta(minutes=1),
     "min": timedelta(minutes=1),
     "mins": timedelta(minutes=1),
     "minute": timedelta(minutes=1),
@@ -77,8 +76,9 @@ _LOOKS_RELATIVE_RE = re.compile(r"^(?:last|past)\b")
 
 _ISO_EXAMPLES = "'2005-07-01' or '2005-07-01T12:00:00'"
 _RELATIVE_HELP = (
-    "Use 'last <N><unit>' with N of at least 1 and the unit m, h, d or w, for example 'last 24h', "
-    "'last 7d', 'last 2w' or 'last 30d' for a month."
+    "Use 'last <N><unit>' with N of at least 1 and the unit min, h, d or w, for example "
+    "'last 30min', 'last 24h', 'last 7d', 'last 2w' or 'last 30d' for a month. A bare 'm' is "
+    "refused because it could mean minutes or months; write 'min' for minutes."
 )
 
 
@@ -315,7 +315,7 @@ def build_scope(
     if known_datasets is not None:
         names = validate_choices("dataset", names, known_datasets) or names
     time = resolve_time(time_from, time_to, datasets=names, corpus_end=corpus_end)
-    given = {key: value for key, value in filters.items() if value not in (None, "", [], ())}
+    given = {key: value for key, value in filters.items() if not _filters_nothing(value)}
     return DataScope(
         datasets=names,
         time_from=None if time.start is None else time.start.isoformat(),
@@ -330,8 +330,17 @@ def build_scope(
     )
 
 
+def _filters_nothing(value: Any) -> bool:
+    """None and empty strings or collections filter nothing; 0 and False are real values."""
+    return value is None or (isinstance(value, (str, bytes, list, tuple, set, frozenset, dict)) and not value)
+
+
 def time_bounds(scope: DataScope) -> tuple[datetime | None, datetime | None]:
-    """The scope's time range as datetimes to bind: start inclusive, end exclusive, None if open."""
+    """The scope's time range as datetimes to bind: start inclusive, end exclusive.
+
+    None means that side is open (the Dataset's first or last Log Entry): leave that predicate out
+    of the SQL. Never bind None into `ts >= %s`, which compares with NULL and matches nothing.
+    """
     return (
         None if scope.time_from is None else datetime.fromisoformat(scope.time_from),
         None if scope.time_to is None else datetime.fromisoformat(scope.time_to),

@@ -64,3 +64,37 @@ def test_the_tool_is_read_only_and_always_loaded(tool: str) -> None:
             }
 
     assert anyio.run(listing) == {"read_only": True, "always_load": True, "role_required": True}
+
+
+def input_schema(tool: str) -> dict[str, object]:
+    async def listing() -> dict[str, object]:
+        async with Client(create_server(), mode="legacy") as client:
+            return {t.name: t.input_schema for t in (await client.list_tools()).tools}[tool]
+
+    return anyio.run(listing)
+
+
+def test_the_query_description_says_and_is_not_an_operator() -> None:
+    properties = input_schema("search_logs")["properties"]
+    assert isinstance(properties, dict)
+
+    assert "AND is not an operator; all words are already required." in properties["query"]["description"]
+
+
+@pytest.mark.parametrize(
+    "key",
+    [
+        "anchor_entry_id",
+        "anchor_ts",
+        "scope",
+        "scope_value",
+        "window_s",
+        "entries_in_scope",
+        "before_returned",
+        "after_returned",
+        "first_ts",
+        "last_ts",
+    ],
+)
+def test_the_get_context_description_names_every_summary_key(key: str) -> None:
+    assert re.search(rf"\b{key}\b", descriptions()["get_context"])

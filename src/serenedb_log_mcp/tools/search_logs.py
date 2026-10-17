@@ -208,6 +208,8 @@ QueryParam = Annotated[
         description="Words to find in the message. Words match whole and case-insensitively, without "
         "stemming ('fail' does not match 'failed'). With mode='all_words' every word must appear in any "
         "order; put a phrase in double quotes, OR between alternatives and -word to exclude a word. "
+        "AND is not an operator; all words are already required. A written AND is searched as the "
+        "word 'and', which matches almost nothing. "
         "Optional when pattern_ids, family_id or alert_categories is given.",
         max_length=fts.MAX_QUERY_CHARS,
     ),

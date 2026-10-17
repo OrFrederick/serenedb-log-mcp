@@ -263,9 +263,11 @@ def register(server: MCPServer) -> None:
         Outputs: the Evidence envelope, whose rows hold entry_id, ts, offset_s (seconds from the
         anchor, negative before it), the node (BGL) or request_id and instance_ref (OpenStack),
         component, level, alert_tag (BGL), template_id, message (at most 240 characters) and anchor
-        (true on the anchor row); summary holds scope, scope_value, window_s, before_returned and
-        after_returned.
-        total_matches counts the Log Entries in the whole context scope, not only the returned ones.
+        (true on the anchor row); summary holds anchor_entry_id, anchor_ts, scope, scope_value,
+        window_s, entries_in_scope, before_returned, after_returned, first_ts and last_ts (of the
+        returned rows).
+        total_matches and entries_in_scope count the Log Entries in the whole context scope, not
+        only the returned ones.
         """
         return run(role, dataset, entry_id, scope, before, after, window_s)
 

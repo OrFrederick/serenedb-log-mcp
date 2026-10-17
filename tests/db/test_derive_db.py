@@ -13,6 +13,7 @@ import pytest
 from psycopg import sql
 
 import derive
+from serenedb_log_mcp.corpus.datasets import OWNERSHIP_IS_STUB, OWNERSHIP_NOTE, OWNERSHIP_STUB_SOURCE
 
 CANONICAL_TABLES = ("bgl_entry", "os_entry", "ownership")
 SYNTHETIC_BGL_ROWS = 11  # tests/db/conftest.py adds them to the 2,000-line BGL sample
@@ -421,6 +422,49 @@ def test_the_ownership_table_has_one_team_per_component(database_url: str, deriv
     assert duplicates == []
     assert teams >= 2
     assert datasets == 2
+
+
+def test_the_ownership_table_has_the_canonical_columns(database_url: str, derived_sample: Schemas) -> None:
+    described = rows(database_url, q("DESCRIBE {t}", derived_sample, t="slm.ownership"))
+
+    assert [(str(r[0]), str(r[1])) for r in described] == [
+        ("dataset", "VARCHAR"),
+        ("component", "VARCHAR"),
+        ("team", "VARCHAR"),
+        ("team_source", "VARCHAR"),
+    ]
+
+
+def test_every_ownership_row_names_the_source_of_its_team(database_url: str, derived_sample: Schemas) -> None:
+    # The provenance travels with every join on the Ownership Table (#48); T25 sets its own value.
+    sources = dict(
+        rows(
+            database_url,
+            q("SELECT team_source, count(*) FROM {t} GROUP BY 1", derived_sample, t="slm.ownership"),
+        )
+    )
+
+    assert None not in sources
+    assert sources == {OWNERSHIP_STUB_SOURCE: 22}
+    # The Python flag that tools read agrees with the table, so T25 cannot swap one and not the other.
+    assert OWNERSHIP_IS_STUB is (set(sources) == {OWNERSHIP_STUB_SOURCE})
+
+
+def test_the_report_says_the_teams_come_from_the_stub(database_url: str, derived_sample: Schemas) -> None:
+    with psycopg.connect(database_url, autocommit=True) as conn:
+        lines = derive.report(conn, derived_sample.slm)
+
+    assert "Ownership Table team_source: stub 22" in lines
+    assert f"NOTE: {OWNERSHIP_NOTE}" in lines
+
+
+def test_the_report_counts_the_os_instance_rows(database_url: str, derived_sample: Schemas) -> None:
+    (instances,) = one(database_url, q("SELECT count(*) FROM {t}", derived_sample, t="slm.os_instance"))
+    with psycopg.connect(database_url, autocommit=True) as conn:
+        lines = derive.report(conn, derived_sample.slm)
+
+    assert instances > 0
+    assert f"{derived_sample.slm}.os_instance: {instances:,} rows" in lines
 
 
 # ----------------------------------------------------------------- inverted indexes

@@ -37,5 +37,7 @@
 --   instance_id  VARCHAR    the UUID in "[instance: <uuid>]", NULL when the line has none
 --   message      VARCHAR    the free-text part of the line
 --
--- Also for T25: replace sql/seed/ownership_stub.sql with the organisers' Ownership Table, and
--- re-pin the golden numbers where their line counts differ from the dev loader's.
+-- Also for T25: replace sql/seed/ownership_stub.sql with the organisers' Ownership Table, keeping
+-- its columns (dataset, component, team, team_source) with a team_source value of its own, set
+-- datasets.OWNERSHIP_IS_STUB to False, and re-pin the golden numbers where their line counts
+-- differ from the dev loader's.

@@ -11,7 +11,7 @@ from __future__ import annotations
 import threading
 import time
 from collections.abc import Callable, Sequence
-from typing import Any
+from typing import Any, ClassVar
 
 import psycopg
 import pytest
@@ -61,7 +61,8 @@ class FakeServer:
         self.refusals_left = 0
         self.connections: list[FakeConnection] = []
         self.binding: list[bool] = []
-        self.cancel_fails = False
+        self.cancel_failures_left = 0
+        self.interrupt_select_1 = False
 
     def connect(self, dsn: str, *, client_binding: bool) -> FakeConnection:
         self.binding.append(client_binding)
@@ -83,11 +84,14 @@ class FakeConnection:
         self.closed = False
         self.broken = False
         self.cancelled = threading.Event()
+        self.cancels_while_open = 0
 
     def execute(self, query: str, params: Sequence[Any] | None = None) -> FakeCursor:
         if self.closed or self.broken:
             raise psycopg.OperationalError("the connection is lost")
         self.executed.append((query, params))
+        if query == "SELECT 1" and self.server.interrupt_select_1:
+            raise KeyboardInterrupt
         if query in CONTROL:
             return FakeCursor([(1,)] if query == "SELECT 1" else [])
         if self.server.crashes_left:
@@ -114,8 +118,10 @@ class FakeConnection:
     def cancel_safe(self) -> None:
         if self.closed:
             return  # psycopg's cancel_safe does nothing on a closed connection
-        if self.server.cancel_fails:
+        if self.server.cancel_failures_left:
+            self.server.cancel_failures_left -= 1
             raise psycopg.errors.CancellationTimeout("cancellation timeout expired")
+        self.cancels_while_open += 1
         self.cancelled.set()
 
     def close(self) -> None:
@@ -343,10 +349,107 @@ def test_a_slow_statement_is_cancelled_and_the_connection_stays_usable() -> None
     assert isinstance(caught.value, ToolError)
     assert "0.05 s" in str(caught.value)
     assert elapsed < 2
-    assert server.executed()[-1] == "ROLLBACK"
+    # A connection whose time limit fired is never reused, so no cancel can reach a later call.
+    assert server.connections[0].closed
     result = layer.fetch_limited(COUNT_SQL, ROWS_SQL, [1], 20)
     assert result.total == 3
-    assert len(server.connections) == 1
+
+
+class ManualTimer:
+    """Stands in for threading.Timer so a test can choose when the callback runs.
+
+    Like threading.Timer, `cancel()` only stops a callback that has not started yet.
+    """
+
+    instances: ClassVar[list[ManualTimer]] = []
+
+    def __init__(self, interval: float, function: Callable[[], None]) -> None:
+        self.function = function
+        self.daemon = False
+        self.cancelled = False
+        self.entered = threading.Event()
+        self.proceed = threading.Event()
+        self.thread: threading.Thread | None = None
+        ManualTimer.instances.append(self)
+
+    def start(self) -> None:
+        pass
+
+    def cancel(self) -> None:
+        self.cancelled = True
+
+    def fire_and_pause(self) -> None:
+        """Run the callback in its own thread; it pauses right after it has been entered."""
+
+        def run() -> None:
+            if self.cancelled:
+                return
+            self.entered.set()
+            self.proceed.wait(5)
+            self.function()
+
+        self.thread = threading.Thread(target=run)
+        self.thread.start()
+        self.entered.wait(5)
+
+
+def test_a_cancel_that_starts_as_the_statements_finish_never_reaches_a_pooled_connection(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(threading, "Timer", ManualTimer)
+    ManualTimer.instances.clear()
+
+    def respond(sql: str, params: Sequence[Any] | None) -> list[tuple[Any, ...]]:
+        # The timer callback is entered while the statement returns its rows.
+        ManualTimer.instances[-1].fire_and_pause()
+        return [(1,)]
+
+    server = FakeServer(respond)
+    layer = database(server)
+
+    assert layer.fetch_all("SELECT a FROM t").rows == [(1,)]
+    timer = ManualTimer.instances[-1]
+    timer.proceed.set()
+    assert timer.thread is not None
+    timer.thread.join(5)
+
+    conn = server.connections[0]
+    assert conn.closed or conn.cancels_while_open == 0
+
+
+def test_a_failed_cancel_request_is_retried(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(db, "CANCEL_RETRY_S", 0.01)
+    server = FakeServer(table_responder(3, ROWS))
+    server.cancel_failures_left = 1
+
+    with pytest.raises(QueryTimeout):
+        database(server, timeout_s=0.02).fetch_all("SELECT slow()")
+
+
+def test_a_time_limit_that_could_not_be_enforced_is_noted(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(db, "CANCEL_RETRY_S", 0.01)
+    server = FakeServer(table_responder(3, ROWS))
+    server.cancel_failures_left = 99
+
+    result = database(server, timeout_s=0.02).fetch_all("SELECT stubborn()")
+
+    assert result.rows == [(1,)]
+    assert server.cancel_failures_left == 99 - db.CANCEL_ATTEMPTS
+    assert len(result.notes) == 1
+    assert "could not be enforced" in result.notes[0]
+    assert "cancellation timeout expired" in result.notes[0]
+
+
+def test_the_probe_connection_is_closed_when_the_wait_is_interrupted() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    server.crashes_left = 1
+    server.interrupt_select_1 = True
+
+    with pytest.raises(KeyboardInterrupt):
+        database(server).fetch_all("SELECT a FROM t")
+
+    probe = server.connections[1]
+    assert probe.closed
 
 
 def test_a_connection_whose_cancel_came_too_late_is_not_reused() -> None:
@@ -374,7 +477,7 @@ def test_a_statement_that_finishes_after_the_timer_fired_carries_a_note() -> Non
 @pytest.mark.filterwarnings("error::pytest.PytestUnhandledThreadExceptionWarning")
 def test_a_failing_cancel_request_does_not_escape_the_timer_thread() -> None:
     server = FakeServer(table_responder(3, ROWS))
-    server.cancel_fails = True
+    server.cancel_failures_left = 99
     layer = database(server, timeout_s=0.02)
 
     assert layer.fetch_all("SELECT stubborn()").rows == [(1,)]

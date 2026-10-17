@@ -66,8 +66,10 @@ MAX_IDLE_CONNECTIONS = 4
 # SQLSTATEs outside class 08 (connection exception, checked by prefix in `_is_lost`) that also mean
 # the server ended the session: admin shutdown, crash shutdown, "cannot connect now" (starting up).
 _LOST_SQLSTATES = frozenset({"57P01", "57P02", "57P03"})
-CANCEL_JOIN_S = 5.0
-"""How long a call waits for a cancel request already in flight before it closes the connection."""
+CANCEL_ATTEMPTS = 3
+"""How often the timer sends a cancel request that failed (for example psycopg's CancellationTimeout)."""
+CANCEL_RETRY_S = 1.0
+"""Pause between two cancel requests."""
 
 _T = TypeVar("_T")
 
@@ -246,6 +248,48 @@ class _Session:
         return rows
 
 
+class _Deadline:
+    """The time limit of one attempt.
+
+    A timer cancels the statements after `timeout_s` and retries a cancel request that fails.
+    `stop()` ends it: once `stop()` has returned, no cancel request is in flight and none will be
+    sent, and `fired` says whether one was. A connection whose deadline fired is never reused, so a
+    cancel can never reach a later call on a pooled connection.
+    """
+
+    def __init__(self, conn: ConnectionLike, timeout_s: float) -> None:
+        self._conn = conn
+        self._lock = threading.Lock()  # held while a cancel request is decided and sent
+        self._stopped = threading.Event()
+        self._timer = threading.Timer(timeout_s, self._cancel)
+        self._timer.daemon = True
+        self.fired = False
+        self.errors: list[str] = []
+
+    def start(self) -> None:
+        self._timer.start()
+
+    def stop(self) -> None:
+        with self._lock:  # waits for a cancel request in flight
+            self._stopped.set()
+        self._timer.cancel()
+
+    def _cancel(self) -> None:
+        for _ in range(CANCEL_ATTEMPTS):
+            with self._lock:
+                if self._stopped.is_set():
+                    return
+                self.fired = True
+                try:
+                    self._conn.cancel_safe()
+                except psycopg.Error as exc:
+                    self.errors.append(_first_line(exc))
+                else:
+                    return
+            if self._stopped.wait(CANCEL_RETRY_S):
+                return
+
+
 class Database:
     """Runs fixed SQL templates against one DSN: read-only, with a timeout and one retry.
 
@@ -391,6 +435,10 @@ class Database:
                         "failing, check that SereneDB is running and that DATABASE_URL points at it."
                     ) from exc
                 self._sleep(min(self.poll_interval_s, deadline - now))
+            except BaseException:
+                if conn is not None:
+                    _close_quietly(conn)
+                raise
             else:
                 self._release(conn)
                 return self._monotonic() - started
@@ -402,68 +450,47 @@ class Database:
             conn = self._acquire()
         except psycopg.Error as exc:
             raise _ConnectionLost from exc
-        fired = threading.Event()
-
-        def cancel() -> None:
-            fired.set()
-            # A cancel request that fails (the server is gone, or psycopg's CancellationTimeout)
-            # changes nothing: the statement's own outcome decides what the call returns.
-            with contextlib.suppress(psycopg.Error):
-                conn.cancel_safe()
-
         session = _Session(conn)
+        deadline = _Deadline(conn, self.timeout_s)
         try:
             conn.execute("BEGIN READ ONLY")
-            # The timer starts after BEGIN, so the limit covers only the statements.
-            timer = threading.Timer(self.timeout_s, cancel)
-            timer.daemon = True
-            timer.start()
+            deadline.start()  # after BEGIN, so the limit covers only the statements
             try:
                 value = work(session)
             finally:
-                timer.cancel()
-                if fired.is_set():
-                    timer.join(CANCEL_JOIN_S)  # let a cancel in flight finish before the connection goes
+                deadline.stop()
         except psycopg.Error as exc:
             if _is_lost(exc, conn):
                 _close_quietly(conn)
                 raise _ConnectionLost from exc
-            timed_out = fired.is_set() and isinstance(exc, psycopg.errors.QueryCanceled)
-            # A cancel that did not end this statement may still be in flight: drop the connection.
-            self._end(conn, discard=fired.is_set() and not timed_out)
-            if timed_out:
+            self._end(conn, discard=deadline.fired)
+            if deadline.fired and isinstance(exc, psycopg.errors.QueryCanceled):
                 raise QueryTimeout(
                     f"The query ran longer than the {self.timeout_s:g} s limit (SLM_QUERY_TIMEOUT_S) "
                     "and was cancelled. Narrow the Data Scope: a shorter time range, a Component, "
                     "level or Pattern filter, or a coarser trend bucket."
                 ) from exc
-            if exc.sqlstate is None:
-                # psycopg refused the statement before sending it, so no input of the agent's can
-                # fix it.
-                raise QueryFailed(
-                    f"The tool's SQL template is broken, so the query was not sent to SereneDB: "
-                    f"{_first_line(exc)} This is a bug in the tool, not in your inputs; use another "
-                    "tool for this question.",
-                    None,
-                ) from exc
-            raise QueryFailed(
-                f"SereneDB rejected the query ({exc.sqlstate}): {_first_line(exc)} Check the names you "
-                "filtered on with describe_corpus and call the tool again; if they are right, the "
-                "tool's SQL is at fault.",
-                exc.sqlstate,
-            ) from exc
+            raise _rejected(exc) from exc
         except BaseException:
             self._end(conn, discard=True)
             raise
-        if fired.is_set():
-            # The statements finished as the timer fired. The numbers are complete, but the session
-            # may have caught the cancel, so it is not reused.
-            session.notes.append(
-                f"The statements finished just as the {self.timeout_s:g} s limit (SLM_QUERY_TIMEOUT_S) "
-                "expired. The numbers are complete, but a wider Data Scope may time out."
-            )
-        self._end(conn, discard=fired.is_set())
+        if deadline.fired:
+            session.notes.append(self._late_note(deadline))
+        self._end(conn, discard=deadline.fired)
         return value, session
+
+    def _late_note(self, deadline: _Deadline) -> str:
+        """The note for statements that finished although their time limit fired."""
+        limit = f"{self.timeout_s:g} s limit (SLM_QUERY_TIMEOUT_S)"
+        if deadline.errors and len(deadline.errors) >= CANCEL_ATTEMPTS:
+            return (
+                f"The {limit} could not be enforced: the cancel request failed "
+                f"({deadline.errors[-1]}). The numbers are complete, but SereneDB may be unhealthy."
+            )
+        return (
+            f"The statements finished just as the {limit} expired. The numbers are complete, but "
+            "a wider Data Scope may time out."
+        )
 
     def _end(self, conn: ConnectionLike, *, discard: bool) -> None:
         """Roll the read-only transaction back and pool the connection, or drop it."""
@@ -501,6 +528,24 @@ class Database:
             idle, self._idle = self._idle, []
         for conn in idle:
             _close_quietly(conn)
+
+
+def _rejected(exc: psycopg.Error) -> QueryFailed:
+    """The error for a statement that did not run, with the hint that fits who refused it."""
+    if exc.sqlstate is None:
+        # psycopg refused the statement before sending it, so no input of the agent's can fix it.
+        return QueryFailed(
+            f"The tool's SQL template is broken, so the query was not sent to SereneDB: "
+            f"{_first_line(exc)} This is a bug in the tool, not in your inputs; use another tool "
+            "for this question.",
+            None,
+        )
+    return QueryFailed(
+        f"SereneDB rejected the query ({exc.sqlstate}): {_first_line(exc)} Check the names you "
+        "filtered on with describe_corpus and call the tool again; if they are right, the tool's "
+        "SQL is at fault.",
+        exc.sqlstate,
+    )
 
 
 def _count(rows: list[tuple[Any, ...]], sql: str) -> int:

@@ -1,8 +1,10 @@
 """Golden facts about the Patterns that `make derive` (T9) builds from the full Base Corpus.
 
-They read SLM_SCHEMA (default slm) and the Loghub-2.0 labels in SLM_RAW_SCHEMA (lh2_bgl,
-lh2_openstack), and need a derive with Pattern Tier 1 on. T25 re-pins the numbers if the
-organisers' loader differs.
+They read SLM_SCHEMA (default slm) and need a derive with Pattern Tier 1 on; the scorer test also
+reads the Loghub-2.0 labels in SLM_RAW_SCHEMA (lh2_bgl, lh2_openstack). Loghub-2.0 is an optional
+download (Zenodo 8275861), so without Tier 1 Patterns and the template files to derive them, or
+without the label tables, the tests skip with the reason, also under SLM_REQUIRE_DB (#66). T25
+re-pins the numbers if the organisers' loader differs.
 """
 
 from __future__ import annotations
@@ -10,6 +12,7 @@ from __future__ import annotations
 import os
 from typing import Any
 
+import optional_data
 import psycopg
 import pytest
 from psycopg import sql
@@ -30,7 +33,8 @@ OVER_N_SECONDS_PAIRS = (
 
 @pytest.fixture(scope="session")
 def pattern_schema(database_url: str, slm_schema: str) -> str:
-    """SLM_SCHEMA once the Pattern step has built pattern_dict and pattern there; skips otherwise."""
+    """SLM_SCHEMA once the Pattern step has built pattern_dict and pattern there with Tier 1; skips
+    otherwise."""
     with psycopg.connect(database_url, autocommit=True) as conn:
         row = conn.execute(
             "SELECT count(*) FROM information_schema.tables WHERE table_schema = %s "
@@ -42,6 +46,8 @@ def pattern_schema(database_url: str, slm_schema: str) -> str:
         if os.environ.get("SLM_REQUIRE_DB", "").strip().lower() in {"1", "true", "yes", "on"}:
             pytest.fail(f"SLM_REQUIRE_DB is set, so this does not skip: {problem}", pytrace=False)
         pytest.skip(problem)
+    if (optional := optional_data.tier1_patterns_problem(database_url, slm_schema)) is not None:
+        pytest.skip(optional)
     return slm_schema
 
 
@@ -130,6 +136,7 @@ def test_the_six_over_n_seconds_template_pairs_are_one_pattern_family_each(
     assert len(families) == len(OVER_N_SECONDS_PAIRS)
 
 
+@pytest.mark.loghub2("lh2_bgl", "lh2_openstack")
 def test_tier1_meets_the_merge_gate_and_only_the_truncated_e7_lines_disagree(
     database_url: str, pattern_schema: str
 ) -> None:

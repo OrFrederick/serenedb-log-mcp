@@ -54,3 +54,24 @@ def test_db_up_uses_trust_auth_and_waits_until_the_server_answers() -> None:
     assert "scripts/wait_for_db.py --timeout 90" in out
     assert '--dsn "host=localhost port=17890 dbname=postgres user=postgres"' in out
     assert "docker logs --tail 20" in out
+
+
+def test_db_up_names_serenedb_port_and_the_container_when_docker_run_fails() -> None:
+    # The bind error itself says only "port is already allocated", which does not say which
+    # variable to change.
+    out = dry_run("db-up", "SERENEDB_PORT=17890")
+
+    assert "SERENEDB_PORT=17890" in out
+    assert "SERENEDB_CONTAINER=serenedb-log-mcp-db" in out
+    # Not `rm -f`: a container of that name that is still running belongs to someone else, and
+    # plain `docker rm` refuses it instead of killing it.
+    assert "docker rm serenedb-log-mcp-db" in out
+
+
+def test_db_up_removes_the_container_when_the_readiness_wait_fails() -> None:
+    # Otherwise the next `make db-up` dies with "container name already in use".
+    out = dry_run("db-up", "SERENEDB_PORT=17890")
+
+    assert "docker logs --tail 20 serenedb-log-mcp-db" in out
+    assert "docker rm -f serenedb-log-mcp-db" in out
+    assert "SERENEDB_WAIT_S=90" in out

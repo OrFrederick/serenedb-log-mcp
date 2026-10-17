@@ -6,14 +6,13 @@ It never touches the raw tables in `public`, which hold the shared Base Corpus.
 import uuid
 from collections.abc import Iterator
 from pathlib import Path
-from urllib.error import URLError
 
 import psycopg
 import pytest
 from psycopg import sql
+from sample_files import samples_or_skip
 
 import dev_loader
-from serenedb_log_mcp.config import load_settings
 
 pytestmark = pytest.mark.db
 
@@ -22,10 +21,7 @@ SAMPLE_ROWS = 2000
 
 @pytest.fixture(scope="module")
 def samples_present() -> None:
-    try:
-        dev_loader.ensure_samples(load_settings().data_dir / "sample")
-    except (URLError, OSError) as exc:
-        pytest.skip(f"cannot download the Loghub 2k samples: {exc}")
+    samples_or_skip()
 
 
 @pytest.fixture

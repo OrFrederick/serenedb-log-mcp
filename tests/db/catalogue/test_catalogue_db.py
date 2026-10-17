@@ -307,8 +307,27 @@ def test_the_chain_totals_agree_from_the_catalogue_to_the_log_entries(
         assert totals.catalogue == totals.count_by == totals.search_logs == expected > 1, dataset
 
 
+def failing_openstack_pattern(sample: str) -> str | None:
+    """The largest OpenStack Pattern whose Log Entries are all ERROR or CRITICAL, or None.
+
+    OpenStack Incidents chain only Request Failures (T27), so a Pattern of ordinary Log Entries has
+    none; one whose every Log Entry is a failure must reach list_incidents with all of them.
+    """
+    rows = independent(
+        sample,
+        f"SELECT template_id, count(*) FROM {entry_table('openstack')} GROUP BY 1 "
+        "HAVING count(*) FILTER (WHERE level NOT IN ('ERROR', 'CRITICAL')) = 0 ORDER BY 2 DESC, 1 LIMIT 1",
+        [],
+    )
+    return str(rows[0][0]) if rows else None
+
+
 def test_the_chain_reaches_list_incidents(sample: str, chain_patterns: list[tuple[str, str]]) -> None:
-    for dataset, template_id in chain_patterns:
+    failing = failing_openstack_pattern(sample)
+    patterns = [(dataset, template_id) for dataset, template_id in chain_patterns if dataset == "bgl"]
+    if failing is not None:
+        patterns.append(("openstack", failing))
+    for dataset, template_id in patterns:
         totals = chain_totals(dataset, template_id)
 
         assert incidents_entries_total(dataset, template_id) == totals.count_by, dataset

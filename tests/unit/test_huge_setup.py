@@ -63,3 +63,8 @@ def test_the_remote_sql_reads_only_the_configured_file_and_no_labels() -> None:
     assert text.count("read_parquet(${url})") == 1
     for reader in ("read_csv", "read_text", "read_json"):
         assert reader not in text
+
+
+def test_the_default_statement_limit_leaves_room_for_a_slow_link_to_s3() -> None:
+    # PR #62 review: the facts pass took 859 s on a 26.09.1.3 host, 41 s inside the old 900 s limit.
+    assert huge_setup.DEFAULT_TIMEOUT_S >= 3 * 859

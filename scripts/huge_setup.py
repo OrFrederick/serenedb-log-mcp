@@ -12,7 +12,9 @@ Runs sql/remote/text_bench.sql inside SLM_SCHEMA (default slm), which creates:
 and, when the schema has none yet, the `log_text` text search dictionary that agent indexes use.
 URL is SLM_TEXT_BENCH_URL, by default text_bench/part_000.parquet (1,000,000,000 rows, 41 GB). The
 SereneDB server reads the file itself, so the server needs outbound HTTPS; nothing here downloads
-it. The facts pass reads about 512 MiB and took 75 s on the shared dev server (12 threads).
+it. The facts pass reads about 512 MiB and took 75 s on the shared dev server (26.10.1, 12 threads);
+on SereneDB 26.09.1.3 it fetched about 2.9 GB and took 14 minutes (PR #62 review). It is bound by the
+server's bandwidth to S3; --timeout (default 3600 s per statement) only stops a stuck pass.
 
 It never indexes the file: agent indexes over time slices come from the create_index tool. It
 re-runs safely (CREATE OR REPLACE), but stops when an agent index exists on the view, because
@@ -48,7 +50,9 @@ from serenedb_log_mcp.corpus.datasets import DATASETS, ENTRY_TABLES, REMOTE_FACT
 
 SETUP_SQL = SQL_DIR / "remote" / "text_bench.sql"
 CONNECT_TIMEOUT_S = 10
-DEFAULT_TIMEOUT_S = 900.0
+DEFAULT_TIMEOUT_S = 3600.0
+"""Per statement. The facts pass is bound by the server's S3 bandwidth: 75 s on the 26.10.1 dev server,
+859 s on a 26.09.1.3 host in the PR #62 review, so the limit only stops a pass that is stuck."""
 UTC_ZONES = frozenset({"utc", "etc/utc", "gmt", "etc/gmt", "zulu", "etc/zulu", "universal", "etc/universal"})
 
 

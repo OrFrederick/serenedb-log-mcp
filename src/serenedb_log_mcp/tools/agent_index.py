@@ -81,7 +81,8 @@ def register(server: MCPServer) -> None:
         for one or two queries. It pays off fastest for full-text counts grouped by node, Component
         or Pattern over a small slice of a large Dataset, and not for fetching example Log Entries.
         Not read-only: it adds an index to the database. At most one agent
-        index per Dataset and at most 1,000,000 Log Entries per slice; asking for the same slice
+        index per Dataset and at most 1,000,000 Log Entries per slice (5,000,000 for text_bench,
+        see below; summary.max_rows has the cap that applies); asking for the same slice
         again reuses the index. Call drop_index when you are done with the slice.
         text_bench (a billion remote Log Entries, no full index) needs one for any full-text call:
         a slice of at most 60 seconds and 5,000,000 Log Entries (about 8 seconds of it); the index

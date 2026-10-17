@@ -598,3 +598,94 @@ def test_switching_tier1_on_recomputes_the_patterns_but_keeps_alert_categories(
         assert pattern_key == alerts.get(entry_id, template_id), entry_id
     for _, template_id, _, pattern_key in after["os"]:
         assert pattern_key == template_id
+
+
+# ----------------------------------------------------------------- the merge-gate scorer
+
+# Labelled lines on top of the Tier 1 dictionary's own choices: one line whose gold label differs
+# from what the chain picks, and one Loghub-2.0 line that no template matches (as with the
+# truncated BGL lines of E7 in the full corpus).
+EXTRA_LABELS = (
+    ("3 L3 EDRAM error(s) (dcr 0x0157) detected and corrected", "E112"),
+    ("Kill job 20251 timed out. Block freed.", "E278"),
+)
+
+
+@pytest.fixture(scope="session")
+def labelled(database_url: str, tier1_sample: T9Schemas) -> T9Schemas:
+    """lh2_bgl and lh2_openstack in the Tier 1 raw schema: every Tier 1 message with its EventId."""
+    with psycopg.connect(database_url, autocommit=True) as conn:
+        for dataset, table in (("bgl", "lh2_bgl"), ("openstack", "lh2_openstack")):
+            conn.execute(
+                sql.SQL(
+                    "CREATE OR REPLACE TABLE {labels} AS "
+                    "SELECT row_number() OVER (ORDER BY message) AS line_id, message AS content, event_id, "
+                    "template_text AS event_template FROM {d} "
+                    "WHERE dataset = %s AND template_source = 'loghub2'"
+                ).format(
+                    labels=sql.Identifier(tier1_sample.raw, table),
+                    d=sql.Identifier(tier1_sample.slm, "pattern_dict"),
+                ),
+                [dataset],
+            )
+        for line_id, (content, event_id) in enumerate(EXTRA_LABELS, start=1_000_000):
+            conn.execute(
+                sql.SQL("INSERT INTO {} VALUES (%s, %s, %s, 'gold template')").format(
+                    sql.Identifier(tier1_sample.raw, "lh2_bgl")
+                ),
+                [line_id, content, event_id],
+            )
+    return tier1_sample
+
+
+def score_args(schemas: T9Schemas, *extra: str) -> list[str]:
+    return ["--schema", schemas.slm, "--labels-schema", schemas.raw, *extra]
+
+
+def test_the_scorer_lists_every_disagreeing_template_and_fails_the_gate(
+    labelled: T9Schemas, capsys: pytest.CaptureFixture[str]
+) -> None:
+    import score_patterns
+
+    assert score_patterns.main(score_args(labelled)) == 1
+
+    out = capsys.readouterr().out
+    assert "| E112 | E218 | 1 | 1 |" in out
+    assert "| E278 | none (Tier 2) | 1 | 1 |" in out
+    assert "- openstack: no disagreeing template." in out
+    assert "FAIL bgl" in out
+    assert re.search(r"\| openstack \| [\d,]+ \| [\d,]+ \| 100% \| 100% \| 100% \|", out)
+    assert re.search(r"- bgl: ([\d,]+) of \1 pattern_dict rows carry the EventId", out)
+    assert "| bgl | loghub2 |" in out
+    assert "| bgl | sqlmask |" in out
+    assert "| bgl | empty |" in out
+
+
+def test_the_scorer_passes_with_a_lower_minimum(
+    labelled: T9Schemas, capsys: pytest.CaptureFixture[str]
+) -> None:
+    import score_patterns
+
+    assert score_patterns.main(score_args(labelled, "--min-agreement", "0.9")) == 0
+
+    assert "- PASS" in capsys.readouterr().out
+
+
+def test_the_scorer_refuses_a_schema_derived_without_tier1(
+    labelled: T9Schemas, tier2_sample: T9Schemas, capsys: pytest.CaptureFixture[str]
+) -> None:
+    import score_patterns
+
+    args = ["--schema", tier2_sample.slm, "--labels-schema", labelled.raw]
+
+    assert score_patterns.main(args) == 2
+
+    assert "SLM_PATTERN_TIER1=0" in capsys.readouterr().out
+
+
+def test_the_scorer_names_missing_labels(tier2_sample: T9Schemas, capsys: pytest.CaptureFixture[str]) -> None:
+    import score_patterns
+
+    assert score_patterns.main(score_args(tier2_sample)) == 2
+
+    assert "make load-dev" in capsys.readouterr().err

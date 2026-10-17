@@ -160,3 +160,22 @@ def test_hourly_buckets_show_no_latency_degradation() -> None:
     assert result["summary"]["rising_total"] == 0
     assert result["total_matches"] == 31
     assert result["truncated"] is False
+
+
+# ----------------------------------------------------------------- the ground-truth score (#5)
+
+
+def test_ground_truth_scores_four_of_four_at_the_default_threshold() -> None:
+    import ground_truth
+
+    try:
+        labels = ground_truth.read_labels(get_settings())
+    except ground_truth.GroundTruthError as exc:
+        pytest.skip(str(exc))
+    spawn = ground_truth.measure_metric("spawn", set(labels))
+
+    default = next(s for s in spawn.scores if s.min_z == ground_truth.DEFAULT_MIN_Z)
+    assert default.recall == (4, 4)
+    assert default.precision == (4, 5)
+    assert default.unlabelled_flagged == [HYPOTHESIS[0]]
+    assert list(default.label_ranks.values()) == [1, 2, 3, 4]

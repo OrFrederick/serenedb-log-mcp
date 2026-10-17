@@ -127,3 +127,43 @@ def test_the_report_names_where_the_index_pays_most_and_where_it_saves_nothing()
 
     assert "Pays off fastest:** ciod / by_source (full index 64.0 ms, agent index 6.0 ms: 8 queries)" in text
     assert "No saving against the full index:** ciod / first_rows" in text
+
+
+def test_the_report_says_build_ms_is_wall_time_and_gives_the_network_free_build() -> None:
+    report = bench.Report(
+        dataset="bgl",
+        time_from=START,
+        time_to=END,
+        slice_rows=310_868,
+        dataset_rows=4_747_963,
+        builds=[bench.Build(400.0, 100.0), bench.Build(420.0, 90.0), bench.Build(380.0, 110.0)],
+        queries=[
+            bench.Timed(
+                bench.QUERIES[0],
+                27_392,
+                {"scan": [9.0, 9.4, 9.8], "full": [2.0, 2.2, 2.4], "agent": [0.5, 0.6, 0.7]},
+                {"scan": [99.0], "full": [40.0], "agent": [38.0]},
+            ),
+        ],
+        tools=[],
+        server_builds=[300.0, 310.0, 320.0],
+        rtt_ms=80.0,
+    )
+
+    text = report.markdown()
+
+    assert "client wall time" in text
+    assert "one network round trip per statement" in text
+    assert "server-side CREATE INDEX (EXPLAIN ANALYZE, median of 3 separate builds): 310.0 ms" in text
+    # network-free build: 310 server + max(0, 100 refresh - 80 round trip) = 330 ms
+    assert "330.0 ms" in text
+    assert "38 queries against a scan and 207 queries against the full index" in text
+    assert "compare the modes within one report" in text
+
+
+def test_without_server_builds_the_report_still_renders() -> None:
+    query = bench.Timed(bench.QUERIES[0], 1, {"scan": [2.0], "full": [2.0], "agent": [1.0]},
+                        {"scan": [9.0], "full": [9.0], "agent": [9.0]})  # fmt: skip
+    report = bench.Report("bgl", START, END, 1, 2, [bench.Build(1.0, 1.0)], [query], [])
+
+    assert "server-side CREATE INDEX" not in report.markdown()

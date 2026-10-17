@@ -76,6 +76,9 @@ OWNERSHIP_NOTE = (
     "Teams come from a stub Ownership Table with fictional Teams (TODO(organiser)); "
     "the organisers' Ownership Table replaces it."
 )
+# The value of the Ownership Table's team_source column on every row of the stub. A tool that joins
+# the table can select team_source to say where a Team came from; T25 sets its own value.
+OWNERSHIP_STUB_SOURCE = "stub"
 
 BGL_COLUMNS = (
     "entry_id",
@@ -165,10 +168,17 @@ class Dataset:
     table_columns: tuple[str, ...]
     columns: Mapping[str, str]
     time_note: str
+    ts_zone: str
+    """The IANA time zone that `ts` is logged in, for zoneinfo.ZoneInfo; epoch_utc is always UTC."""
     max_index_rows: int | None = None
     """Most Log Entries one agent index (T19) over this Dataset may hold; None for the default cap,
     `index_admin.MAX_SLICE_ROWS`."""
     remote: RemoteSource | None = None
+
+    @property
+    def ts_is_local(self) -> bool:
+        """True when `ts` is a local time, so a window across Datasets must use epoch_utc."""
+        return self.ts_zone != "UTC"
 
     @property
     def in_base_corpus(self) -> bool:
@@ -181,6 +191,7 @@ def _dataset(
     table_columns: tuple[str, ...],
     concepts: Mapping[str, str],
     time_note: str,
+    ts_zone: str,
     **extra: object,
 ) -> Dataset:
     columns = {column: column for column in table_columns} | dict(concepts)
@@ -192,6 +203,7 @@ def _dataset(
         table_columns=table_columns,
         columns=MappingProxyType(columns),
         time_note=time_note,
+        ts_zone=ts_zone,
         **extra,  # type: ignore[arg-type]
     )
 
@@ -216,6 +228,7 @@ DATASETS: Mapping[DatasetName, Dataset] = MappingProxyType(
             _BGL_CONCEPTS,
             "ts is the local time as logged (US Pacific, with daylight saving time); "
             "time gaps are computed on epoch_utc.",
+            "America/Los_Angeles",
         ),
         "openstack": _dataset(
             "openstack",
@@ -223,6 +236,7 @@ DATASETS: Mapping[DatasetName, Dataset] = MappingProxyType(
             OS_COLUMNS,
             _OS_CONCEPTS,
             "ts is the time as logged, which carries no zone and is taken as UTC.",
+            "UTC",
         ),
         "text_bench": _dataset(
             "text_bench",
@@ -231,6 +245,7 @@ DATASETS: Mapping[DatasetName, Dataset] = MappingProxyType(
             _TB_CONCEPTS,
             "ts is the OTel Timestamp in UTC, to the microsecond (the view casts it in the server's time "
             "zone, which is UTC).",
+            "UTC",
             max_index_rows=5_000_000,
             remote=TEXT_BENCH,
         ),
@@ -294,7 +309,8 @@ class Relation:
 
     @property
     def ownership_table(self) -> sql.Identifier:
-        """The Ownership Table: (dataset, component, team). A stub until T25, see OWNERSHIP_NOTE."""
+        """The Ownership Table: (dataset, component, team, team_source). A stub until T25, see
+        OWNERSHIP_NOTE; team_source is OWNERSHIP_STUB_SOURCE on every stub row."""
         return sql.Identifier(self.schema, OWNERSHIP)
 
     @property

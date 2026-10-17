@@ -24,7 +24,10 @@ change the database, and they do it here, on a write connection of their own:
   process) are adopted into the registry whenever `create_index` or `drop_index` runs.
 
 `build_ms` is what the trade-off needs: the time from `CREATE INDEX` until the index is usable
-(`create_ms` + `refresh_ms`), without the slice count, the marker and the verification.
+(`create_ms` + `refresh_ms`), without the slice count, the marker and the verification. Both are
+client wall times, so each includes one network round trip. `explain=True` (used by the benchmark,
+not by the tool) runs the identical `CREATE INDEX` as `EXPLAIN ANALYZE CREATE INDEX`, which builds
+the same index on SereneDB 26.10.1 and also reports the server-side time (`create_server_ms`).
 
 A remote Dataset (T20, text_bench) is a view over one remote Parquet file. The same partial index
 works over the view (verified on SereneDB 26.10.1), with three differences: the slice must first fit
@@ -37,6 +40,7 @@ from __future__ import annotations
 
 import contextlib
 import dataclasses
+import re
 import threading
 import time
 from collections.abc import Sequence
@@ -70,6 +74,7 @@ __all__ = [
     "create_statement",
     "drop_agent_index",
     "existing_agent_indexes",
+    "explain_total_ms",
 ]
 
 MAX_SLICE_ROWS = DEFAULT_MAX_INDEX_ROWS
@@ -92,6 +97,13 @@ Python. pg_indexes lists no index over a view on SereneDB 26.10.1 (and pg_index 
 one), so the view's name comes from the index definition."""
 
 _lock = threading.Lock()
+_TOTAL_TIME_RE = re.compile(r"Total Time: ([0-9.]+)s")
+
+
+def explain_total_ms(plan: str) -> float | None:
+    """The server-side time an EXPLAIN ANALYZE plan reports ("Total Time: 0.0352s"), in ms."""
+    match = _TOTAL_TIME_RE.search(plan)
+    return None if match is None else float(match.group(1)) * 1000
 
 
 @dataclass(frozen=True)
@@ -107,9 +119,21 @@ class CatalogIndex:
     def agent(self) -> AgentIndex | None:
         """The agent index this is: generated name, valid marker, on its Dataset's canonical table."""
         found = AgentIndex.from_marker(self.schema, self.name, self.comment)
-        if found is None or ENTRY_TABLES.get(found.dataset) != self.table:  # type: ignore[call-overload]
+        if found is None or _entry_table(found.dataset) != self.table:
             return None
         return found
+
+
+def _entry_table(dataset: str) -> str | None:
+    """The canonical Log Entry table of a Dataset name; None for a name the registry does not know.
+
+    This check is what refuses a valid-looking marker on another table (a forged
+    `dataset: openstack` marker on bgl_entry), so it is spelt out instead of a typed lookup.
+    """
+    for name, table in ENTRY_TABLES.items():
+        if name == dataset:
+            return table
+    return None
 
 
 @dataclass(frozen=True)
@@ -122,6 +146,8 @@ class IndexReport:
     create_ms: float = 0.0
     refresh_ms: float = 0.0
     drop_ms: float = 0.0
+    create_server_ms: float | None = None
+    """Server-side CREATE INDEX time from EXPLAIN ANALYZE; only for `explain=True` builds."""
 
     @property
     def build_ms(self) -> float:
@@ -161,6 +187,13 @@ def _count_slice(rel: Relation, start: datetime, end: datetime) -> QueryResult:
     ts = rel.column("time")
     statement = sql.SQL("SELECT count(*) FROM {} WHERE {} >= %s AND {} < %s").format(rel.table, ts, ts)
     return fetch_all(statement.as_string(None), [start, end])
+
+
+def _single_count(result: QueryResult, what: str) -> int:
+    """The one integer a count(*) returned; ToolError when the result has another shape."""
+    if len(result.rows) != 1 or len(result.rows[0]) != 1 or not isinstance(result.rows[0][0], int):
+        raise ToolError(f"counting {what} returned {len(result.rows)} rows instead of one count")
+    return int(result.rows[0][0])
 
 
 def _count_index(schema: str, name: str) -> QueryResult:
@@ -217,13 +250,21 @@ class _WriteSession:
 
     def run(self, statement: sql.Composable) -> float:
         """Run one statement, record it, return its wall time in ms."""
-        text = statement.as_string(None)
+        return self._timed(statement.as_string(None))[0]
+
+    def run_explained(self, statement: sql.Composable) -> tuple[float, float | None]:
+        """Run `EXPLAIN ANALYZE <statement>`; its wall time and the server time it reports, in ms."""
+        elapsed, plan = self._timed("EXPLAIN ANALYZE " + statement.as_string(None))
+        return elapsed, explain_total_ms("\n".join(str(row[0]) for row in plan))
+
+    def _timed(self, text: str) -> tuple[float, list[Any]]:
         started = time.perf_counter()
-        self.conn.execute(text)
+        cursor = self.conn.execute(text)
+        rows = list(cursor.fetchall()) if text.startswith("EXPLAIN") else []
         elapsed = (time.perf_counter() - started) * 1000
         self.statements.append(text)
         self.ms.append(elapsed)
-        return elapsed
+        return elapsed, rows
 
     def control(self, statement: str) -> None:
         """BEGIN, COMMIT or ROLLBACK: run, not recorded (the read tools record none either)."""
@@ -247,6 +288,7 @@ def create_agent_index(
     *,
     settings: Settings | None = None,
     max_rows: int | None = None,
+    explain: bool = False,
 ) -> IndexReport:
     """Build (or reuse) the agent index of `dataset` over [start, end) and register it for routing.
 
@@ -255,13 +297,14 @@ def create_agent_index(
     `max_index_rows`, else `MAX_SLICE_ROWS`, read at call time) or, for a remote Dataset, one
     longer than its scan span; and ToolError when another slice of the Dataset is already
     indexed or the build fails.
+    `explain=True` runs the CREATE INDEX under EXPLAIN ANALYZE and reports `create_server_ms`.
     """
     settings = settings if settings is not None else get_settings()
     rel = relation(dataset, settings=settings)
     check_remote_slice(rel.dataset, start, end)  # before the count, so even that stays a pruned read
     schema = rel.schema
     counted = _count_slice(rel, start, end)
-    rows = int(counted.rows[0][0])
+    rows = _single_count(counted, "the slice")
     cap = max_rows if max_rows is not None else rel.dataset.max_index_rows or MAX_SLICE_ROWS
     _check_slice(rows, rel.dataset.name, start, end, cap)
     with _lock:
@@ -282,12 +325,17 @@ def create_agent_index(
             )
         index = AgentIndex(schema, new_name(rel.dataset.name), rel.dataset.name, start, end, rows)
         with _WriteSession(settings) as session:
-            create_ms = _build(session, rel, index)
+            create_ms, create_server_ms = _build(session, rel, index, explain=explain)
             refresh_ms, verified = _publish(session, rel, index)
         agent_indexes.register(index)
     result = QueryResult.combine(counted, listing, session.result(), *verified, total=0, rows=[])
     return IndexReport(
-        index, "built", _with_snapshot_note(result, index), create_ms=create_ms, refresh_ms=refresh_ms
+        index,
+        "built",
+        _with_snapshot_note(result, index),
+        create_ms=create_ms,
+        refresh_ms=refresh_ms,
+        create_server_ms=create_server_ms,
     )
 
 
@@ -314,14 +362,17 @@ def _check_slice(rows: int, dataset: str, start: datetime, end: datetime, max_ro
         )
 
 
-def _build(session: _WriteSession, rel: Relation, index: AgentIndex) -> float:
-    """CREATE INDEX and its marker in one transaction; returns the CREATE INDEX time in ms."""
+def _build(
+    session: _WriteSession, rel: Relation, index: AgentIndex, *, explain: bool = False
+) -> tuple[float, float | None]:
+    """CREATE INDEX and its marker in one transaction; the CREATE INDEX wall and server time in ms."""
     timer = threading.Timer(BUILD_TIMEOUT_S, lambda: session.conn.cancel_safe())
     timer.daemon = True
     try:
         session.control("BEGIN")
         timer.start()
-        create_ms = session.run(create_statement(rel, index.name, index.time_from, index.time_to))
+        statement = create_statement(rel, index.name, index.time_from, index.time_to)
+        create_ms, server_ms = session.run_explained(statement) if explain else (session.run(statement), None)
         session.run(
             sql.SQL("COMMENT ON INDEX {} IS {}").format(
                 sql.Identifier(index.schema, index.name), sql.Literal(index.marker())
@@ -348,7 +399,7 @@ def _build(session: _WriteSession, rel: Relation, index: AgentIndex) -> float:
         ) from exc
     finally:
         timer.cancel()
-    return create_ms
+    return create_ms, server_ms
 
 
 def _publish(session: _WriteSession, rel: Relation, index: AgentIndex) -> tuple[float, list[QueryResult]]:
@@ -368,7 +419,7 @@ def _publish(session: _WriteSession, rel: Relation, index: AgentIndex) -> tuple[
         for _ in range(2):
             refresh_ms += session.run(refresh)
             verified.append(_count_index(index.schema, index.name))
-            held = int(verified[-1].rows[0][0])
+            held = _single_count(verified[-1], f"the agent index {index.qualified_name}")
             if held == index.rows:
                 return refresh_ms, verified
         problem = f"it holds {held:,} of the slice's {index.rows:,} Log Entries after two refreshes"

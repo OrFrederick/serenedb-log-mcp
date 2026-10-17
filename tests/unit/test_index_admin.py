@@ -60,6 +60,8 @@ class FakeConnection:
                 raise psycopg.OperationalError("server closed the connection unexpectedly")
             raise psycopg.errors.FeatureNotSupported("no such feature")
         self.executed.append(query)
+        if query.startswith("EXPLAIN ANALYZE"):
+            return FakeCursor([("╭─ Summary ───────────╮",), ("│ Total Time: 0.2391s │",), ("╰──╯",)])
         return FakeCursor()
 
     def cancel_safe(self) -> None:
@@ -73,7 +75,7 @@ class FakeDatabase:
     """The read-only layer: answers by statement shape and records what it was asked."""
 
     def __init__(self, slice_rows: int = ROWS, catalog: list[tuple[str, str | None, str]] | None = None,
-                 verify: Sequence[int] = (ROWS,)) -> None:  # fmt: skip
+                 verify: Sequence[int | None] = (ROWS,)) -> None:  # fmt: skip
         self.slice_rows = slice_rows
         self.catalog = catalog or []
         self.verify = list(verify)
@@ -84,7 +86,8 @@ class FakeDatabase:
         if "pg_class" in statement:
             rows: list[tuple[Any, ...]] = list(self.catalog)
         elif "agent_idx_" in statement:
-            rows = [(self.verify.pop(0) if len(self.verify) > 1 else self.verify[0],)]
+            held = self.verify.pop(0) if len(self.verify) > 1 else self.verify[0]
+            rows = [] if held is None else [(held,)]
         else:
             rows = [(self.slice_rows,)]
         return QueryResult(len(rows), rows, False, 1.0, [statement], [list(params)])
@@ -217,6 +220,17 @@ def test_an_index_that_does_not_hold_the_whole_slice_is_dropped_again(
     assert agent_indexes.registered_all() == []
 
 
+def test_a_verification_without_a_count_drops_the_index_again(monkeypatch: pytest.MonkeyPatch) -> None:
+    conn = FakeConnection()
+    opened = use(monkeypatch, FakeDatabase(verify=[None]), conn)
+
+    with pytest.raises(ToolError, match="dropped again"):
+        index_admin.create_agent_index("bgl", START, END, settings=SLM)
+
+    assert opened[-1].executed == [f'DROP INDEX IF EXISTS "slm"."{NAME}"']
+    assert agent_indexes.registered_all() == []
+
+
 def test_a_second_refresh_that_completes_the_index_is_enough(monkeypatch: pytest.MonkeyPatch) -> None:
     conn = FakeConnection()
     use(monkeypatch, FakeDatabase(verify=[ROWS - 5, ROWS]), conn)
@@ -343,6 +357,63 @@ def test_existing_agent_indexes_lists_only_marked_ones_without_adopting_them(
 
     assert index_admin.existing_agent_indexes(settings=SLM) == [WAVE]
     assert agent_indexes.registered_all() == []
+
+
+# ----------------------------------------------------------------- server-side build time (bench)
+
+
+def test_a_plain_build_reports_no_server_time(monkeypatch: pytest.MonkeyPatch) -> None:
+    conn = FakeConnection()
+    use(monkeypatch, FakeDatabase(), conn)
+
+    report = index_admin.create_agent_index("bgl", START, END, settings=SLM)
+
+    assert report.create_server_ms is None
+    assert conn.executed[1].startswith("CREATE INDEX")
+
+
+def test_an_explained_build_runs_the_same_ddl_and_reports_the_server_time(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    conn = FakeConnection()
+    use(monkeypatch, FakeDatabase(), conn)
+
+    report = index_admin.create_agent_index("bgl", START, END, settings=SLM, explain=True)
+
+    kinds = [statement.split()[0] for statement in conn.executed]
+    assert kinds == ["BEGIN", "EXPLAIN", "COMMENT", "COMMIT", "VACUUM"]
+    plain = index_admin.create_statement(relation("bgl", settings=SLM), NAME, START, END).as_string(None)
+    assert conn.executed[1] == f"EXPLAIN ANALYZE {plain}"
+    assert report.create_server_ms == pytest.approx(239.1)
+    assert agent_indexes.registered("slm", "bgl") == WAVE
+
+
+@pytest.mark.parametrize(
+    ("plan", "expected"),
+    [
+        ("│ Total Time: 0.0016s │", 1.6),
+        ("╭─ Summary ─╮\n│ Total Time: 1.25s │", 1250.0),
+        ("no summary", None),
+    ],
+)
+def test_the_server_time_is_read_from_the_explain_analyze_summary(plan: str, expected: float | None) -> None:
+    found = index_admin.explain_total_ms(plan)
+
+    assert found == (None if expected is None else pytest.approx(expected))
+
+
+def test_a_forged_marker_for_another_dataset_on_bgl_entry_is_refused(monkeypatch: pytest.MonkeyPatch) -> None:
+    # The PR #59 review's attempt: a structurally valid openstack marker on an index of bgl_entry.
+    forged = AgentIndex("slm", "agent_idx_openstack_cafebabe", "openstack", START, END, ROWS)
+    opened = use(
+        monkeypatch, FakeDatabase(catalog=[(forged.name, forged.marker(), "bgl_entry")]), FakeConnection()
+    )
+
+    with pytest.raises(ToolError, match="not built by create_index"):
+        index_admin.drop_agent_index(forged.name, settings=SLM)
+
+    assert opened == []
+    assert index_admin.existing_agent_indexes(settings=SLM) == []
 
 
 # ----------------------------------------------------------------- text_bench (T20)

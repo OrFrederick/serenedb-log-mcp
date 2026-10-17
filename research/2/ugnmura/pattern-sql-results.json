@@ -1,0 +1,3207 @@
+{
+  "input_sql": "SELECT dataset,coalesce(component,'') AS component,message,count(*) AS entries\n      FROM research_log_entries GROUP BY dataset,component,message",
+  "catalogues": {
+    "BGL": "loghub2-regex-v1:b4e33dc830bfda4ddb14c0dcaf8e1328ce2af06ce56ab8ea4fecd61deaa2cad1",
+    "OpenStack": "loghub2-regex-v1:a05b4e7534a0f2ce0c01c6a1eea7b28c30d85b2006bc1d8d873bcccbe2d68559"
+  },
+  "ambiguity_policy": "strict; no tie breaking",
+  "mapping_rows": 498143,
+  "queries": [
+    {
+      "name": "assignment_coverage",
+      "sql": "SELECT dataset,parse_status,sum(source_entries) AS log_entry_count\n            FROM research_template_map GROUP BY dataset,parse_status ORDER BY dataset,parse_status",
+      "parameters": [],
+      "columns": [
+        "dataset",
+        "parse_status",
+        "log_entry_count"
+      ],
+      "rows": [
+        [
+          "BGL",
+          "ambiguous",
+          "161"
+        ],
+        [
+          "BGL",
+          "catalogue",
+          "4630794"
+        ],
+        [
+          "BGL",
+          "empty_content",
+          "34470"
+        ],
+        [
+          "BGL",
+          "unmatched",
+          "82538"
+        ],
+        [
+          "OpenStack",
+          "catalogue",
+          "207632"
+        ],
+        [
+          "OpenStack",
+          "unmatched",
+          "188"
+        ]
+      ],
+      "query_ms": 65.87349995970726
+    },
+    {
+      "name": "duplicate_map_keys",
+      "sql": "SELECT count(*) AS duplicate_keys FROM (\n            SELECT dataset,component,message,count(*) AS n FROM research_template_map\n            GROUP BY dataset,component,message HAVING count(*)>1) t",
+      "parameters": [],
+      "columns": [
+        "duplicate_keys"
+      ],
+      "rows": [
+        [
+          0
+        ]
+      ],
+      "query_ms": 428.27891698107123
+    },
+    {
+      "name": "top_patterns",
+      "sql": "SELECT l.dataset,l.component,p.template_id,p.parser_version,\n            min(p.template_text) AS template_text,count(*) AS log_entry_count\n            FROM research_log_entries l JOIN research_template_map p\n            ON l.dataset=p.dataset AND coalesce(l.component,'')=p.component AND l.message=p.message\n            WHERE p.parse_status='catalogue'\n            GROUP BY l.dataset,l.component,p.template_id,p.parser_version\n            ORDER BY log_entry_count DESC,l.dataset,l.component,p.template_id LIMIT 20",
+      "parameters": [],
+      "columns": [
+        "dataset",
+        "component",
+        "template_id",
+        "parser_version",
+        "template_text",
+        "log_entry_count"
+      ],
+      "rows": [
+        [
+          "BGL",
+          "KERNEL",
+          "bc41e38834ec93ff0dba5d48dd5a3dbf6117d6dada2ad32bc7347b05305d12b0",
+          "loghub2-regex-v1:b4e33dc830bfda4ddb14c0dcaf8e1328ce2af06ce56ab8ea4fecd61deaa2cad1",
+          "generating core.<*>",
+          1706751
+        ],
+        [
+          "BGL",
+          "KERNEL",
+          "13c1766bddc7283ce3c7ad2fb639d3e717289c9ea59e7bf24de56ab60cadd889",
+          "loghub2-regex-v1:b4e33dc830bfda4ddb14c0dcaf8e1328ce2af06ce56ab8ea4fecd61deaa2cad1",
+          "iar <*> dear <*>",
+          442966
+        ],
+        [
+          "BGL",
+          "KERNEL",
+          "ed8ca57e6f37a1fea62bd2eaa14a89b2638d629753fa9005522a310836848574",
+          "loghub2-regex-v1:b4e33dc830bfda4ddb14c0dcaf8e1328ce2af06ce56ab8ea4fecd61deaa2cad1",
+          "<*> double-hummer alignment exceptions",
+          295764
+        ],
+        [
+          "BGL",
+          "KERNEL",
+          "803697b543694ee10ba028eeaa738d19c32deff412be7c2a0472c74ce6543e69",
+          "loghub2-regex-v1:b4e33dc830bfda4ddb14c0dcaf8e1328ce2af06ce56ab8ea4fecd61deaa2cad1",
+          "<*> floating point alignment exceptions",
+          267725
+        ],
+        [
+          "BGL",
+          "KERNEL",
+          "76fb7ac5327a276716046caf1fe8b3cce6df47a5ed6ac907504edc2a10ebcbea",
+          "loghub2-regex-v1:b4e33dc830bfda4ddb14c0dcaf8e1328ce2af06ce56ab8ea4fecd61deaa2cad1",
+          "CE sym <*>, at <*>, mask <*>",
+          201206
+        ],
+        [
+          "BGL",
+          "KERNEL",
+          "85f584ef611c1ef1d99031e86d16fa34464ff0a5b38055b38838c8cf63fdc145",
+          "loghub2-regex-v1:b4e33dc830bfda4ddb14c0dcaf8e1328ce2af06ce56ab8ea4fecd61deaa2cad1",
+          "data TLB error interrupt",
+          152734
+        ],
+        [
+          "BGL",
+          "KERNEL",
+          "09150beff57d453344a6c44d802a168cc43428542dd9ffde356f68b93bc221f8",
+          "loghub2-regex-v1:b4e33dc830bfda4ddb14c0dcaf8e1328ce2af06ce56ab8ea4fecd61deaa2cad1",
+          "<*> total interrupts. <*> critical input interrupts. <*> microseconds total spent on critical input interrupts, <*> microseconds max time in a critical input interrupt.",
+          135096
+        ],
+        [
+          "BGL",
+          "KERNEL",
+          "9d8be3269ad98a0afcb9d270de035cb194e21aa0c4a5ad07d0108d5187340469",
+          "loghub2-regex-v1:b4e33dc830bfda4ddb14c0dcaf8e1328ce2af06ce56ab8ea4fecd61deaa2cad1",
+          "<*> microseconds spent in the rbs signal handler during <*> calls. <*> microseconds was the maximum time for a single instance of a correctable ddr.",
+          135096
+        ],
+        [
+          "BGL",
+          "KERNEL",
+          "ae5cec11e0f64aa59766ca60831cd691463f7135716017661532cc6e5f0e9bf9",
+          "loghub2-regex-v1:b4e33dc830bfda4ddb14c0dcaf8e1328ce2af06ce56ab8ea4fecd61deaa2cad1",
+          "instruction cache parity error corrected",
+          105924
+        ],
+        [
+          "BGL",
+          "MMCS",
+          "46607085fe1f6ac1999624ebdcb167c5ae6094ac7f8ea5495c136f8dc6e6de0b",
+          "loghub2-regex-v1:b4e33dc830bfda4ddb14c0dcaf8e1328ce2af06ce56ab8ea4fecd61deaa2cad1",
+          "idoproxydb hit ASSERT condition: ASSERT expression=<*> Source file=<*> Source line=<*> Function=<*>",
+          84253
+        ],
+        [
+          "OpenStack",
+          "nova.osapi_compute.wsgi.server",
+          "a5ea1f3368a0828aedf22dbf93c6e99647d53b9b52a8489b7a9987ebc9e36d21",
+          "loghub2-regex-v1:a05b4e7534a0f2ce0c01c6a1eea7b28c30d85b2006bc1d8d873bcccbe2d68559",
+          "<*> \"GET <*> <*>\" status: <*> len: <*> time: <*>",
+          70072
+        ],
+        [
+          "BGL",
+          "KERNEL",
+          "5b21b14b193aa9a79b8bea137b1a7b33b6bc1ddd9c8d4ff970ce5bc72a6bb034",
+          "loghub2-regex-v1:b4e33dc830bfda4ddb14c0dcaf8e1328ce2af06ce56ab8ea4fecd61deaa2cad1",
+          "data storage interrupt",
+          63493
+        ],
+        [
+          "BGL",
+          "KERNEL",
+          "32588933481fb44a4d649e8c07638af06823bb0839916c838cbd6adb3b23b5f1",
+          "loghub2-regex-v1:b4e33dc830bfda4ddb14c0dcaf8e1328ce2af06ce56ab8ea4fecd61deaa2cad1",
+          "ciod: generated <*> core files for program <*>",
+          62484
+        ],
+        [
+          "BGL",
+          "KERNEL",
+          "186fbdeed11084c366f42e01c91d47bba7d1e9d06c263e758f0933440ada320c",
+          "loghub2-regex-v1:b4e33dc830bfda4ddb14c0dcaf8e1328ce2af06ce56ab8ea4fecd61deaa2cad1",
+          "instruction address: <*>",
+          51227
+        ],
+        [
+          "BGL",
+          "APP",
+          "1846b7eecafc15fc31530223fcdca8c75a1324d2afbd74b4e28966a17aea814d",
+          "loghub2-regex-v1:b4e33dc830bfda4ddb14c0dcaf8e1328ce2af06ce56ab8ea4fecd61deaa2cad1",
+          "ciod: Error loading <*>: invalid or missing program image, No such file or directory",
+          47504
+        ],
+        [
+          "BGL",
+          "APP",
+          "400c272cd2e88c0c9dac977b2e73d62af041387e1f6f485fb50ded1c89919e29",
+          "loghub2-regex-v1:b4e33dc830bfda4ddb14c0dcaf8e1328ce2af06ce56ab8ea4fecd61deaa2cad1",
+          "ciod: LOGIN chdir(<*>) failed: No such file or directory",
+          43647
+        ],
+        [
+          "BGL",
+          "APP",
+          "a9f316e19d8e724ffb4109f9897e6511539bc4b9b32ffa76090dc81e0c1255ca",
+          "loghub2-regex-v1:b4e33dc830bfda4ddb14c0dcaf8e1328ce2af06ce56ab8ea4fecd61deaa2cad1",
+          "ciod: Error loading <*>: invalid or missing program image, Permission denied",
+          43040
+        ],
+        [
+          "BGL",
+          "KERNEL",
+          "d5e875b141354382d762a74f5d72cc2ab1caf8590448c54c56de8500c47b45da",
+          "loghub2-regex-v1:b4e33dc830bfda4ddb14c0dcaf8e1328ce2af06ce56ab8ea4fecd61deaa2cad1",
+          "ciod: Received signal <*>, code=<*>, errno=<*>, address=<*>",
+          39457
+        ],
+        [
+          "BGL",
+          "KERNEL",
+          "c9c57a317a9d32f4741cb7f330a85e63210411c882cfd9e89e0d02fb187b6d68",
+          "loghub2-regex-v1:b4e33dc830bfda4ddb14c0dcaf8e1328ce2af06ce56ab8ea4fecd61deaa2cad1",
+          "<*> ddr errors(s) detected and corrected on rank <*>, symbol <*> bit <*>",
+          33939
+        ],
+        [
+          "BGL",
+          "KERNEL",
+          "97afb1b8f8cffb30a4bf895831563bb996711147d8a7f57c931059cc65f00495",
+          "loghub2-regex-v1:b4e33dc830bfda4ddb14c0dcaf8e1328ce2af06ce56ab8ea4fecd61deaa2cad1",
+          "total of <*> ddr error(s) detected and corrected",
+          28485
+        ]
+      ],
+      "query_ms": 2242.765208007768
+    },
+    {
+      "name": "pattern_trend",
+      "sql": "SELECT l.dataset,time_bucket(INTERVAL '1 day',l.ts) AS bucket,\n            p.parse_status,count(*) AS log_entry_count FROM research_log_entries l\n            LEFT JOIN research_template_map p ON l.dataset=p.dataset\n            AND coalesce(l.component,'')=p.component AND l.message=p.message\n            GROUP BY l.dataset,bucket,p.parse_status ORDER BY l.dataset,bucket,p.parse_status",
+      "parameters": [],
+      "columns": [
+        "dataset",
+        "bucket",
+        "parse_status",
+        "log_entry_count"
+      ],
+      "rows": [
+        [
+          "BGL",
+          "2005-06-03 00:00:00",
+          "catalogue",
+          14732
+        ],
+        [
+          "BGL",
+          "2005-06-03 00:00:00",
+          "unmatched",
+          1
+        ],
+        [
+          "BGL",
+          "2005-06-04 00:00:00",
+          "catalogue",
+          693
+        ],
+        [
+          "BGL",
+          "2005-06-04 00:00:00",
+          "unmatched",
+          2040
+        ],
+        [
+          "BGL",
+          "2005-06-05 00:00:00",
+          "catalogue",
+          100471
+        ],
+        [
+          "BGL",
+          "2005-06-05 00:00:00",
+          "unmatched",
+          909
+        ],
+        [
+          "BGL",
+          "2005-06-06 00:00:00",
+          "catalogue",
+          39462
+        ],
+        [
+          "BGL",
+          "2005-06-07 00:00:00",
+          "catalogue",
+          31914
+        ],
+        [
+          "BGL",
+          "2005-06-07 00:00:00",
+          "unmatched",
+          10
+        ],
+        [
+          "BGL",
+          "2005-06-08 00:00:00",
+          "catalogue",
+          10509
+        ],
+        [
+          "BGL",
+          "2005-06-08 00:00:00",
+          "unmatched",
+          167
+        ],
+        [
+          "BGL",
+          "2005-06-09 00:00:00",
+          "catalogue",
+          20265
+        ],
+        [
+          "BGL",
+          "2005-06-09 00:00:00",
+          "unmatched",
+          18
+        ],
+        [
+          "BGL",
+          "2005-06-10 00:00:00",
+          "catalogue",
+          1453
+        ],
+        [
+          "BGL",
+          "2005-06-10 00:00:00",
+          "unmatched",
+          9
+        ],
+        [
+          "BGL",
+          "2005-06-11 00:00:00",
+          "catalogue",
+          152668
+        ],
+        [
+          "BGL",
+          "2005-06-11 00:00:00",
+          "unmatched",
+          1
+        ],
+        [
+          "BGL",
+          "2005-06-12 00:00:00",
+          "catalogue",
+          3419
+        ],
+        [
+          "BGL",
+          "2005-06-12 00:00:00",
+          "unmatched",
+          1
+        ],
+        [
+          "BGL",
+          "2005-06-13 00:00:00",
+          "catalogue",
+          36007
+        ],
+        [
+          "BGL",
+          "2005-06-13 00:00:00",
+          "unmatched",
+          1055
+        ],
+        [
+          "BGL",
+          "2005-06-14 00:00:00",
+          "catalogue",
+          348784
+        ],
+        [
+          "BGL",
+          "2005-06-14 00:00:00",
+          "unmatched",
+          32777
+        ],
+        [
+          "BGL",
+          "2005-06-15 00:00:00",
+          "catalogue",
+          14972
+        ],
+        [
+          "BGL",
+          "2005-06-16 00:00:00",
+          "catalogue",
+          22524
+        ],
+        [
+          "BGL",
+          "2005-06-16 00:00:00",
+          "unmatched",
+          2066
+        ],
+        [
+          "BGL",
+          "2005-06-17 00:00:00",
+          "catalogue",
+          4048
+        ],
+        [
+          "BGL",
+          "2005-06-17 00:00:00",
+          "unmatched",
+          25
+        ],
+        [
+          "BGL",
+          "2005-06-18 00:00:00",
+          "catalogue",
+          5292
+        ],
+        [
+          "BGL",
+          "2005-06-18 00:00:00",
+          "unmatched",
+          9
+        ],
+        [
+          "BGL",
+          "2005-06-19 00:00:00",
+          "catalogue",
+          3350
+        ],
+        [
+          "BGL",
+          "2005-06-19 00:00:00",
+          "unmatched",
+          9
+        ],
+        [
+          "BGL",
+          "2005-06-20 00:00:00",
+          "catalogue",
+          22911
+        ],
+        [
+          "BGL",
+          "2005-06-20 00:00:00",
+          "unmatched",
+          952
+        ],
+        [
+          "BGL",
+          "2005-06-21 00:00:00",
+          "catalogue",
+          11962
+        ],
+        [
+          "BGL",
+          "2005-06-21 00:00:00",
+          "unmatched",
+          41
+        ],
+        [
+          "BGL",
+          "2005-06-22 00:00:00",
+          "catalogue",
+          20967
+        ],
+        [
+          "BGL",
+          "2005-06-22 00:00:00",
+          "unmatched",
+          159
+        ],
+        [
+          "BGL",
+          "2005-06-23 00:00:00",
+          "catalogue",
+          19392
+        ],
+        [
+          "BGL",
+          "2005-06-23 00:00:00",
+          "unmatched",
+          26
+        ],
+        [
+          "BGL",
+          "2005-06-24 00:00:00",
+          "catalogue",
+          3816
+        ],
+        [
+          "BGL",
+          "2005-06-24 00:00:00",
+          "unmatched",
+          1
+        ],
+        [
+          "BGL",
+          "2005-06-25 00:00:00",
+          "catalogue",
+          95876
+        ],
+        [
+          "BGL",
+          "2005-06-25 00:00:00",
+          "unmatched",
+          5
+        ],
+        [
+          "BGL",
+          "2005-06-26 00:00:00",
+          "catalogue",
+          65194
+        ],
+        [
+          "BGL",
+          "2005-06-26 00:00:00",
+          "unmatched",
+          4
+        ],
+        [
+          "BGL",
+          "2005-06-27 00:00:00",
+          "catalogue",
+          6865
+        ],
+        [
+          "BGL",
+          "2005-06-27 00:00:00",
+          "unmatched",
+          185
+        ],
+        [
+          "BGL",
+          "2005-06-28 00:00:00",
+          "ambiguous",
+          4
+        ],
+        [
+          "BGL",
+          "2005-06-28 00:00:00",
+          "catalogue",
+          6487
+        ],
+        [
+          "BGL",
+          "2005-06-28 00:00:00",
+          "unmatched",
+          1992
+        ],
+        [
+          "BGL",
+          "2005-06-29 00:00:00",
+          "catalogue",
+          54630
+        ],
+        [
+          "BGL",
+          "2005-06-29 00:00:00",
+          "unmatched",
+          22
+        ],
+        [
+          "BGL",
+          "2005-06-30 00:00:00",
+          "catalogue",
+          78737
+        ],
+        [
+          "BGL",
+          "2005-06-30 00:00:00",
+          "unmatched",
+          1044
+        ],
+        [
+          "BGL",
+          "2005-07-01 00:00:00",
+          "catalogue",
+          142592
+        ],
+        [
+          "BGL",
+          "2005-07-01 00:00:00",
+          "unmatched",
+          882
+        ],
+        [
+          "BGL",
+          "2005-07-02 00:00:00",
+          "catalogue",
+          9104
+        ],
+        [
+          "BGL",
+          "2005-07-02 00:00:00",
+          "unmatched",
+          1
+        ],
+        [
+          "BGL",
+          "2005-07-03 00:00:00",
+          "catalogue",
+          53925
+        ],
+        [
+          "BGL",
+          "2005-07-03 00:00:00",
+          "unmatched",
+          30
+        ],
+        [
+          "BGL",
+          "2005-07-04 00:00:00",
+          "ambiguous",
+          8
+        ],
+        [
+          "BGL",
+          "2005-07-04 00:00:00",
+          "catalogue",
+          61184
+        ],
+        [
+          "BGL",
+          "2005-07-04 00:00:00",
+          "unmatched",
+          12
+        ],
+        [
+          "BGL",
+          "2005-07-05 00:00:00",
+          "ambiguous",
+          4
+        ],
+        [
+          "BGL",
+          "2005-07-05 00:00:00",
+          "catalogue",
+          1424
+        ],
+        [
+          "BGL",
+          "2005-07-05 00:00:00",
+          "unmatched",
+          1065
+        ],
+        [
+          "BGL",
+          "2005-07-06 00:00:00",
+          "ambiguous",
+          4
+        ],
+        [
+          "BGL",
+          "2005-07-06 00:00:00",
+          "catalogue",
+          3269
+        ],
+        [
+          "BGL",
+          "2005-07-06 00:00:00",
+          "unmatched",
+          25
+        ],
+        [
+          "BGL",
+          "2005-07-07 00:00:00",
+          "ambiguous",
+          4
+        ],
+        [
+          "BGL",
+          "2005-07-07 00:00:00",
+          "catalogue",
+          62685
+        ],
+        [
+          "BGL",
+          "2005-07-07 00:00:00",
+          "unmatched",
+          61
+        ],
+        [
+          "BGL",
+          "2005-07-08 00:00:00",
+          "ambiguous",
+          17
+        ],
+        [
+          "BGL",
+          "2005-07-08 00:00:00",
+          "catalogue",
+          2103
+        ],
+        [
+          "BGL",
+          "2005-07-08 00:00:00",
+          "empty_content",
+          83
+        ],
+        [
+          "BGL",
+          "2005-07-08 00:00:00",
+          "unmatched",
+          84
+        ],
+        [
+          "BGL",
+          "2005-07-09 00:00:00",
+          "catalogue",
+          381573
+        ],
+        [
+          "BGL",
+          "2005-07-09 00:00:00",
+          "empty_content",
+          119
+        ],
+        [
+          "BGL",
+          "2005-07-09 00:00:00",
+          "unmatched",
+          135
+        ],
+        [
+          "BGL",
+          "2005-07-10 00:00:00",
+          "catalogue",
+          33501
+        ],
+        [
+          "BGL",
+          "2005-07-10 00:00:00",
+          "unmatched",
+          10
+        ],
+        [
+          "BGL",
+          "2005-07-11 00:00:00",
+          "ambiguous",
+          9
+        ],
+        [
+          "BGL",
+          "2005-07-11 00:00:00",
+          "catalogue",
+          3588
+        ],
+        [
+          "BGL",
+          "2005-07-11 00:00:00",
+          "empty_content",
+          76
+        ],
+        [
+          "BGL",
+          "2005-07-11 00:00:00",
+          "unmatched",
+          223
+        ],
+        [
+          "BGL",
+          "2005-07-12 00:00:00",
+          "catalogue",
+          26907
+        ],
+        [
+          "BGL",
+          "2005-07-12 00:00:00",
+          "unmatched",
+          16
+        ],
+        [
+          "BGL",
+          "2005-07-13 00:00:00",
+          "catalogue",
+          198951
+        ],
+        [
+          "BGL",
+          "2005-07-13 00:00:00",
+          "unmatched",
+          41
+        ],
+        [
+          "BGL",
+          "2005-07-14 00:00:00",
+          "catalogue",
+          5998
+        ],
+        [
+          "BGL",
+          "2005-07-14 00:00:00",
+          "unmatched",
+          1059
+        ],
+        [
+          "BGL",
+          "2005-07-15 00:00:00",
+          "catalogue",
+          81307
+        ],
+        [
+          "BGL",
+          "2005-07-15 00:00:00",
+          "empty_content",
+          29
+        ],
+        [
+          "BGL",
+          "2005-07-15 00:00:00",
+          "unmatched",
+          287
+        ],
+        [
+          "BGL",
+          "2005-07-16 00:00:00",
+          "catalogue",
+          1667
+        ],
+        [
+          "BGL",
+          "2005-07-16 00:00:00",
+          "unmatched",
+          1
+        ],
+        [
+          "BGL",
+          "2005-07-17 00:00:00",
+          "catalogue",
+          65996
+        ],
+        [
+          "BGL",
+          "2005-07-17 00:00:00",
+          "unmatched",
+          10
+        ],
+        [
+          "BGL",
+          "2005-07-18 00:00:00",
+          "ambiguous",
+          4
+        ],
+        [
+          "BGL",
+          "2005-07-18 00:00:00",
+          "catalogue",
+          31159
+        ],
+        [
+          "BGL",
+          "2005-07-18 00:00:00",
+          "empty_content",
+          162
+        ],
+        [
+          "BGL",
+          "2005-07-18 00:00:00",
+          "unmatched",
+          602
+        ],
+        [
+          "BGL",
+          "2005-07-19 00:00:00",
+          "catalogue",
+          4014
+        ],
+        [
+          "BGL",
+          "2005-07-19 00:00:00",
+          "empty_content",
+          22
+        ],
+        [
+          "BGL",
+          "2005-07-19 00:00:00",
+          "unmatched",
+          1016
+        ],
+        [
+          "BGL",
+          "2005-07-20 00:00:00",
+          "catalogue",
+          66480
+        ],
+        [
+          "BGL",
+          "2005-07-20 00:00:00",
+          "empty_content",
+          6
+        ],
+        [
+          "BGL",
+          "2005-07-20 00:00:00",
+          "unmatched",
+          66
+        ],
+        [
+          "BGL",
+          "2005-07-21 00:00:00",
+          "ambiguous",
+          4
+        ],
+        [
+          "BGL",
+          "2005-07-21 00:00:00",
+          "catalogue",
+          839
+        ],
+        [
+          "BGL",
+          "2005-07-21 00:00:00",
+          "unmatched",
+          58
+        ],
+        [
+          "BGL",
+          "2005-07-22 00:00:00",
+          "catalogue",
+          747
+        ],
+        [
+          "BGL",
+          "2005-07-22 00:00:00",
+          "unmatched",
+          2
+        ],
+        [
+          "BGL",
+          "2005-07-23 00:00:00",
+          "catalogue",
+          200641
+        ],
+        [
+          "BGL",
+          "2005-07-23 00:00:00",
+          "unmatched",
+          13
+        ],
+        [
+          "BGL",
+          "2005-07-24 00:00:00",
+          "catalogue",
+          39020
+        ],
+        [
+          "BGL",
+          "2005-07-24 00:00:00",
+          "unmatched",
+          13
+        ],
+        [
+          "BGL",
+          "2005-07-25 00:00:00",
+          "catalogue",
+          4899
+        ],
+        [
+          "BGL",
+          "2005-07-25 00:00:00",
+          "empty_content",
+          40
+        ],
+        [
+          "BGL",
+          "2005-07-25 00:00:00",
+          "unmatched",
+          8
+        ],
+        [
+          "BGL",
+          "2005-07-26 00:00:00",
+          "catalogue",
+          55723
+        ],
+        [
+          "BGL",
+          "2005-07-26 00:00:00",
+          "unmatched",
+          26
+        ],
+        [
+          "BGL",
+          "2005-07-27 00:00:00",
+          "catalogue",
+          4305
+        ],
+        [
+          "BGL",
+          "2005-07-27 00:00:00",
+          "unmatched",
+          21
+        ],
+        [
+          "BGL",
+          "2005-07-28 00:00:00",
+          "catalogue",
+          116937
+        ],
+        [
+          "BGL",
+          "2005-07-28 00:00:00",
+          "unmatched",
+          6
+        ],
+        [
+          "BGL",
+          "2005-07-29 00:00:00",
+          "catalogue",
+          785
+        ],
+        [
+          "BGL",
+          "2005-07-29 00:00:00",
+          "unmatched",
+          3
+        ],
+        [
+          "BGL",
+          "2005-07-30 00:00:00",
+          "catalogue",
+          79
+        ],
+        [
+          "BGL",
+          "2005-07-31 00:00:00",
+          "catalogue",
+          96
+        ],
+        [
+          "BGL",
+          "2005-07-31 00:00:00",
+          "unmatched",
+          1
+        ],
+        [
+          "BGL",
+          "2005-08-02 00:00:00",
+          "ambiguous",
+          4
+        ],
+        [
+          "BGL",
+          "2005-08-02 00:00:00",
+          "catalogue",
+          19059
+        ],
+        [
+          "BGL",
+          "2005-08-02 00:00:00",
+          "unmatched",
+          1989
+        ],
+        [
+          "BGL",
+          "2005-08-03 00:00:00",
+          "catalogue",
+          25708
+        ],
+        [
+          "BGL",
+          "2005-08-03 00:00:00",
+          "unmatched",
+          1211
+        ],
+        [
+          "BGL",
+          "2005-08-04 00:00:00",
+          "ambiguous",
+          3
+        ],
+        [
+          "BGL",
+          "2005-08-04 00:00:00",
+          "catalogue",
+          14947
+        ],
+        [
+          "BGL",
+          "2005-08-04 00:00:00",
+          "unmatched",
+          4441
+        ],
+        [
+          "BGL",
+          "2005-08-05 00:00:00",
+          "ambiguous",
+          2
+        ],
+        [
+          "BGL",
+          "2005-08-05 00:00:00",
+          "catalogue",
+          4975
+        ],
+        [
+          "BGL",
+          "2005-08-05 00:00:00",
+          "unmatched",
+          170
+        ],
+        [
+          "BGL",
+          "2005-08-06 00:00:00",
+          "catalogue",
+          1007
+        ],
+        [
+          "BGL",
+          "2005-08-06 00:00:00",
+          "unmatched",
+          94
+        ],
+        [
+          "BGL",
+          "2005-08-07 00:00:00",
+          "catalogue",
+          3090
+        ],
+        [
+          "BGL",
+          "2005-08-07 00:00:00",
+          "unmatched",
+          247
+        ],
+        [
+          "BGL",
+          "2005-08-08 00:00:00",
+          "ambiguous",
+          1
+        ],
+        [
+          "BGL",
+          "2005-08-08 00:00:00",
+          "catalogue",
+          1864
+        ],
+        [
+          "BGL",
+          "2005-08-08 00:00:00",
+          "unmatched",
+          246
+        ],
+        [
+          "BGL",
+          "2005-08-09 00:00:00",
+          "catalogue",
+          12840
+        ],
+        [
+          "BGL",
+          "2005-08-09 00:00:00",
+          "unmatched",
+          1903
+        ],
+        [
+          "BGL",
+          "2005-08-10 00:00:00",
+          "catalogue",
+          6958
+        ],
+        [
+          "BGL",
+          "2005-08-10 00:00:00",
+          "unmatched",
+          120
+        ],
+        [
+          "BGL",
+          "2005-08-11 00:00:00",
+          "catalogue",
+          4028
+        ],
+        [
+          "BGL",
+          "2005-08-11 00:00:00",
+          "unmatched",
+          55
+        ],
+        [
+          "BGL",
+          "2005-08-12 00:00:00",
+          "ambiguous",
+          2
+        ],
+        [
+          "BGL",
+          "2005-08-12 00:00:00",
+          "catalogue",
+          24242
+        ],
+        [
+          "BGL",
+          "2005-08-12 00:00:00",
+          "unmatched",
+          2144
+        ],
+        [
+          "BGL",
+          "2005-08-13 00:00:00",
+          "catalogue",
+          5541
+        ],
+        [
+          "BGL",
+          "2005-08-13 00:00:00",
+          "unmatched",
+          13
+        ],
+        [
+          "BGL",
+          "2005-08-14 00:00:00",
+          "catalogue",
+          1699
+        ],
+        [
+          "BGL",
+          "2005-08-14 00:00:00",
+          "unmatched",
+          29
+        ],
+        [
+          "BGL",
+          "2005-08-15 00:00:00",
+          "catalogue",
+          4625
+        ],
+        [
+          "BGL",
+          "2005-08-15 00:00:00",
+          "unmatched",
+          1042
+        ],
+        [
+          "BGL",
+          "2005-08-16 00:00:00",
+          "ambiguous",
+          1
+        ],
+        [
+          "BGL",
+          "2005-08-16 00:00:00",
+          "catalogue",
+          1556
+        ],
+        [
+          "BGL",
+          "2005-08-16 00:00:00",
+          "unmatched",
+          74
+        ],
+        [
+          "BGL",
+          "2005-08-17 00:00:00",
+          "ambiguous",
+          1
+        ],
+        [
+          "BGL",
+          "2005-08-17 00:00:00",
+          "catalogue",
+          8712
+        ],
+        [
+          "BGL",
+          "2005-08-17 00:00:00",
+          "unmatched",
+          61
+        ],
+        [
+          "BGL",
+          "2005-08-18 00:00:00",
+          "catalogue",
+          4580
+        ],
+        [
+          "BGL",
+          "2005-08-18 00:00:00",
+          "unmatched",
+          43
+        ],
+        [
+          "BGL",
+          "2005-08-19 00:00:00",
+          "catalogue",
+          1655
+        ],
+        [
+          "BGL",
+          "2005-08-19 00:00:00",
+          "unmatched",
+          719
+        ],
+        [
+          "BGL",
+          "2005-08-20 00:00:00",
+          "catalogue",
+          5819
+        ],
+        [
+          "BGL",
+          "2005-08-21 00:00:00",
+          "catalogue",
+          2978
+        ],
+        [
+          "BGL",
+          "2005-08-21 00:00:00",
+          "unmatched",
+          9
+        ],
+        [
+          "BGL",
+          "2005-08-22 00:00:00",
+          "catalogue",
+          18300
+        ],
+        [
+          "BGL",
+          "2005-08-22 00:00:00",
+          "unmatched",
+          1236
+        ],
+        [
+          "BGL",
+          "2005-08-23 00:00:00",
+          "ambiguous",
+          1
+        ],
+        [
+          "BGL",
+          "2005-08-23 00:00:00",
+          "catalogue",
+          9090
+        ],
+        [
+          "BGL",
+          "2005-08-23 00:00:00",
+          "unmatched",
+          453
+        ],
+        [
+          "BGL",
+          "2005-08-24 00:00:00",
+          "ambiguous",
+          1
+        ],
+        [
+          "BGL",
+          "2005-08-24 00:00:00",
+          "catalogue",
+          355
+        ],
+        [
+          "BGL",
+          "2005-08-24 00:00:00",
+          "unmatched",
+          78
+        ],
+        [
+          "BGL",
+          "2005-08-25 00:00:00",
+          "ambiguous",
+          3
+        ],
+        [
+          "BGL",
+          "2005-08-25 00:00:00",
+          "catalogue",
+          1390
+        ],
+        [
+          "BGL",
+          "2005-08-25 00:00:00",
+          "unmatched",
+          2
+        ],
+        [
+          "BGL",
+          "2005-08-26 00:00:00",
+          "catalogue",
+          91541
+        ],
+        [
+          "BGL",
+          "2005-08-26 00:00:00",
+          "empty_content",
+          3156
+        ],
+        [
+          "BGL",
+          "2005-08-26 00:00:00",
+          "unmatched",
+          14
+        ],
+        [
+          "BGL",
+          "2005-08-27 00:00:00",
+          "ambiguous",
+          1
+        ],
+        [
+          "BGL",
+          "2005-08-27 00:00:00",
+          "catalogue",
+          2757
+        ],
+        [
+          "BGL",
+          "2005-08-27 00:00:00",
+          "unmatched",
+          30
+        ],
+        [
+          "BGL",
+          "2005-08-28 00:00:00",
+          "catalogue",
+          90538
+        ],
+        [
+          "BGL",
+          "2005-08-28 00:00:00",
+          "unmatched",
+          3
+        ],
+        [
+          "BGL",
+          "2005-08-29 00:00:00",
+          "catalogue",
+          4698
+        ],
+        [
+          "BGL",
+          "2005-08-29 00:00:00",
+          "unmatched",
+          569
+        ],
+        [
+          "BGL",
+          "2005-08-30 00:00:00",
+          "catalogue",
+          3252
+        ],
+        [
+          "BGL",
+          "2005-08-30 00:00:00",
+          "unmatched",
+          17
+        ],
+        [
+          "BGL",
+          "2005-08-31 00:00:00",
+          "ambiguous",
+          5
+        ],
+        [
+          "BGL",
+          "2005-08-31 00:00:00",
+          "catalogue",
+          5649
+        ],
+        [
+          "BGL",
+          "2005-08-31 00:00:00",
+          "unmatched",
+          69
+        ],
+        [
+          "BGL",
+          "2005-09-01 00:00:00",
+          "ambiguous",
+          1
+        ],
+        [
+          "BGL",
+          "2005-09-01 00:00:00",
+          "catalogue",
+          3003
+        ],
+        [
+          "BGL",
+          "2005-09-01 00:00:00",
+          "unmatched",
+          63
+        ],
+        [
+          "BGL",
+          "2005-09-02 00:00:00",
+          "catalogue",
+          10828
+        ],
+        [
+          "BGL",
+          "2005-09-02 00:00:00",
+          "unmatched",
+          622
+        ],
+        [
+          "BGL",
+          "2005-09-03 00:00:00",
+          "catalogue",
+          6844
+        ],
+        [
+          "BGL",
+          "2005-09-03 00:00:00",
+          "unmatched",
+          14
+        ],
+        [
+          "BGL",
+          "2005-09-04 00:00:00",
+          "catalogue",
+          4720
+        ],
+        [
+          "BGL",
+          "2005-09-04 00:00:00",
+          "unmatched",
+          52
+        ],
+        [
+          "BGL",
+          "2005-09-05 00:00:00",
+          "catalogue",
+          2128
+        ],
+        [
+          "BGL",
+          "2005-09-06 00:00:00",
+          "ambiguous",
+          1
+        ],
+        [
+          "BGL",
+          "2005-09-06 00:00:00",
+          "catalogue",
+          4441
+        ],
+        [
+          "BGL",
+          "2005-09-06 00:00:00",
+          "unmatched",
+          6
+        ],
+        [
+          "BGL",
+          "2005-09-07 00:00:00",
+          "catalogue",
+          4068
+        ],
+        [
+          "BGL",
+          "2005-09-07 00:00:00",
+          "unmatched",
+          585
+        ],
+        [
+          "BGL",
+          "2005-09-08 00:00:00",
+          "catalogue",
+          7031
+        ],
+        [
+          "BGL",
+          "2005-09-08 00:00:00",
+          "unmatched",
+          4
+        ],
+        [
+          "BGL",
+          "2005-09-09 00:00:00",
+          "catalogue",
+          6023
+        ],
+        [
+          "BGL",
+          "2005-09-09 00:00:00",
+          "unmatched",
+          35
+        ],
+        [
+          "BGL",
+          "2005-09-10 00:00:00",
+          "catalogue",
+          4111
+        ],
+        [
+          "BGL",
+          "2005-09-10 00:00:00",
+          "unmatched",
+          1035
+        ],
+        [
+          "BGL",
+          "2005-09-11 00:00:00",
+          "catalogue",
+          1876
+        ],
+        [
+          "BGL",
+          "2005-09-11 00:00:00",
+          "unmatched",
+          78
+        ],
+        [
+          "BGL",
+          "2005-09-12 00:00:00",
+          "ambiguous",
+          1
+        ],
+        [
+          "BGL",
+          "2005-09-12 00:00:00",
+          "catalogue",
+          2960
+        ],
+        [
+          "BGL",
+          "2005-09-12 00:00:00",
+          "unmatched",
+          10
+        ],
+        [
+          "BGL",
+          "2005-09-13 00:00:00",
+          "catalogue",
+          4410
+        ],
+        [
+          "BGL",
+          "2005-09-13 00:00:00",
+          "unmatched",
+          19
+        ],
+        [
+          "BGL",
+          "2005-09-14 00:00:00",
+          "catalogue",
+          534
+        ],
+        [
+          "BGL",
+          "2005-09-14 00:00:00",
+          "unmatched",
+          17
+        ],
+        [
+          "BGL",
+          "2005-09-15 00:00:00",
+          "catalogue",
+          1178
+        ],
+        [
+          "BGL",
+          "2005-09-16 00:00:00",
+          "catalogue",
+          1535
+        ],
+        [
+          "BGL",
+          "2005-09-17 00:00:00",
+          "catalogue",
+          2825
+        ],
+        [
+          "BGL",
+          "2005-09-17 00:00:00",
+          "unmatched",
+          935
+        ],
+        [
+          "BGL",
+          "2005-09-18 00:00:00",
+          "catalogue",
+          5667
+        ],
+        [
+          "BGL",
+          "2005-09-19 00:00:00",
+          "ambiguous",
+          4
+        ],
+        [
+          "BGL",
+          "2005-09-19 00:00:00",
+          "catalogue",
+          3669
+        ],
+        [
+          "BGL",
+          "2005-09-19 00:00:00",
+          "unmatched",
+          21
+        ],
+        [
+          "BGL",
+          "2005-09-20 00:00:00",
+          "ambiguous",
+          2
+        ],
+        [
+          "BGL",
+          "2005-09-20 00:00:00",
+          "catalogue",
+          99466
+        ],
+        [
+          "BGL",
+          "2005-09-20 00:00:00",
+          "unmatched",
+          574
+        ],
+        [
+          "BGL",
+          "2005-09-21 00:00:00",
+          "catalogue",
+          3188
+        ],
+        [
+          "BGL",
+          "2005-09-21 00:00:00",
+          "unmatched",
+          9
+        ],
+        [
+          "BGL",
+          "2005-09-22 00:00:00",
+          "catalogue",
+          1516
+        ],
+        [
+          "BGL",
+          "2005-09-22 00:00:00",
+          "unmatched",
+          2
+        ],
+        [
+          "BGL",
+          "2005-09-23 00:00:00",
+          "ambiguous",
+          1
+        ],
+        [
+          "BGL",
+          "2005-09-23 00:00:00",
+          "catalogue",
+          2975
+        ],
+        [
+          "BGL",
+          "2005-09-23 00:00:00",
+          "unmatched",
+          62
+        ],
+        [
+          "BGL",
+          "2005-09-24 00:00:00",
+          "catalogue",
+          2286
+        ],
+        [
+          "BGL",
+          "2005-09-24 00:00:00",
+          "unmatched",
+          28
+        ],
+        [
+          "BGL",
+          "2005-09-25 00:00:00",
+          "catalogue",
+          3214
+        ],
+        [
+          "BGL",
+          "2005-09-25 00:00:00",
+          "unmatched",
+          42
+        ],
+        [
+          "BGL",
+          "2005-09-26 00:00:00",
+          "catalogue",
+          2139
+        ],
+        [
+          "BGL",
+          "2005-09-26 00:00:00",
+          "unmatched",
+          29
+        ],
+        [
+          "BGL",
+          "2005-09-27 00:00:00",
+          "ambiguous",
+          1
+        ],
+        [
+          "BGL",
+          "2005-09-27 00:00:00",
+          "catalogue",
+          5465
+        ],
+        [
+          "BGL",
+          "2005-09-27 00:00:00",
+          "unmatched",
+          52
+        ],
+        [
+          "BGL",
+          "2005-09-28 00:00:00",
+          "catalogue",
+          3611
+        ],
+        [
+          "BGL",
+          "2005-09-28 00:00:00",
+          "unmatched",
+          9
+        ],
+        [
+          "BGL",
+          "2005-09-29 00:00:00",
+          "catalogue",
+          7060
+        ],
+        [
+          "BGL",
+          "2005-09-29 00:00:00",
+          "unmatched",
+          1060
+        ],
+        [
+          "BGL",
+          "2005-09-30 00:00:00",
+          "catalogue",
+          5097
+        ],
+        [
+          "BGL",
+          "2005-09-30 00:00:00",
+          "unmatched",
+          35
+        ],
+        [
+          "BGL",
+          "2005-10-01 00:00:00",
+          "catalogue",
+          1330
+        ],
+        [
+          "BGL",
+          "2005-10-01 00:00:00",
+          "unmatched",
+          28
+        ],
+        [
+          "BGL",
+          "2005-10-02 00:00:00",
+          "catalogue",
+          2712
+        ],
+        [
+          "BGL",
+          "2005-10-02 00:00:00",
+          "unmatched",
+          47
+        ],
+        [
+          "BGL",
+          "2005-10-03 00:00:00",
+          "catalogue",
+          5596
+        ],
+        [
+          "BGL",
+          "2005-10-03 00:00:00",
+          "unmatched",
+          35
+        ],
+        [
+          "BGL",
+          "2005-10-04 00:00:00",
+          "catalogue",
+          3747
+        ],
+        [
+          "BGL",
+          "2005-10-04 00:00:00",
+          "unmatched",
+          69
+        ],
+        [
+          "BGL",
+          "2005-10-05 00:00:00",
+          "catalogue",
+          8502
+        ],
+        [
+          "BGL",
+          "2005-10-05 00:00:00",
+          "unmatched",
+          17
+        ],
+        [
+          "BGL",
+          "2005-10-06 00:00:00",
+          "catalogue",
+          2826
+        ],
+        [
+          "BGL",
+          "2005-10-06 00:00:00",
+          "unmatched",
+          1025
+        ],
+        [
+          "BGL",
+          "2005-10-07 00:00:00",
+          "catalogue",
+          3342
+        ],
+        [
+          "BGL",
+          "2005-10-07 00:00:00",
+          "unmatched",
+          62
+        ],
+        [
+          "BGL",
+          "2005-10-08 00:00:00",
+          "catalogue",
+          2641
+        ],
+        [
+          "BGL",
+          "2005-10-09 00:00:00",
+          "catalogue",
+          2338
+        ],
+        [
+          "BGL",
+          "2005-10-09 00:00:00",
+          "unmatched",
+          16
+        ],
+        [
+          "BGL",
+          "2005-10-10 00:00:00",
+          "ambiguous",
+          12
+        ],
+        [
+          "BGL",
+          "2005-10-10 00:00:00",
+          "catalogue",
+          3539
+        ],
+        [
+          "BGL",
+          "2005-10-10 00:00:00",
+          "unmatched",
+          862
+        ],
+        [
+          "BGL",
+          "2005-10-11 00:00:00",
+          "catalogue",
+          1611
+        ],
+        [
+          "BGL",
+          "2005-10-12 00:00:00",
+          "catalogue",
+          7072
+        ],
+        [
+          "BGL",
+          "2005-10-12 00:00:00",
+          "unmatched",
+          25
+        ],
+        [
+          "BGL",
+          "2005-10-13 00:00:00",
+          "ambiguous",
+          7
+        ],
+        [
+          "BGL",
+          "2005-10-13 00:00:00",
+          "catalogue",
+          7673
+        ],
+        [
+          "BGL",
+          "2005-10-13 00:00:00",
+          "unmatched",
+          9
+        ],
+        [
+          "BGL",
+          "2005-10-14 00:00:00",
+          "ambiguous",
+          8
+        ],
+        [
+          "BGL",
+          "2005-10-14 00:00:00",
+          "catalogue",
+          4643
+        ],
+        [
+          "BGL",
+          "2005-10-14 00:00:00",
+          "unmatched",
+          30
+        ],
+        [
+          "BGL",
+          "2005-10-15 00:00:00",
+          "catalogue",
+          7230
+        ],
+        [
+          "BGL",
+          "2005-10-15 00:00:00",
+          "unmatched",
+          4
+        ],
+        [
+          "BGL",
+          "2005-10-16 00:00:00",
+          "catalogue",
+          6277
+        ],
+        [
+          "BGL",
+          "2005-10-16 00:00:00",
+          "unmatched",
+          5
+        ],
+        [
+          "BGL",
+          "2005-10-17 00:00:00",
+          "catalogue",
+          16935
+        ],
+        [
+          "BGL",
+          "2005-10-17 00:00:00",
+          "unmatched",
+          69
+        ],
+        [
+          "BGL",
+          "2005-10-18 00:00:00",
+          "catalogue",
+          2984
+        ],
+        [
+          "BGL",
+          "2005-10-18 00:00:00",
+          "unmatched",
+          81
+        ],
+        [
+          "BGL",
+          "2005-10-19 00:00:00",
+          "catalogue",
+          2368
+        ],
+        [
+          "BGL",
+          "2005-10-19 00:00:00",
+          "unmatched",
+          29
+        ],
+        [
+          "BGL",
+          "2005-10-20 00:00:00",
+          "catalogue",
+          4848
+        ],
+        [
+          "BGL",
+          "2005-10-20 00:00:00",
+          "unmatched",
+          6
+        ],
+        [
+          "BGL",
+          "2005-10-21 00:00:00",
+          "catalogue",
+          6556
+        ],
+        [
+          "BGL",
+          "2005-10-22 00:00:00",
+          "catalogue",
+          2935
+        ],
+        [
+          "BGL",
+          "2005-10-22 00:00:00",
+          "unmatched",
+          30
+        ],
+        [
+          "BGL",
+          "2005-10-23 00:00:00",
+          "catalogue",
+          5522
+        ],
+        [
+          "BGL",
+          "2005-10-23 00:00:00",
+          "unmatched",
+          52
+        ],
+        [
+          "BGL",
+          "2005-10-24 00:00:00",
+          "catalogue",
+          3485
+        ],
+        [
+          "BGL",
+          "2005-10-24 00:00:00",
+          "unmatched",
+          35
+        ],
+        [
+          "BGL",
+          "2005-10-25 00:00:00",
+          "catalogue",
+          4904
+        ],
+        [
+          "BGL",
+          "2005-10-25 00:00:00",
+          "unmatched",
+          14
+        ],
+        [
+          "BGL",
+          "2005-10-26 00:00:00",
+          "catalogue",
+          970
+        ],
+        [
+          "BGL",
+          "2005-10-26 00:00:00",
+          "unmatched",
+          12
+        ],
+        [
+          "BGL",
+          "2005-10-27 00:00:00",
+          "catalogue",
+          3085
+        ],
+        [
+          "BGL",
+          "2005-10-27 00:00:00",
+          "unmatched",
+          99
+        ],
+        [
+          "BGL",
+          "2005-10-28 00:00:00",
+          "ambiguous",
+          1
+        ],
+        [
+          "BGL",
+          "2005-10-28 00:00:00",
+          "catalogue",
+          3838
+        ],
+        [
+          "BGL",
+          "2005-10-28 00:00:00",
+          "unmatched",
+          22
+        ],
+        [
+          "BGL",
+          "2005-10-29 00:00:00",
+          "catalogue",
+          5092
+        ],
+        [
+          "BGL",
+          "2005-10-29 00:00:00",
+          "unmatched",
+          27
+        ],
+        [
+          "BGL",
+          "2005-10-30 00:00:00",
+          "catalogue",
+          6843
+        ],
+        [
+          "BGL",
+          "2005-10-30 00:00:00",
+          "unmatched",
+          1
+        ],
+        [
+          "BGL",
+          "2005-10-31 00:00:00",
+          "catalogue",
+          9138
+        ],
+        [
+          "BGL",
+          "2005-10-31 00:00:00",
+          "unmatched",
+          30
+        ],
+        [
+          "BGL",
+          "2005-11-01 00:00:00",
+          "ambiguous",
+          2
+        ],
+        [
+          "BGL",
+          "2005-11-01 00:00:00",
+          "catalogue",
+          4322
+        ],
+        [
+          "BGL",
+          "2005-11-01 00:00:00",
+          "unmatched",
+          19
+        ],
+        [
+          "BGL",
+          "2005-11-02 00:00:00",
+          "catalogue",
+          2455
+        ],
+        [
+          "BGL",
+          "2005-11-03 00:00:00",
+          "catalogue",
+          196168
+        ],
+        [
+          "BGL",
+          "2005-11-03 00:00:00",
+          "empty_content",
+          4749
+        ],
+        [
+          "BGL",
+          "2005-11-03 00:00:00",
+          "unmatched",
+          20
+        ],
+        [
+          "BGL",
+          "2005-11-04 00:00:00",
+          "catalogue",
+          136026
+        ],
+        [
+          "BGL",
+          "2005-11-04 00:00:00",
+          "empty_content",
+          14912
+        ],
+        [
+          "BGL",
+          "2005-11-04 00:00:00",
+          "unmatched",
+          19
+        ],
+        [
+          "BGL",
+          "2005-11-05 00:00:00",
+          "catalogue",
+          4208
+        ],
+        [
+          "BGL",
+          "2005-11-05 00:00:00",
+          "unmatched",
+          1
+        ],
+        [
+          "BGL",
+          "2005-11-06 00:00:00",
+          "catalogue",
+          594
+        ],
+        [
+          "BGL",
+          "2005-11-06 00:00:00",
+          "unmatched",
+          1
+        ],
+        [
+          "BGL",
+          "2005-11-07 00:00:00",
+          "catalogue",
+          22657
+        ],
+        [
+          "BGL",
+          "2005-11-07 00:00:00",
+          "empty_content",
+          1536
+        ],
+        [
+          "BGL",
+          "2005-11-07 00:00:00",
+          "unmatched",
+          16
+        ],
+        [
+          "BGL",
+          "2005-11-08 00:00:00",
+          "catalogue",
+          42240
+        ],
+        [
+          "BGL",
+          "2005-11-08 00:00:00",
+          "empty_content",
+          3948
+        ],
+        [
+          "BGL",
+          "2005-11-08 00:00:00",
+          "unmatched",
+          16
+        ],
+        [
+          "BGL",
+          "2005-11-09 00:00:00",
+          "catalogue",
+          43510
+        ],
+        [
+          "BGL",
+          "2005-11-09 00:00:00",
+          "empty_content",
+          4608
+        ],
+        [
+          "BGL",
+          "2005-11-09 00:00:00",
+          "unmatched",
+          14
+        ],
+        [
+          "BGL",
+          "2005-11-10 00:00:00",
+          "catalogue",
+          16635
+        ],
+        [
+          "BGL",
+          "2005-11-10 00:00:00",
+          "empty_content",
+          1024
+        ],
+        [
+          "BGL",
+          "2005-11-10 00:00:00",
+          "unmatched",
+          33
+        ],
+        [
+          "BGL",
+          "2005-11-11 00:00:00",
+          "catalogue",
+          7006
+        ],
+        [
+          "BGL",
+          "2005-11-11 00:00:00",
+          "unmatched",
+          15
+        ],
+        [
+          "BGL",
+          "2005-11-12 00:00:00",
+          "catalogue",
+          925
+        ],
+        [
+          "BGL",
+          "2005-11-12 00:00:00",
+          "unmatched",
+          9
+        ],
+        [
+          "BGL",
+          "2005-11-13 00:00:00",
+          "catalogue",
+          2607
+        ],
+        [
+          "BGL",
+          "2005-11-13 00:00:00",
+          "unmatched",
+          19
+        ],
+        [
+          "BGL",
+          "2005-11-14 00:00:00",
+          "catalogue",
+          3556
+        ],
+        [
+          "BGL",
+          "2005-11-14 00:00:00",
+          "unmatched",
+          137
+        ],
+        [
+          "BGL",
+          "2005-11-15 00:00:00",
+          "ambiguous",
+          4
+        ],
+        [
+          "BGL",
+          "2005-11-15 00:00:00",
+          "catalogue",
+          12918
+        ],
+        [
+          "BGL",
+          "2005-11-15 00:00:00",
+          "unmatched",
+          548
+        ],
+        [
+          "BGL",
+          "2005-11-16 00:00:00",
+          "catalogue",
+          2041
+        ],
+        [
+          "BGL",
+          "2005-11-16 00:00:00",
+          "unmatched",
+          51
+        ],
+        [
+          "BGL",
+          "2005-11-17 00:00:00",
+          "ambiguous",
+          4
+        ],
+        [
+          "BGL",
+          "2005-11-17 00:00:00",
+          "catalogue",
+          5363
+        ],
+        [
+          "BGL",
+          "2005-11-17 00:00:00",
+          "unmatched",
+          325
+        ],
+        [
+          "BGL",
+          "2005-11-18 00:00:00",
+          "ambiguous",
+          2
+        ],
+        [
+          "BGL",
+          "2005-11-18 00:00:00",
+          "catalogue",
+          7544
+        ],
+        [
+          "BGL",
+          "2005-11-18 00:00:00",
+          "unmatched",
+          156
+        ],
+        [
+          "BGL",
+          "2005-11-19 00:00:00",
+          "catalogue",
+          2174
+        ],
+        [
+          "BGL",
+          "2005-11-19 00:00:00",
+          "unmatched",
+          10
+        ],
+        [
+          "BGL",
+          "2005-11-20 00:00:00",
+          "catalogue",
+          4933
+        ],
+        [
+          "BGL",
+          "2005-11-20 00:00:00",
+          "unmatched",
+          37
+        ],
+        [
+          "BGL",
+          "2005-11-21 00:00:00",
+          "ambiguous",
+          3
+        ],
+        [
+          "BGL",
+          "2005-11-21 00:00:00",
+          "catalogue",
+          25933
+        ],
+        [
+          "BGL",
+          "2005-11-21 00:00:00",
+          "unmatched",
+          1
+        ],
+        [
+          "BGL",
+          "2005-11-22 00:00:00",
+          "ambiguous",
+          1
+        ],
+        [
+          "BGL",
+          "2005-11-22 00:00:00",
+          "catalogue",
+          9346
+        ],
+        [
+          "BGL",
+          "2005-11-22 00:00:00",
+          "unmatched",
+          83
+        ],
+        [
+          "BGL",
+          "2005-11-23 00:00:00",
+          "ambiguous",
+          1
+        ],
+        [
+          "BGL",
+          "2005-11-23 00:00:00",
+          "catalogue",
+          2580
+        ],
+        [
+          "BGL",
+          "2005-11-23 00:00:00",
+          "unmatched",
+          2
+        ],
+        [
+          "BGL",
+          "2005-11-24 00:00:00",
+          "ambiguous",
+          3
+        ],
+        [
+          "BGL",
+          "2005-11-24 00:00:00",
+          "catalogue",
+          9059
+        ],
+        [
+          "BGL",
+          "2005-11-24 00:00:00",
+          "unmatched",
+          149
+        ],
+        [
+          "BGL",
+          "2005-11-25 00:00:00",
+          "ambiguous",
+          3
+        ],
+        [
+          "BGL",
+          "2005-11-25 00:00:00",
+          "catalogue",
+          7698
+        ],
+        [
+          "BGL",
+          "2005-11-26 00:00:00",
+          "catalogue",
+          8833
+        ],
+        [
+          "BGL",
+          "2005-11-26 00:00:00",
+          "unmatched",
+          252
+        ],
+        [
+          "BGL",
+          "2005-11-27 00:00:00",
+          "catalogue",
+          2489
+        ],
+        [
+          "BGL",
+          "2005-11-27 00:00:00",
+          "unmatched",
+          100
+        ],
+        [
+          "BGL",
+          "2005-11-28 00:00:00",
+          "catalogue",
+          2422
+        ],
+        [
+          "BGL",
+          "2005-11-28 00:00:00",
+          "unmatched",
+          589
+        ],
+        [
+          "BGL",
+          "2005-11-29 00:00:00",
+          "ambiguous",
+          3
+        ],
+        [
+          "BGL",
+          "2005-11-29 00:00:00",
+          "catalogue",
+          9299
+        ],
+        [
+          "BGL",
+          "2005-11-29 00:00:00",
+          "unmatched",
+          150
+        ],
+        [
+          "BGL",
+          "2005-11-30 00:00:00",
+          "ambiguous",
+          1
+        ],
+        [
+          "BGL",
+          "2005-11-30 00:00:00",
+          "catalogue",
+          9045
+        ],
+        [
+          "BGL",
+          "2005-11-30 00:00:00",
+          "unmatched",
+          46
+        ],
+        [
+          "BGL",
+          "2005-12-01 00:00:00",
+          "ambiguous",
+          1
+        ],
+        [
+          "BGL",
+          "2005-12-01 00:00:00",
+          "catalogue",
+          271305
+        ],
+        [
+          "BGL",
+          "2005-12-01 00:00:00",
+          "unmatched",
+          35
+        ],
+        [
+          "BGL",
+          "2005-12-02 00:00:00",
+          "ambiguous",
+          1
+        ],
+        [
+          "BGL",
+          "2005-12-02 00:00:00",
+          "catalogue",
+          4243
+        ],
+        [
+          "BGL",
+          "2005-12-02 00:00:00",
+          "unmatched",
+          114
+        ],
+        [
+          "BGL",
+          "2005-12-03 00:00:00",
+          "ambiguous",
+          3
+        ],
+        [
+          "BGL",
+          "2005-12-03 00:00:00",
+          "catalogue",
+          9179
+        ],
+        [
+          "BGL",
+          "2005-12-03 00:00:00",
+          "unmatched",
+          675
+        ],
+        [
+          "BGL",
+          "2005-12-04 00:00:00",
+          "ambiguous",
+          2
+        ],
+        [
+          "BGL",
+          "2005-12-04 00:00:00",
+          "catalogue",
+          8611
+        ],
+        [
+          "BGL",
+          "2005-12-04 00:00:00",
+          "unmatched",
+          571
+        ],
+        [
+          "BGL",
+          "2005-12-05 00:00:00",
+          "ambiguous",
+          1
+        ],
+        [
+          "BGL",
+          "2005-12-05 00:00:00",
+          "catalogue",
+          5788
+        ],
+        [
+          "BGL",
+          "2005-12-05 00:00:00",
+          "unmatched",
+          385
+        ],
+        [
+          "BGL",
+          "2005-12-06 00:00:00",
+          "ambiguous",
+          1
+        ],
+        [
+          "BGL",
+          "2005-12-06 00:00:00",
+          "catalogue",
+          23970
+        ],
+        [
+          "BGL",
+          "2005-12-06 00:00:00",
+          "unmatched",
+          509
+        ],
+        [
+          "BGL",
+          "2005-12-07 00:00:00",
+          "ambiguous",
+          1
+        ],
+        [
+          "BGL",
+          "2005-12-07 00:00:00",
+          "catalogue",
+          934
+        ],
+        [
+          "BGL",
+          "2005-12-07 00:00:00",
+          "unmatched",
+          1141
+        ],
+        [
+          "BGL",
+          "2005-12-08 00:00:00",
+          "ambiguous",
+          2
+        ],
+        [
+          "BGL",
+          "2005-12-08 00:00:00",
+          "catalogue",
+          2310
+        ],
+        [
+          "BGL",
+          "2005-12-08 00:00:00",
+          "unmatched",
+          43
+        ],
+        [
+          "BGL",
+          "2005-12-09 00:00:00",
+          "catalogue",
+          16609
+        ],
+        [
+          "BGL",
+          "2005-12-09 00:00:00",
+          "unmatched",
+          191
+        ],
+        [
+          "BGL",
+          "2005-12-10 00:00:00",
+          "catalogue",
+          2182
+        ],
+        [
+          "BGL",
+          "2005-12-10 00:00:00",
+          "unmatched",
+          33
+        ],
+        [
+          "BGL",
+          "2005-12-11 00:00:00",
+          "catalogue",
+          2503
+        ],
+        [
+          "BGL",
+          "2005-12-11 00:00:00",
+          "unmatched",
+          231
+        ],
+        [
+          "BGL",
+          "2005-12-12 00:00:00",
+          "catalogue",
+          3070
+        ],
+        [
+          "BGL",
+          "2005-12-12 00:00:00",
+          "unmatched",
+          9
+        ],
+        [
+          "BGL",
+          "2005-12-13 00:00:00",
+          "catalogue",
+          2692
+        ],
+        [
+          "BGL",
+          "2005-12-13 00:00:00",
+          "unmatched",
+          5
+        ],
+        [
+          "BGL",
+          "2005-12-14 00:00:00",
+          "catalogue",
+          5961
+        ],
+        [
+          "BGL",
+          "2005-12-14 00:00:00",
+          "unmatched",
+          58
+        ],
+        [
+          "BGL",
+          "2005-12-15 00:00:00",
+          "catalogue",
+          3940
+        ],
+        [
+          "BGL",
+          "2005-12-15 00:00:00",
+          "unmatched",
+          4
+        ],
+        [
+          "BGL",
+          "2005-12-16 00:00:00",
+          "catalogue",
+          2680
+        ],
+        [
+          "BGL",
+          "2005-12-16 00:00:00",
+          "unmatched",
+          40
+        ],
+        [
+          "BGL",
+          "2005-12-17 00:00:00",
+          "catalogue",
+          570
+        ],
+        [
+          "BGL",
+          "2005-12-17 00:00:00",
+          "unmatched",
+          18
+        ],
+        [
+          "BGL",
+          "2005-12-18 00:00:00",
+          "catalogue",
+          2699
+        ],
+        [
+          "BGL",
+          "2005-12-18 00:00:00",
+          "unmatched",
+          60
+        ],
+        [
+          "BGL",
+          "2005-12-19 00:00:00",
+          "catalogue",
+          1100
+        ],
+        [
+          "BGL",
+          "2005-12-19 00:00:00",
+          "unmatched",
+          5
+        ],
+        [
+          "BGL",
+          "2005-12-20 00:00:00",
+          "catalogue",
+          3226
+        ],
+        [
+          "BGL",
+          "2005-12-20 00:00:00",
+          "unmatched",
+          11
+        ],
+        [
+          "BGL",
+          "2005-12-21 00:00:00",
+          "catalogue",
+          323
+        ],
+        [
+          "BGL",
+          "2005-12-21 00:00:00",
+          "unmatched",
+          2
+        ],
+        [
+          "BGL",
+          "2005-12-22 00:00:00",
+          "catalogue",
+          1388
+        ],
+        [
+          "BGL",
+          "2005-12-22 00:00:00",
+          "unmatched",
+          67
+        ],
+        [
+          "BGL",
+          "2005-12-23 00:00:00",
+          "catalogue",
+          34
+        ],
+        [
+          "BGL",
+          "2005-12-23 00:00:00",
+          "unmatched",
+          1
+        ],
+        [
+          "BGL",
+          "2005-12-24 00:00:00",
+          "catalogue",
+          748
+        ],
+        [
+          "BGL",
+          "2005-12-24 00:00:00",
+          "unmatched",
+          159
+        ],
+        [
+          "BGL",
+          "2005-12-25 00:00:00",
+          "catalogue",
+          1450
+        ],
+        [
+          "BGL",
+          "2005-12-25 00:00:00",
+          "unmatched",
+          293
+        ],
+        [
+          "BGL",
+          "2005-12-26 00:00:00",
+          "catalogue",
+          24596
+        ],
+        [
+          "BGL",
+          "2005-12-26 00:00:00",
+          "unmatched",
+          284
+        ],
+        [
+          "BGL",
+          "2005-12-27 00:00:00",
+          "catalogue",
+          12127
+        ],
+        [
+          "BGL",
+          "2005-12-27 00:00:00",
+          "unmatched",
+          3
+        ],
+        [
+          "BGL",
+          "2005-12-28 00:00:00",
+          "catalogue",
+          840
+        ],
+        [
+          "BGL",
+          "2005-12-28 00:00:00",
+          "unmatched",
+          111
+        ],
+        [
+          "BGL",
+          "2005-12-29 00:00:00",
+          "catalogue",
+          302
+        ],
+        [
+          "BGL",
+          "2005-12-29 00:00:00",
+          "unmatched",
+          67
+        ],
+        [
+          "BGL",
+          "2005-12-30 00:00:00",
+          "catalogue",
+          746
+        ],
+        [
+          "BGL",
+          "2005-12-30 00:00:00",
+          "unmatched",
+          1
+        ],
+        [
+          "BGL",
+          "2005-12-31 00:00:00",
+          "catalogue",
+          380
+        ],
+        [
+          "BGL",
+          "2005-12-31 00:00:00",
+          "unmatched",
+          1
+        ],
+        [
+          "BGL",
+          "2006-01-01 00:00:00",
+          "catalogue",
+          563
+        ],
+        [
+          "BGL",
+          "2006-01-01 00:00:00",
+          "unmatched",
+          3
+        ],
+        [
+          "BGL",
+          "2006-01-02 00:00:00",
+          "catalogue",
+          853
+        ],
+        [
+          "BGL",
+          "2006-01-02 00:00:00",
+          "unmatched",
+          1
+        ],
+        [
+          "BGL",
+          "2006-01-03 00:00:00",
+          "catalogue",
+          1401
+        ],
+        [
+          "BGL",
+          "2006-01-03 00:00:00",
+          "unmatched",
+          62
+        ],
+        [
+          "BGL",
+          "2006-01-04 00:00:00",
+          "catalogue",
+          84
+        ],
+        [
+          "BGL",
+          "2006-01-04 00:00:00",
+          "unmatched",
+          2
+        ],
+        [
+          "OpenStack",
+          "2017-05-14 00:00:00",
+          "catalogue",
+          18434
+        ],
+        [
+          "OpenStack",
+          "2017-05-16 00:00:00",
+          "catalogue",
+          123241
+        ],
+        [
+          "OpenStack",
+          "2017-05-16 00:00:00",
+          "unmatched",
+          134
+        ],
+        [
+          "OpenStack",
+          "2017-05-17 00:00:00",
+          "catalogue",
+          65957
+        ],
+        [
+          "OpenStack",
+          "2017-05-17 00:00:00",
+          "unmatched",
+          46
+        ],
+        [
+          "OpenStack",
+          null,
+          "unmatched",
+          8
+        ]
+      ],
+      "query_ms": 1511.8504170095548
+    },
+    {
+      "name": "all_entry_join_count",
+      "sql": "SELECT count(*) AS joined_entries FROM research_log_entries l\n            LEFT JOIN research_template_map p ON l.dataset=p.dataset\n            AND coalesce(l.component,'')=p.component AND l.message=p.message",
+      "parameters": [],
+      "columns": [
+        "joined_entries"
+      ],
+      "rows": [
+        [
+          4955783
+        ]
+      ],
+      "query_ms": 1379.5998330460861
+    }
+  ],
+  "wall_s": 96.0891792079201
+}

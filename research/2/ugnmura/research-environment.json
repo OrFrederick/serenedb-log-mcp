@@ -1,0 +1,12 @@
+{
+  "date": "2026-10-17",
+  "serenedb": "26.10.1",
+  "image_digest": "sha256:6d41ac6577e797289158786a2015ba8fbd6875feadb5c491518e166c011058c9",
+  "docker_platform": "linux/amd64",
+  "container_memory": "3GiB",
+  "notes": [
+    "Apple Silicon host; x86 emulation",
+    "Concurrent corpus experiments and other workloads; times are shared-machine observations, not comparative server performance benchmarks",
+    "Official loader/schema/Ownership Table unavailable; research loader preserves raw physical lines"
+  ]
+}

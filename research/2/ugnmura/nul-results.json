@@ -1,0 +1,23 @@
+{
+  "write_row": {
+    "status": "rejected",
+    "error": "PostgreSQL text fields cannot contain NUL (0x00) bytes"
+  },
+  "raw_copy": {
+    "status": "exact roundtrip",
+    "inputs": [
+      "a\u0000b",
+      "backslash\\value",
+      "a\tb\nc\rd",
+      null,
+      ""
+    ],
+    "outputs": [
+      "a\u0000b",
+      "backslash\\value",
+      "a\tb\nc\rd",
+      null,
+      ""
+    ]
+  }
+}

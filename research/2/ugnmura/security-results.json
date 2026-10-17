@@ -1,0 +1,130 @@
+[
+  {
+    "user": "research_reader",
+    "name": "set_timeout",
+    "sql": "SET statement_timeout='100ms'",
+    "parameters": [],
+    "status": "ok",
+    "rows": [],
+    "query_ms": 75.52220893558115
+  },
+  {
+    "user": "research_reader",
+    "name": "show_timeout",
+    "sql": "SHOW statement_timeout",
+    "parameters": [],
+    "status": "ok",
+    "rows": [
+      {
+        "statement_timeout": "100ms"
+      }
+    ],
+    "query_ms": 76.8540829885751
+  },
+  {
+    "user": "research_reader",
+    "name": "sleep_timeout_probe",
+    "sql": "SELECT pg_sleep(0.3)",
+    "parameters": [],
+    "status": "ok",
+    "rows": [
+      {
+        "pg_sleep": null
+      }
+    ],
+    "query_ms": 404.0675410069525
+  },
+  {
+    "user": "research_reader",
+    "name": "read_base",
+    "sql": "SELECT count(*) AS log_entries FROM research_log_entries",
+    "parameters": [],
+    "status": "ok",
+    "rows": [
+      {
+        "log_entries": 4955783
+      }
+    ],
+    "query_ms": 56.573959067463875
+  },
+  {
+    "user": "research_reader",
+    "name": "write_denied",
+    "sql": "INSERT INTO research_log_entries(dataset) VALUES ('SHOULD_NOT_WRITE')",
+    "parameters": [],
+    "status": "error",
+    "error": "permission denied for table research_log_entries",
+    "sqlstate": "42501",
+    "query_ms": 34.370207926258445
+  },
+  {
+    "user": "research_manager",
+    "name": "set_timeout",
+    "sql": "SET statement_timeout='100ms'",
+    "parameters": [],
+    "status": "ok",
+    "rows": [],
+    "query_ms": 0.8212089305743575
+  },
+  {
+    "user": "research_manager",
+    "name": "show_timeout",
+    "sql": "SHOW statement_timeout",
+    "parameters": [],
+    "status": "ok",
+    "rows": [
+      {
+        "statement_timeout": "100ms"
+      }
+    ],
+    "query_ms": 2.7113340329378843
+  },
+  {
+    "user": "research_manager",
+    "name": "sleep_timeout_probe",
+    "sql": "SELECT pg_sleep(0.3)",
+    "parameters": [],
+    "status": "ok",
+    "rows": [
+      {
+        "pg_sleep": null
+      }
+    ],
+    "query_ms": 308.44916694331914
+  },
+  {
+    "user": "research_manager",
+    "name": "read_view",
+    "sql": "SELECT * FROM research_manager_counts ORDER BY log_entry_count DESC LIMIT 3",
+    "parameters": [],
+    "status": "ok",
+    "rows": [
+      {
+        "dataset": "BGL",
+        "component": "KERNEL",
+        "log_entry_count": 4324967
+      },
+      {
+        "dataset": "BGL",
+        "component": "APP",
+        "log_entry_count": 228536
+      },
+      {
+        "dataset": "BGL",
+        "component": "DISCOVERY",
+        "log_entry_count": 97172
+      }
+    ],
+    "query_ms": 114.92058297153562
+  },
+  {
+    "user": "research_manager",
+    "name": "base_denied",
+    "sql": "SELECT message FROM research_log_entries LIMIT 1",
+    "parameters": [],
+    "status": "error",
+    "error": "permission denied for table research_log_entries",
+    "sqlstate": "42501",
+    "query_ms": 1.9489589612931013
+  }
+]

@@ -1,0 +1,1986 @@
+[
+  {
+    "evidence_id": "E1",
+    "name": "server",
+    "sql": "SELECT version() AS version",
+    "parameters": [],
+    "rows": [
+      {
+        "version": "PostgreSQL 18.3 (SereneDB 26.10.1)"
+      }
+    ],
+    "status": "ok",
+    "query_ms": 17.392917070537806
+  },
+  {
+    "evidence_id": "E2",
+    "name": "describe_corpus",
+    "sql": "SELECT dataset,count(*) AS log_entries,\n          count(ts) AS timestamped_entries,min(ts) AS first_printed_time,max(ts) AS last_printed_time,\n          count(DISTINCT component) AS components,count(DISTINCT node) AS named_nodes\n          FROM research_log_entries GROUP BY dataset ORDER BY dataset",
+    "parameters": [],
+    "rows": [
+      {
+        "dataset": "BGL",
+        "log_entries": 4747963,
+        "timestamped_entries": 4747963,
+        "first_printed_time": "2005-06-03 15:42:50.363779",
+        "last_printed_time": "2006-01-04 08:00:05.233639",
+        "components": 10,
+        "named_nodes": 69252
+      },
+      {
+        "dataset": "OpenStack",
+        "log_entries": 207820,
+        "timestamped_entries": 207812,
+        "first_printed_time": "2017-05-14 19:39:01.445000",
+        "last_printed_time": "2017-05-17 12:02:35.320000",
+        "components": 12,
+        "named_nodes": 0
+      }
+    ],
+    "status": "ok",
+    "query_ms": 868.466957937926
+  },
+  {
+    "evidence_id": "E3",
+    "name": "dictionary",
+    "sql": "CREATE TEXT SEARCH DICTIONARY research_words AS\n          split_text(case := 'lower') | normalize_tokens('en_US.UTF-8', accent := false)\n          WITH (frequency, position, offset, norm)",
+    "parameters": [],
+    "rows": [],
+    "status": "ok",
+    "query_ms": 244.67024998739362
+  },
+  {
+    "evidence_id": "E4",
+    "name": "create_index",
+    "sql": "CREATE INDEX research_logs_idx ON research_log_entries\n          USING inverted (dataset,ts,component,node,label,level,message research_words)\n          INCLUDE(entry_id,source_file,request_id,instance_id,message)",
+    "parameters": [],
+    "rows": [],
+    "status": "ok",
+    "query_ms": 31682.084708008915
+  },
+  {
+    "evidence_id": "E5",
+    "name": "refresh",
+    "sql": "VACUUM (REFRESH_TABLE) research_log_entries",
+    "parameters": [],
+    "rows": [],
+    "status": "ok",
+    "query_ms": 382.04579101875424
+  },
+  {
+    "evidence_id": "E6",
+    "name": "search_build_count",
+    "sql": "SELECT count(*) AS total_matches FROM research_logs_idx WHERE dataset=%s AND message @@ ts_phrase(%s)",
+    "parameters": [
+      "OpenStack",
+      "build instance"
+    ],
+    "rows": [
+      {
+        "total_matches": 2066
+      }
+    ],
+    "status": "ok",
+    "query_ms": 816.1061250139028
+  },
+  {
+    "evidence_id": "E7",
+    "name": "search_build_page",
+    "sql": "SELECT dataset,source_file,entry_id,ts,component,instance_id,\n          ts_highlight(message,'MaxWords=24') AS snippet FROM research_logs_idx\n          WHERE dataset=%s AND message @@ ts_phrase(%s) ORDER BY source_file,entry_id LIMIT 5",
+    "parameters": [
+      "OpenStack",
+      "build instance"
+    ],
+    "rows": [
+      {
+        "dataset": "OpenStack",
+        "source_file": "openstack_abnormal.log",
+        "entry_id": 48,
+        "ts": "2017-05-14 19:39:22.727000",
+        "component": "nova.compute.manager",
+        "instance_id": "3edec1e4-9678-4a3a-a21b-a145a4ee5e61",
+        "snippet": "instance: 3edec1e4-9678-4a3a-a21b-a145a4ee5e61] Took 21.38 seconds to <b>build instance</b>"
+      },
+      {
+        "dataset": "OpenStack",
+        "source_file": "openstack_abnormal.log",
+        "entry_id": 138,
+        "ts": "2017-05-14 19:40:04.216000",
+        "component": "nova.compute.manager",
+        "instance_id": "3416d0fa-6f0f-41ce-9c0a-59ae9a735da8",
+        "snippet": "instance: 3416d0fa-6f0f-41ce-9c0a-59ae9a735da8] Took 21.13 seconds to <b>build instance</b>"
+      },
+      {
+        "dataset": "OpenStack",
+        "source_file": "openstack_abnormal.log",
+        "entry_id": 226,
+        "ts": "2017-05-14 19:40:45.588000",
+        "component": "nova.compute.manager",
+        "instance_id": "874ffb7b-49b3-4c6d-a2e9-35bf272650b1",
+        "snippet": "instance: 874ffb7b-49b3-4c6d-a2e9-35bf272650b1] Took 20.77 seconds to <b>build instance</b>"
+      },
+      {
+        "dataset": "OpenStack",
+        "source_file": "openstack_abnormal.log",
+        "entry_id": 320,
+        "ts": "2017-05-14 19:41:29.020000",
+        "component": "nova.compute.manager",
+        "instance_id": "748f18b4-88e3-4b60-822a-f2b25fac50b2",
+        "snippet": "instance: 748f18b4-88e3-4b60-822a-f2b25fac50b2] Took 21.99 seconds to <b>build instance</b>"
+      },
+      {
+        "dataset": "OpenStack",
+        "source_file": "openstack_abnormal.log",
+        "entry_id": 410,
+        "ts": "2017-05-14 19:42:10.337000",
+        "component": "nova.compute.manager",
+        "instance_id": "20ae04a8-169b-43fc-87cc-52cdf2fa77d3",
+        "snippet": "instance: 20ae04a8-169b-43fc-87cc-52cdf2fa77d3] Took 19.88 seconds to <b>build instance</b>"
+      }
+    ],
+    "status": "ok",
+    "query_ms": 237.55900003015995
+  },
+  {
+    "evidence_id": "E8",
+    "name": "search_terms_count",
+    "sql": "SELECT count(*) AS total_matches FROM research_logs_idx WHERE dataset=%s AND message @@ %s",
+    "parameters": [
+      "BGL",
+      "error"
+    ],
+    "rows": [
+      {
+        "total_matches": 557845
+      }
+    ],
+    "status": "ok",
+    "query_ms": 48.16895804833621
+  },
+  {
+    "evidence_id": "E9",
+    "name": "search_terms_page",
+    "sql": "SELECT dataset,source_file,entry_id,ts,component,node,\n              ts_highlight(message,'MaxWords=24') AS snippet,BM25(research_logs_idx.tableoid) AS score\n              FROM research_logs_idx WHERE dataset=%s AND message @@ %s\n              ORDER BY BM25(research_logs_idx.tableoid) DESC,source_file,entry_id LIMIT 5",
+    "parameters": [
+      "BGL",
+      "error"
+    ],
+    "rows": [
+      {
+        "dataset": "BGL",
+        "source_file": "BGL.log",
+        "entry_id": 33899,
+        "ts": "2005-06-05 01:55:00.653763",
+        "component": "KERNEL",
+        "node": "R11-M0-NB-C:J07-U11",
+        "snippet": "tlb <b>error</b>.........................0",
+        "score": 1.3325529
+      },
+      {
+        "dataset": "BGL",
+        "source_file": "BGL.log",
+        "entry_id": 34898,
+        "ts": "2005-06-05 04:23:03.807985",
+        "component": "KERNEL",
+        "node": "R22-M0-NE-C:J13-U01",
+        "snippet": "rts internal <b>error</b>",
+        "score": 1.3325529
+      },
+      {
+        "dataset": "BGL",
+        "source_file": "BGL.log",
+        "entry_id": 34899,
+        "ts": "2005-06-05 04:23:03.818773",
+        "component": "KERNEL",
+        "node": "R22-M0-N5-C:J11-U11",
+        "snippet": "rts internal <b>error</b>",
+        "score": 1.3325529
+      },
+      {
+        "dataset": "BGL",
+        "source_file": "BGL.log",
+        "entry_id": 34900,
+        "ts": "2005-06-05 04:23:03.829508",
+        "component": "KERNEL",
+        "node": "R22-M0-N6-C:J03-U11",
+        "snippet": "rts internal <b>error</b>",
+        "score": 1.3325529
+      },
+      {
+        "dataset": "BGL",
+        "source_file": "BGL.log",
+        "entry_id": 34901,
+        "ts": "2005-06-05 04:23:03.840635",
+        "component": "KERNEL",
+        "node": "R22-M0-NF-C:J17-U01",
+        "snippet": "rts internal <b>error</b>",
+        "score": 1.3325529
+      }
+    ],
+    "status": "ok",
+    "query_ms": 957.0583750028163
+  },
+  {
+    "evidence_id": "E10",
+    "name": "search_phrase_count",
+    "sql": "SELECT count(*) AS total_matches FROM research_logs_idx WHERE dataset=%s AND message @@ ts_phrase(%s)",
+    "parameters": [
+      "BGL",
+      "machine check"
+    ],
+    "rows": [
+      {
+        "total_matches": 40026
+      }
+    ],
+    "status": "ok",
+    "query_ms": 552.4787500035018
+  },
+  {
+    "evidence_id": "E11",
+    "name": "search_phrase_page",
+    "sql": "SELECT dataset,source_file,entry_id,ts,component,node,\n              ts_highlight(message,'MaxWords=24') AS snippet,BM25(research_logs_idx.tableoid) AS score\n              FROM research_logs_idx WHERE dataset=%s AND message @@ ts_phrase(%s)\n              ORDER BY BM25(research_logs_idx.tableoid) DESC,source_file,entry_id LIMIT 5",
+    "parameters": [
+      "BGL",
+      "machine check"
+    ],
+    "rows": [
+      {
+        "dataset": "BGL",
+        "source_file": "BGL.log",
+        "entry_id": 33892,
+        "ts": "2005-06-05 01:54:59.497454",
+        "component": "KERNEL",
+        "node": "R11-M0-NB-C:J07-U11",
+        "snippet": "<b>machine check</b> interrupt",
+        "score": 5.4330993
+      },
+      {
+        "dataset": "BGL",
+        "source_file": "BGL.log",
+        "entry_id": 209063,
+        "ts": "2005-06-09 14:22:52.398188",
+        "component": "KERNEL",
+        "node": "R16-M0-N1-C:J12-U01",
+        "snippet": "<b>machine check</b> interrupt",
+        "score": 5.4330993
+      },
+      {
+        "dataset": "BGL",
+        "source_file": "BGL.log",
+        "entry_id": 213948,
+        "ts": "2005-06-09 17:44:14.759692",
+        "component": "KERNEL",
+        "node": "R03-M0-NB-C:J05-U01",
+        "snippet": "<b>machine check</b> interrupt",
+        "score": 5.4330993
+      },
+      {
+        "dataset": "BGL",
+        "source_file": "BGL.log",
+        "entry_id": 221193,
+        "ts": "2005-06-10 02:01:35.659631",
+        "component": "KERNEL",
+        "node": "R10-M0-N1-C:J14-U11",
+        "snippet": "<b>machine check</b> interrupt",
+        "score": 5.4330993
+      },
+      {
+        "dataset": "BGL",
+        "source_file": "BGL.log",
+        "entry_id": 378749,
+        "ts": "2005-06-13 02:23:32.728885",
+        "component": "KERNEL",
+        "node": "R01-M0-N1-C:J13-U01",
+        "snippet": "<b>machine check</b> interrupt",
+        "score": 5.4330993
+      }
+    ],
+    "status": "ok",
+    "query_ms": 725.7446249714121
+  },
+  {
+    "evidence_id": "E12",
+    "name": "search_fuzzy_count",
+    "sql": "SELECT count(*) AS total_matches FROM research_logs_idx WHERE dataset=%s AND message @@ ts_levenshtein(%s,1)",
+    "parameters": [
+      "BGL",
+      "erorr"
+    ],
+    "rows": [
+      {
+        "total_matches": 557845
+      }
+    ],
+    "status": "ok",
+    "query_ms": 739.088875008747
+  },
+  {
+    "evidence_id": "E13",
+    "name": "search_fuzzy_page",
+    "sql": "SELECT dataset,source_file,entry_id,ts,component,node,\n              ts_highlight(message,'MaxWords=24') AS snippet,BM25(research_logs_idx.tableoid) AS score\n              FROM research_logs_idx WHERE dataset=%s AND message @@ ts_levenshtein(%s,1)\n              ORDER BY BM25(research_logs_idx.tableoid) DESC,source_file,entry_id LIMIT 5",
+    "parameters": [
+      "BGL",
+      "erorr"
+    ],
+    "rows": [
+      {
+        "dataset": "BGL",
+        "source_file": "BGL.log",
+        "entry_id": 33899,
+        "ts": "2005-06-05 01:55:00.653763",
+        "component": "KERNEL",
+        "node": "R11-M0-NB-C:J07-U11",
+        "snippet": "tlb <b>error</b>.........................0",
+        "score": 1.0699368
+      },
+      {
+        "dataset": "BGL",
+        "source_file": "BGL.log",
+        "entry_id": 34898,
+        "ts": "2005-06-05 04:23:03.807985",
+        "component": "KERNEL",
+        "node": "R22-M0-NE-C:J13-U01",
+        "snippet": "rts internal <b>error</b>",
+        "score": 1.0699368
+      },
+      {
+        "dataset": "BGL",
+        "source_file": "BGL.log",
+        "entry_id": 34899,
+        "ts": "2005-06-05 04:23:03.818773",
+        "component": "KERNEL",
+        "node": "R22-M0-N5-C:J11-U11",
+        "snippet": "rts internal <b>error</b>",
+        "score": 1.0699368
+      },
+      {
+        "dataset": "BGL",
+        "source_file": "BGL.log",
+        "entry_id": 34900,
+        "ts": "2005-06-05 04:23:03.829508",
+        "component": "KERNEL",
+        "node": "R22-M0-N6-C:J03-U11",
+        "snippet": "rts internal <b>error</b>",
+        "score": 1.0699368
+      },
+      {
+        "dataset": "BGL",
+        "source_file": "BGL.log",
+        "entry_id": 34901,
+        "ts": "2005-06-05 04:23:03.840635",
+        "component": "KERNEL",
+        "node": "R22-M0-NF-C:J17-U01",
+        "snippet": "rts internal <b>error</b>",
+        "score": 1.0699368
+      }
+    ],
+    "status": "ok",
+    "query_ms": 1487.606666982174
+  },
+  {
+    "evidence_id": "E14",
+    "name": "search_empty_count",
+    "sql": "SELECT count(*) AS total_matches FROM research_logs_idx WHERE message @@ %s",
+    "parameters": [
+      "qzzzzxnomatchingterm"
+    ],
+    "rows": [
+      {
+        "total_matches": 0
+      }
+    ],
+    "status": "ok",
+    "query_ms": 307.84558306913823
+  },
+  {
+    "evidence_id": "E15",
+    "name": "search_empty_page",
+    "sql": "SELECT entry_id FROM research_logs_idx WHERE message @@ %s LIMIT 5",
+    "parameters": [
+      "qzzzzxnomatchingterm"
+    ],
+    "rows": [],
+    "status": "ok",
+    "query_ms": 112.70695889834315
+  },
+  {
+    "evidence_id": "E16",
+    "name": "injection_bound_literal",
+    "sql": "SELECT count(*) AS total_matches FROM research_log_entries WHERE component=%s",
+    "parameters": [
+      "x'; DROP TABLE research_log_entries; --"
+    ],
+    "rows": [
+      {
+        "total_matches": 0
+      }
+    ],
+    "status": "ok",
+    "query_ms": 111.70262505766004
+  },
+  {
+    "evidence_id": "E17",
+    "name": "get_context",
+    "sql": "SELECT dataset,source_file,entry_id,ts,component,instance_id,message\n          FROM research_log_entries WHERE dataset=%s AND source_file=%s AND instance_id=%s\n          ORDER BY ts,entry_id LIMIT 30",
+    "parameters": [
+      "OpenStack",
+      "openstack_abnormal.log",
+      "544fd51c-4edc-4780-baae-ba1d80a0acfc"
+    ],
+    "rows": [
+      {
+        "dataset": "OpenStack",
+        "source_file": "openstack_abnormal.log",
+        "entry_id": 11901,
+        "ts": "2017-05-14 21:07:37.102000",
+        "component": "nova.compute.claims",
+        "instance_id": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+        "message": "[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Attempting claim: memory 2048 MB, disk 20 GB, vcpus 1 CPU"
+      },
+      {
+        "dataset": "OpenStack",
+        "source_file": "openstack_abnormal.log",
+        "entry_id": 11902,
+        "ts": "2017-05-14 21:07:37.103000",
+        "component": "nova.compute.claims",
+        "instance_id": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+        "message": "[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Total memory: 64172 MB, used: 512.00 MB"
+      },
+      {
+        "dataset": "OpenStack",
+        "source_file": "openstack_abnormal.log",
+        "entry_id": 11903,
+        "ts": "2017-05-14 21:07:37.103000",
+        "component": "nova.compute.claims",
+        "instance_id": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+        "message": "[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] memory limit: 96258.00 MB, free: 95746.00 MB"
+      },
+      {
+        "dataset": "OpenStack",
+        "source_file": "openstack_abnormal.log",
+        "entry_id": 11904,
+        "ts": "2017-05-14 21:07:37.104000",
+        "component": "nova.compute.claims",
+        "instance_id": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+        "message": "[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Total disk: 15 GB, used: 0.00 GB"
+      },
+      {
+        "dataset": "OpenStack",
+        "source_file": "openstack_abnormal.log",
+        "entry_id": 11905,
+        "ts": "2017-05-14 21:07:37.105000",
+        "component": "nova.compute.claims",
+        "instance_id": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+        "message": "[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] disk limit not specified, defaulting to unlimited"
+      },
+      {
+        "dataset": "OpenStack",
+        "source_file": "openstack_abnormal.log",
+        "entry_id": 11906,
+        "ts": "2017-05-14 21:07:37.105000",
+        "component": "nova.compute.claims",
+        "instance_id": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+        "message": "[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Total vcpu: 16 VCPU, used: 0.00 VCPU"
+      },
+      {
+        "dataset": "OpenStack",
+        "source_file": "openstack_abnormal.log",
+        "entry_id": 11907,
+        "ts": "2017-05-14 21:07:37.106000",
+        "component": "nova.compute.claims",
+        "instance_id": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+        "message": "[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] vcpu limit not specified, defaulting to unlimited"
+      },
+      {
+        "dataset": "OpenStack",
+        "source_file": "openstack_abnormal.log",
+        "entry_id": 11908,
+        "ts": "2017-05-14 21:07:37.138000",
+        "component": "nova.compute.claims",
+        "instance_id": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+        "message": "[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Claim successful"
+      },
+      {
+        "dataset": "OpenStack",
+        "source_file": "openstack_abnormal.log",
+        "entry_id": 11911,
+        "ts": "2017-05-14 21:07:37.924000",
+        "component": "nova.virt.libvirt.driver",
+        "instance_id": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+        "message": "[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Creating image"
+      },
+      {
+        "dataset": "OpenStack",
+        "source_file": "openstack_abnormal.log",
+        "entry_id": 11960,
+        "ts": "2017-05-14 21:08:12.571000",
+        "component": "nova.compute.manager",
+        "instance_id": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+        "message": "[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] VM Started (Lifecycle Event)"
+      },
+      {
+        "dataset": "OpenStack",
+        "source_file": "openstack_abnormal.log",
+        "entry_id": 11961,
+        "ts": "2017-05-14 21:08:12.636000",
+        "component": "nova.compute.manager",
+        "instance_id": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+        "message": "[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] VM Paused (Lifecycle Event)"
+      },
+      {
+        "dataset": "OpenStack",
+        "source_file": "openstack_abnormal.log",
+        "entry_id": 11962,
+        "ts": "2017-05-14 21:08:12.757000",
+        "component": "nova.compute.manager",
+        "instance_id": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+        "message": "[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] During sync_power_state the instance has a pending task (spawning). Skip."
+      },
+      {
+        "dataset": "OpenStack",
+        "source_file": "openstack_abnormal.log",
+        "entry_id": 11978,
+        "ts": "2017-05-14 21:08:19.729000",
+        "component": "nova.compute.manager",
+        "instance_id": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+        "message": "[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] VM Resumed (Lifecycle Event)"
+      },
+      {
+        "dataset": "OpenStack",
+        "source_file": "openstack_abnormal.log",
+        "entry_id": 11979,
+        "ts": "2017-05-14 21:08:19.735000",
+        "component": "nova.virt.libvirt.driver",
+        "instance_id": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+        "message": "[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Instance spawned successfully."
+      },
+      {
+        "dataset": "OpenStack",
+        "source_file": "openstack_abnormal.log",
+        "entry_id": 11980,
+        "ts": "2017-05-14 21:08:19.736000",
+        "component": "nova.compute.manager",
+        "instance_id": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+        "message": "[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Took 41.81 seconds to spawn the instance on the hypervisor."
+      },
+      {
+        "dataset": "OpenStack",
+        "source_file": "openstack_abnormal.log",
+        "entry_id": 11981,
+        "ts": "2017-05-14 21:08:19.873000",
+        "component": "nova.compute.manager",
+        "instance_id": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+        "message": "[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] During sync_power_state the instance has a pending task (spawning). Skip."
+      },
+      {
+        "dataset": "OpenStack",
+        "source_file": "openstack_abnormal.log",
+        "entry_id": 11982,
+        "ts": "2017-05-14 21:08:19.874000",
+        "component": "nova.compute.manager",
+        "instance_id": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+        "message": "[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] VM Resumed (Lifecycle Event)"
+      },
+      {
+        "dataset": "OpenStack",
+        "source_file": "openstack_abnormal.log",
+        "entry_id": 11983,
+        "ts": "2017-05-14 21:08:19.900000",
+        "component": "nova.compute.manager",
+        "instance_id": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+        "message": "[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Took 42.81 seconds to build instance."
+      },
+      {
+        "dataset": "OpenStack",
+        "source_file": "openstack_abnormal.log",
+        "entry_id": 12005,
+        "ts": "2017-05-14 21:08:27.296000",
+        "component": "nova.compute.manager",
+        "instance_id": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+        "message": "[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Terminating instance"
+      },
+      {
+        "dataset": "OpenStack",
+        "source_file": "openstack_abnormal.log",
+        "entry_id": 12007,
+        "ts": "2017-05-14 21:08:27.511000",
+        "component": "nova.virt.libvirt.driver",
+        "instance_id": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+        "message": "[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Instance destroyed successfully."
+      },
+      {
+        "dataset": "OpenStack",
+        "source_file": "openstack_abnormal.log",
+        "entry_id": 12009,
+        "ts": "2017-05-14 21:08:28.178000",
+        "component": "nova.virt.libvirt.driver",
+        "instance_id": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+        "message": "[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Deleting instance files /var/lib/nova/instances/544fd51c-4edc-4780-baae-ba1d80a0acfc_del"
+      },
+      {
+        "dataset": "OpenStack",
+        "source_file": "openstack_abnormal.log",
+        "entry_id": 12010,
+        "ts": "2017-05-14 21:08:28.179000",
+        "component": "nova.virt.libvirt.driver",
+        "instance_id": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+        "message": "[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Deletion of /var/lib/nova/instances/544fd51c-4edc-4780-baae-ba1d80a0acfc_del complete"
+      },
+      {
+        "dataset": "OpenStack",
+        "source_file": "openstack_abnormal.log",
+        "entry_id": 12011,
+        "ts": "2017-05-14 21:08:28.299000",
+        "component": "nova.compute.manager",
+        "instance_id": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+        "message": "[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Took 1.00 seconds to destroy the instance on the hypervisor."
+      },
+      {
+        "dataset": "OpenStack",
+        "source_file": "openstack_abnormal.log",
+        "entry_id": 12013,
+        "ts": "2017-05-14 21:08:28.836000",
+        "component": "nova.compute.manager",
+        "instance_id": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+        "message": "[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] Took 0.54 seconds to deallocate network for instance."
+      },
+      {
+        "dataset": "OpenStack",
+        "source_file": "openstack_abnormal.log",
+        "entry_id": 12035,
+        "ts": "2017-05-14 21:08:42.508000",
+        "component": "nova.compute.manager",
+        "instance_id": "544fd51c-4edc-4780-baae-ba1d80a0acfc",
+        "message": "[instance: 544fd51c-4edc-4780-baae-ba1d80a0acfc] VM Stopped (Lifecycle Event)"
+      }
+    ],
+    "status": "ok",
+    "query_ms": 512.5920419814065
+  },
+  {
+    "evidence_id": "E18",
+    "name": "count_by",
+    "sql": "SELECT dataset,component,count(*) AS log_entry_count\n          FROM research_log_entries GROUP BY dataset,component\n          ORDER BY log_entry_count DESC,dataset,component LIMIT 20",
+    "parameters": [],
+    "rows": [
+      {
+        "dataset": "BGL",
+        "component": "KERNEL",
+        "log_entry_count": 4324967
+      },
+      {
+        "dataset": "BGL",
+        "component": "APP",
+        "log_entry_count": 228536
+      },
+      {
+        "dataset": "BGL",
+        "component": "DISCOVERY",
+        "log_entry_count": 97172
+      },
+      {
+        "dataset": "BGL",
+        "component": "MMCS",
+        "log_entry_count": 88930
+      },
+      {
+        "dataset": "OpenStack",
+        "component": "nova.osapi_compute.wsgi.server",
+        "log_entry_count": 78330
+      },
+      {
+        "dataset": "OpenStack",
+        "component": "nova.virt.libvirt.imagecache",
+        "log_entry_count": 45298
+      },
+      {
+        "dataset": "OpenStack",
+        "component": "nova.compute.manager",
+        "log_entry_count": 24784
+      },
+      {
+        "dataset": "OpenStack",
+        "component": "nova.metadata.wsgi.server",
+        "log_entry_count": 20403
+      },
+      {
+        "dataset": "OpenStack",
+        "component": "nova.compute.claims",
+        "log_entry_count": 16520
+      },
+      {
+        "dataset": "OpenStack",
+        "component": "nova.virt.libvirt.driver",
+        "log_entry_count": 10336
+      },
+      {
+        "dataset": "OpenStack",
+        "component": "nova.compute.resource_tracker",
+        "log_entry_count": 6956
+      },
+      {
+        "dataset": "BGL",
+        "component": "HARDWARE",
+        "log_entry_count": 5148
+      },
+      {
+        "dataset": "OpenStack",
+        "component": "nova.api.openstack.compute.server_external_events",
+        "log_entry_count": 2065
+      },
+      {
+        "dataset": "OpenStack",
+        "component": "nova.api.openstack.wsgi",
+        "log_entry_count": 2064
+      },
+      {
+        "dataset": "BGL",
+        "component": "MONITOR",
+        "log_entry_count": 1681
+      },
+      {
+        "dataset": "BGL",
+        "component": "LINKCARD",
+        "log_entry_count": 1170
+      },
+      {
+        "dataset": "OpenStack",
+        "component": "nova.scheduler.host_manager",
+        "log_entry_count": 866
+      },
+      {
+        "dataset": "BGL",
+        "component": "CMCS",
+        "log_entry_count": 211
+      },
+      {
+        "dataset": "OpenStack",
+        "component": "oslo_service.periodic_task",
+        "log_entry_count": 184
+      },
+      {
+        "dataset": "BGL",
+        "component": "BGLMASTER",
+        "log_entry_count": 145
+      }
+    ],
+    "status": "ok",
+    "query_ms": 873.9304579794407
+  },
+  {
+    "evidence_id": "E19",
+    "name": "trend",
+    "sql": "SELECT time_bucket(INTERVAL '1 day',ts) AS bucket,count(*) AS log_entry_count\n          FROM research_log_entries WHERE dataset=%s AND label<>%s\n          GROUP BY bucket ORDER BY bucket",
+    "parameters": [
+      "BGL",
+      "-"
+    ],
+    "rows": [
+      {
+        "bucket": "2005-06-04 00:00:00",
+        "log_entry_count": 2040
+      },
+      {
+        "bucket": "2005-06-05 00:00:00",
+        "log_entry_count": 569
+      },
+      {
+        "bucket": "2005-06-06 00:00:00",
+        "log_entry_count": 5
+      },
+      {
+        "bucket": "2005-06-07 00:00:00",
+        "log_entry_count": 5
+      },
+      {
+        "bucket": "2005-06-08 00:00:00",
+        "log_entry_count": 150
+      },
+      {
+        "bucket": "2005-06-09 00:00:00",
+        "log_entry_count": 4
+      },
+      {
+        "bucket": "2005-06-10 00:00:00",
+        "log_entry_count": 2
+      },
+      {
+        "bucket": "2005-06-11 00:00:00",
+        "log_entry_count": 152183
+      },
+      {
+        "bucket": "2005-06-13 00:00:00",
+        "log_entry_count": 17409
+      },
+      {
+        "bucket": "2005-06-14 00:00:00",
+        "log_entry_count": 49154
+      },
+      {
+        "bucket": "2005-06-15 00:00:00",
+        "log_entry_count": 177
+      },
+      {
+        "bucket": "2005-06-16 00:00:00",
+        "log_entry_count": 2043
+      },
+      {
+        "bucket": "2005-06-17 00:00:00",
+        "log_entry_count": 4
+      },
+      {
+        "bucket": "2005-06-18 00:00:00",
+        "log_entry_count": 3
+      },
+      {
+        "bucket": "2005-06-19 00:00:00",
+        "log_entry_count": 2
+      },
+      {
+        "bucket": "2005-06-20 00:00:00",
+        "log_entry_count": 1022
+      },
+      {
+        "bucket": "2005-06-21 00:00:00",
+        "log_entry_count": 3
+      },
+      {
+        "bucket": "2005-06-22 00:00:00",
+        "log_entry_count": 128
+      },
+      {
+        "bucket": "2005-06-23 00:00:00",
+        "log_entry_count": 18
+      },
+      {
+        "bucket": "2005-06-26 00:00:00",
+        "log_entry_count": 1
+      },
+      {
+        "bucket": "2005-06-28 00:00:00",
+        "log_entry_count": 53
+      },
+      {
+        "bucket": "2005-06-29 00:00:00",
+        "log_entry_count": 2
+      },
+      {
+        "bucket": "2005-06-30 00:00:00",
+        "log_entry_count": 176
+      },
+      {
+        "bucket": "2005-07-01 00:00:00",
+        "log_entry_count": 534
+      },
+      {
+        "bucket": "2005-07-02 00:00:00",
+        "log_entry_count": 2
+      },
+      {
+        "bucket": "2005-07-03 00:00:00",
+        "log_entry_count": 5
+      },
+      {
+        "bucket": "2005-07-04 00:00:00",
+        "log_entry_count": 2
+      },
+      {
+        "bucket": "2005-07-05 00:00:00",
+        "log_entry_count": 1025
+      },
+      {
+        "bucket": "2005-07-06 00:00:00",
+        "log_entry_count": 18
+      },
+      {
+        "bucket": "2005-07-07 00:00:00",
+        "log_entry_count": 2
+      },
+      {
+        "bucket": "2005-07-08 00:00:00",
+        "log_entry_count": 212
+      },
+      {
+        "bucket": "2005-07-09 00:00:00",
+        "log_entry_count": 990
+      },
+      {
+        "bucket": "2005-07-10 00:00:00",
+        "log_entry_count": 2
+      },
+      {
+        "bucket": "2005-07-11 00:00:00",
+        "log_entry_count": 786
+      },
+      {
+        "bucket": "2005-07-12 00:00:00",
+        "log_entry_count": 8
+      },
+      {
+        "bucket": "2005-07-13 00:00:00",
+        "log_entry_count": 5
+      },
+      {
+        "bucket": "2005-07-14 00:00:00",
+        "log_entry_count": 55
+      },
+      {
+        "bucket": "2005-07-15 00:00:00",
+        "log_entry_count": 1049
+      },
+      {
+        "bucket": "2005-07-17 00:00:00",
+        "log_entry_count": 2
+      },
+      {
+        "bucket": "2005-07-18 00:00:00",
+        "log_entry_count": 975
+      },
+      {
+        "bucket": "2005-07-19 00:00:00",
+        "log_entry_count": 746
+      },
+      {
+        "bucket": "2005-07-20 00:00:00",
+        "log_entry_count": 101
+      },
+      {
+        "bucket": "2005-07-21 00:00:00",
+        "log_entry_count": 18
+      },
+      {
+        "bucket": "2005-07-23 00:00:00",
+        "log_entry_count": 2
+      },
+      {
+        "bucket": "2005-07-24 00:00:00",
+        "log_entry_count": 84
+      },
+      {
+        "bucket": "2005-07-25 00:00:00",
+        "log_entry_count": 93
+      },
+      {
+        "bucket": "2005-07-26 00:00:00",
+        "log_entry_count": 5
+      },
+      {
+        "bucket": "2005-07-27 00:00:00",
+        "log_entry_count": 5
+      },
+      {
+        "bucket": "2005-07-29 00:00:00",
+        "log_entry_count": 2
+      },
+      {
+        "bucket": "2005-07-31 00:00:00",
+        "log_entry_count": 1
+      },
+      {
+        "bucket": "2005-08-02 00:00:00",
+        "log_entry_count": 3
+      },
+      {
+        "bucket": "2005-08-03 00:00:00",
+        "log_entry_count": 39
+      },
+      {
+        "bucket": "2005-08-04 00:00:00",
+        "log_entry_count": 10
+      },
+      {
+        "bucket": "2005-08-05 00:00:00",
+        "log_entry_count": 554
+      },
+      {
+        "bucket": "2005-08-06 00:00:00",
+        "log_entry_count": 274
+      },
+      {
+        "bucket": "2005-08-07 00:00:00",
+        "log_entry_count": 386
+      },
+      {
+        "bucket": "2005-08-08 00:00:00",
+        "log_entry_count": 11
+      },
+      {
+        "bucket": "2005-08-09 00:00:00",
+        "log_entry_count": 754
+      },
+      {
+        "bucket": "2005-08-10 00:00:00",
+        "log_entry_count": 12
+      },
+      {
+        "bucket": "2005-08-12 00:00:00",
+        "log_entry_count": 2393
+      },
+      {
+        "bucket": "2005-08-13 00:00:00",
+        "log_entry_count": 955
+      },
+      {
+        "bucket": "2005-08-14 00:00:00",
+        "log_entry_count": 564
+      },
+      {
+        "bucket": "2005-08-15 00:00:00",
+        "log_entry_count": 3266
+      },
+      {
+        "bucket": "2005-08-16 00:00:00",
+        "log_entry_count": 773
+      },
+      {
+        "bucket": "2005-08-17 00:00:00",
+        "log_entry_count": 4063
+      },
+      {
+        "bucket": "2005-08-18 00:00:00",
+        "log_entry_count": 920
+      },
+      {
+        "bucket": "2005-08-19 00:00:00",
+        "log_entry_count": 709
+      },
+      {
+        "bucket": "2005-08-20 00:00:00",
+        "log_entry_count": 351
+      },
+      {
+        "bucket": "2005-08-21 00:00:00",
+        "log_entry_count": 9
+      },
+      {
+        "bucket": "2005-08-22 00:00:00",
+        "log_entry_count": 1904
+      },
+      {
+        "bucket": "2005-08-23 00:00:00",
+        "log_entry_count": 3334
+      },
+      {
+        "bucket": "2005-08-24 00:00:00",
+        "log_entry_count": 14
+      },
+      {
+        "bucket": "2005-08-25 00:00:00",
+        "log_entry_count": 915
+      },
+      {
+        "bucket": "2005-08-26 00:00:00",
+        "log_entry_count": 2
+      },
+      {
+        "bucket": "2005-08-27 00:00:00",
+        "log_entry_count": 8
+      },
+      {
+        "bucket": "2005-08-28 00:00:00",
+        "log_entry_count": 71
+      },
+      {
+        "bucket": "2005-08-29 00:00:00",
+        "log_entry_count": 1639
+      },
+      {
+        "bucket": "2005-08-30 00:00:00",
+        "log_entry_count": 6
+      },
+      {
+        "bucket": "2005-08-31 00:00:00",
+        "log_entry_count": 3174
+      },
+      {
+        "bucket": "2005-09-01 00:00:00",
+        "log_entry_count": 1200
+      },
+      {
+        "bucket": "2005-09-02 00:00:00",
+        "log_entry_count": 3477
+      },
+      {
+        "bucket": "2005-09-03 00:00:00",
+        "log_entry_count": 4354
+      },
+      {
+        "bucket": "2005-09-04 00:00:00",
+        "log_entry_count": 3260
+      },
+      {
+        "bucket": "2005-09-05 00:00:00",
+        "log_entry_count": 1871
+      },
+      {
+        "bucket": "2005-09-06 00:00:00",
+        "log_entry_count": 3585
+      },
+      {
+        "bucket": "2005-09-07 00:00:00",
+        "log_entry_count": 35
+      },
+      {
+        "bucket": "2005-09-08 00:00:00",
+        "log_entry_count": 3535
+      },
+      {
+        "bucket": "2005-09-09 00:00:00",
+        "log_entry_count": 12
+      },
+      {
+        "bucket": "2005-09-10 00:00:00",
+        "log_entry_count": 1029
+      },
+      {
+        "bucket": "2005-09-11 00:00:00",
+        "log_entry_count": 951
+      },
+      {
+        "bucket": "2005-09-12 00:00:00",
+        "log_entry_count": 1315
+      },
+      {
+        "bucket": "2005-09-13 00:00:00",
+        "log_entry_count": 3469
+      },
+      {
+        "bucket": "2005-09-14 00:00:00",
+        "log_entry_count": 7
+      },
+      {
+        "bucket": "2005-09-15 00:00:00",
+        "log_entry_count": 799
+      },
+      {
+        "bucket": "2005-09-16 00:00:00",
+        "log_entry_count": 859
+      },
+      {
+        "bucket": "2005-09-17 00:00:00",
+        "log_entry_count": 2
+      },
+      {
+        "bucket": "2005-09-19 00:00:00",
+        "log_entry_count": 21
+      },
+      {
+        "bucket": "2005-09-20 00:00:00",
+        "log_entry_count": 540
+      },
+      {
+        "bucket": "2005-09-21 00:00:00",
+        "log_entry_count": 2
+      },
+      {
+        "bucket": "2005-09-22 00:00:00",
+        "log_entry_count": 1
+      },
+      {
+        "bucket": "2005-09-23 00:00:00",
+        "log_entry_count": 13
+      },
+      {
+        "bucket": "2005-09-24 00:00:00",
+        "log_entry_count": 8
+      },
+      {
+        "bucket": "2005-09-25 00:00:00",
+        "log_entry_count": 8
+      },
+      {
+        "bucket": "2005-09-26 00:00:00",
+        "log_entry_count": 414
+      },
+      {
+        "bucket": "2005-09-27 00:00:00",
+        "log_entry_count": 8
+      },
+      {
+        "bucket": "2005-09-28 00:00:00",
+        "log_entry_count": 2
+      },
+      {
+        "bucket": "2005-09-29 00:00:00",
+        "log_entry_count": 2941
+      },
+      {
+        "bucket": "2005-09-30 00:00:00",
+        "log_entry_count": 1024
+      },
+      {
+        "bucket": "2005-10-01 00:00:00",
+        "log_entry_count": 3
+      },
+      {
+        "bucket": "2005-10-02 00:00:00",
+        "log_entry_count": 697
+      },
+      {
+        "bucket": "2005-10-03 00:00:00",
+        "log_entry_count": 556
+      },
+      {
+        "bucket": "2005-10-04 00:00:00",
+        "log_entry_count": 40
+      },
+      {
+        "bucket": "2005-10-05 00:00:00",
+        "log_entry_count": 3
+      },
+      {
+        "bucket": "2005-10-06 00:00:00",
+        "log_entry_count": 1454
+      },
+      {
+        "bucket": "2005-10-07 00:00:00",
+        "log_entry_count": 5
+      },
+      {
+        "bucket": "2005-10-08 00:00:00",
+        "log_entry_count": 3
+      },
+      {
+        "bucket": "2005-10-09 00:00:00",
+        "log_entry_count": 6
+      },
+      {
+        "bucket": "2005-10-10 00:00:00",
+        "log_entry_count": 1079
+      },
+      {
+        "bucket": "2005-10-11 00:00:00",
+        "log_entry_count": 2
+      },
+      {
+        "bucket": "2005-10-12 00:00:00",
+        "log_entry_count": 2
+      },
+      {
+        "bucket": "2005-10-13 00:00:00",
+        "log_entry_count": 7
+      },
+      {
+        "bucket": "2005-10-14 00:00:00",
+        "log_entry_count": 873
+      },
+      {
+        "bucket": "2005-10-16 00:00:00",
+        "log_entry_count": 852
+      },
+      {
+        "bucket": "2005-10-17 00:00:00",
+        "log_entry_count": 53
+      },
+      {
+        "bucket": "2005-10-18 00:00:00",
+        "log_entry_count": 8
+      },
+      {
+        "bucket": "2005-10-19 00:00:00",
+        "log_entry_count": 12
+      },
+      {
+        "bucket": "2005-10-22 00:00:00",
+        "log_entry_count": 6
+      },
+      {
+        "bucket": "2005-10-23 00:00:00",
+        "log_entry_count": 18
+      },
+      {
+        "bucket": "2005-10-24 00:00:00",
+        "log_entry_count": 3
+      },
+      {
+        "bucket": "2005-10-25 00:00:00",
+        "log_entry_count": 2
+      },
+      {
+        "bucket": "2005-10-26 00:00:00",
+        "log_entry_count": 2
+      },
+      {
+        "bucket": "2005-10-27 00:00:00",
+        "log_entry_count": 679
+      },
+      {
+        "bucket": "2005-10-28 00:00:00",
+        "log_entry_count": 2055
+      },
+      {
+        "bucket": "2005-10-29 00:00:00",
+        "log_entry_count": 6
+      },
+      {
+        "bucket": "2005-10-30 00:00:00",
+        "log_entry_count": 2
+      },
+      {
+        "bucket": "2005-10-31 00:00:00",
+        "log_entry_count": 6
+      },
+      {
+        "bucket": "2005-11-01 00:00:00",
+        "log_entry_count": 5
+      },
+      {
+        "bucket": "2005-11-03 00:00:00",
+        "log_entry_count": 1
+      },
+      {
+        "bucket": "2005-11-04 00:00:00",
+        "log_entry_count": 6
+      },
+      {
+        "bucket": "2005-11-05 00:00:00",
+        "log_entry_count": 2
+      },
+      {
+        "bucket": "2005-11-06 00:00:00",
+        "log_entry_count": 1
+      },
+      {
+        "bucket": "2005-11-07 00:00:00",
+        "log_entry_count": 5
+      },
+      {
+        "bucket": "2005-11-08 00:00:00",
+        "log_entry_count": 3074
+      },
+      {
+        "bucket": "2005-11-09 00:00:00",
+        "log_entry_count": 2
+      },
+      {
+        "bucket": "2005-11-10 00:00:00",
+        "log_entry_count": 1028
+      },
+      {
+        "bucket": "2005-11-11 00:00:00",
+        "log_entry_count": 5
+      },
+      {
+        "bucket": "2005-11-12 00:00:00",
+        "log_entry_count": 2
+      },
+      {
+        "bucket": "2005-11-13 00:00:00",
+        "log_entry_count": 5
+      },
+      {
+        "bucket": "2005-11-14 00:00:00",
+        "log_entry_count": 1033
+      },
+      {
+        "bucket": "2005-11-15 00:00:00",
+        "log_entry_count": 4109
+      },
+      {
+        "bucket": "2005-11-16 00:00:00",
+        "log_entry_count": 1060
+      },
+      {
+        "bucket": "2005-11-17 00:00:00",
+        "log_entry_count": 1185
+      },
+      {
+        "bucket": "2005-11-18 00:00:00",
+        "log_entry_count": 538
+      },
+      {
+        "bucket": "2005-11-19 00:00:00",
+        "log_entry_count": 4
+      },
+      {
+        "bucket": "2005-11-20 00:00:00",
+        "log_entry_count": 8
+      },
+      {
+        "bucket": "2005-11-21 00:00:00",
+        "log_entry_count": 5301
+      },
+      {
+        "bucket": "2005-11-22 00:00:00",
+        "log_entry_count": 54
+      },
+      {
+        "bucket": "2005-11-23 00:00:00",
+        "log_entry_count": 46
+      },
+      {
+        "bucket": "2005-11-24 00:00:00",
+        "log_entry_count": 2053
+      },
+      {
+        "bucket": "2005-11-25 00:00:00",
+        "log_entry_count": 2045
+      },
+      {
+        "bucket": "2005-11-26 00:00:00",
+        "log_entry_count": 3476
+      },
+      {
+        "bucket": "2005-11-27 00:00:00",
+        "log_entry_count": 1026
+      },
+      {
+        "bucket": "2005-11-28 00:00:00",
+        "log_entry_count": 541
+      },
+      {
+        "bucket": "2005-11-29 00:00:00",
+        "log_entry_count": 1337
+      },
+      {
+        "bucket": "2005-11-30 00:00:00",
+        "log_entry_count": 67
+      },
+      {
+        "bucket": "2005-12-01 00:00:00",
+        "log_entry_count": 721
+      },
+      {
+        "bucket": "2005-12-02 00:00:00",
+        "log_entry_count": 1784
+      },
+      {
+        "bucket": "2005-12-03 00:00:00",
+        "log_entry_count": 969
+      },
+      {
+        "bucket": "2005-12-04 00:00:00",
+        "log_entry_count": 1199
+      },
+      {
+        "bucket": "2005-12-05 00:00:00",
+        "log_entry_count": 152
+      },
+      {
+        "bucket": "2005-12-06 00:00:00",
+        "log_entry_count": 278
+      },
+      {
+        "bucket": "2005-12-07 00:00:00",
+        "log_entry_count": 34
+      },
+      {
+        "bucket": "2005-12-08 00:00:00",
+        "log_entry_count": 135
+      },
+      {
+        "bucket": "2005-12-09 00:00:00",
+        "log_entry_count": 484
+      },
+      {
+        "bucket": "2005-12-11 00:00:00",
+        "log_entry_count": 1024
+      },
+      {
+        "bucket": "2005-12-12 00:00:00",
+        "log_entry_count": 1978
+      },
+      {
+        "bucket": "2005-12-13 00:00:00",
+        "log_entry_count": 1024
+      },
+      {
+        "bucket": "2005-12-14 00:00:00",
+        "log_entry_count": 2023
+      },
+      {
+        "bucket": "2005-12-16 00:00:00",
+        "log_entry_count": 1642
+      },
+      {
+        "bucket": "2005-12-17 00:00:00",
+        "log_entry_count": 17
+      },
+      {
+        "bucket": "2005-12-18 00:00:00",
+        "log_entry_count": 1042
+      },
+      {
+        "bucket": "2005-12-19 00:00:00",
+        "log_entry_count": 269
+      },
+      {
+        "bucket": "2005-12-22 00:00:00",
+        "log_entry_count": 158
+      },
+      {
+        "bucket": "2005-12-23 00:00:00",
+        "log_entry_count": 2
+      },
+      {
+        "bucket": "2005-12-24 00:00:00",
+        "log_entry_count": 103
+      },
+      {
+        "bucket": "2005-12-25 00:00:00",
+        "log_entry_count": 652
+      },
+      {
+        "bucket": "2005-12-26 00:00:00",
+        "log_entry_count": 1406
+      },
+      {
+        "bucket": "2005-12-28 00:00:00",
+        "log_entry_count": 190
+      },
+      {
+        "bucket": "2005-12-30 00:00:00",
+        "log_entry_count": 511
+      },
+      {
+        "bucket": "2006-01-03 00:00:00",
+        "log_entry_count": 465
+      },
+      {
+        "bucket": "2006-01-04 00:00:00",
+        "log_entry_count": 8
+      }
+    ],
+    "status": "ok",
+    "query_ms": 623.0519160162657
+  },
+  {
+    "evidence_id": "E20",
+    "name": "latency_stats_builds",
+    "sql": "SELECT source_file,count(*) AS timed_operations,\n          quantile_cont(create_seconds,0.5) AS p50_s,quantile_cont(create_seconds,0.95) AS p95_s,\n          quantile_cont(create_seconds,0.99) AS p99_s,max(create_seconds) AS max_s\n          FROM research_log_entries WHERE dataset=%s AND create_operation=%s\n          GROUP BY source_file ORDER BY source_file",
+    "parameters": [
+      "OpenStack",
+      "build instance."
+    ],
+    "rows": [
+      {
+        "source_file": "openstack_abnormal.log",
+        "timed_operations": 197,
+        "p50_s": 20.62,
+        "p95_s": 21.958,
+        "p99_s": 32.54759999999991,
+        "max_s": 51.59
+      },
+      {
+        "source_file": "openstack_normal1.log",
+        "timed_operations": 556,
+        "p50_s": 20.545,
+        "p95_s": 21.822499999999998,
+        "p99_s": 22.28,
+        "max_s": 22.91
+      },
+      {
+        "source_file": "openstack_normal2.log",
+        "timed_operations": 1313,
+        "p50_s": 20.54,
+        "p95_s": 21.784,
+        "p99_s": 22.395599999999984,
+        "max_s": 23.34
+      }
+    ],
+    "status": "ok",
+    "query_ms": 548.9974170923233
+  },
+  {
+    "evidence_id": "E21",
+    "name": "latency_stats_http",
+    "sql": "SELECT endpoint,count(*) AS timed_requests,\n          quantile_cont(latency_s,0.5) AS p50_s,quantile_cont(latency_s,0.95) AS p95_s,\n          quantile_cont(latency_s,0.99) AS p99_s,max(latency_s) AS max_s\n          FROM research_log_entries WHERE dataset=%s AND latency_s IS NOT NULL\n          GROUP BY endpoint ORDER BY timed_requests DESC LIMIT 20",
+    "parameters": [
+      "OpenStack"
+    ],
+    "rows": [
+      {
+        "endpoint": "GET /v2/{tenant}/servers/detail",
+        "timed_requests": 67363,
+        "p50_s": 0.2645519,
+        "p95_s": 0.3649359,
+        "p99_s": 0.43576202000000014,
+        "max_s": 1.2951999
+      },
+      {
+        "endpoint": "POST /v2/{tenant}/os-server-external-events",
+        "timed_requests": 4129,
+        "p50_s": 0.0924511,
+        "p95_s": 0.1056139,
+        "p99_s": 0.256553816,
+        "max_s": 2.144558
+      },
+      {
+        "endpoint": "GET /openstack/2013-10-17/vendor_data.json",
+        "timed_requests": 4071,
+        "p50_s": 0.220294,
+        "p95_s": 0.32712555,
+        "p99_s": 0.39813283,
+        "max_s": 2.2387099
+      },
+      {
+        "endpoint": "GET /openstack/2013-10-17/meta_data.json",
+        "timed_requests": 3322,
+        "p50_s": 0.21087945000000002,
+        "p95_s": 0.2754746499999995,
+        "p99_s": 0.401774722,
+        "max_s": 0.7883818
+      },
+      {
+        "endpoint": "GET /v2/{tenant}/servers/{uuid}",
+        "timed_requests": 2066,
+        "p50_s": 0.19588695,
+        "p95_s": 0.33722925,
+        "p99_s": 0.38362988499999995,
+        "max_s": 0.7208729
+      },
+      {
+        "endpoint": "POST /v2/{tenant}/servers",
+        "timed_requests": 2065,
+        "p50_s": 0.5037358,
+        "p95_s": 0.64820488,
+        "p99_s": 0.7648133999999989,
+        "max_s": 1.7926989
+      },
+      {
+        "endpoint": "DELETE /v2/{tenant}/servers/{uuid}",
+        "timed_requests": 2064,
+        "p50_s": 0.26120485,
+        "p95_s": 0.296934865,
+        "p99_s": 0.4372332239999999,
+        "max_s": 1.2507939
+      },
+      {
+        "endpoint": "GET /openstack/2012-08-10/meta_data.json",
+        "timed_requests": 2064,
+        "p50_s": 0.2290131,
+        "p95_s": 0.37008002,
+        "p99_s": 0.4031282139999999,
+        "max_s": 2.244442
+      },
+      {
+        "endpoint": "GET /openstack/2013-10-17",
+        "timed_requests": 2063,
+        "p50_s": 0.213603,
+        "p95_s": 0.2512834099999999,
+        "p99_s": 0.389539274,
+        "max_s": 0.584806
+      },
+      {
+        "endpoint": "GET /openstack/2013-10-17/user_data",
+        "timed_requests": 1905,
+        "p50_s": 0.215071,
+        "p95_s": 0.26492667999999997,
+        "p99_s": 0.39065387200000007,
+        "max_s": 0.5745392
+      },
+      {
+        "endpoint": "GET /latest/meta-data/",
+        "timed_requests": 1368,
+        "p50_s": 0.00177005,
+        "p95_s": 0.26564356499999986,
+        "p99_s": 0.40050532999999977,
+        "max_s": 0.482836
+      },
+      {
+        "endpoint": "GET /latest/meta-data/block-device-mapping/",
+        "timed_requests": 1180,
+        "p50_s": 0.21051205,
+        "p95_s": 0.26609889999999997,
+        "p99_s": 0.401947671,
+        "max_s": 1.8698769
+      },
+      {
+        "endpoint": "GET /latest/meta-data/block-device-mapping/ami",
+        "timed_requests": 978,
+        "p50_s": 0.00137755,
+        "p95_s": 0.261173135,
+        "p99_s": 0.397262233,
+        "max_s": 0.657974
+      },
+      {
+        "endpoint": "GET /latest/meta-data/block-device-mapping/root",
+        "timed_requests": 820,
+        "p50_s": 0.0012055500000000001,
+        "p95_s": 0.27376365499999994,
+        "p99_s": 0.39321403899999974,
+        "max_s": 0.6437151
+      },
+      {
+        "endpoint": "GET /latest/meta-data/placement/",
+        "timed_requests": 670,
+        "p50_s": 0.0011121,
+        "p95_s": 0.3049983599999996,
+        "p99_s": 0.4157090409999996,
+        "max_s": 0.563292
+      },
+      {
+        "endpoint": "GET /latest/meta-data/placement/availability-zone",
+        "timed_requests": 535,
+        "p50_s": 0.0011129,
+        "p95_s": 0.25980002999999996,
+        "p99_s": 0.38097742,
+        "max_s": 0.572722
+      },
+      {
+        "endpoint": "GET /latest/meta-data/local-ipv4",
+        "timed_requests": 413,
+        "p50_s": 0.0012031,
+        "p95_s": 0.2730365,
+        "p99_s": 0.38273768399999997,
+        "max_s": 0.531549
+      },
+      {
+        "endpoint": "GET /latest/meta-data/reservation-id",
+        "timed_requests": 318,
+        "p50_s": 0.0024191,
+        "p95_s": 0.2827588349999999,
+        "p99_s": 0.402536183,
+        "max_s": 0.5046561
+      },
+      {
+        "endpoint": "GET /latest/meta-data/local-hostname",
+        "timed_requests": 226,
+        "p50_s": 0.001107,
+        "p95_s": 0.25889402499999997,
+        "p99_s": 0.41175599999999996,
+        "max_s": 0.4505939
+      },
+      {
+        "endpoint": "GET /latest/meta-data/security-groups",
+        "timed_requests": 152,
+        "p50_s": 0.00134335,
+        "p95_s": 0.264111145,
+        "p99_s": 0.3506975980000002,
+        "max_s": 0.398788
+      }
+    ],
+    "status": "ok",
+    "query_ms": 756.4828329486772
+  },
+  {
+    "evidence_id": "E22",
+    "name": "compare_periods",
+    "sql": "SELECT\n          count(*) FILTER(WHERE ts>=%s AND ts<%s) AS before_count,\n          count(*) FILTER(WHERE ts>=%s AND ts<%s) AS after_count\n          FROM research_log_entries WHERE dataset=%s AND label<>%s",
+    "parameters": [
+      "2005-06-03",
+      "2005-06-10",
+      "2005-06-10",
+      "2005-06-17",
+      "BGL",
+      "-"
+    ],
+    "rows": [
+      {
+        "before_count": 2773,
+        "after_count": 220968
+      }
+    ],
+    "status": "ok",
+    "query_ms": 342.67408400774
+  },
+  {
+    "evidence_id": "E23",
+    "name": "group_entries",
+    "sql": "WITH prior AS (\n          SELECT label,node,epoch_s,entry_id,\n            lag(epoch_s) OVER(PARTITION BY label,node ORDER BY epoch_s,entry_id) AS previous_s\n          FROM research_log_entries WHERE dataset=%s AND label<>%s), marked AS (\n          SELECT *, CASE WHEN previous_s IS NULL OR epoch_s-previous_s>%s THEN 1 ELSE 0 END AS new_group\n          FROM prior), numbered AS (\n          SELECT *,sum(new_group) OVER(PARTITION BY label,node ORDER BY epoch_s,entry_id\n          ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS temporal_group FROM marked)\n          SELECT label,node,temporal_group,count(*) AS log_entry_count,\n          min(epoch_s) AS first_epoch_s,max(epoch_s) AS last_epoch_s\n          FROM numbered GROUP BY label,node,temporal_group\n          ORDER BY log_entry_count DESC,label,node,temporal_group LIMIT 10",
+    "parameters": [
+      "BGL",
+      "-",
+      5
+    ],
+    "rows": [
+      {
+        "label": "KERNDTLB",
+        "node": "R30-M0-N9-C:J16-U01",
+        "temporal_group": "1",
+        "log_entry_count": 152182,
+        "first_epoch_s": 1118535464,
+        "last_epoch_s": 1118558372
+      },
+      {
+        "label": "KERNPOW",
+        "node": "NULL",
+        "temporal_group": "1",
+        "log_entry_count": 16,
+        "first_epoch_s": 1120673475,
+        "last_epoch_s": 1120673475
+      },
+      {
+        "label": "KERNPOW",
+        "node": "NULL",
+        "temporal_group": "2",
+        "log_entry_count": 16,
+        "first_epoch_s": 1120845043,
+        "last_epoch_s": 1120845043
+      },
+      {
+        "label": "KERNPOW",
+        "node": "NULL",
+        "temporal_group": "3",
+        "log_entry_count": 16,
+        "first_epoch_s": 1120888654,
+        "last_epoch_s": 1120888654
+      },
+      {
+        "label": "KERNPOW",
+        "node": "NULL",
+        "temporal_group": "4",
+        "log_entry_count": 16,
+        "first_epoch_s": 1121071828,
+        "last_epoch_s": 1121071828
+      },
+      {
+        "label": "KERNPOW",
+        "node": "NULL",
+        "temporal_group": "5",
+        "log_entry_count": 16,
+        "first_epoch_s": 1121115803,
+        "last_epoch_s": 1121115803
+      },
+      {
+        "label": "KERNPOW",
+        "node": "NULL",
+        "temporal_group": "6",
+        "log_entry_count": 16,
+        "first_epoch_s": 1121941223,
+        "last_epoch_s": 1121941224
+      },
+      {
+        "label": "KERNPOW",
+        "node": "NULL",
+        "temporal_group": "7",
+        "log_entry_count": 16,
+        "first_epoch_s": 1126104406,
+        "last_epoch_s": 1126104406
+      },
+      {
+        "label": "KERNPOW",
+        "node": "NULL",
+        "temporal_group": "8",
+        "log_entry_count": 16,
+        "first_epoch_s": 1126104472,
+        "last_epoch_s": 1126104472
+      },
+      {
+        "label": "KERNPOW",
+        "node": "NULL",
+        "temporal_group": "9",
+        "log_entry_count": 16,
+        "first_epoch_s": 1127160210,
+        "last_epoch_s": 1127160211
+      }
+    ],
+    "status": "ok",
+    "query_ms": 2299.5857499772683
+  },
+  {
+    "evidence_id": "E24",
+    "name": "create_reader",
+    "sql": "CREATE ROLE research_reader LOGIN PASSWORD 'research-only-reader'",
+    "parameters": [],
+    "rows": [],
+    "status": "ok",
+    "query_ms": 950.5515419878066
+  },
+  {
+    "evidence_id": "E25",
+    "name": "reader_select",
+    "sql": "GRANT SELECT ON research_log_entries TO research_reader",
+    "parameters": [],
+    "rows": [],
+    "status": "ok",
+    "query_ms": 1181.6831670003012
+  },
+  {
+    "evidence_id": "E26",
+    "name": "create_manager",
+    "sql": "CREATE ROLE research_manager LOGIN PASSWORD 'research-only-manager'",
+    "parameters": [],
+    "rows": [],
+    "status": "ok",
+    "query_ms": 597.2773750545457
+  },
+  {
+    "evidence_id": "E27",
+    "name": "create_manager_view",
+    "sql": "CREATE VIEW research_manager_counts AS SELECT dataset,component,\n          count(*) AS log_entry_count FROM research_log_entries GROUP BY dataset,component",
+    "parameters": [],
+    "rows": [],
+    "status": "ok",
+    "query_ms": 639.9789169663563
+  },
+  {
+    "evidence_id": "E28",
+    "name": "manager_select",
+    "sql": "GRANT SELECT ON research_manager_counts TO research_manager",
+    "parameters": [],
+    "rows": [],
+    "status": "ok",
+    "query_ms": 248.12962498981506
+  },
+  {
+    "evidence_id": "E29",
+    "name": "research_reader_read_only_setting",
+    "sql": "SET default_transaction_read_only=on",
+    "parameters": [],
+    "rows": [],
+    "status": "ok",
+    "query_ms": 614.442833000794
+  },
+  {
+    "evidence_id": "E30",
+    "name": "reader_base_count",
+    "sql": "SELECT count(*) AS log_entries FROM research_log_entries",
+    "parameters": [],
+    "rows": [
+      {
+        "log_entries": 4955783
+      }
+    ],
+    "status": "ok",
+    "query_ms": 218.3523749699816
+  },
+  {
+    "evidence_id": "E31",
+    "name": "reader_search",
+    "sql": "SELECT count(*) AS log_entries FROM research_logs_idx WHERE message @@ %s",
+    "parameters": [
+      "error"
+    ],
+    "rows": [
+      {
+        "log_entries": 557869
+      }
+    ],
+    "status": "ok",
+    "query_ms": 175.44887494295835
+  },
+  {
+    "evidence_id": "E32",
+    "name": "reader_write_denied",
+    "sql": "INSERT INTO research_log_entries(dataset) VALUES ('SHOULD_NOT_WRITE')",
+    "parameters": [],
+    "status": "error",
+    "sqlstate": "42501",
+    "error": "permission denied for table research_log_entries",
+    "query_ms": 235.61062500812113
+  },
+  {
+    "evidence_id": "E33",
+    "name": "research_reader_timeout_setting",
+    "sql": "SET statement_timeout='100ms'",
+    "parameters": [],
+    "rows": [],
+    "status": "ok",
+    "query_ms": 424.36679103411734
+  },
+  {
+    "evidence_id": "E34",
+    "name": "research_reader_timeout",
+    "sql": "SELECT pg_sleep(5)",
+    "parameters": [],
+    "rows": [
+      {
+        "pg_sleep": null
+      }
+    ],
+    "status": "ok",
+    "query_ms": 5029.2057080660015
+  }
+]

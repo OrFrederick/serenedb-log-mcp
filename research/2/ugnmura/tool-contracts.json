@@ -1,0 +1,4773 @@
+{
+  "status": "draft_requires_glossary_clarification",
+  "tools": [
+    {
+      "name": "describe_corpus",
+      "description": "Discover exact Dataset coverage, time basis, schema and supported capabilities; use before selecting filters. Returns Dataset metadata and quality/ownership coverage.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "investigation_id": {
+            "title": "Investigation Id",
+            "type": "string"
+          },
+          "datasets": {
+            "default": [
+              "BGL",
+              "OpenStack"
+            ],
+            "items": {
+              "enum": [
+                "BGL",
+                "OpenStack"
+              ],
+              "type": "string"
+            },
+            "title": "Datasets",
+            "type": "array"
+          }
+        },
+        "required": [
+          "investigation_id"
+        ],
+        "title": "Describe",
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "CorpusRow": {
+            "additionalProperties": false,
+            "properties": {
+              "dataset": {
+                "title": "Dataset",
+                "type": "string"
+              },
+              "log_entry_count": {
+                "title": "Log Entry Count",
+                "type": "integer"
+              },
+              "timestamped_entries": {
+                "title": "Timestamped Entries",
+                "type": "integer"
+              },
+              "first_printed_time": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "First Printed Time"
+              },
+              "last_printed_time": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Last Printed Time"
+              },
+              "components": {
+                "title": "Components",
+                "type": "integer"
+              },
+              "corpus_version": {
+                "title": "Corpus Version",
+                "type": "string"
+              },
+              "loader_version": {
+                "title": "Loader Version",
+                "type": "string"
+              },
+              "time_basis": {
+                "title": "Time Basis",
+                "type": "string"
+              },
+              "capabilities": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Capabilities",
+                "type": "array"
+              },
+              "limitations": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Limitations",
+                "type": "array"
+              }
+            },
+            "required": [
+              "dataset",
+              "log_entry_count",
+              "timestamped_entries",
+              "first_printed_time",
+              "last_printed_time",
+              "components",
+              "corpus_version",
+              "loader_version",
+              "time_basis",
+              "capabilities",
+              "limitations"
+            ],
+            "title": "CorpusRow",
+            "type": "object"
+          },
+          "DescribeCorpusResult": {
+            "additionalProperties": false,
+            "properties": {
+              "investigation_id": {
+                "title": "Investigation Id",
+                "type": "string"
+              },
+              "evidence_id": {
+                "title": "Evidence Id",
+                "type": "string"
+              },
+              "schema_version": {
+                "const": "research-proposal-1",
+                "default": "research-proposal-1",
+                "title": "Schema Version",
+                "type": "string"
+              },
+              "data_scope": {
+                "additionalProperties": true,
+                "title": "Data Scope",
+                "type": "object"
+              },
+              "queries": {
+                "items": {
+                  "$ref": "#/$defs/Query"
+                },
+                "title": "Queries",
+                "type": "array"
+              },
+              "query_ms": {
+                "minimum": 0,
+                "title": "Query Ms",
+                "type": "number"
+              },
+              "total_match_count": {
+                "minimum": 0,
+                "title": "Total Match Count",
+                "type": "integer"
+              },
+              "result_row_unit": {
+                "enum": [
+                  "log_entries",
+                  "groups",
+                  "buckets",
+                  "comparisons",
+                  "metadata"
+                ],
+                "title": "Result Row Unit",
+                "type": "string"
+              },
+              "total_result_rows": {
+                "minimum": 0,
+                "title": "Total Result Rows",
+                "type": "integer"
+              },
+              "returned_count": {
+                "minimum": 0,
+                "title": "Returned Count",
+                "type": "integer"
+              },
+              "truncated": {
+                "title": "Truncated",
+                "type": "boolean"
+              },
+              "result_truncated": {
+                "title": "Result Truncated",
+                "type": "boolean"
+              },
+              "content_truncated": {
+                "default": false,
+                "title": "Content Truncated",
+                "type": "boolean"
+              },
+              "next_cursor": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Next Cursor"
+              },
+              "count_is_exact": {
+                "title": "Count Is Exact",
+                "type": "boolean"
+              },
+              "rows": {
+                "items": {
+                  "$ref": "#/$defs/CorpusRow"
+                },
+                "title": "Rows",
+                "type": "array"
+              },
+              "warnings": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "title": "Warnings",
+                "type": "array"
+              }
+            },
+            "required": [
+              "investigation_id",
+              "evidence_id",
+              "data_scope",
+              "queries",
+              "query_ms",
+              "total_match_count",
+              "result_row_unit",
+              "total_result_rows",
+              "returned_count",
+              "truncated",
+              "result_truncated",
+              "count_is_exact",
+              "rows"
+            ],
+            "title": "DescribeCorpusResult",
+            "type": "object"
+          },
+          "Failure": {
+            "additionalProperties": false,
+            "properties": {
+              "investigation_id": {
+                "title": "Investigation Id",
+                "type": "string"
+              },
+              "evidence_id": {
+                "title": "Evidence Id",
+                "type": "string"
+              },
+              "status": {
+                "const": "error",
+                "default": "error",
+                "title": "Status",
+                "type": "string"
+              },
+              "code": {
+                "enum": [
+                  "invalid_filter",
+                  "unsupported_capability",
+                  "timeout",
+                  "stale_cursor",
+                  "permission_denied",
+                  "database_unavailable"
+                ],
+                "title": "Code",
+                "type": "string"
+              },
+              "message": {
+                "title": "Message",
+                "type": "string"
+              },
+              "retryable": {
+                "title": "Retryable",
+                "type": "boolean"
+              },
+              "recovery": {
+                "title": "Recovery",
+                "type": "string"
+              },
+              "total_match_count": {
+                "default": null,
+                "title": "Total Match Count",
+                "type": "null"
+              }
+            },
+            "required": [
+              "investigation_id",
+              "evidence_id",
+              "code",
+              "message",
+              "retryable",
+              "recovery"
+            ],
+            "title": "Failure",
+            "type": "object"
+          },
+          "Query": {
+            "additionalProperties": false,
+            "properties": {
+              "purpose": {
+                "title": "Purpose",
+                "type": "string"
+              },
+              "sql": {
+                "title": "Sql",
+                "type": "string"
+              },
+              "parameters": {
+                "items": {},
+                "title": "Parameters",
+                "type": "array"
+              },
+              "query_ms": {
+                "minimum": 0,
+                "title": "Query Ms",
+                "type": "number"
+              },
+              "snapshot_id": {
+                "title": "Snapshot Id",
+                "type": "string"
+              }
+            },
+            "required": [
+              "purpose",
+              "sql",
+              "parameters",
+              "query_ms",
+              "snapshot_id"
+            ],
+            "title": "Query",
+            "type": "object"
+          }
+        },
+        "anyOf": [
+          {
+            "$ref": "#/$defs/DescribeCorpusResult"
+          },
+          {
+            "$ref": "#/$defs/Failure"
+          }
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "search_logs",
+      "description": "Retrieve bounded full-text Log Entries with declared all/any/phrase/fuzzy semantics. Use for discovery and examples; use count_by/trend for frequency. Returns stable keys, snippets, exact total and continuation.",
+      "inputSchema": {
+        "$defs": {
+          "Scope": {
+            "additionalProperties": false,
+            "properties": {
+              "datasets": {
+                "items": {
+                  "enum": [
+                    "BGL",
+                    "OpenStack"
+                  ],
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 1,
+                "title": "Datasets",
+                "type": "array"
+              },
+              "time_basis": {
+                "const": "dataset_printed_naive",
+                "default": "dataset_printed_naive",
+                "title": "Time Basis",
+                "type": "string"
+              },
+              "start": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Start"
+              },
+              "end": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "End"
+              },
+              "full_time_range": {
+                "default": false,
+                "title": "Full Time Range",
+                "type": "boolean"
+              },
+              "components": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 20,
+                "title": "Components",
+                "type": "array"
+              },
+              "levels": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 10,
+                "title": "Levels",
+                "type": "array"
+              },
+              "labels": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 50,
+                "title": "Labels",
+                "type": "array"
+              },
+              "source_files": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 5,
+                "title": "Source Files",
+                "type": "array"
+              }
+            },
+            "required": [
+              "datasets"
+            ],
+            "title": "Scope",
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "investigation_id": {
+            "title": "Investigation Id",
+            "type": "string"
+          },
+          "scope": {
+            "$ref": "#/$defs/Scope"
+          },
+          "query": {
+            "maxLength": 256,
+            "minLength": 1,
+            "title": "Query",
+            "type": "string"
+          },
+          "mode": {
+            "default": "all_terms",
+            "enum": [
+              "all_terms",
+              "any_terms",
+              "phrase",
+              "fuzzy"
+            ],
+            "title": "Mode",
+            "type": "string"
+          },
+          "edit_distance": {
+            "default": 1,
+            "enum": [
+              0,
+              1
+            ],
+            "title": "Edit Distance",
+            "type": "integer"
+          },
+          "limit": {
+            "default": 20,
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Cursor"
+          }
+        },
+        "required": [
+          "investigation_id",
+          "scope",
+          "query"
+        ],
+        "title": "Search",
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "EntryKey": {
+            "additionalProperties": false,
+            "properties": {
+              "dataset": {
+                "enum": [
+                  "BGL",
+                  "OpenStack"
+                ],
+                "title": "Dataset",
+                "type": "string"
+              },
+              "source_file": {
+                "title": "Source File",
+                "type": "string"
+              },
+              "entry_id": {
+                "minimum": 1,
+                "title": "Entry Id",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "dataset",
+              "source_file",
+              "entry_id"
+            ],
+            "title": "EntryKey",
+            "type": "object"
+          },
+          "Failure": {
+            "additionalProperties": false,
+            "properties": {
+              "investigation_id": {
+                "title": "Investigation Id",
+                "type": "string"
+              },
+              "evidence_id": {
+                "title": "Evidence Id",
+                "type": "string"
+              },
+              "status": {
+                "const": "error",
+                "default": "error",
+                "title": "Status",
+                "type": "string"
+              },
+              "code": {
+                "enum": [
+                  "invalid_filter",
+                  "unsupported_capability",
+                  "timeout",
+                  "stale_cursor",
+                  "permission_denied",
+                  "database_unavailable"
+                ],
+                "title": "Code",
+                "type": "string"
+              },
+              "message": {
+                "title": "Message",
+                "type": "string"
+              },
+              "retryable": {
+                "title": "Retryable",
+                "type": "boolean"
+              },
+              "recovery": {
+                "title": "Recovery",
+                "type": "string"
+              },
+              "total_match_count": {
+                "default": null,
+                "title": "Total Match Count",
+                "type": "null"
+              }
+            },
+            "required": [
+              "investigation_id",
+              "evidence_id",
+              "code",
+              "message",
+              "retryable",
+              "recovery"
+            ],
+            "title": "Failure",
+            "type": "object"
+          },
+          "LogEntryRow": {
+            "additionalProperties": false,
+            "properties": {
+              "key": {
+                "$ref": "#/$defs/EntryKey"
+              },
+              "timestamp": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Timestamp"
+              },
+              "component": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Component"
+              },
+              "level": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Level"
+              },
+              "node": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Node"
+              },
+              "message": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Message"
+              },
+              "snippet": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Snippet"
+              },
+              "score": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Score"
+              },
+              "correlation_key": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Correlation Key"
+              },
+              "content_truncated": {
+                "default": false,
+                "title": "Content Truncated",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "key",
+              "timestamp",
+              "component",
+              "level",
+              "node",
+              "message"
+            ],
+            "title": "LogEntryRow",
+            "type": "object"
+          },
+          "Query": {
+            "additionalProperties": false,
+            "properties": {
+              "purpose": {
+                "title": "Purpose",
+                "type": "string"
+              },
+              "sql": {
+                "title": "Sql",
+                "type": "string"
+              },
+              "parameters": {
+                "items": {},
+                "title": "Parameters",
+                "type": "array"
+              },
+              "query_ms": {
+                "minimum": 0,
+                "title": "Query Ms",
+                "type": "number"
+              },
+              "snapshot_id": {
+                "title": "Snapshot Id",
+                "type": "string"
+              }
+            },
+            "required": [
+              "purpose",
+              "sql",
+              "parameters",
+              "query_ms",
+              "snapshot_id"
+            ],
+            "title": "Query",
+            "type": "object"
+          },
+          "SearchLogsResult": {
+            "additionalProperties": false,
+            "properties": {
+              "investigation_id": {
+                "title": "Investigation Id",
+                "type": "string"
+              },
+              "evidence_id": {
+                "title": "Evidence Id",
+                "type": "string"
+              },
+              "schema_version": {
+                "const": "research-proposal-1",
+                "default": "research-proposal-1",
+                "title": "Schema Version",
+                "type": "string"
+              },
+              "data_scope": {
+                "additionalProperties": true,
+                "title": "Data Scope",
+                "type": "object"
+              },
+              "queries": {
+                "items": {
+                  "$ref": "#/$defs/Query"
+                },
+                "title": "Queries",
+                "type": "array"
+              },
+              "query_ms": {
+                "minimum": 0,
+                "title": "Query Ms",
+                "type": "number"
+              },
+              "total_match_count": {
+                "minimum": 0,
+                "title": "Total Match Count",
+                "type": "integer"
+              },
+              "result_row_unit": {
+                "enum": [
+                  "log_entries",
+                  "groups",
+                  "buckets",
+                  "comparisons",
+                  "metadata"
+                ],
+                "title": "Result Row Unit",
+                "type": "string"
+              },
+              "total_result_rows": {
+                "minimum": 0,
+                "title": "Total Result Rows",
+                "type": "integer"
+              },
+              "returned_count": {
+                "minimum": 0,
+                "title": "Returned Count",
+                "type": "integer"
+              },
+              "truncated": {
+                "title": "Truncated",
+                "type": "boolean"
+              },
+              "result_truncated": {
+                "title": "Result Truncated",
+                "type": "boolean"
+              },
+              "content_truncated": {
+                "default": false,
+                "title": "Content Truncated",
+                "type": "boolean"
+              },
+              "next_cursor": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Next Cursor"
+              },
+              "count_is_exact": {
+                "title": "Count Is Exact",
+                "type": "boolean"
+              },
+              "rows": {
+                "items": {
+                  "$ref": "#/$defs/LogEntryRow"
+                },
+                "title": "Rows",
+                "type": "array"
+              },
+              "warnings": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "title": "Warnings",
+                "type": "array"
+              }
+            },
+            "required": [
+              "investigation_id",
+              "evidence_id",
+              "data_scope",
+              "queries",
+              "query_ms",
+              "total_match_count",
+              "result_row_unit",
+              "total_result_rows",
+              "returned_count",
+              "truncated",
+              "result_truncated",
+              "count_is_exact",
+              "rows"
+            ],
+            "title": "SearchLogsResult",
+            "type": "object"
+          }
+        },
+        "anyOf": [
+          {
+            "$ref": "#/$defs/SearchLogsResult"
+          },
+          {
+            "$ref": "#/$defs/Failure"
+          }
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "get_context",
+      "description": "Read bounded before/after Log Entries for an existing anchor on the same node/request/instance. Reject absent correlation ids; never broaden them to the whole Dataset.",
+      "inputSchema": {
+        "$defs": {
+          "EntryKey": {
+            "additionalProperties": false,
+            "properties": {
+              "dataset": {
+                "enum": [
+                  "BGL",
+                  "OpenStack"
+                ],
+                "title": "Dataset",
+                "type": "string"
+              },
+              "source_file": {
+                "title": "Source File",
+                "type": "string"
+              },
+              "entry_id": {
+                "minimum": 1,
+                "title": "Entry Id",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "dataset",
+              "source_file",
+              "entry_id"
+            ],
+            "title": "EntryKey",
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "investigation_id": {
+            "title": "Investigation Id",
+            "type": "string"
+          },
+          "anchor": {
+            "$ref": "#/$defs/EntryKey"
+          },
+          "correlation": {
+            "enum": [
+              "node",
+              "request_id",
+              "instance_id"
+            ],
+            "title": "Correlation",
+            "type": "string"
+          },
+          "before_seconds": {
+            "default": 60,
+            "maximum": 3600,
+            "minimum": 0,
+            "title": "Before Seconds",
+            "type": "integer"
+          },
+          "after_seconds": {
+            "default": 60,
+            "maximum": 3600,
+            "minimum": 0,
+            "title": "After Seconds",
+            "type": "integer"
+          },
+          "limit": {
+            "default": 30,
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Cursor"
+          }
+        },
+        "required": [
+          "investigation_id",
+          "anchor",
+          "correlation"
+        ],
+        "title": "Context",
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "EntryKey": {
+            "additionalProperties": false,
+            "properties": {
+              "dataset": {
+                "enum": [
+                  "BGL",
+                  "OpenStack"
+                ],
+                "title": "Dataset",
+                "type": "string"
+              },
+              "source_file": {
+                "title": "Source File",
+                "type": "string"
+              },
+              "entry_id": {
+                "minimum": 1,
+                "title": "Entry Id",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "dataset",
+              "source_file",
+              "entry_id"
+            ],
+            "title": "EntryKey",
+            "type": "object"
+          },
+          "Failure": {
+            "additionalProperties": false,
+            "properties": {
+              "investigation_id": {
+                "title": "Investigation Id",
+                "type": "string"
+              },
+              "evidence_id": {
+                "title": "Evidence Id",
+                "type": "string"
+              },
+              "status": {
+                "const": "error",
+                "default": "error",
+                "title": "Status",
+                "type": "string"
+              },
+              "code": {
+                "enum": [
+                  "invalid_filter",
+                  "unsupported_capability",
+                  "timeout",
+                  "stale_cursor",
+                  "permission_denied",
+                  "database_unavailable"
+                ],
+                "title": "Code",
+                "type": "string"
+              },
+              "message": {
+                "title": "Message",
+                "type": "string"
+              },
+              "retryable": {
+                "title": "Retryable",
+                "type": "boolean"
+              },
+              "recovery": {
+                "title": "Recovery",
+                "type": "string"
+              },
+              "total_match_count": {
+                "default": null,
+                "title": "Total Match Count",
+                "type": "null"
+              }
+            },
+            "required": [
+              "investigation_id",
+              "evidence_id",
+              "code",
+              "message",
+              "retryable",
+              "recovery"
+            ],
+            "title": "Failure",
+            "type": "object"
+          },
+          "GetContextResult": {
+            "additionalProperties": false,
+            "properties": {
+              "investigation_id": {
+                "title": "Investigation Id",
+                "type": "string"
+              },
+              "evidence_id": {
+                "title": "Evidence Id",
+                "type": "string"
+              },
+              "schema_version": {
+                "const": "research-proposal-1",
+                "default": "research-proposal-1",
+                "title": "Schema Version",
+                "type": "string"
+              },
+              "data_scope": {
+                "additionalProperties": true,
+                "title": "Data Scope",
+                "type": "object"
+              },
+              "queries": {
+                "items": {
+                  "$ref": "#/$defs/Query"
+                },
+                "title": "Queries",
+                "type": "array"
+              },
+              "query_ms": {
+                "minimum": 0,
+                "title": "Query Ms",
+                "type": "number"
+              },
+              "total_match_count": {
+                "minimum": 0,
+                "title": "Total Match Count",
+                "type": "integer"
+              },
+              "result_row_unit": {
+                "enum": [
+                  "log_entries",
+                  "groups",
+                  "buckets",
+                  "comparisons",
+                  "metadata"
+                ],
+                "title": "Result Row Unit",
+                "type": "string"
+              },
+              "total_result_rows": {
+                "minimum": 0,
+                "title": "Total Result Rows",
+                "type": "integer"
+              },
+              "returned_count": {
+                "minimum": 0,
+                "title": "Returned Count",
+                "type": "integer"
+              },
+              "truncated": {
+                "title": "Truncated",
+                "type": "boolean"
+              },
+              "result_truncated": {
+                "title": "Result Truncated",
+                "type": "boolean"
+              },
+              "content_truncated": {
+                "default": false,
+                "title": "Content Truncated",
+                "type": "boolean"
+              },
+              "next_cursor": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Next Cursor"
+              },
+              "count_is_exact": {
+                "title": "Count Is Exact",
+                "type": "boolean"
+              },
+              "rows": {
+                "items": {
+                  "$ref": "#/$defs/LogEntryRow"
+                },
+                "title": "Rows",
+                "type": "array"
+              },
+              "warnings": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "title": "Warnings",
+                "type": "array"
+              }
+            },
+            "required": [
+              "investigation_id",
+              "evidence_id",
+              "data_scope",
+              "queries",
+              "query_ms",
+              "total_match_count",
+              "result_row_unit",
+              "total_result_rows",
+              "returned_count",
+              "truncated",
+              "result_truncated",
+              "count_is_exact",
+              "rows"
+            ],
+            "title": "GetContextResult",
+            "type": "object"
+          },
+          "LogEntryRow": {
+            "additionalProperties": false,
+            "properties": {
+              "key": {
+                "$ref": "#/$defs/EntryKey"
+              },
+              "timestamp": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Timestamp"
+              },
+              "component": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Component"
+              },
+              "level": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Level"
+              },
+              "node": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Node"
+              },
+              "message": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Message"
+              },
+              "snippet": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Snippet"
+              },
+              "score": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Score"
+              },
+              "correlation_key": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Correlation Key"
+              },
+              "content_truncated": {
+                "default": false,
+                "title": "Content Truncated",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "key",
+              "timestamp",
+              "component",
+              "level",
+              "node",
+              "message"
+            ],
+            "title": "LogEntryRow",
+            "type": "object"
+          },
+          "Query": {
+            "additionalProperties": false,
+            "properties": {
+              "purpose": {
+                "title": "Purpose",
+                "type": "string"
+              },
+              "sql": {
+                "title": "Sql",
+                "type": "string"
+              },
+              "parameters": {
+                "items": {},
+                "title": "Parameters",
+                "type": "array"
+              },
+              "query_ms": {
+                "minimum": 0,
+                "title": "Query Ms",
+                "type": "number"
+              },
+              "snapshot_id": {
+                "title": "Snapshot Id",
+                "type": "string"
+              }
+            },
+            "required": [
+              "purpose",
+              "sql",
+              "parameters",
+              "query_ms",
+              "snapshot_id"
+            ],
+            "title": "Query",
+            "type": "object"
+          }
+        },
+        "anyOf": [
+          {
+            "$ref": "#/$defs/GetContextResult"
+          },
+          {
+            "$ref": "#/$defs/Failure"
+          }
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "count_by",
+      "description": "Calculate exact matching Log Entry counts by allowlisted dimensions over the full declared Data Scope. Groups, total groups and source-entry totals are distinct.",
+      "inputSchema": {
+        "$defs": {
+          "Dimension": {
+            "enum": [
+              "dataset",
+              "component",
+              "team",
+              "level",
+              "label",
+              "node",
+              "rack",
+              "midplane",
+              "template_id",
+              "source_file"
+            ],
+            "title": "Dimension",
+            "type": "string"
+          },
+          "Scope": {
+            "additionalProperties": false,
+            "properties": {
+              "datasets": {
+                "items": {
+                  "enum": [
+                    "BGL",
+                    "OpenStack"
+                  ],
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 1,
+                "title": "Datasets",
+                "type": "array"
+              },
+              "time_basis": {
+                "const": "dataset_printed_naive",
+                "default": "dataset_printed_naive",
+                "title": "Time Basis",
+                "type": "string"
+              },
+              "start": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Start"
+              },
+              "end": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "End"
+              },
+              "full_time_range": {
+                "default": false,
+                "title": "Full Time Range",
+                "type": "boolean"
+              },
+              "components": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 20,
+                "title": "Components",
+                "type": "array"
+              },
+              "levels": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 10,
+                "title": "Levels",
+                "type": "array"
+              },
+              "labels": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 50,
+                "title": "Labels",
+                "type": "array"
+              },
+              "source_files": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 5,
+                "title": "Source Files",
+                "type": "array"
+              }
+            },
+            "required": [
+              "datasets"
+            ],
+            "title": "Scope",
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "investigation_id": {
+            "title": "Investigation Id",
+            "type": "string"
+          },
+          "scope": {
+            "$ref": "#/$defs/Scope"
+          },
+          "dimensions": {
+            "items": {
+              "$ref": "#/$defs/Dimension"
+            },
+            "maxItems": 3,
+            "minItems": 1,
+            "title": "Dimensions",
+            "type": "array"
+          },
+          "limit": {
+            "default": 20,
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Cursor"
+          }
+        },
+        "required": [
+          "investigation_id",
+          "scope",
+          "dimensions"
+        ],
+        "title": "CountBy",
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "CountByResult": {
+            "additionalProperties": false,
+            "properties": {
+              "investigation_id": {
+                "title": "Investigation Id",
+                "type": "string"
+              },
+              "evidence_id": {
+                "title": "Evidence Id",
+                "type": "string"
+              },
+              "schema_version": {
+                "const": "research-proposal-1",
+                "default": "research-proposal-1",
+                "title": "Schema Version",
+                "type": "string"
+              },
+              "data_scope": {
+                "additionalProperties": true,
+                "title": "Data Scope",
+                "type": "object"
+              },
+              "queries": {
+                "items": {
+                  "$ref": "#/$defs/Query"
+                },
+                "title": "Queries",
+                "type": "array"
+              },
+              "query_ms": {
+                "minimum": 0,
+                "title": "Query Ms",
+                "type": "number"
+              },
+              "total_match_count": {
+                "minimum": 0,
+                "title": "Total Match Count",
+                "type": "integer"
+              },
+              "result_row_unit": {
+                "enum": [
+                  "log_entries",
+                  "groups",
+                  "buckets",
+                  "comparisons",
+                  "metadata"
+                ],
+                "title": "Result Row Unit",
+                "type": "string"
+              },
+              "total_result_rows": {
+                "minimum": 0,
+                "title": "Total Result Rows",
+                "type": "integer"
+              },
+              "returned_count": {
+                "minimum": 0,
+                "title": "Returned Count",
+                "type": "integer"
+              },
+              "truncated": {
+                "title": "Truncated",
+                "type": "boolean"
+              },
+              "result_truncated": {
+                "title": "Result Truncated",
+                "type": "boolean"
+              },
+              "content_truncated": {
+                "default": false,
+                "title": "Content Truncated",
+                "type": "boolean"
+              },
+              "next_cursor": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Next Cursor"
+              },
+              "count_is_exact": {
+                "title": "Count Is Exact",
+                "type": "boolean"
+              },
+              "rows": {
+                "items": {
+                  "$ref": "#/$defs/CountRow"
+                },
+                "title": "Rows",
+                "type": "array"
+              },
+              "warnings": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "title": "Warnings",
+                "type": "array"
+              }
+            },
+            "required": [
+              "investigation_id",
+              "evidence_id",
+              "data_scope",
+              "queries",
+              "query_ms",
+              "total_match_count",
+              "result_row_unit",
+              "total_result_rows",
+              "returned_count",
+              "truncated",
+              "result_truncated",
+              "count_is_exact",
+              "rows"
+            ],
+            "title": "CountByResult",
+            "type": "object"
+          },
+          "CountRow": {
+            "additionalProperties": false,
+            "properties": {
+              "dimensions": {
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "title": "Dimensions",
+                "type": "object"
+              },
+              "log_entry_count": {
+                "title": "Log Entry Count",
+                "type": "integer"
+              },
+              "distinct_nodes": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Distinct Nodes"
+              },
+              "distinct_components": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Distinct Components"
+              },
+              "unmapped_log_entries": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Unmapped Log Entries"
+              }
+            },
+            "required": [
+              "dimensions",
+              "log_entry_count"
+            ],
+            "title": "CountRow",
+            "type": "object"
+          },
+          "Failure": {
+            "additionalProperties": false,
+            "properties": {
+              "investigation_id": {
+                "title": "Investigation Id",
+                "type": "string"
+              },
+              "evidence_id": {
+                "title": "Evidence Id",
+                "type": "string"
+              },
+              "status": {
+                "const": "error",
+                "default": "error",
+                "title": "Status",
+                "type": "string"
+              },
+              "code": {
+                "enum": [
+                  "invalid_filter",
+                  "unsupported_capability",
+                  "timeout",
+                  "stale_cursor",
+                  "permission_denied",
+                  "database_unavailable"
+                ],
+                "title": "Code",
+                "type": "string"
+              },
+              "message": {
+                "title": "Message",
+                "type": "string"
+              },
+              "retryable": {
+                "title": "Retryable",
+                "type": "boolean"
+              },
+              "recovery": {
+                "title": "Recovery",
+                "type": "string"
+              },
+              "total_match_count": {
+                "default": null,
+                "title": "Total Match Count",
+                "type": "null"
+              }
+            },
+            "required": [
+              "investigation_id",
+              "evidence_id",
+              "code",
+              "message",
+              "retryable",
+              "recovery"
+            ],
+            "title": "Failure",
+            "type": "object"
+          },
+          "Query": {
+            "additionalProperties": false,
+            "properties": {
+              "purpose": {
+                "title": "Purpose",
+                "type": "string"
+              },
+              "sql": {
+                "title": "Sql",
+                "type": "string"
+              },
+              "parameters": {
+                "items": {},
+                "title": "Parameters",
+                "type": "array"
+              },
+              "query_ms": {
+                "minimum": 0,
+                "title": "Query Ms",
+                "type": "number"
+              },
+              "snapshot_id": {
+                "title": "Snapshot Id",
+                "type": "string"
+              }
+            },
+            "required": [
+              "purpose",
+              "sql",
+              "parameters",
+              "query_ms",
+              "snapshot_id"
+            ],
+            "title": "Query",
+            "type": "object"
+          }
+        },
+        "anyOf": [
+          {
+            "$ref": "#/$defs/CountByResult"
+          },
+          {
+            "$ref": "#/$defs/Failure"
+          }
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "trend",
+      "description": "Calculate counts in fixed time buckets over the declared Data Scope. Disclose incomplete coverage and return every bucket or an explicit continuation; samples are not trends.",
+      "inputSchema": {
+        "$defs": {
+          "Dimension": {
+            "enum": [
+              "dataset",
+              "component",
+              "team",
+              "level",
+              "label",
+              "node",
+              "rack",
+              "midplane",
+              "template_id",
+              "source_file"
+            ],
+            "title": "Dimension",
+            "type": "string"
+          },
+          "Scope": {
+            "additionalProperties": false,
+            "properties": {
+              "datasets": {
+                "items": {
+                  "enum": [
+                    "BGL",
+                    "OpenStack"
+                  ],
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 1,
+                "title": "Datasets",
+                "type": "array"
+              },
+              "time_basis": {
+                "const": "dataset_printed_naive",
+                "default": "dataset_printed_naive",
+                "title": "Time Basis",
+                "type": "string"
+              },
+              "start": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Start"
+              },
+              "end": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "End"
+              },
+              "full_time_range": {
+                "default": false,
+                "title": "Full Time Range",
+                "type": "boolean"
+              },
+              "components": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 20,
+                "title": "Components",
+                "type": "array"
+              },
+              "levels": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 10,
+                "title": "Levels",
+                "type": "array"
+              },
+              "labels": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 50,
+                "title": "Labels",
+                "type": "array"
+              },
+              "source_files": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 5,
+                "title": "Source Files",
+                "type": "array"
+              }
+            },
+            "required": [
+              "datasets"
+            ],
+            "title": "Scope",
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "investigation_id": {
+            "title": "Investigation Id",
+            "type": "string"
+          },
+          "scope": {
+            "$ref": "#/$defs/Scope"
+          },
+          "bucket": {
+            "default": "1 day",
+            "enum": [
+              "1 minute",
+              "5 minutes",
+              "1 hour",
+              "1 day",
+              "1 week"
+            ],
+            "title": "Bucket",
+            "type": "string"
+          },
+          "group_by": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Dimension"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "max_cells": {
+            "default": 200,
+            "maximum": 500,
+            "minimum": 1,
+            "title": "Max Cells",
+            "type": "integer"
+          },
+          "cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Cursor"
+          }
+        },
+        "required": [
+          "investigation_id",
+          "scope"
+        ],
+        "title": "Trend",
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "Failure": {
+            "additionalProperties": false,
+            "properties": {
+              "investigation_id": {
+                "title": "Investigation Id",
+                "type": "string"
+              },
+              "evidence_id": {
+                "title": "Evidence Id",
+                "type": "string"
+              },
+              "status": {
+                "const": "error",
+                "default": "error",
+                "title": "Status",
+                "type": "string"
+              },
+              "code": {
+                "enum": [
+                  "invalid_filter",
+                  "unsupported_capability",
+                  "timeout",
+                  "stale_cursor",
+                  "permission_denied",
+                  "database_unavailable"
+                ],
+                "title": "Code",
+                "type": "string"
+              },
+              "message": {
+                "title": "Message",
+                "type": "string"
+              },
+              "retryable": {
+                "title": "Retryable",
+                "type": "boolean"
+              },
+              "recovery": {
+                "title": "Recovery",
+                "type": "string"
+              },
+              "total_match_count": {
+                "default": null,
+                "title": "Total Match Count",
+                "type": "null"
+              }
+            },
+            "required": [
+              "investigation_id",
+              "evidence_id",
+              "code",
+              "message",
+              "retryable",
+              "recovery"
+            ],
+            "title": "Failure",
+            "type": "object"
+          },
+          "Query": {
+            "additionalProperties": false,
+            "properties": {
+              "purpose": {
+                "title": "Purpose",
+                "type": "string"
+              },
+              "sql": {
+                "title": "Sql",
+                "type": "string"
+              },
+              "parameters": {
+                "items": {},
+                "title": "Parameters",
+                "type": "array"
+              },
+              "query_ms": {
+                "minimum": 0,
+                "title": "Query Ms",
+                "type": "number"
+              },
+              "snapshot_id": {
+                "title": "Snapshot Id",
+                "type": "string"
+              }
+            },
+            "required": [
+              "purpose",
+              "sql",
+              "parameters",
+              "query_ms",
+              "snapshot_id"
+            ],
+            "title": "Query",
+            "type": "object"
+          },
+          "TrendResult": {
+            "additionalProperties": false,
+            "properties": {
+              "investigation_id": {
+                "title": "Investigation Id",
+                "type": "string"
+              },
+              "evidence_id": {
+                "title": "Evidence Id",
+                "type": "string"
+              },
+              "schema_version": {
+                "const": "research-proposal-1",
+                "default": "research-proposal-1",
+                "title": "Schema Version",
+                "type": "string"
+              },
+              "data_scope": {
+                "additionalProperties": true,
+                "title": "Data Scope",
+                "type": "object"
+              },
+              "queries": {
+                "items": {
+                  "$ref": "#/$defs/Query"
+                },
+                "title": "Queries",
+                "type": "array"
+              },
+              "query_ms": {
+                "minimum": 0,
+                "title": "Query Ms",
+                "type": "number"
+              },
+              "total_match_count": {
+                "minimum": 0,
+                "title": "Total Match Count",
+                "type": "integer"
+              },
+              "result_row_unit": {
+                "enum": [
+                  "log_entries",
+                  "groups",
+                  "buckets",
+                  "comparisons",
+                  "metadata"
+                ],
+                "title": "Result Row Unit",
+                "type": "string"
+              },
+              "total_result_rows": {
+                "minimum": 0,
+                "title": "Total Result Rows",
+                "type": "integer"
+              },
+              "returned_count": {
+                "minimum": 0,
+                "title": "Returned Count",
+                "type": "integer"
+              },
+              "truncated": {
+                "title": "Truncated",
+                "type": "boolean"
+              },
+              "result_truncated": {
+                "title": "Result Truncated",
+                "type": "boolean"
+              },
+              "content_truncated": {
+                "default": false,
+                "title": "Content Truncated",
+                "type": "boolean"
+              },
+              "next_cursor": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Next Cursor"
+              },
+              "count_is_exact": {
+                "title": "Count Is Exact",
+                "type": "boolean"
+              },
+              "rows": {
+                "items": {
+                  "$ref": "#/$defs/TrendRow"
+                },
+                "title": "Rows",
+                "type": "array"
+              },
+              "warnings": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "title": "Warnings",
+                "type": "array"
+              }
+            },
+            "required": [
+              "investigation_id",
+              "evidence_id",
+              "data_scope",
+              "queries",
+              "query_ms",
+              "total_match_count",
+              "result_row_unit",
+              "total_result_rows",
+              "returned_count",
+              "truncated",
+              "result_truncated",
+              "count_is_exact",
+              "rows"
+            ],
+            "title": "TrendResult",
+            "type": "object"
+          },
+          "TrendRow": {
+            "additionalProperties": false,
+            "properties": {
+              "dataset": {
+                "title": "Dataset",
+                "type": "string"
+              },
+              "bucket_start": {
+                "format": "date-time",
+                "title": "Bucket Start",
+                "type": "string"
+              },
+              "bucket_end": {
+                "format": "date-time",
+                "title": "Bucket End",
+                "type": "string"
+              },
+              "dimensions": {
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "title": "Dimensions",
+                "type": "object"
+              },
+              "log_entry_count": {
+                "title": "Log Entry Count",
+                "type": "integer"
+              },
+              "coverage": {
+                "enum": [
+                  "complete",
+                  "partial",
+                  "unknown"
+                ],
+                "title": "Coverage",
+                "type": "string"
+              }
+            },
+            "required": [
+              "dataset",
+              "bucket_start",
+              "bucket_end",
+              "dimensions",
+              "log_entry_count",
+              "coverage"
+            ],
+            "title": "TrendRow",
+            "type": "object"
+          }
+        },
+        "anyOf": [
+          {
+            "$ref": "#/$defs/TrendResult"
+          },
+          {
+            "$ref": "#/$defs/Failure"
+          }
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "top_patterns",
+      "description": "Rank versioned message templates by matching Log Entry count, with Component identity and unmatched/ambiguous/empty diagnostics. Never treat template counts as Incident counts.",
+      "inputSchema": {
+        "$defs": {
+          "Scope": {
+            "additionalProperties": false,
+            "properties": {
+              "datasets": {
+                "items": {
+                  "enum": [
+                    "BGL",
+                    "OpenStack"
+                  ],
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 1,
+                "title": "Datasets",
+                "type": "array"
+              },
+              "time_basis": {
+                "const": "dataset_printed_naive",
+                "default": "dataset_printed_naive",
+                "title": "Time Basis",
+                "type": "string"
+              },
+              "start": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Start"
+              },
+              "end": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "End"
+              },
+              "full_time_range": {
+                "default": false,
+                "title": "Full Time Range",
+                "type": "boolean"
+              },
+              "components": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 20,
+                "title": "Components",
+                "type": "array"
+              },
+              "levels": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 10,
+                "title": "Levels",
+                "type": "array"
+              },
+              "labels": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 50,
+                "title": "Labels",
+                "type": "array"
+              },
+              "source_files": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 5,
+                "title": "Source Files",
+                "type": "array"
+              }
+            },
+            "required": [
+              "datasets"
+            ],
+            "title": "Scope",
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "investigation_id": {
+            "title": "Investigation Id",
+            "type": "string"
+          },
+          "scope": {
+            "$ref": "#/$defs/Scope"
+          },
+          "parser_version": {
+            "title": "Parser Version",
+            "type": "string"
+          },
+          "limit": {
+            "default": 20,
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Cursor"
+          }
+        },
+        "required": [
+          "investigation_id",
+          "scope",
+          "parser_version"
+        ],
+        "title": "Patterns",
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "Failure": {
+            "additionalProperties": false,
+            "properties": {
+              "investigation_id": {
+                "title": "Investigation Id",
+                "type": "string"
+              },
+              "evidence_id": {
+                "title": "Evidence Id",
+                "type": "string"
+              },
+              "status": {
+                "const": "error",
+                "default": "error",
+                "title": "Status",
+                "type": "string"
+              },
+              "code": {
+                "enum": [
+                  "invalid_filter",
+                  "unsupported_capability",
+                  "timeout",
+                  "stale_cursor",
+                  "permission_denied",
+                  "database_unavailable"
+                ],
+                "title": "Code",
+                "type": "string"
+              },
+              "message": {
+                "title": "Message",
+                "type": "string"
+              },
+              "retryable": {
+                "title": "Retryable",
+                "type": "boolean"
+              },
+              "recovery": {
+                "title": "Recovery",
+                "type": "string"
+              },
+              "total_match_count": {
+                "default": null,
+                "title": "Total Match Count",
+                "type": "null"
+              }
+            },
+            "required": [
+              "investigation_id",
+              "evidence_id",
+              "code",
+              "message",
+              "retryable",
+              "recovery"
+            ],
+            "title": "Failure",
+            "type": "object"
+          },
+          "PatternRow": {
+            "additionalProperties": false,
+            "properties": {
+              "dataset": {
+                "title": "Dataset",
+                "type": "string"
+              },
+              "component": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Component"
+              },
+              "template_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Template Id"
+              },
+              "parser_version": {
+                "title": "Parser Version",
+                "type": "string"
+              },
+              "assignment_status": {
+                "enum": [
+                  "catalogue",
+                  "catalogue_specificity",
+                  "ambiguous",
+                  "unmatched",
+                  "empty_content",
+                  "header_unparsed"
+                ],
+                "title": "Assignment Status",
+                "type": "string"
+              },
+              "template_text": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Template Text"
+              },
+              "log_entry_count": {
+                "title": "Log Entry Count",
+                "type": "integer"
+              },
+              "other_pattern_entries": {
+                "title": "Other Pattern Entries",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "dataset",
+              "component",
+              "template_id",
+              "parser_version",
+              "assignment_status",
+              "template_text",
+              "log_entry_count",
+              "other_pattern_entries"
+            ],
+            "title": "PatternRow",
+            "type": "object"
+          },
+          "Query": {
+            "additionalProperties": false,
+            "properties": {
+              "purpose": {
+                "title": "Purpose",
+                "type": "string"
+              },
+              "sql": {
+                "title": "Sql",
+                "type": "string"
+              },
+              "parameters": {
+                "items": {},
+                "title": "Parameters",
+                "type": "array"
+              },
+              "query_ms": {
+                "minimum": 0,
+                "title": "Query Ms",
+                "type": "number"
+              },
+              "snapshot_id": {
+                "title": "Snapshot Id",
+                "type": "string"
+              }
+            },
+            "required": [
+              "purpose",
+              "sql",
+              "parameters",
+              "query_ms",
+              "snapshot_id"
+            ],
+            "title": "Query",
+            "type": "object"
+          },
+          "TopPatternsResult": {
+            "additionalProperties": false,
+            "properties": {
+              "investigation_id": {
+                "title": "Investigation Id",
+                "type": "string"
+              },
+              "evidence_id": {
+                "title": "Evidence Id",
+                "type": "string"
+              },
+              "schema_version": {
+                "const": "research-proposal-1",
+                "default": "research-proposal-1",
+                "title": "Schema Version",
+                "type": "string"
+              },
+              "data_scope": {
+                "additionalProperties": true,
+                "title": "Data Scope",
+                "type": "object"
+              },
+              "queries": {
+                "items": {
+                  "$ref": "#/$defs/Query"
+                },
+                "title": "Queries",
+                "type": "array"
+              },
+              "query_ms": {
+                "minimum": 0,
+                "title": "Query Ms",
+                "type": "number"
+              },
+              "total_match_count": {
+                "minimum": 0,
+                "title": "Total Match Count",
+                "type": "integer"
+              },
+              "result_row_unit": {
+                "enum": [
+                  "log_entries",
+                  "groups",
+                  "buckets",
+                  "comparisons",
+                  "metadata"
+                ],
+                "title": "Result Row Unit",
+                "type": "string"
+              },
+              "total_result_rows": {
+                "minimum": 0,
+                "title": "Total Result Rows",
+                "type": "integer"
+              },
+              "returned_count": {
+                "minimum": 0,
+                "title": "Returned Count",
+                "type": "integer"
+              },
+              "truncated": {
+                "title": "Truncated",
+                "type": "boolean"
+              },
+              "result_truncated": {
+                "title": "Result Truncated",
+                "type": "boolean"
+              },
+              "content_truncated": {
+                "default": false,
+                "title": "Content Truncated",
+                "type": "boolean"
+              },
+              "next_cursor": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Next Cursor"
+              },
+              "count_is_exact": {
+                "title": "Count Is Exact",
+                "type": "boolean"
+              },
+              "rows": {
+                "items": {
+                  "$ref": "#/$defs/PatternRow"
+                },
+                "title": "Rows",
+                "type": "array"
+              },
+              "warnings": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "title": "Warnings",
+                "type": "array"
+              }
+            },
+            "required": [
+              "investigation_id",
+              "evidence_id",
+              "data_scope",
+              "queries",
+              "query_ms",
+              "total_match_count",
+              "result_row_unit",
+              "total_result_rows",
+              "returned_count",
+              "truncated",
+              "result_truncated",
+              "count_is_exact",
+              "rows"
+            ],
+            "title": "TopPatternsResult",
+            "type": "object"
+          }
+        },
+        "anyOf": [
+          {
+            "$ref": "#/$defs/TopPatternsResult"
+          },
+          {
+            "$ref": "#/$defs/Failure"
+          }
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "latency_stats",
+      "description": "Calculate timed-operation count and p50/p95/p99/max seconds for HTTP requests OR instance builds. Never mix these durations. Include threshold counts and missing-duration coverage.",
+      "inputSchema": {
+        "$defs": {
+          "Scope": {
+            "additionalProperties": false,
+            "properties": {
+              "datasets": {
+                "items": {
+                  "enum": [
+                    "BGL",
+                    "OpenStack"
+                  ],
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 1,
+                "title": "Datasets",
+                "type": "array"
+              },
+              "time_basis": {
+                "const": "dataset_printed_naive",
+                "default": "dataset_printed_naive",
+                "title": "Time Basis",
+                "type": "string"
+              },
+              "start": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Start"
+              },
+              "end": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "End"
+              },
+              "full_time_range": {
+                "default": false,
+                "title": "Full Time Range",
+                "type": "boolean"
+              },
+              "components": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 20,
+                "title": "Components",
+                "type": "array"
+              },
+              "levels": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 10,
+                "title": "Levels",
+                "type": "array"
+              },
+              "labels": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 50,
+                "title": "Labels",
+                "type": "array"
+              },
+              "source_files": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 5,
+                "title": "Source Files",
+                "type": "array"
+              }
+            },
+            "required": [
+              "datasets"
+            ],
+            "title": "Scope",
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "investigation_id": {
+            "title": "Investigation Id",
+            "type": "string"
+          },
+          "scope": {
+            "$ref": "#/$defs/Scope"
+          },
+          "metric": {
+            "enum": [
+              "http_request_seconds",
+              "instance_build_seconds"
+            ],
+            "title": "Metric",
+            "type": "string"
+          },
+          "group_by": {
+            "default": "source_file",
+            "enum": [
+              "dataset",
+              "component",
+              "endpoint",
+              "source_file",
+              "instance_id"
+            ],
+            "title": "Group By",
+            "type": "string"
+          },
+          "threshold_seconds": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Threshold Seconds"
+          },
+          "limit": {
+            "default": 20,
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Cursor"
+          }
+        },
+        "required": [
+          "investigation_id",
+          "scope",
+          "metric"
+        ],
+        "title": "Latency",
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "Failure": {
+            "additionalProperties": false,
+            "properties": {
+              "investigation_id": {
+                "title": "Investigation Id",
+                "type": "string"
+              },
+              "evidence_id": {
+                "title": "Evidence Id",
+                "type": "string"
+              },
+              "status": {
+                "const": "error",
+                "default": "error",
+                "title": "Status",
+                "type": "string"
+              },
+              "code": {
+                "enum": [
+                  "invalid_filter",
+                  "unsupported_capability",
+                  "timeout",
+                  "stale_cursor",
+                  "permission_denied",
+                  "database_unavailable"
+                ],
+                "title": "Code",
+                "type": "string"
+              },
+              "message": {
+                "title": "Message",
+                "type": "string"
+              },
+              "retryable": {
+                "title": "Retryable",
+                "type": "boolean"
+              },
+              "recovery": {
+                "title": "Recovery",
+                "type": "string"
+              },
+              "total_match_count": {
+                "default": null,
+                "title": "Total Match Count",
+                "type": "null"
+              }
+            },
+            "required": [
+              "investigation_id",
+              "evidence_id",
+              "code",
+              "message",
+              "retryable",
+              "recovery"
+            ],
+            "title": "Failure",
+            "type": "object"
+          },
+          "LatencyRow": {
+            "additionalProperties": false,
+            "properties": {
+              "dimensions": {
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "title": "Dimensions",
+                "type": "object"
+              },
+              "metric": {
+                "enum": [
+                  "http_request_seconds",
+                  "instance_build_seconds"
+                ],
+                "title": "Metric",
+                "type": "string"
+              },
+              "timed_log_entries": {
+                "title": "Timed Log Entries",
+                "type": "integer"
+              },
+              "untimed_log_entries": {
+                "title": "Untimed Log Entries",
+                "type": "integer"
+              },
+              "p50_s": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "P50 S"
+              },
+              "p95_s": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "P95 S"
+              },
+              "p99_s": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "P99 S"
+              },
+              "maximum_s": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Maximum S"
+              },
+              "above_threshold_count": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Above Threshold Count"
+              },
+              "quantile_method": {
+                "const": "quantile_cont",
+                "default": "quantile_cont",
+                "title": "Quantile Method",
+                "type": "string"
+              }
+            },
+            "required": [
+              "dimensions",
+              "metric",
+              "timed_log_entries",
+              "untimed_log_entries",
+              "p50_s",
+              "p95_s",
+              "p99_s",
+              "maximum_s",
+              "above_threshold_count"
+            ],
+            "title": "LatencyRow",
+            "type": "object"
+          },
+          "LatencyStatsResult": {
+            "additionalProperties": false,
+            "properties": {
+              "investigation_id": {
+                "title": "Investigation Id",
+                "type": "string"
+              },
+              "evidence_id": {
+                "title": "Evidence Id",
+                "type": "string"
+              },
+              "schema_version": {
+                "const": "research-proposal-1",
+                "default": "research-proposal-1",
+                "title": "Schema Version",
+                "type": "string"
+              },
+              "data_scope": {
+                "additionalProperties": true,
+                "title": "Data Scope",
+                "type": "object"
+              },
+              "queries": {
+                "items": {
+                  "$ref": "#/$defs/Query"
+                },
+                "title": "Queries",
+                "type": "array"
+              },
+              "query_ms": {
+                "minimum": 0,
+                "title": "Query Ms",
+                "type": "number"
+              },
+              "total_match_count": {
+                "minimum": 0,
+                "title": "Total Match Count",
+                "type": "integer"
+              },
+              "result_row_unit": {
+                "enum": [
+                  "log_entries",
+                  "groups",
+                  "buckets",
+                  "comparisons",
+                  "metadata"
+                ],
+                "title": "Result Row Unit",
+                "type": "string"
+              },
+              "total_result_rows": {
+                "minimum": 0,
+                "title": "Total Result Rows",
+                "type": "integer"
+              },
+              "returned_count": {
+                "minimum": 0,
+                "title": "Returned Count",
+                "type": "integer"
+              },
+              "truncated": {
+                "title": "Truncated",
+                "type": "boolean"
+              },
+              "result_truncated": {
+                "title": "Result Truncated",
+                "type": "boolean"
+              },
+              "content_truncated": {
+                "default": false,
+                "title": "Content Truncated",
+                "type": "boolean"
+              },
+              "next_cursor": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Next Cursor"
+              },
+              "count_is_exact": {
+                "title": "Count Is Exact",
+                "type": "boolean"
+              },
+              "rows": {
+                "items": {
+                  "$ref": "#/$defs/LatencyRow"
+                },
+                "title": "Rows",
+                "type": "array"
+              },
+              "warnings": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "title": "Warnings",
+                "type": "array"
+              }
+            },
+            "required": [
+              "investigation_id",
+              "evidence_id",
+              "data_scope",
+              "queries",
+              "query_ms",
+              "total_match_count",
+              "result_row_unit",
+              "total_result_rows",
+              "returned_count",
+              "truncated",
+              "result_truncated",
+              "count_is_exact",
+              "rows"
+            ],
+            "title": "LatencyStatsResult",
+            "type": "object"
+          },
+          "Query": {
+            "additionalProperties": false,
+            "properties": {
+              "purpose": {
+                "title": "Purpose",
+                "type": "string"
+              },
+              "sql": {
+                "title": "Sql",
+                "type": "string"
+              },
+              "parameters": {
+                "items": {},
+                "title": "Parameters",
+                "type": "array"
+              },
+              "query_ms": {
+                "minimum": 0,
+                "title": "Query Ms",
+                "type": "number"
+              },
+              "snapshot_id": {
+                "title": "Snapshot Id",
+                "type": "string"
+              }
+            },
+            "required": [
+              "purpose",
+              "sql",
+              "parameters",
+              "query_ms",
+              "snapshot_id"
+            ],
+            "title": "Query",
+            "type": "object"
+          }
+        },
+        "anyOf": [
+          {
+            "$ref": "#/$defs/LatencyStatsResult"
+          },
+          {
+            "$ref": "#/$defs/Failure"
+          }
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "compare_periods",
+      "description": "Compare the same metrics/filters in two explicit time intervals. Return both counts, elapsed denominators and rates; zero baseline percentage change is null with a reason.",
+      "inputSchema": {
+        "$defs": {
+          "Dimension": {
+            "enum": [
+              "dataset",
+              "component",
+              "team",
+              "level",
+              "label",
+              "node",
+              "rack",
+              "midplane",
+              "template_id",
+              "source_file"
+            ],
+            "title": "Dimension",
+            "type": "string"
+          },
+          "Scope": {
+            "additionalProperties": false,
+            "properties": {
+              "datasets": {
+                "items": {
+                  "enum": [
+                    "BGL",
+                    "OpenStack"
+                  ],
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 1,
+                "title": "Datasets",
+                "type": "array"
+              },
+              "time_basis": {
+                "const": "dataset_printed_naive",
+                "default": "dataset_printed_naive",
+                "title": "Time Basis",
+                "type": "string"
+              },
+              "start": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Start"
+              },
+              "end": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "End"
+              },
+              "full_time_range": {
+                "default": false,
+                "title": "Full Time Range",
+                "type": "boolean"
+              },
+              "components": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 20,
+                "title": "Components",
+                "type": "array"
+              },
+              "levels": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 10,
+                "title": "Levels",
+                "type": "array"
+              },
+              "labels": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 50,
+                "title": "Labels",
+                "type": "array"
+              },
+              "source_files": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 5,
+                "title": "Source Files",
+                "type": "array"
+              }
+            },
+            "required": [
+              "datasets"
+            ],
+            "title": "Scope",
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "investigation_id": {
+            "title": "Investigation Id",
+            "type": "string"
+          },
+          "before": {
+            "$ref": "#/$defs/Scope"
+          },
+          "after": {
+            "$ref": "#/$defs/Scope"
+          },
+          "metric": {
+            "enum": [
+              "matching_log_entries",
+              "http_request_seconds",
+              "instance_build_seconds"
+            ],
+            "title": "Metric",
+            "type": "string"
+          },
+          "group_by": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Dimension"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "investigation_id",
+          "before",
+          "after",
+          "metric"
+        ],
+        "title": "Comparison",
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "ComparePeriodsResult": {
+            "additionalProperties": false,
+            "properties": {
+              "investigation_id": {
+                "title": "Investigation Id",
+                "type": "string"
+              },
+              "evidence_id": {
+                "title": "Evidence Id",
+                "type": "string"
+              },
+              "schema_version": {
+                "const": "research-proposal-1",
+                "default": "research-proposal-1",
+                "title": "Schema Version",
+                "type": "string"
+              },
+              "data_scope": {
+                "additionalProperties": true,
+                "title": "Data Scope",
+                "type": "object"
+              },
+              "queries": {
+                "items": {
+                  "$ref": "#/$defs/Query"
+                },
+                "title": "Queries",
+                "type": "array"
+              },
+              "query_ms": {
+                "minimum": 0,
+                "title": "Query Ms",
+                "type": "number"
+              },
+              "total_match_count": {
+                "minimum": 0,
+                "title": "Total Match Count",
+                "type": "integer"
+              },
+              "result_row_unit": {
+                "enum": [
+                  "log_entries",
+                  "groups",
+                  "buckets",
+                  "comparisons",
+                  "metadata"
+                ],
+                "title": "Result Row Unit",
+                "type": "string"
+              },
+              "total_result_rows": {
+                "minimum": 0,
+                "title": "Total Result Rows",
+                "type": "integer"
+              },
+              "returned_count": {
+                "minimum": 0,
+                "title": "Returned Count",
+                "type": "integer"
+              },
+              "truncated": {
+                "title": "Truncated",
+                "type": "boolean"
+              },
+              "result_truncated": {
+                "title": "Result Truncated",
+                "type": "boolean"
+              },
+              "content_truncated": {
+                "default": false,
+                "title": "Content Truncated",
+                "type": "boolean"
+              },
+              "next_cursor": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Next Cursor"
+              },
+              "count_is_exact": {
+                "title": "Count Is Exact",
+                "type": "boolean"
+              },
+              "rows": {
+                "items": {
+                  "$ref": "#/$defs/ComparisonRow"
+                },
+                "title": "Rows",
+                "type": "array"
+              },
+              "warnings": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "title": "Warnings",
+                "type": "array"
+              }
+            },
+            "required": [
+              "investigation_id",
+              "evidence_id",
+              "data_scope",
+              "queries",
+              "query_ms",
+              "total_match_count",
+              "result_row_unit",
+              "total_result_rows",
+              "returned_count",
+              "truncated",
+              "result_truncated",
+              "count_is_exact",
+              "rows"
+            ],
+            "title": "ComparePeriodsResult",
+            "type": "object"
+          },
+          "ComparisonRow": {
+            "additionalProperties": false,
+            "properties": {
+              "dimensions": {
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "title": "Dimensions",
+                "type": "object"
+              },
+              "metric": {
+                "title": "Metric",
+                "type": "string"
+              },
+              "before_value": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Before Value"
+              },
+              "after_value": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "After Value"
+              },
+              "before_exposure_s": {
+                "title": "Before Exposure S",
+                "type": "number"
+              },
+              "after_exposure_s": {
+                "title": "After Exposure S",
+                "type": "number"
+              },
+              "absolute_change": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Absolute Change"
+              },
+              "percent_change": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Percent Change"
+              },
+              "undefined_reason": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Undefined Reason"
+              }
+            },
+            "required": [
+              "dimensions",
+              "metric",
+              "before_value",
+              "after_value",
+              "before_exposure_s",
+              "after_exposure_s",
+              "absolute_change",
+              "percent_change",
+              "undefined_reason"
+            ],
+            "title": "ComparisonRow",
+            "type": "object"
+          },
+          "Failure": {
+            "additionalProperties": false,
+            "properties": {
+              "investigation_id": {
+                "title": "Investigation Id",
+                "type": "string"
+              },
+              "evidence_id": {
+                "title": "Evidence Id",
+                "type": "string"
+              },
+              "status": {
+                "const": "error",
+                "default": "error",
+                "title": "Status",
+                "type": "string"
+              },
+              "code": {
+                "enum": [
+                  "invalid_filter",
+                  "unsupported_capability",
+                  "timeout",
+                  "stale_cursor",
+                  "permission_denied",
+                  "database_unavailable"
+                ],
+                "title": "Code",
+                "type": "string"
+              },
+              "message": {
+                "title": "Message",
+                "type": "string"
+              },
+              "retryable": {
+                "title": "Retryable",
+                "type": "boolean"
+              },
+              "recovery": {
+                "title": "Recovery",
+                "type": "string"
+              },
+              "total_match_count": {
+                "default": null,
+                "title": "Total Match Count",
+                "type": "null"
+              }
+            },
+            "required": [
+              "investigation_id",
+              "evidence_id",
+              "code",
+              "message",
+              "retryable",
+              "recovery"
+            ],
+            "title": "Failure",
+            "type": "object"
+          },
+          "Query": {
+            "additionalProperties": false,
+            "properties": {
+              "purpose": {
+                "title": "Purpose",
+                "type": "string"
+              },
+              "sql": {
+                "title": "Sql",
+                "type": "string"
+              },
+              "parameters": {
+                "items": {},
+                "title": "Parameters",
+                "type": "array"
+              },
+              "query_ms": {
+                "minimum": 0,
+                "title": "Query Ms",
+                "type": "number"
+              },
+              "snapshot_id": {
+                "title": "Snapshot Id",
+                "type": "string"
+              }
+            },
+            "required": [
+              "purpose",
+              "sql",
+              "parameters",
+              "query_ms",
+              "snapshot_id"
+            ],
+            "title": "Query",
+            "type": "object"
+          }
+        },
+        "anyOf": [
+          {
+            "$ref": "#/$defs/ComparePeriodsResult"
+          },
+          {
+            "$ref": "#/$defs/Failure"
+          }
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "group_entries",
+      "description": "Derive policy-defined temporal groups with threshold sensitivity and spread. These are candidate groups, not verified Incidents; retain policy and boundary-censor flags.",
+      "inputSchema": {
+        "$defs": {
+          "Scope": {
+            "additionalProperties": false,
+            "properties": {
+              "datasets": {
+                "items": {
+                  "enum": [
+                    "BGL",
+                    "OpenStack"
+                  ],
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 1,
+                "title": "Datasets",
+                "type": "array"
+              },
+              "time_basis": {
+                "const": "dataset_printed_naive",
+                "default": "dataset_printed_naive",
+                "title": "Time Basis",
+                "type": "string"
+              },
+              "start": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Start"
+              },
+              "end": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "End"
+              },
+              "full_time_range": {
+                "default": false,
+                "title": "Full Time Range",
+                "type": "boolean"
+              },
+              "components": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 20,
+                "title": "Components",
+                "type": "array"
+              },
+              "levels": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 10,
+                "title": "Levels",
+                "type": "array"
+              },
+              "labels": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 50,
+                "title": "Labels",
+                "type": "array"
+              },
+              "source_files": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 5,
+                "title": "Source Files",
+                "type": "array"
+              }
+            },
+            "required": [
+              "datasets"
+            ],
+            "title": "Scope",
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "investigation_id": {
+            "title": "Investigation Id",
+            "type": "string"
+          },
+          "scope": {
+            "$ref": "#/$defs/Scope"
+          },
+          "key": {
+            "enum": [
+              "label_node",
+              "label",
+              "template_node",
+              "instance_id"
+            ],
+            "title": "Key",
+            "type": "string"
+          },
+          "parser_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Parser Version"
+          },
+          "gap_seconds": {
+            "default": 5,
+            "maximum": 3600,
+            "minimum": 1,
+            "title": "Gap Seconds",
+            "type": "integer"
+          },
+          "max_span_seconds": {
+            "anyOf": [
+              {
+                "maximum": 86400,
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Max Span Seconds"
+          },
+          "limit": {
+            "default": 20,
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Cursor"
+          }
+        },
+        "required": [
+          "investigation_id",
+          "scope",
+          "key"
+        ],
+        "title": "GroupEntries",
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "Failure": {
+            "additionalProperties": false,
+            "properties": {
+              "investigation_id": {
+                "title": "Investigation Id",
+                "type": "string"
+              },
+              "evidence_id": {
+                "title": "Evidence Id",
+                "type": "string"
+              },
+              "status": {
+                "const": "error",
+                "default": "error",
+                "title": "Status",
+                "type": "string"
+              },
+              "code": {
+                "enum": [
+                  "invalid_filter",
+                  "unsupported_capability",
+                  "timeout",
+                  "stale_cursor",
+                  "permission_denied",
+                  "database_unavailable"
+                ],
+                "title": "Code",
+                "type": "string"
+              },
+              "message": {
+                "title": "Message",
+                "type": "string"
+              },
+              "retryable": {
+                "title": "Retryable",
+                "type": "boolean"
+              },
+              "recovery": {
+                "title": "Recovery",
+                "type": "string"
+              },
+              "total_match_count": {
+                "default": null,
+                "title": "Total Match Count",
+                "type": "null"
+              }
+            },
+            "required": [
+              "investigation_id",
+              "evidence_id",
+              "code",
+              "message",
+              "retryable",
+              "recovery"
+            ],
+            "title": "Failure",
+            "type": "object"
+          },
+          "GroupEntriesResult": {
+            "additionalProperties": false,
+            "properties": {
+              "investigation_id": {
+                "title": "Investigation Id",
+                "type": "string"
+              },
+              "evidence_id": {
+                "title": "Evidence Id",
+                "type": "string"
+              },
+              "schema_version": {
+                "const": "research-proposal-1",
+                "default": "research-proposal-1",
+                "title": "Schema Version",
+                "type": "string"
+              },
+              "data_scope": {
+                "additionalProperties": true,
+                "title": "Data Scope",
+                "type": "object"
+              },
+              "queries": {
+                "items": {
+                  "$ref": "#/$defs/Query"
+                },
+                "title": "Queries",
+                "type": "array"
+              },
+              "query_ms": {
+                "minimum": 0,
+                "title": "Query Ms",
+                "type": "number"
+              },
+              "total_match_count": {
+                "minimum": 0,
+                "title": "Total Match Count",
+                "type": "integer"
+              },
+              "result_row_unit": {
+                "enum": [
+                  "log_entries",
+                  "groups",
+                  "buckets",
+                  "comparisons",
+                  "metadata"
+                ],
+                "title": "Result Row Unit",
+                "type": "string"
+              },
+              "total_result_rows": {
+                "minimum": 0,
+                "title": "Total Result Rows",
+                "type": "integer"
+              },
+              "returned_count": {
+                "minimum": 0,
+                "title": "Returned Count",
+                "type": "integer"
+              },
+              "truncated": {
+                "title": "Truncated",
+                "type": "boolean"
+              },
+              "result_truncated": {
+                "title": "Result Truncated",
+                "type": "boolean"
+              },
+              "content_truncated": {
+                "default": false,
+                "title": "Content Truncated",
+                "type": "boolean"
+              },
+              "next_cursor": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Next Cursor"
+              },
+              "count_is_exact": {
+                "title": "Count Is Exact",
+                "type": "boolean"
+              },
+              "rows": {
+                "items": {
+                  "$ref": "#/$defs/TemporalGroupRow"
+                },
+                "title": "Rows",
+                "type": "array"
+              },
+              "warnings": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "title": "Warnings",
+                "type": "array"
+              }
+            },
+            "required": [
+              "investigation_id",
+              "evidence_id",
+              "data_scope",
+              "queries",
+              "query_ms",
+              "total_match_count",
+              "result_row_unit",
+              "total_result_rows",
+              "returned_count",
+              "truncated",
+              "result_truncated",
+              "count_is_exact",
+              "rows"
+            ],
+            "title": "GroupEntriesResult",
+            "type": "object"
+          },
+          "Query": {
+            "additionalProperties": false,
+            "properties": {
+              "purpose": {
+                "title": "Purpose",
+                "type": "string"
+              },
+              "sql": {
+                "title": "Sql",
+                "type": "string"
+              },
+              "parameters": {
+                "items": {},
+                "title": "Parameters",
+                "type": "array"
+              },
+              "query_ms": {
+                "minimum": 0,
+                "title": "Query Ms",
+                "type": "number"
+              },
+              "snapshot_id": {
+                "title": "Snapshot Id",
+                "type": "string"
+              }
+            },
+            "required": [
+              "purpose",
+              "sql",
+              "parameters",
+              "query_ms",
+              "snapshot_id"
+            ],
+            "title": "Query",
+            "type": "object"
+          },
+          "TemporalGroupRow": {
+            "additionalProperties": false,
+            "properties": {
+              "policy_version": {
+                "title": "Policy Version",
+                "type": "string"
+              },
+              "candidate_group_id": {
+                "title": "Candidate Group Id",
+                "type": "string"
+              },
+              "key": {
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "title": "Key",
+                "type": "object"
+              },
+              "first_epoch_s": {
+                "title": "First Epoch S",
+                "type": "integer"
+              },
+              "last_epoch_s": {
+                "title": "Last Epoch S",
+                "type": "integer"
+              },
+              "log_entry_count": {
+                "title": "Log Entry Count",
+                "type": "integer"
+              },
+              "distinct_nodes": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Distinct Nodes"
+              },
+              "distinct_racks": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Distinct Racks"
+              },
+              "distinct_components": {
+                "title": "Distinct Components",
+                "type": "integer"
+              },
+              "boundary_censored": {
+                "title": "Boundary Censored",
+                "type": "boolean"
+              },
+              "interpretation": {
+                "const": "candidate_temporal_group",
+                "default": "candidate_temporal_group",
+                "title": "Interpretation",
+                "type": "string"
+              }
+            },
+            "required": [
+              "policy_version",
+              "candidate_group_id",
+              "key",
+              "first_epoch_s",
+              "last_epoch_s",
+              "log_entry_count",
+              "distinct_nodes",
+              "distinct_racks",
+              "distinct_components",
+              "boundary_censored"
+            ],
+            "title": "TemporalGroupRow",
+            "type": "object"
+          }
+        },
+        "anyOf": [
+          {
+            "$ref": "#/$defs/GroupEntriesResult"
+          },
+          {
+            "$ref": "#/$defs/Failure"
+          }
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "get_evidence",
+      "description": "Retrieve immutable original Evidence and its SQL/parameters/results for this investigation. Does not silently rerun SQL; a deliberate replay creates new Evidence linked to the original.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "investigation_id": {
+            "title": "Investigation Id",
+            "type": "string"
+          },
+          "evidence_id": {
+            "title": "Evidence Id",
+            "type": "string"
+          },
+          "page": {
+            "default": 0,
+            "minimum": 0,
+            "title": "Page",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "investigation_id",
+          "evidence_id"
+        ],
+        "title": "EvidenceLookup",
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "Failure": {
+            "additionalProperties": false,
+            "properties": {
+              "investigation_id": {
+                "title": "Investigation Id",
+                "type": "string"
+              },
+              "evidence_id": {
+                "title": "Evidence Id",
+                "type": "string"
+              },
+              "status": {
+                "const": "error",
+                "default": "error",
+                "title": "Status",
+                "type": "string"
+              },
+              "code": {
+                "enum": [
+                  "invalid_filter",
+                  "unsupported_capability",
+                  "timeout",
+                  "stale_cursor",
+                  "permission_denied",
+                  "database_unavailable"
+                ],
+                "title": "Code",
+                "type": "string"
+              },
+              "message": {
+                "title": "Message",
+                "type": "string"
+              },
+              "retryable": {
+                "title": "Retryable",
+                "type": "boolean"
+              },
+              "recovery": {
+                "title": "Recovery",
+                "type": "string"
+              },
+              "total_match_count": {
+                "default": null,
+                "title": "Total Match Count",
+                "type": "null"
+              }
+            },
+            "required": [
+              "investigation_id",
+              "evidence_id",
+              "code",
+              "message",
+              "retryable",
+              "recovery"
+            ],
+            "title": "Failure",
+            "type": "object"
+          },
+          "GetEvidenceResult": {
+            "additionalProperties": false,
+            "properties": {
+              "investigation_id": {
+                "title": "Investigation Id",
+                "type": "string"
+              },
+              "evidence_id": {
+                "title": "Evidence Id",
+                "type": "string"
+              },
+              "schema_version": {
+                "const": "research-proposal-1",
+                "default": "research-proposal-1",
+                "title": "Schema Version",
+                "type": "string"
+              },
+              "data_scope": {
+                "additionalProperties": true,
+                "title": "Data Scope",
+                "type": "object"
+              },
+              "queries": {
+                "items": {
+                  "$ref": "#/$defs/Query"
+                },
+                "title": "Queries",
+                "type": "array"
+              },
+              "query_ms": {
+                "minimum": 0,
+                "title": "Query Ms",
+                "type": "number"
+              },
+              "total_match_count": {
+                "minimum": 0,
+                "title": "Total Match Count",
+                "type": "integer"
+              },
+              "result_row_unit": {
+                "enum": [
+                  "log_entries",
+                  "groups",
+                  "buckets",
+                  "comparisons",
+                  "metadata"
+                ],
+                "title": "Result Row Unit",
+                "type": "string"
+              },
+              "total_result_rows": {
+                "minimum": 0,
+                "title": "Total Result Rows",
+                "type": "integer"
+              },
+              "returned_count": {
+                "minimum": 0,
+                "title": "Returned Count",
+                "type": "integer"
+              },
+              "truncated": {
+                "title": "Truncated",
+                "type": "boolean"
+              },
+              "result_truncated": {
+                "title": "Result Truncated",
+                "type": "boolean"
+              },
+              "content_truncated": {
+                "default": false,
+                "title": "Content Truncated",
+                "type": "boolean"
+              },
+              "next_cursor": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Next Cursor"
+              },
+              "count_is_exact": {
+                "title": "Count Is Exact",
+                "type": "boolean"
+              },
+              "rows": {
+                "items": {
+                  "$ref": "#/$defs/SavedEvidenceRow"
+                },
+                "title": "Rows",
+                "type": "array"
+              },
+              "warnings": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "title": "Warnings",
+                "type": "array"
+              }
+            },
+            "required": [
+              "investigation_id",
+              "evidence_id",
+              "data_scope",
+              "queries",
+              "query_ms",
+              "total_match_count",
+              "result_row_unit",
+              "total_result_rows",
+              "returned_count",
+              "truncated",
+              "result_truncated",
+              "count_is_exact",
+              "rows"
+            ],
+            "title": "GetEvidenceResult",
+            "type": "object"
+          },
+          "Query": {
+            "additionalProperties": false,
+            "properties": {
+              "purpose": {
+                "title": "Purpose",
+                "type": "string"
+              },
+              "sql": {
+                "title": "Sql",
+                "type": "string"
+              },
+              "parameters": {
+                "items": {},
+                "title": "Parameters",
+                "type": "array"
+              },
+              "query_ms": {
+                "minimum": 0,
+                "title": "Query Ms",
+                "type": "number"
+              },
+              "snapshot_id": {
+                "title": "Snapshot Id",
+                "type": "string"
+              }
+            },
+            "required": [
+              "purpose",
+              "sql",
+              "parameters",
+              "query_ms",
+              "snapshot_id"
+            ],
+            "title": "Query",
+            "type": "object"
+          },
+          "SavedEvidenceRow": {
+            "additionalProperties": false,
+            "properties": {
+              "original_evidence_id": {
+                "title": "Original Evidence Id",
+                "type": "string"
+              },
+              "original_investigation_id": {
+                "title": "Original Investigation Id",
+                "type": "string"
+              },
+              "content_sha256": {
+                "title": "Content Sha256",
+                "type": "string"
+              },
+              "artifact_uri": {
+                "title": "Artifact Uri",
+                "type": "string"
+              },
+              "original_queries": {
+                "items": {
+                  "$ref": "#/$defs/Query"
+                },
+                "title": "Original Queries",
+                "type": "array"
+              },
+              "original_result_page": {
+                "additionalProperties": true,
+                "title": "Original Result Page",
+                "type": "object"
+              },
+              "operation": {
+                "const": "retrieve_saved_evidence",
+                "default": "retrieve_saved_evidence",
+                "title": "Operation",
+                "type": "string"
+              }
+            },
+            "required": [
+              "original_evidence_id",
+              "original_investigation_id",
+              "content_sha256",
+              "artifact_uri",
+              "original_queries",
+              "original_result_page"
+            ],
+            "title": "SavedEvidenceRow",
+            "type": "object"
+          }
+        },
+        "anyOf": [
+          {
+            "$ref": "#/$defs/GetEvidenceResult"
+          },
+          {
+            "$ref": "#/$defs/Failure"
+          }
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      }
+    }
+  ],
+  "shared_output_schema": {
+    "$defs": {
+      "Query": {
+        "additionalProperties": false,
+        "properties": {
+          "purpose": {
+            "title": "Purpose",
+            "type": "string"
+          },
+          "sql": {
+            "title": "Sql",
+            "type": "string"
+          },
+          "parameters": {
+            "items": {},
+            "title": "Parameters",
+            "type": "array"
+          },
+          "query_ms": {
+            "minimum": 0,
+            "title": "Query Ms",
+            "type": "number"
+          },
+          "snapshot_id": {
+            "title": "Snapshot Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "purpose",
+          "sql",
+          "parameters",
+          "query_ms",
+          "snapshot_id"
+        ],
+        "title": "Query",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "investigation_id": {
+        "title": "Investigation Id",
+        "type": "string"
+      },
+      "evidence_id": {
+        "title": "Evidence Id",
+        "type": "string"
+      },
+      "schema_version": {
+        "const": "research-proposal-1",
+        "default": "research-proposal-1",
+        "title": "Schema Version",
+        "type": "string"
+      },
+      "data_scope": {
+        "additionalProperties": true,
+        "title": "Data Scope",
+        "type": "object"
+      },
+      "queries": {
+        "items": {
+          "$ref": "#/$defs/Query"
+        },
+        "title": "Queries",
+        "type": "array"
+      },
+      "query_ms": {
+        "minimum": 0,
+        "title": "Query Ms",
+        "type": "number"
+      },
+      "total_match_count": {
+        "minimum": 0,
+        "title": "Total Match Count",
+        "type": "integer"
+      },
+      "result_row_unit": {
+        "enum": [
+          "log_entries",
+          "groups",
+          "buckets",
+          "comparisons",
+          "metadata"
+        ],
+        "title": "Result Row Unit",
+        "type": "string"
+      },
+      "total_result_rows": {
+        "minimum": 0,
+        "title": "Total Result Rows",
+        "type": "integer"
+      },
+      "returned_count": {
+        "minimum": 0,
+        "title": "Returned Count",
+        "type": "integer"
+      },
+      "truncated": {
+        "title": "Truncated",
+        "type": "boolean"
+      },
+      "result_truncated": {
+        "title": "Result Truncated",
+        "type": "boolean"
+      },
+      "content_truncated": {
+        "default": false,
+        "title": "Content Truncated",
+        "type": "boolean"
+      },
+      "next_cursor": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Next Cursor"
+      },
+      "count_is_exact": {
+        "title": "Count Is Exact",
+        "type": "boolean"
+      },
+      "rows": {
+        "items": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Rows",
+        "type": "array"
+      },
+      "warnings": {
+        "default": [],
+        "items": {
+          "type": "string"
+        },
+        "title": "Warnings",
+        "type": "array"
+      }
+    },
+    "required": [
+      "investigation_id",
+      "evidence_id",
+      "data_scope",
+      "queries",
+      "query_ms",
+      "total_match_count",
+      "result_row_unit",
+      "total_result_rows",
+      "returned_count",
+      "truncated",
+      "result_truncated",
+      "count_is_exact",
+      "rows"
+    ],
+    "title": "Envelope",
+    "type": "object"
+  }
+}

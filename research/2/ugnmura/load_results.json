@@ -1,0 +1,35 @@
+{
+  "parser_sha256": "2b914dcdebfa933787116acdc734280caa7be0c23344d1e065cea5cb1b398e96",
+  "schema": "CREATE TABLE research_log_entries (\ndataset VARCHAR, entry_id BIGINT, ts TIMESTAMP, node VARCHAR, component VARCHAR,\nlevel VARCHAR, label VARCHAR, message VARCHAR, source_file VARCHAR,\nrequest_id VARCHAR, instance_id VARCHAR, latency_s DOUBLE, rack VARCHAR,\nmidplane VARCHAR, epoch_s BIGINT, endpoint VARCHAR, http_status INTEGER,\ncreate_seconds DOUBLE, create_operation VARCHAR)",
+  "time_basis": "BGL printed naive timestamp; separate epoch_s retained; OpenStack printed naive timestamp",
+  "loader": "throwaway research loader; official loader not supplied",
+  "inputs": {
+    "OpenStack.tar.gz": {
+      "sha256": "87c98c5ed03262e05cdb7a6f3717033df76d88fda0f7d2db23bd9fa4200f1879",
+      "rows": 207820,
+      "load_s": 3.2205958330305293
+    },
+    "BGL.zip": {
+      "sha256": "d67fd82a711aea0157a9b83175892c6ee60e384a2ddf5bc51f39118453816da8",
+      "rows": 4747963,
+      "load_s": 370.24052220897283,
+      "rows_with_embedded_nul": 4
+    }
+  },
+  "version": "PostgreSQL 18.3 (SereneDB 26.10.1)",
+  "prior_failures": [
+    "BGL line 1579029 has empty message: initial strict parser rejected it; failed COPY rolled back.",
+    "psycopg.write_row rejects embedded NUL; SereneDB raw COPY accepts it. Use escaped raw COPY preserving original bytes."
+  ],
+  "verification_sql": "SELECT dataset,count(*) FROM research_log_entries GROUP BY dataset ORDER BY dataset",
+  "verification_rows": [
+    [
+      "BGL",
+      4747963
+    ],
+    [
+      "OpenStack",
+      207820
+    ]
+  ]
+}

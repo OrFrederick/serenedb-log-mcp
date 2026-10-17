@@ -90,15 +90,12 @@ tool as each Role through that Role's login, and it fails when a new tool has no
 - **Node names stay visible to the Manager.** `count_by` and `trend` count distinct sources on the
   node column, and Spread needs it too. The Manager playbook and the Role shaping keep node names
   out of the Manager's answer, not the grants.
-- **Not yet covered.** Tables and indexes that later tickets add need their per-Role views in
-  `roles.sql` before those tools work through per-Role logins:
-  - the Incident table (T27);
-  - the Pattern catalogue index (T14);
-  - agent indexes (T19), which are found only in the canonical schema, so a Role's search uses its
-    own full index;
-  - the remote Datasets (T20, T21).
-
-  The test above fails for a new tool until its call is added there.
+- **Agent indexes are not per Role.** `create_index` (T19) builds its partial index in the
+  canonical schema with `DATABASE_URL`, and a Role's login cannot read it, so a Role connected
+  through its own login searches with its own full index (same counts, without the speed-up). The
+  Incident table and the Pattern catalogue index are covered by `roles.sql`. A table or index that
+  a later change adds needs its per-Role view there too; the test above fails for a new tool until
+  its call is added.
 - **The tools are the guarantee.** No tool accepts SQL, every statement is a fixed template, and
   the Role shaping (T7) withholds raw Log Entries from the Manager whether or not per-Role logins
   are configured.

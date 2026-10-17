@@ -50,7 +50,7 @@ def test_all_words_finds_every_matching_entry_with_an_exact_total_and_a_sample_o
     ]
     assert rows[0]["ts"] == STORM_START.isoformat()
     assert [r["ts"] for r in rows] == sorted(r["ts"] for r in rows)
-    assert rows[0]["message"] == "data **TLB error** interrupt"  # adjacent matches merge
+    assert rows[0]["message"] == "data **TLB** **error** interrupt"  # HighlightAll marks each word
     assert {r["node"] for r in rows} == {NODE_B}
     assert any("not a frequency" in note for note in result["notes"])
 

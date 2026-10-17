@@ -61,6 +61,7 @@ class FakeServer:
         self.refusals_left = 0
         self.connections: list[FakeConnection] = []
         self.binding: list[bool] = []
+        self.cancel_fails = False
 
     def connect(self, dsn: str, *, client_binding: bool) -> FakeConnection:
         self.binding.append(client_binding)
@@ -105,9 +106,16 @@ class FakeConnection:
             return FakeCursor([(1,)])
         if query == "SELECT * FROM missing":
             raise psycopg.errors.UndefinedTable('relation "missing" does not exist\nLINE 1: ...')
+        if query == "SELECT 'FAT%' LIMIT %s":
+            # psycopg refuses this before anything is sent: a bare % next to a placeholder.
+            raise psycopg.ProgrammingError("only '%s', '%b', '%t' are allowed as placeholders, got \"%'\"")
         return FakeCursor(self.server.respond(query, params))
 
     def cancel_safe(self) -> None:
+        if self.closed:
+            return  # psycopg's cancel_safe does nothing on a closed connection
+        if self.server.cancel_fails:
+            raise psycopg.errors.CancellationTimeout("cancellation timeout expired")
         self.cancelled.set()
 
     def close(self) -> None:
@@ -185,6 +193,15 @@ def test_fetch_limited_accepts_separate_row_parameters() -> None:
     result = database(server).fetch_limited(COUNT_SQL, rows_sql, [1], 2, rows_params=["q", 1, 2])
 
     assert result.params == [[1], ["q", 1, 2]]
+
+
+def test_fetch_limited_rejects_a_row_query_that_ignores_the_limit() -> None:
+    # The row query has no LIMIT, so the server returns every matching row.
+    server = FakeServer(lambda sql, params: [(3,)] if sql.startswith("SELECT count(*)") else ROWS)
+    unlimited = "SELECT a, ts_highlight(b, %s) FROM t WHERE a = %s"
+
+    with pytest.raises(ValueError, match="limit=2"):
+        database(server).fetch_limited(COUNT_SQL, unlimited, [1], 2, rows_params=["q", 1])
 
 
 @pytest.mark.parametrize("limit", [0, -1])
@@ -341,6 +358,43 @@ def test_a_connection_whose_cancel_came_too_late_is_not_reused() -> None:
     assert server.connections[0].closed
     layer.fetch_all("SELECT a FROM t")
     assert len(server.connections) == 2
+
+
+def test_a_statement_that_finishes_after_the_timer_fired_carries_a_note() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+
+    result = database(server, timeout_s=0.02).fetch_all("SELECT stubborn()")
+
+    assert result.rows == [(1,)]
+    assert len(result.notes) == 1
+    assert "0.02 s" in result.notes[0]
+    assert "complete" in result.notes[0]
+
+
+@pytest.mark.filterwarnings("error::pytest.PytestUnhandledThreadExceptionWarning")
+def test_a_failing_cancel_request_does_not_escape_the_timer_thread() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    server.cancel_fails = True
+    layer = database(server, timeout_s=0.02)
+
+    assert layer.fetch_all("SELECT stubborn()").rows == [(1,)]
+
+    assert server.connections[0].closed
+    assert layer.fetch_all("SELECT a FROM t").total == 3
+
+
+def test_a_statement_psycopg_refuses_is_reported_as_a_template_bug() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+
+    with pytest.raises(QueryFailed) as caught:
+        database(server).fetch_all("SELECT 'FAT%' LIMIT %s", [5])
+
+    message = str(caught.value)
+    assert caught.value.sqlstate is None
+    assert "SereneDB rejected" not in message
+    assert "describe_corpus" not in message
+    assert "template" in message
+    assert "only '%s', '%b', '%t' are allowed as placeholders" in message
 
 
 def test_a_rejected_statement_raises_query_failed_without_a_retry() -> None:

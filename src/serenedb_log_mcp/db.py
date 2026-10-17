@@ -63,9 +63,11 @@ POLL_INTERVAL_S = 1.0
 MAX_IDLE_CONNECTIONS = 4
 """Idle connections kept per DSN, so a call does not pay for a new connection each time."""
 
-# SQLSTATEs that mean the server ended the session: class 08 (connection exception), admin
-# shutdown, crash shutdown and "cannot connect now" (the server is starting).
+# SQLSTATEs outside class 08 (connection exception, checked by prefix in `_is_lost`) that also mean
+# the server ended the session: admin shutdown, crash shutdown, "cannot connect now" (starting up).
 _LOST_SQLSTATES = frozenset({"57P01", "57P02", "57P03"})
+CANCEL_JOIN_S = 5.0
+"""How long a call waits for a cancel request already in flight before it closes the connection."""
 
 _T = TypeVar("_T")
 
@@ -74,8 +76,10 @@ _T = TypeVar("_T")
 class QueryResult:
     """What every query helper returns (plan section 2.7).
 
-    `sql` holds each statement exactly as it ran, with `%s` where parameters were bound, and
-    `params` holds the bound values, one list per statement in the same order. `query_ms` is the
+    `sql` holds each statement exactly as the tool passed it to psycopg: `%s` where parameters were
+    bound and `%%` for a literal `%` in a statement that binds parameters, so running `sql[i]` with
+    `params[i]` through psycopg (or this layer) repeats the call; a SQL client needs `%%` read as
+    `%`. `params` holds the bound values, one list per statement in the same order. `query_ms` is the
     wall-clock time of those statements only. `notes` carries what the agent must know about how
     the numbers were obtained, for example a retry after a database restart.
     """
@@ -228,6 +232,7 @@ class _Session:
         self._conn = conn
         self.sql: list[str] = []
         self.params: list[list[Any]] = []
+        self.notes: list[str] = []
         self.query_ms = 0.0
 
     def fetch(self, sql: str, params: Sequence[Any]) -> list[tuple[Any, ...]]:
@@ -283,8 +288,14 @@ class Database:
 
         `count_sql` must return one row with one integer. `rows_sql` runs with `params` plus
         `limit` appended, so its last placeholder is the LIMIT; pass `rows_params` when the row
-        query binds other values. The row query is skipped when the total is 0. Both statements
+        query binds other values. A row query that returns more than `limit` rows is a template
+        bug and raises ValueError. The row query is skipped when the total is 0. Both statements
         run in one read-only transaction, so the total and the rows come from one snapshot.
+
+        A literal `%` must be written `%%` in every statement that binds parameters, and
+        `rows_sql` always binds at least `limit`. Only a statement run with no parameters at all
+        (for example a `count_sql` with empty `params`) takes a bare `%`. A WHERE clause shared by
+        both statements is therefore safest with `%%`, or with the pattern bound as a parameter.
         """
         if limit < 1:
             raise ValueError(f"limit must be at least 1, not {limit}")
@@ -296,6 +307,11 @@ class Database:
             return total, rows
 
         (total, rows), session, notes = self._run(work)
+        if len(rows) > limit:
+            raise ValueError(
+                f"rows_sql returned {len(rows)} rows for limit={limit}; its LIMIT must bind the limit "
+                f"(the last parameter, or the one in rows_params): {rows_sql}"
+            )
         return QueryResult(
             total=total,
             rows=rows,
@@ -332,9 +348,11 @@ class Database:
     def _run(self, work: Callable[[_Session], _T]) -> tuple[_T, _Session, list[str]]:
         try:
             value, session = self._attempt(work)
-            return value, session, []
         except _ConnectionLost:
-            waited = self._wait_until_ready()
+            pass  # wait for the restart below, then retry once
+        else:
+            return value, session, session.notes
+        waited = self._wait_until_ready()
         note = (
             "SereneDB closed the connection during this call, most likely because it restarted "
             f"after a crash. The database layer waited {waited:.1f} s until it answered SELECT 1 "
@@ -349,7 +367,7 @@ class Database:
                 "this call sorted by relevance, call it again with sort=time; otherwise call it "
                 "again once more, or narrow the Data Scope."
             ) from None
-        return value, session, [note]
+        return value, session, [note, *session.notes]
 
     def _wait_until_ready(self) -> float:
         """Wait until `SELECT 1` answers on a new connection; bounded by `reconnect_wait_s`."""
@@ -388,7 +406,10 @@ class Database:
 
         def cancel() -> None:
             fired.set()
-            conn.cancel_safe()
+            # A cancel request that fails (the server is gone, or psycopg's CancellationTimeout)
+            # changes nothing: the statement's own outcome decides what the call returns.
+            with contextlib.suppress(psycopg.Error):
+                conn.cancel_safe()
 
         session = _Session(conn)
         try:
@@ -401,6 +422,8 @@ class Database:
                 value = work(session)
             finally:
                 timer.cancel()
+                if fired.is_set():
+                    timer.join(CANCEL_JOIN_S)  # let a cancel in flight finish before the connection goes
         except psycopg.Error as exc:
             if _is_lost(exc, conn):
                 _close_quietly(conn)
@@ -414,16 +437,31 @@ class Database:
                     "and was cancelled. Narrow the Data Scope: a shorter time range, a Component, "
                     "level or Pattern filter, or a coarser trend bucket."
                 ) from exc
+            if exc.sqlstate is None:
+                # psycopg refused the statement before sending it, so no input of the agent's can
+                # fix it.
+                raise QueryFailed(
+                    f"The tool's SQL template is broken, so the query was not sent to SereneDB: "
+                    f"{_first_line(exc)} This is a bug in the tool, not in your inputs; use another "
+                    "tool for this question.",
+                    None,
+                ) from exc
             raise QueryFailed(
-                f"SereneDB rejected the query ({exc.sqlstate or 'no SQLSTATE'}): {_first_line(exc)} "
-                "Check the names you filtered on with describe_corpus and call the tool again; if "
-                "they are right, the tool's SQL is at fault.",
+                f"SereneDB rejected the query ({exc.sqlstate}): {_first_line(exc)} Check the names you "
+                "filtered on with describe_corpus and call the tool again; if they are right, the "
+                "tool's SQL is at fault.",
                 exc.sqlstate,
             ) from exc
         except BaseException:
             self._end(conn, discard=True)
             raise
-        # The timer fired but the statements finished first: the cancel may still be in flight.
+        if fired.is_set():
+            # The statements finished as the timer fired. The numbers are complete, but the session
+            # may have caught the cancel, so it is not reused.
+            session.notes.append(
+                f"The statements finished just as the {self.timeout_s:g} s limit (SLM_QUERY_TIMEOUT_S) "
+                "expired. The numbers are complete, but a wider Data Scope may time out."
+            )
         self._end(conn, discard=fired.is_set())
         return value, session
 

@@ -1,0 +1,35 @@
+-- label: Whole file, straight from the Parquet file: Log Entries per ServiceName and SeverityText
+-- statement: select ServiceName, SeverityText, count(*) n from read_parquet('https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_000.parquet') group by all
+-- measured: 2026-10-17 04:09 UTC, SereneDB 26.10.1 (shared dev server, 12 threads), first read of these columns, during T20 development, before `make bench-huge` existed
+┌─────────────────────────────────────┐
+│┌───────────────────────────────────┐│
+││         HTTPFS HTTP Stats         ││
+││                                   ││
+││           in: 511.9 MiB           ││
+││            out: 0 bytes           ││
+││              #HEAD: 1             ││
+││             #GET: 3229            ││
+││              #PUT: 0              ││
+││              #POST: 0             ││
+││             #DELETE: 0            ││
+││            #OPTIONS: 0            ││
+│└───────────────────────────────────┘│
+└─────────────────────────────────────┘
+╭─ Summary ───────────╮
+│ Total Time:  75.10s │
+│ Data Read: 536.7 MB │
+╰─────────────────────╯
+╭─ HASH_GROUP_BY ───────────────────────────────────────────────────────────╮
+│ Groups: #0, #1                                                            │
+│ Aggregates: count_star()                                                  │
+│ 52 rows                                                            10.38s │
+╰─────────────────────────────────────┒┎────────────────────────────────────╯
+╭─ TABLE_SCAN ────────────────────────┚┖────────────────────────────────────╮
+│ Function: READ_PARQUET                                                    │
+│ Projections: ServiceName, SeverityText                                    │
+│ Total Files Read: 1                                                       │
+│ Filename(s):                                                              │
+│ https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_000.parquet │
+│ Row Groups Scanned: 1624 / 1624                                           │
+│ 1,000,000,000 rows                                                  3.90s │
+╰───────────────────────────────────────────────────────────────────────────╯

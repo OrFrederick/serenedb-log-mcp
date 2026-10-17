@@ -194,6 +194,7 @@ def report() -> Report:
             "top": [("a <*> b", 9, 2)],
         },
         runs=3,
+        references=huge_scale.load_references(),
     )
 
 
@@ -323,3 +324,43 @@ def test_a_failed_cleanup_after_an_error_keeps_the_original_error(capsys: pytest
         broken_run()
 
     assert "agent_idx_text_bench_0a1b2c3d" in capsys.readouterr().err
+
+
+def test_the_committed_cold_reference_run_is_parsed_from_its_raw_plan() -> None:
+    references = huge_scale.load_references()
+
+    cold = next(r for r in references if "ServiceName and SeverityText" in r.label)
+    assert cold.plan.rows_scanned == 1_000_000_000
+    assert cold.plan.row_groups == (1624, 1624)
+    assert cold.plan.http_in == round(511.9 * 1024**2)
+    assert cold.plan.total_ms == pytest.approx(75_100)
+    assert "26.10.1" in cold.measured
+    assert "read_parquet(" in cold.statement
+
+
+def test_the_report_puts_the_cold_whole_file_run_in_the_main_table_and_names_the_version() -> None:
+    text = report().markdown()
+    table = text.split("| What | Rows covered | Bytes from S3 | Server time |", 1)[1].split("\n\n", 1)[0]
+
+    assert "cold reference run" in table
+    assert "536.77 MB" in table  # 511.9 MiB, the first read of ServiceName and SeverityText
+    assert "75.10 s" in table
+    method = text.split("## Method and limits", 1)[1]
+    assert "26.10.1" in method
+    assert "26.09.1.3" in method
+
+
+def test_http_bytes_come_only_from_the_httpfs_statistics_box() -> None:
+    # An alias or column ending in "in:" elsewhere in the plan must not become the byte count.
+    plan = parse_plan(INDEX_PLAN + "\n│ Filter: in: 12 MiB │")
+
+    assert plan.http_in is None
+    assert parse_plan(WHOLE_FILE_PLAN).http_in == round(511.9 * 1024**2)
+
+
+def test_the_environment_names_the_commit_the_benchmark_ran_on() -> None:
+    # PR #62 review: the report should say which code produced it.
+    version = huge_scale.code_version()
+
+    assert version != ""
+    assert " " not in version

@@ -70,6 +70,14 @@ from serenedb_log_mcp.server import create_server
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_OUT = ROOT / "docs" / "results" / "huge-datasets.md"
 DEFAULT_JSON = ROOT / "docs" / "results" / "huge-datasets.json"
+REFERENCE_DIR = ROOT / "bench" / "reference"
+VERSION_NOTE = (
+    "Bytes, and so the cost table, are what SereneDB 26.10.1 fetched: there, a scan read only the columns "
+    "the query names, in about the compressed size the Parquet footer lists. On SereneDB 26.09.1.3 "
+    "(OrFrederick's Claude, PR #62 review, 8 threads) the same whole-file aggregate per Component and "
+    "level through the view fetched 2.90 GB in 602.8 s, and straight from the file, naming the two "
+    "columns, 1.05 GB in 376.6 s, against 503 MiB in the footer; expect other versions to differ."
+)
 FILE_COUNT = 50
 """The brief lists text_bench/part_000.parquet to part_049.parquet."""
 PROBE_EXTRA = 2
@@ -197,8 +205,10 @@ def parse_plan(text: str) -> Plan:
     total = re.search(r"Total Time:\s*([0-9.]+)s", text)
     if total is None:
         raise BenchError(f"EXPLAIN ANALYZE printed no 'Total Time': {text[:200]!r}")
-    http_in = re.search(r"\bin:\s*([0-9.,]+\s*[A-Za-z]+)", text)
-    gets = re.search(r"#GET:\s*([0-9,]+)", text)
+    stats = text[text.find("HTTPFS HTTP Stats") :] if "HTTPFS HTTP Stats" in text else ""
+    stats = stats.split("└", 1)[0]  # the statistics box ends at its bottom border
+    http_in = re.search(r"\bin:\s*([0-9.,]+\s*[A-Za-z]+)", stats)
+    gets = re.search(r"#GET:\s*([0-9,]+)", stats)
     data_read = re.search(r"Data Read:\s*([0-9.,]+\s*[A-Za-z]+)", text)
     groups = [(int(a), int(b)) for a, b in re.findall(r"Row Groups Scanned:\s*([0-9]+)\s*/\s*([0-9]+)", text)]
     scanned = _scan_rows(text.splitlines())
@@ -290,6 +300,42 @@ def median(values: Sequence[float]) -> float:
 # Measurements ---------------------------------------------------------------------------------------
 
 
+@dataclass(frozen=True)
+class Reference:
+    """A cold run recorded before the benchmark could repeat it, kept as its raw EXPLAIN ANALYZE plan.
+
+    SereneDB keeps remote file data in an in-memory cache until it restarts, so once a column has
+    been read, no later run on the same server can measure its first read again. The plans in
+    bench/reference/ are those first reads, committed verbatim with when and where they ran.
+    """
+
+    label: str
+    statement: str
+    measured: str
+    plan: Plan
+
+
+def load_references(directory: Path | None = None) -> list[Reference]:
+    """Every `*.txt` in `directory`: `-- label:`, `-- statement:`, `-- measured:` lines, then the plan."""
+    found = []
+    for path in sorted((directory or REFERENCE_DIR).glob("*.txt")):
+        header: dict[str, str] = {}
+        plan: list[str] = []
+        for line in path.read_text().splitlines():
+            if not plan and line.startswith("-- ") and ":" in line:
+                key, _, value = line[3:].partition(":")
+                header[key.strip()] = value.strip()
+            else:
+                plan.append(line)
+        missing = [key for key in ("label", "statement", "measured") if key not in header]
+        if missing:
+            raise BenchError(f"{path} lacks the header line(s) {', '.join(missing)}")
+        found.append(
+            Reference(header["label"], header["statement"], header["measured"], parse_plan("\n".join(plan)))
+        )
+    return found
+
+
 @dataclass
 class Measured:
     """One statement, run several times with EXPLAIN ANALYZE."""
@@ -361,6 +407,8 @@ class Report:
     patterns: dict[str, Any]
     runs: int
     slices: Slices = field(default_factory=Slices)
+    references: list[Reference] = field(default_factory=list)
+    """Cold runs recorded earlier (bench/reference/), shown next to the measured ones; never in the JSON."""
 
     # The numbers the headline and the cost section use ------------------------------------------
 
@@ -440,6 +488,7 @@ def _covered_count(plan: Plan, file_rows: int | None) -> int:
 def to_json(report: Report) -> dict[str, Any]:
     """Every measurement of a run, so the report can be rendered again (`--from-json`)."""
     raw = dataclasses.asdict(report)
+    raw.pop("references", None)  # committed files, read again when rendering
     raw["layout"] = {
         k: (v.isoformat(sep=" ") if isinstance(v, datetime) else v) for k, v in report.layout.items()
     }
@@ -484,6 +533,7 @@ def from_json(raw: dict[str, Any]) -> Report:
         patterns=raw["patterns"],
         runs=raw["runs"],
         slices=Slices(**raw["slices"]),
+        references=load_references(),
     )
 
 
@@ -516,9 +566,19 @@ def headline_rows(report: Report) -> list[list[str]]:
             fmt_ms(layout.get("footer_ms")),
         ]
     )
-    for m in report.in_place:
+    for ref in report.references:
         rows.append(
-            [m.label, rows_covered(m.first, file_rows), fmt_bytes(m.first.http_in), fmt_ms(m.median_ms)]
+            [
+                f"{ref.label} (cold reference run, {ref.measured.split(',')[0]})",
+                rows_covered(ref.plan, file_rows),
+                fmt_bytes(ref.plan.http_in),
+                fmt_ms(ref.plan.total_ms),
+            ]
+        )
+    for m in report.in_place:
+        label = m.label if m.first.http_in else f"{m.label} (warm: columns already cached)"
+        rows.append(
+            [label, rows_covered(m.first, file_rows), fmt_bytes(m.first.http_in), fmt_ms(m.median_ms)]
         )
     cold = report.cold_scans
     rows.append(
@@ -597,6 +657,14 @@ def render(report: Report) -> str:
         f"{fmt_int(layout.get('row_groups'))} row groups, {layout.get('first')} to {layout.get('last')} UTC. "
         "Nothing is copied into SereneDB and the file is never indexed whole."
     )
+    for ref in report.references:
+        add(
+            f"- **{ref.label}, cold** (recorded {ref.measured}): "
+            f"{rows_covered(ref.plan, layout.get('rows'))} "
+            f"rows in {fmt_ms(ref.plan.total_ms)}, fetching {fmt_bytes(ref.plan.http_in)} from S3. The plan "
+            "is committed in bench/reference/; the benchmark cannot repeat a first read once the server "
+            "has cached the columns."
+        )
     wholes = [m for m in report.in_place if m.label.startswith("Whole file")]
     whole = max(wholes, key=lambda m: m.first.http_in or 0) if wholes else None
     for m in wholes:
@@ -610,7 +678,7 @@ def render(report: Report) -> str:
                 if passed is not None and passed != layout.get("rows")
                 else ""
             )
-            + ". Only the columns the query names are read."
+            + "."
         )
     add(
         f"- **Time slices:** the file is sorted by Timestamp, so a slice reads only the row groups it "
@@ -732,6 +800,23 @@ def render(report: Report) -> str:
     for m in [*report.in_place, report.cold_scans]:
         add(f"- {m.label}: `{' '.join(m.statement.split())}`")
 
+    if report.references:
+        add("")
+        add("Cold reference runs (raw plans in bench/reference/):")
+        add("")
+        add("| Query | Recorded | Rows covered | Row groups | Bytes from S3 | Server time | Statement |")
+        add("|---|---|---:|---:|---:|---:|---|")
+        for ref in report.references:
+            groups = (
+                "n/a"
+                if ref.plan.row_groups is None
+                else f"{ref.plan.row_groups[0]:,} / {ref.plan.row_groups[1]:,}"
+            )
+            add(
+                f"| {ref.label} | {ref.measured} | {rows_covered(ref.plan, layout.get('rows'))} | {groups} | "
+                f"{fmt_bytes(ref.plan.http_in)} | {fmt_ms(ref.plan.total_ms)} | "
+                f"`{' '.join(ref.statement.split())}` |"
+            )
     add("")
     add("## Through the tools")
     add("")
@@ -837,6 +922,14 @@ def render(report: Report) -> str:
     threads = _threads(report.env)
     add("| Query | Bytes from S3 | Server time | Thread-seconds (upper bound) | Rows covered per second |")
     add("|---|---:|---:|---:|---:|")
+    for ref in report.references:
+        seconds = ref.plan.total_ms / 1000
+        covered = _covered_count(ref.plan, layout.get("rows"))
+        add(
+            f"| {ref.label} (cold reference run) | {fmt_bytes(ref.plan.http_in)} | "
+            f"{fmt_ms(ref.plan.total_ms)} | "
+            f"{seconds * threads:,.1f} | {covered / seconds if seconds else 0:,.0f} |"
+        )
     for m in [*report.in_place, report.cold_scans]:
         first = m.first
         if not first.http_in:
@@ -878,6 +971,7 @@ def render(report: Report) -> str:
         'and "Data Read" for remote Parquet, so bytes are measured per statement. docs/decisions.md '
         "said it reports rows and time but not bytes; that no longer holds for remote reads."
     )
+    add(f"- {VERSION_NOTE}")
     add(
         "- SereneDB caches remote file data in memory (`enable_external_file_cache`). A first read "
         "fetches from S3 (cold); a repeat finds the bytes in the cache (warm, 0 bytes in). The cache is "
@@ -1216,6 +1310,17 @@ def pattern_keys(session: Session, schema: str, table: str, slices: Slices) -> d
     }
 
 
+def code_version() -> str:
+    """The commit the benchmark runs on (`git describe`), marked dirty when the tree has changes."""
+    try:
+        found = subprocess.run(
+            ["git", "describe", "--always", "--dirty"], cwd=ROOT, capture_output=True, text=True, check=False
+        )
+    except OSError:
+        return "unknown"
+    return found.stdout.strip() or "unknown"
+
+
 def environment(session: Session, settings: Settings, runs: int, note: str) -> dict[str, str]:
     version = str(session.rows("SELECT version()")[0][0])
     values = dict(
@@ -1244,6 +1349,7 @@ def environment(session: Session, settings: Settings, runs: int, note: str) -> d
         f"Round trip (SELECT 1), median of {RTT_SAMPLES}": fmt_ms(median(samples)),
         "Client": f"{platform.platform()}, Python {platform.python_version()}, psycopg {psycopg.__version__}",
         "Runs per measurement": str(runs),
+        "Code": code_version(),
     }
 
 
@@ -1385,6 +1491,7 @@ def run(args: argparse.Namespace) -> Report:
         patterns=patterns,
         runs=args.runs,
         slices=slices,
+        references=load_references(),
     )
 
 

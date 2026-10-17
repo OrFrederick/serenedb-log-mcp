@@ -2,18 +2,23 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
+from datetime import datetime
+
 import pytest
 from psycopg import sql
 
 from serenedb_log_mcp import config
 from serenedb_log_mcp.config import ROLES, load_settings
-from serenedb_log_mcp.corpus import datasets
+from serenedb_log_mcp.corpus import agent_indexes, datasets
+from serenedb_log_mcp.corpus.agent_indexes import AgentIndex
 from serenedb_log_mcp.corpus.datasets import (
     DATASETS,
     UnknownColumnError,
     UnknownDatasetError,
     relation,
 )
+from serenedb_log_mcp.evidence import DataScope
 
 SLM = load_settings({})
 
@@ -89,9 +94,97 @@ def test_an_unknown_role_is_an_error() -> None:
         relation("bgl", "ceo", settings=SLM)  # type: ignore[arg-type]
 
 
-def test_a_scope_is_accepted_and_does_not_change_the_relation_yet() -> None:
-    # T19 routes a Data Scope inside an agent index's slice to that index; until then it is ignored.
+def test_a_scope_without_a_time_range_does_not_change_the_relation() -> None:
     assert relation("bgl", "engineer", object(), settings=SLM) == relation("bgl", settings=SLM)
+
+
+# ----------------------------------------------------------------- agent index routing (T19)
+
+WAVE = AgentIndex(
+    schema="slm",
+    name="agent_idx_bgl_0a1b2c3d",
+    dataset="bgl",
+    time_from=datetime(2005, 8, 22),
+    time_to=datetime(2005, 9, 19),
+    rows=310_868,
+)
+
+
+@pytest.fixture
+def wave_index() -> Iterator[AgentIndex]:
+    agent_indexes.clear()
+    agent_indexes.register(WAVE)
+    yield WAVE
+    agent_indexes.clear()
+
+
+def scope(time_from: str | None, time_to: str | None, dataset: str = "bgl") -> DataScope:
+    return DataScope(datasets=[dataset], time_from=time_from, time_to=time_to)
+
+
+def test_a_scope_inside_an_agent_index_slice_reads_that_index(wave_index: AgentIndex) -> None:
+    rel = relation("bgl", "engineer", scope("2005-08-29T00:00:00", "2005-09-05T00:00:00"), settings=SLM)
+
+    assert text(rel.index) == '"slm"."agent_idx_bgl_0a1b2c3d"'
+    assert rel.index_name == "slm.agent_idx_bgl_0a1b2c3d"
+    assert rel.agent_index == wave_index
+    # Point lookups, plain filters and aggregations still read the canonical table.
+    assert text(rel.table) == '"slm"."bgl_entry"'
+
+
+@pytest.mark.parametrize(
+    ("time_from", "time_to"),
+    [
+        ("2005-08-21T00:00:00", "2005-09-05T00:00:00"),  # starts before the slice
+        ("2005-08-29T00:00:00", "2005-09-20T00:00:00"),  # ends after it
+        (None, "2005-09-05T00:00:00"),  # from the Dataset's first Log Entry
+        ("2005-08-29T00:00:00", None),  # to the Dataset's last Log Entry
+    ],
+)
+def test_a_scope_reaching_outside_the_slice_reads_the_full_index(
+    wave_index: AgentIndex, time_from: str | None, time_to: str | None
+) -> None:
+    rel = relation("bgl", "engineer", scope(time_from, time_to), settings=SLM)
+
+    assert rel.index_name == "slm.bgl_entry_idx"
+    assert rel.agent_index is None
+
+
+def test_without_a_scope_the_full_index_answers_even_with_an_agent_index(wave_index: AgentIndex) -> None:
+    assert relation("bgl", settings=SLM).index_name == "slm.bgl_entry_idx"
+
+
+def test_an_agent_index_serves_only_its_own_dataset_and_schema(wave_index: AgentIndex) -> None:
+    inside = ("2005-08-29T00:00:00", "2005-09-05T00:00:00")
+
+    assert relation("openstack", scope=scope(*inside, "openstack"), settings=SLM).index_name == (
+        "slm.os_entry_idx"
+    )
+    other = load_settings({"SLM_SCHEMA": "slm_t10"})
+    assert relation("bgl", scope=scope(*inside), settings=other).index_name == "slm_t10.bgl_entry_idx"
+
+
+def test_reading_the_routed_index_records_its_use(wave_index: AgentIndex) -> None:
+    rel = relation("bgl", scope=scope("2005-08-29T00:00:00", "2005-09-05T00:00:00"), settings=SLM)
+
+    with agent_indexes.capture_use() as before_index:
+        _ = rel.table
+    with agent_indexes.capture_use() as used:
+        _ = rel.index
+
+    assert before_index == []
+    assert used == [wave_index]
+
+
+def test_the_full_index_records_no_use(wave_index: AgentIndex) -> None:
+    with agent_indexes.capture_use() as used:
+        _ = relation("bgl", settings=SLM).index
+
+    assert used == []
+
+
+def test_the_text_dictionary_lives_next_to_the_tables() -> None:
+    assert text(relation("bgl", settings=SLM).text_dictionary) == '"slm"."log_text"'
 
 
 # ----------------------------------------------------------------- columns

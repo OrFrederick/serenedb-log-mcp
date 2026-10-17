@@ -13,8 +13,8 @@ import pytest
 
 from serenedb_log_mcp.config import load_settings
 from serenedb_log_mcp.corpus.datasets import relation
-from serenedb_log_mcp.fts import QUERY_MODES
 from serenedb_log_mcp.db import QueryResult
+from serenedb_log_mcp.fts import QUERY_MODES
 from serenedb_log_mcp.tools.search_logs import SORTS, Search, read_facets
 
 SETTINGS = load_settings({}, slm_schema="slm")

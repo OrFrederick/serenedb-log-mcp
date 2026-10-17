@@ -70,6 +70,25 @@ Example: `Lustre mount FAILED : <*> : point <*>` has `point` = `/p/gb1` on all 2
 
 The agent runs above were done **before** these tables existed.
 
+### Rerun: templates + parameters
+
+Same question and the same two interfaces (3 SQL via `psql`, 3 Postgres MCP). The only change: the prompt also lists `slm.pattern_param` and `slm.entry_param`.
+
+| Arm (6 runs each) | Found reference answer | Caught one node = 99.6% | Found `ciod` load-failure family | Used parameters meaningfully |
+|---|---|---|---|---|
+| No templates | 0/6 | 6/6 | 0/6 | n/a |
+| Templates | 0/6 | 1/6 | 4/6 | n/a |
+| **Templates + parameters** | **0/6** | 4/6 | 3/6 | **1/6** |
+
+- **Parameters did not change the outcome.** How the 6 runs used them:
+  - 2 never queried them ("didn't need").
+  - 1 queried `pos = 0` (slots start at 1), got nothing and moved on.
+  - 2 used them only to count the distinct values of the `generating core` slot.
+  - 1 used them for real: it pulled the failing program paths of `ciod: Error loading` (e.g. `/home/yates//torus-latency.rts`) and concluded that these are user job-launch errors, not hardware.
+- **The single-node catch rate went up (1/6 to 4/6), but this is likely run-to-run noise.** The parameters say nothing about nodes; the agents found it with `GROUP BY node` on the entry table.
+- **4 of 6 named `generating core` and then dismissed it** as "noise" or "a side effect of crashes". That is the most frequent failure once occurrences are counted, but no agent counted episodes.
+- **Conclusion: the bottleneck is the unit of counting, not the data.** Parameters answer *which* (which program, which mount point), not *how many separate times*. To get the reference answer, an agent needs episodes (or Incidents) as a ready-made table or tool.
+
 ## Implications for the MCP server
 
 - Report each Pattern's concentration: the top source's share and distinct days, not only `distinct_sources`.

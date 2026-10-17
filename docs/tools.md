@@ -10,10 +10,12 @@ Every tool takes a required `role` (`engineer`, `team_lead` or `manager`), which
 |---|---|---|
 | [`count_by`](#count_by) | Count Log Entries by one dimension, with baselines | [Evidence](#output-evidence) |
 | [`describe_corpus`](#describe_corpus) | Describe the Datasets: size, time range, Components, Teams | [Evidence](#output-evidence) |
+| [`find_precursors`](#find_precursors) | Patterns that precede a target Pattern, with support and lift | [Evidence](#output-evidence) |
 | [`get_context`](#get_context) | Log Entries just before and after one entry | [Evidence](#output-evidence) |
 | [`get_evidence`](#get_evidence) | Get stored Evidence by id | [Evidence](#output-evidence) |
 | [`get_role_brief`](#get_role_brief) | Get the playbook of a Role | RoleBrief |
 | [`latency_stats`](#latency_stats) | OpenStack latency, Latency Degradation and Phase-Duration Anomalies | [Evidence](#output-evidence) |
+| [`list_incidents`](#list_incidents) | Incidents with Spread and Shape, next to the Log Entry counts | [Evidence](#output-evidence) |
 | [`search_logs`](#search_logs) | Search Log Entries by text or Pattern | [Evidence](#output-evidence) |
 | [`trend`](#trend) | Trend of Log Entries per time bucket, with baselines | [Evidence](#output-evidence) |
 
@@ -31,6 +33,8 @@ Exact counts of matching Log Entries grouped by one dimension, with a baseline p
 Purpose: answer "how often", "which Components, Teams, nodes or categories" and "is this
 unusual" over any Data Scope, including the whole Base Corpus.
 Counts are Log Entries, not Incidents: one failing node can write thousands of lines.
+Times are UTC for every Dataset, in the inputs and the results: BGL's ts is US Pacific local
+time, so its time range and baselines are computed on epoch_utc (data_scope.time_columns).
 Quote exact numbers, never round, and quote share_pct, top_n_sum and other_count instead of
 adding or dividing yourself. Use search_logs for example Log Entries and trend for the
 change over time.
@@ -38,9 +42,9 @@ Inputs: role, group_by, and optional dataset, query (all words; "quoted phrase")
 time_to, components, levels, sources, alert_categories, pattern_ids, family_id, top,
 baseline_from and baseline_to.
 Outputs: the Evidence envelope. rows: one per group, largest first, with columns dataset,
-the group_by value, count, share_pct, distinct_sources, first_seen, last_seen, prev_period,
-median_week, expected, baseline_basis (named_period, median_week, previous_period or none)
-and baseline_flag (normal, unusual_high, unusual_low or no_baseline),
+the group_by value, count, share_pct, distinct_sources, first_seen and last_seen (UTC),
+prev_period, median_week, expected, baseline_basis (named_period, median_week,
+previous_period or none) and baseline_flag (normal, unusual_high, unusual_low or no_baseline),
 plus an (other) row per Dataset for the groups beyond top. summary: total, groups_total,
 top_n_sum, top_n_share_pct, other_count, other_groups and the baseline periods. notes:
 the baseline method. total_matches counts groups, not Log Entries.
@@ -54,8 +58,8 @@ the baseline method. total_matches counts groups, not Log Entries.
 | `group_by` | one of `dataset`, `component`, `team`, `level`, `node`, `rack`, `midplane`, `alert_category`, `pattern` | yes |  | The dimension to group by: dataset, component, team (via the Ownership Table), level, node, rack, midplane, alert_category (these four BGL only) or pattern (template_id). |
 | `dataset` | one of `bgl`, `openstack` or null | no | `null` | 'bgl' or 'openstack'; omit it for the whole Base Corpus (both Datasets). |
 | `query` | string or null | no | `null` | Optional full-text filter on the message: every word must appear, in any order; put a phrase in double quotes, for example '"data TLB error"'. Omit it to count every Log Entry in the Data Scope. |
-| `time_from` | string or null | no | `null` | Start of the time range, inclusive: ISO-8601 without a time zone, for example '2005-07-01' or '2005-07-01T12:00:00', or a relative range such as 'last 7d' or 'last 24h', which ends at the Dataset's last Log Entry, not today. Omit it to start at the first Log Entry. |
-| `time_to` | string or null | no | `null` | End of the time range, exclusive, ISO-8601 without a time zone. Omit it to end after the last Log Entry, and always omit it with a relative time_from. |
+| `time_from` | string or null | no | `null` | Start of the time range, inclusive, in UTC for every Dataset: ISO-8601 such as '2005-07-01' or '2005-07-01T12:00:00', or with an offset, which is converted to UTC (a logged BGL ts is US Pacific time: '2005-07-01T05:00:00-07:00'); or a relative range such as 'last 7d' or 'last 24h', which ends at the Dataset's last Log Entry, not today. Omit it to start at the first Log Entry. |
+| `time_to` | string or null | no | `null` | End of the time range, exclusive, in UTC like time_from (ISO-8601, an offset is converted). Omit it to end after the last Log Entry, and always omit it with a relative time_from. |
 | `components` | list of string or null | no | `null` | Only these Components, for example ['KERNEL'] or ['nova.compute.manager']. |
 | `levels` | list of string or null | no | `null` | Only these levels, for example ['FATAL', 'ERROR']. |
 | `sources` | list of string or null | no | `null` | Only these sources: BGL node names such as 'R30-M0-N9-C:J16-U01', or OpenStack instance UUIDs. |
@@ -63,8 +67,8 @@ the baseline method. total_matches counts groups, not Log Entries.
 | `pattern_ids` | list of string or null | no | `null` | Only these Patterns: 16-hex template_id values, as list_patterns or count_by(group_by='pattern') return them. |
 | `family_id` | string or null | no | `null` | Only this Pattern Family (family_id): Patterns whose wording differs only by a known drift, counted together. |
 | `top` | integer | no | `25` | How many groups to list (default 25, at most 100); the rest are summed in an (other) row per Dataset. |
-| `baseline_from` | string or null | no | `null` | Optional baseline period start (ISO-8601), with baseline_to. Its count, scaled to the Data Scope's length, becomes expected and drives baseline_flag (baseline_basis 'named_period'); without it the median week is the reference. |
-| `baseline_to` | string or null | no | `null` | Optional baseline period end, exclusive (ISO-8601). |
+| `baseline_from` | string or null | no | `null` | Optional baseline period start (ISO-8601, UTC like time_from), with baseline_to. Its count, scaled to the Data Scope's length, becomes expected and drives baseline_flag (baseline_basis 'named_period'); without it the median week is the reference. |
+| `baseline_to` | string or null | no | `null` | Optional baseline period end, exclusive (ISO-8601, UTC). |
 
 ### Limits
 
@@ -97,9 +101,10 @@ example Log Entries.
 Inputs: role, and optional dataset (default: both Datasets of the Base Corpus).
 Outputs: the Evidence envelope, whose rows hold one Component (with its Team from the
 Ownership Table), level or BGL alert category each, in the columns dataset, kind, value,
-entries and team; summary.datasets holds per Dataset entries, first_entry, last_entry,
-corpus_end (what relative times resolve against), the numbers of components, levels,
-alert_categories, teams and patterns (distinct Pattern ids), and entries_with_pattern.
+entries and team; summary.datasets holds per Dataset entries, first_entry, last_entry and
+corpus_end (UTC, the clock of every time input; corpus_end is what relative times resolve
+against), the numbers of components, levels, alert_categories, teams and patterns (distinct
+Pattern ids), and entries_with_pattern.
 Every count is Log Entries, not Incidents.
 ```
 
@@ -113,6 +118,69 @@ Every count is Log Entries, not Incidents.
 ### Limits
 
 No bounds in the input schema; the description states any other limits.
+
+### Output
+
+`structuredContent` is the [Evidence](#output-evidence) object; the description says what its rows and summary hold for this tool.
+
+## `find_precursors`
+
+**Patterns that precede a target Pattern, with support and lift**
+
+Annotations: read-only, idempotent, closed world, `anthropic/alwaysLoad` (Claude Code loads it without ToolSearch).
+
+Description, as the agent reads it:
+
+```text
+Patterns that precede a target Pattern more often than chance, each a Hypothesis.
+
+Purpose: answer "what usually happens before X?" with measured support and lift, never a
+guess. The target Pattern's Log Entries in the Data Scope are chained into Incidents
+(gap 300 s). A Pattern precedes an Incident when one of its Log Entries falls between
+1 s (the fixed minimum lag, so same-timestamp artefacts never count) and window_s
+seconds (default 60) before it, on the same source by default. Each candidate is
+compared with a baseline from a deterministic hourly probe grid, and only candidates
+that pass both min_support (target Incidents preceded, default 3) and min_lift (default
+2) are returned. When none passes, notes say "no consistent precursor found": report that,
+and never name a precursor then. Every row is a Hypothesis, not a cause; quote support,
+rate, lift and the delays (median and range per source) with the thresholds.
+Inputs: role, dataset, target_pattern (an alert category or a template_id from
+list_patterns), and optional window_s (default 60, at most 3600), same_source (default
+true), min_support, min_lift, limit (default 20, at most 50), time_from, time_to and
+sources (only target Log Entries on these sources).
+Outputs: the Evidence envelope. rows: one per passing precursor with precursor (its
+pattern_key), support, units_preceded, rate, probes_hit, baseline_rate, lift,
+delay_median_s, delay_min_s, delay_max_s and precursor_entries. summary: incidents_total
+(target Incidents), units_total, sources_total, probes_total, candidates_total,
+supported_total, passed_total, window_s, min_lag_s, same_source and the thresholds.
+notes: the Hypothesis label, the method, the thresholds and the baseline method.
+total_matches counts passing precursors.
+```
+
+### Inputs
+
+| Name | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `role` | one of `engineer`, `team_lead`, `manager` | yes |  | Who is asking: 'engineer' investigates one failure and needs example Log Entries and nearby events; 'team_lead' needs recurring problems with counts and trends per Component and Team, and receives at most 3 sample Log Entries from a search; 'manager' needs measured frequency and affected Components only, and receives no raw Log Entries (totals and facets, no rows). Every result carries the answer_frame for this Role; get_role_brief(role) has the full playbook. |
+| `dataset` | one of `bgl`, `openstack` | yes |  | 'bgl' or 'openstack': one Dataset per call. |
+| `target_pattern` | string | yes |  | The Pattern whose precursors to find: a BGL alert category such as 'APPSEV' (the alert_category of count_by and search_logs) or a 16-hex template_id from list_patterns (either Dataset). |
+| `window_s` | integer | no | `60` | Seconds before each target Incident in which a precursor must appear (default 60, at most 3600). The minimum lag is fixed at 1 s. |
+| `same_source` | boolean | no | `true` | True (default): the precursor must be on the same source as the target (BGL node, OpenStack instance or host), as a Cascade is defined. False: on any source. |
+| `min_support` | integer | no | `3` | Minimum number of target Incidents a precursor must precede (default 3). |
+| `min_lift` | number | no | `2.0` | Minimum lift, rate over the probe baseline (default 2). |
+| `limit` | integer | no | `20` | How many passing precursors to list (default 20, at most 50). |
+| `time_from` | string or null | no | `null` | Start of the time range, inclusive, in UTC for every Dataset: ISO-8601 such as '2005-07-01' or '2005-07-01T12:00:00', or with an offset, which is converted to UTC (a logged BGL ts is US Pacific time: '2005-07-01T05:00:00-07:00'); or a relative range such as 'last 7d' or 'last 24h', which ends at the Dataset's last Log Entry, not today. Omit it to start at the first Log Entry. |
+| `time_to` | string or null | no | `null` | End of the time range, exclusive, in UTC like time_from (ISO-8601, an offset is converted). Omit it to end after the last Log Entry, and always omit it with a relative time_from. |
+| `sources` | list of string or null | no | `null` | Only these sources: BGL node names such as 'R30-M0-N9-C:J16-U01', or OpenStack instance UUIDs. |
+
+### Limits
+
+- `target_pattern`: at least 1 characters, at most 64 characters
+- `window_s`: 2 to 3600
+- `min_support`: at least 1
+- `min_lift`: 1.0 to 1000000.0
+- `limit`: 1 to 50
+- `sources`: at most 100 items
 
 ### Output
 
@@ -323,6 +391,88 @@ total_matches counts groups, buckets or instances.
 
 `structuredContent` is the [Evidence](#output-evidence) object; the description says what its rows and summary hold for this tool.
 
+## `list_incidents`
+
+**Incidents with Spread and Shape, next to the Log Entry counts**
+
+Annotations: read-only, idempotent, closed world, `anthropic/alwaysLoad` (Claude Code loads it without ToolSearch).
+
+Description, as the agent reads it:
+
+```text
+Incidents: Log Entries of one Pattern chained in time, with Spread and Shape, next to
+the Log Entry counts.
+
+Purpose: tell one source shouting thousands of lines from a problem that recurs or spreads.
+An Incident is a maximal chain of Log Entries of one Pattern where each follows the previous
+one within gap_s seconds (default 300; counts are stable across the band 60 to 600 s),
+merged across sources. Quote entries_total and incidents_total together: they are different
+units. For BGL each Incident has Spread (nodes, nodecards, midplanes, racks, top_node and
+top_node_share) and a Shape (single-node storm, single-node isolated, one midplane,
+multi-midplane, machine-wide). OpenStack Incidents are Request Failures (ERROR or CRITICAL
+lines and HTTP 5xx responses, plus instances whose lifecycle never completes), with sources
+(instances, or hosts for lines that name no instance) as Spread and no Shape.
+similar_to: with pattern_key, the incident_id of a reference Incident: the rows are then
+the earlier Incidents most like it (exact Jaccard similarity of the Pattern sets seen on
+their sources while they lasted, then same Component, then Spread; never a BM25 sort), with
+jaccard, shared_patterns, signature_patterns and same_component columns.
+pattern_key: a BGL alert category (the alert_category value of count_by and search_logs,
+for example 'KERNDTLB'), or a template_id from list_patterns (choose Patterns there, then
+pass one here), or 'lifecycle-incomplete' for OpenStack.
+The default call (gap_s=300, merge_scope='all', no filter but pattern_key) reads the
+precomputed table; any other call chains the filtered Log Entries at query time, and other
+gap_s or merge_scope values need a narrowing filter (pattern_key, alert_categories,
+pattern_ids, components, levels, sources, query or a time range).
+Inputs: role, dataset, and optional pattern_key, gap_s, merge_scope, sort (entries, spread,
+time, recent, duration), limit (default 20, at most 100), query, time_from, time_to,
+components, levels, sources, alert_categories, pattern_ids, family_id and similar_to.
+Outputs: the Evidence envelope. rows: one per Incident with pattern_key, incident_id, t0, t1,
+duration_s, entries, bursts and the Spread columns. summary: entries_total, incidents_total,
+the Spread totals (BGL nodes_total, nodecards_total, midplanes_total, racks_total and
+incidents_by_shape; OpenStack sources_total, instances_total, hosts_total) and computed
+(precomputed table or chained at query time); with similar_to, the reference Incident, its
+reference_patterns, candidates_total and scored_total. total_matches counts Incidents.
+```
+
+### Inputs
+
+| Name | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `role` | one of `engineer`, `team_lead`, `manager` | yes |  | Who is asking: 'engineer' investigates one failure and needs example Log Entries and nearby events; 'team_lead' needs recurring problems with counts and trends per Component and Team, and receives at most 3 sample Log Entries from a search; 'manager' needs measured frequency and affected Components only, and receives no raw Log Entries (totals and facets, no rows). Every result carries the answer_frame for this Role; get_role_brief(role) has the full playbook. |
+| `dataset` | one of `bgl`, `openstack` | yes |  | 'bgl' or 'openstack': one Dataset per call. |
+| `pattern_key` | string or null | no | `null` | Only the Incidents of this Pattern: a BGL alert category such as 'KERNDTLB' (the alert_category of count_by and search_logs), a 16-hex template_id from list_patterns (either Dataset), or 'lifecycle-incomplete' (OpenStack instances whose lifecycle never completes). Omit it for every Pattern. |
+| `gap_s` | integer | no | `300` | Seconds within which the next Log Entry continues an Incident (default 300). Counts are stable from 60 to 600 s; a value other than 300 needs a narrowing filter. |
+| `merge_scope` | one of `all`, `source` | no | `"all"` | 'all' (default) chains across every source; 'source' chains per BGL node or OpenStack source, so each Incident is one Burst. 'source' needs a narrowing filter. |
+| `sort` | one of `entries`, `spread`, `time`, `recent`, `duration` | no | `"entries"` | 'entries' (most Log Entries first, default), 'spread' (most midplanes, then nodes), 'time' (oldest first), 'recent' (newest first) or 'duration' (longest first). |
+| `limit` | integer | no | `20` | How many Incidents to list (default 20, at most 100). |
+| `query` | string or null | no | `null` | Optional full-text filter on the message: every word must appear, in any order; put a phrase in double quotes, for example '"data TLB error"'. Omit it to count every Log Entry in the Data Scope. |
+| `time_from` | string or null | no | `null` | Start of the time range, inclusive, in UTC for every Dataset: ISO-8601 such as '2005-07-01' or '2005-07-01T12:00:00', or with an offset, which is converted to UTC (a logged BGL ts is US Pacific time: '2005-07-01T05:00:00-07:00'); or a relative range such as 'last 7d' or 'last 24h', which ends at the Dataset's last Log Entry, not today. Omit it to start at the first Log Entry. |
+| `time_to` | string or null | no | `null` | End of the time range, exclusive, in UTC like time_from (ISO-8601, an offset is converted). Omit it to end after the last Log Entry, and always omit it with a relative time_from. |
+| `components` | list of string or null | no | `null` | Only these Components, for example ['KERNEL'] or ['nova.compute.manager']. |
+| `levels` | list of string or null | no | `null` | Only these levels, for example ['FATAL', 'ERROR']. |
+| `sources` | list of string or null | no | `null` | Only these sources: BGL node names such as 'R30-M0-N9-C:J16-U01', or OpenStack instance UUIDs. |
+| `alert_categories` | list of string or null | no | `null` | BGL only: only these alert categories, for example ['KERNDTLB', 'KERNMNTF']. Restricts the Data Scope to BGL. |
+| `pattern_ids` | list of string or null | no | `null` | Only these Patterns: 16-hex template_id values, as list_patterns or count_by(group_by='pattern') return them. |
+| `family_id` | string or null | no | `null` | Only this Pattern Family (family_id): Patterns whose wording differs only by a known drift, counted together. |
+| `similar_to` | integer or null | no | `null` | The incident_id of one Incident of pattern_key (both from a list_incidents row): list the earlier Incidents most like it, ranked by the Jaccard similarity of the Pattern sets seen on their sources while they lasted, then same Component, then Spread. Needs pattern_key and no other filter; sort is then ignored. |
+
+### Limits
+
+- `pattern_key`: at most 64 characters
+- `gap_s`: 1 to 86400
+- `limit`: 1 to 100
+- `query`: at most 500 characters
+- `components`: at most 50 items
+- `levels`: at most 20 items
+- `sources`: at most 100 items
+- `alert_categories`: at most 50 items
+- `pattern_ids`: at most 100 items
+- `similar_to`: at least 1
+
+### Output
+
+`structuredContent` is the [Evidence](#output-evidence) object; the description says what its rows and summary hold for this tool.
+
 ## `search_logs`
 
 **Search Log Entries by text or Pattern**
@@ -338,13 +488,16 @@ It does not answer "how often": total_matches is the exact number of matching Lo
 the rows are only a sample, so use count_by or trend for frequency and change over time, and
 get_context(entry_id) for what happened just before and after one entry.
 Inputs: role, dataset, and query (mode all_words, phrase, any_words or fuzzy) or a Pattern
-filter (pattern_ids, family_id, alert_categories), plus optional time_from, time_to,
-components, levels, sources, sort (time, newest, relevance) and limit (default 20, at most 50).
-Outputs: the Evidence envelope, whose rows hold entry_id, ts, the node (BGL) or request_id and
-instance_ref (OpenStack), component, level, alert_tag (BGL), template_id, message (at most 240
-characters, matched words marked **like this**) and, with sort='relevance', score; summary
-holds entries_total and facets over every match: distinct_sources, distinct_racks,
-first_seen, last_seen, top_components and top_levels.
+filter (pattern_ids, family_id, alert_categories), plus optional time_from and time_to (UTC
+for every Dataset, as in count_by and trend: BGL's ts is US Pacific local time, so its time
+range runs on epoch_utc, see data_scope.time_columns), components, levels, sources, sort
+(time, newest, relevance) and limit (default 20, at most 50).
+Outputs: the Evidence envelope, whose rows hold entry_id, ts (as logged), the node (BGL) or
+request_id and instance_ref (OpenStack), component, level, alert_tag (BGL), template_id,
+message (at most 240 characters, matched words marked **like this**) and, with
+sort='relevance', score; summary holds entries_total and facets over every match:
+distinct_sources, distinct_racks, first_seen and last_seen (UTC), top_components and
+top_levels.
 No match returns a hint in notes, not an error.
 ```
 
@@ -358,8 +511,8 @@ No match returns a hint in notes, not an error.
 | `mode` | one of `all_words`, `phrase`, `any_words`, `fuzzy` | no | `"all_words"` | How query matches: all_words (default, web-search syntax), phrase (the words next to each other, in order), any_words (at least one of the words) or fuzzy (every word, each allowing one typo; words of up to 3 characters must match exactly; at most 8 words). |
 | `pattern_ids` | list of string or null | no | `null` | Only these Patterns: 16-hex template_id values, as list_patterns or count_by(group_by='pattern') return them. |
 | `family_id` | string or null | no | `null` | Only this Pattern Family (family_id): Patterns whose wording differs only by a known drift, counted together. |
-| `time_from` | string or null | no | `null` | Start of the time range, inclusive: ISO-8601 without a time zone, for example '2005-07-01' or '2005-07-01T12:00:00', or a relative range such as 'last 7d' or 'last 24h', which ends at the Dataset's last Log Entry, not today. Omit it to start at the first Log Entry. |
-| `time_to` | string or null | no | `null` | End of the time range, exclusive, ISO-8601 without a time zone. Omit it to end after the last Log Entry, and always omit it with a relative time_from. |
+| `time_from` | string or null | no | `null` | Start of the time range, inclusive, in UTC for every Dataset: ISO-8601 such as '2005-07-01' or '2005-07-01T12:00:00', or with an offset, which is converted to UTC (a logged BGL ts is US Pacific time: '2005-07-01T05:00:00-07:00'); or a relative range such as 'last 7d' or 'last 24h', which ends at the Dataset's last Log Entry, not today. Omit it to start at the first Log Entry. |
+| `time_to` | string or null | no | `null` | End of the time range, exclusive, in UTC like time_from (ISO-8601, an offset is converted). Omit it to end after the last Log Entry, and always omit it with a relative time_from. |
 | `components` | list of string or null | no | `null` | Only these Components, for example ['KERNEL'] or ['nova.compute.manager']. |
 | `levels` | list of string or null | no | `null` | Only these levels, for example ['FATAL', 'ERROR']. |
 | `sources` | list of string or null | no | `null` | Only these sources: BGL node names such as 'R30-M0-N9-C:J16-U01', or OpenStack instance UUIDs. |
@@ -393,7 +546,9 @@ Description, as the agent reads it:
 Zero-filled counts of matching Log Entries per time bucket, optionally one series per group.
 
 Purpose: show whether a problem is rising, steady, a one-off burst or gone, over a stated
-period of one Dataset. Counts are Log Entries, not Incidents.
+period of one Dataset. Counts are Log Entries, not Incidents. Buckets and time inputs are UTC
+for every Dataset: BGL's ts is US Pacific local time, so its buckets are computed on
+epoch_utc (data_scope.time_columns) and the hour its clocks went back is two buckets.
 Quote exact numbers, never round, and quote each series' count, peak and baseline instead
 of adding buckets yourself. Use count_by for totals per group and search_logs for example
 Log Entries. With
@@ -403,8 +558,8 @@ Pattern Families are assigned in the database, no such note appears.
 Inputs: role, dataset, bucket, and optional group_by, query (all words; "quoted phrase"),
 time_from, time_to, components, levels, sources, alert_categories, pattern_ids, family_id
 and top. More than 400 buckets is an error that names a bucket that fits.
-Outputs: the Evidence envelope. rows: one per bucket, columns bucket and one column per
-series ('(all)' without group_by). summary: bucket, buckets, total, groups_total,
+Outputs: the Evidence envelope. rows: one per bucket, columns bucket (its UTC start) and
+one column per series ('(all)' without group_by). summary: bucket, buckets, total, groups_total,
 series_total, other_count, and per series its count, share_pct, peak_bucket, peak_count,
 prev_period, median_week, expected, baseline_basis, baseline_flag and any handoff. notes:
 the baseline
@@ -420,8 +575,8 @@ method. total_matches counts buckets, not Log Entries.
 | `bucket` | one of `minute`, `hour`, `day`, `week` | no | `"day"` | Bucket width: minute, hour, day or week (Monday-start weeks); at most 400 buckets. |
 | `group_by` | one of `component`, `team`, `level`, `node`, `rack`, `midplane`, `alert_category`, `pattern` or null | no | `null` | Optional dimension for one series per group: component, team, level, node, rack, midplane, alert_category (these four BGL only) or pattern. Omit it for one series. |
 | `query` | string or null | no | `null` | Optional full-text filter on the message: every word must appear, in any order; put a phrase in double quotes, for example '"data TLB error"'. Omit it to count every Log Entry in the Data Scope. |
-| `time_from` | string or null | no | `null` | Start of the time range, inclusive: ISO-8601 without a time zone, for example '2005-07-01' or '2005-07-01T12:00:00', or a relative range such as 'last 7d' or 'last 24h', which ends at the Dataset's last Log Entry, not today. Omit it to start at the first Log Entry. |
-| `time_to` | string or null | no | `null` | End of the time range, exclusive, ISO-8601 without a time zone. Omit it to end after the last Log Entry, and always omit it with a relative time_from. |
+| `time_from` | string or null | no | `null` | Start of the time range, inclusive, in UTC for every Dataset: ISO-8601 such as '2005-07-01' or '2005-07-01T12:00:00', or with an offset, which is converted to UTC (a logged BGL ts is US Pacific time: '2005-07-01T05:00:00-07:00'); or a relative range such as 'last 7d' or 'last 24h', which ends at the Dataset's last Log Entry, not today. Omit it to start at the first Log Entry. |
+| `time_to` | string or null | no | `null` | End of the time range, exclusive, in UTC like time_from (ISO-8601, an offset is converted). Omit it to end after the last Log Entry, and always omit it with a relative time_from. |
 | `components` | list of string or null | no | `null` | Only these Components, for example ['KERNEL'] or ['nova.compute.manager']. |
 | `levels` | list of string or null | no | `null` | Only these levels, for example ['FATAL', 'ERROR']. |
 | `sources` | list of string or null | no | `null` | Only these sources: BGL node names such as 'R30-M0-N9-C:J16-U01', or OpenStack instance UUIDs. |
@@ -446,7 +601,7 @@ method. total_matches counts buckets, not Log Entries.
 
 ## Output: Evidence
 
-Returned by `count_by`, `describe_corpus`, `get_context`, `get_evidence`, `latency_stats`, `search_logs`, `trend`.
+Returned by `count_by`, `describe_corpus`, `find_precursors`, `get_context`, `get_evidence`, `latency_stats`, `list_incidents`, `search_logs`, `trend`.
 
 The result of one executed tool call: its query, parameters, Data Scope, counts and rows. Cite it as `[E<n>]` next to every number taken from it. `total_matches` and `truncated` say whether the rows are the whole answer or a sample; a sample is never a frequency.
 
@@ -464,6 +619,8 @@ The result of one executed tool call: its query, parameters, Data Scope, counts 
 | `data_scope.time_to` | string or null | no | End of the covered time range, exclusive, as ISO-8601; null means the Dataset's last Log Entry. |
 | `data_scope.time_input` | string or null | no | The time range as the caller asked for it, for example 'last 7d', before it was resolved; null when the caller gave absolute timestamps. |
 | `data_scope.resolved_against` | string or null | no | What a relative time_input was resolved against, for example 'bgl corpus end 2006-01-04T00:00:00'. Relative times resolve against the corpus end date, not today. |
+| `data_scope.time_zone` | string or null | no | The clock of time_from, time_to, resolved_against and every time the tool computed (buckets, first and last seen, baseline periods), for example 'UTC'; null when the tool reports each Dataset's ts as logged (BGL's ts is US Pacific local time). |
+| `data_scope.time_columns` | object or null | no | Per Dataset, the column the time range, buckets and baselines were computed on, for example {'bgl': 'epoch_utc', 'openstack': 'ts'}: BGL's ts is local time, so its time arithmetic runs on epoch_utc, while OpenStack's ts is UTC. null when the tool did no time arithmetic of its own. |
 | `data_scope.filters` | object | no | The filters the calculation applied, including the shared pattern_ids and family_id. |
 | `data_scope.filters.pattern_ids` | list of string or null | no | Pattern ids the calculation was restricted to (16-hex template ids from list_patterns); null when no Pattern filter was applied. |
 | `data_scope.filters.family_id` | string or null | no | Pattern family the calculation was restricted to; null when no family filter was applied. |

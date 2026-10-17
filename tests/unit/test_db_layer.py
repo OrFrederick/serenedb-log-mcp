@@ -8,6 +8,8 @@ connection usable after a ROLLBACK. The real server is covered by tests/db/test_
 
 from __future__ import annotations
 
+import contextvars
+import logging
 import threading
 import time
 from collections.abc import Callable, Sequence
@@ -21,6 +23,7 @@ from serenedb_log_mcp import db
 from serenedb_log_mcp.config import Role, load_settings, set_settings
 from serenedb_log_mcp.db import (
     Database,
+    DatabaseBusy,
     DatabaseMisconfigured,
     DatabaseRestarted,
     DatabaseUnavailable,
@@ -29,6 +32,12 @@ from serenedb_log_mcp.db import (
 )
 from serenedb_log_mcp.toolkit import ToolContractError
 
+NEW_SERVER = "PostgreSQL 18.3 (SereneDB 26.10.1)"
+OLD_SERVER = "PostgreSQL 18.1 (SereneDB 26.09.1.3)"
+OLD_SERVER_NOTE = (
+    "Parameters were bound client-side (psycopg ClientCursor), because SereneDB 26.09.1.3 is older "
+    "than 26.10."
+)
 COUNT_SQL = "SELECT count(*) FROM t WHERE a = %s"
 ROWS_SQL = "SELECT a, b FROM t WHERE a = %s ORDER BY b LIMIT %s"
 CONTROL = {"BEGIN READ ONLY", "ROLLBACK", "SELECT 1"}
@@ -68,6 +77,14 @@ class FakeServer:
         self.binding: list[bool] = []
         self.cancel_failures_left = 0
         self.interrupt_select_1 = False
+        self.notices: list[tuple[str, str]] = []  # (severity, message) sent by `SELECT warns()`
+        self.release_hung = threading.Event()  # ends `SELECT hung()`, which ignores every cancel
+        self.hang_begin = False  # BEGIN READ ONLY waits for release_hung too
+        self.cancel_error: BaseException | None = None  # what every cancel request raises
+        self.version = NEW_SERVER  # what `SELECT version()` returns
+        self.version_error: psycopg.Error | None = None  # what `SELECT version()` raises instead
+        self.version_crashes_left = 0  # `SELECT version()` crashes the connection this often
+        self.version_delay_s = 0.0
 
     def connect(self, dsn: str, *, client_binding: bool) -> FakeConnection:
         self.binding.append(client_binding)
@@ -82,6 +99,16 @@ class FakeServer:
         return [sql for conn in self.connections for sql, _ in conn.executed]
 
 
+class FakeDiagnostic:
+    """The fields of psycopg's `errors.Diagnostic` that a notice handler reads."""
+
+    def __init__(self, severity: str, message: str) -> None:
+        self.severity = severity
+        self.severity_nonlocalized = severity
+        self.sqlstate = "01000"
+        self.message_primary = message
+
+
 class FakeConnection:
     def __init__(self, server: FakeServer) -> None:
         self.server = server
@@ -90,11 +117,32 @@ class FakeConnection:
         self.broken = False
         self.cancelled = threading.Event()
         self.cancels_while_open = 0
+        self.cancel_timeouts: list[float] = []
+        self.notice_handlers: list[Callable[[Any], None]] = []
+        self.executing = 0
+        self.closed_while_executing = False
+
+    def add_notice_handler(self, callback: Callable[[Any], None]) -> None:
+        self.notice_handlers.append(callback)
+
+    def remove_notice_handler(self, callback: Callable[[Any], None]) -> None:
+        self.notice_handlers.remove(callback)
 
     def execute(self, query: str, params: Sequence[Any] | None = None) -> FakeCursor:
+        self.executing += 1
+        try:
+            return self._execute(query, params)
+        finally:
+            self.executing -= 1
+
+    def _execute(self, query: str, params: Sequence[Any] | None) -> FakeCursor:
         if self.closed or self.broken:
             raise psycopg.OperationalError("the connection is lost")
         self.executed.append((query, params))
+        if query == "BEGIN READ ONLY" and self.server.hang_begin:
+            self.server.release_hung.wait(10)
+        if query == "SELECT version()":
+            return self._version()
         if query == "SELECT 1" and self.server.interrupt_select_1:
             raise KeyboardInterrupt
         if query in CONTROL:
@@ -109,6 +157,14 @@ class FakeConnection:
             if self.cancelled.wait(5):
                 self.cancelled.clear()
                 raise psycopg.errors.QueryCanceled("canceling statement due to user request")
+            return FakeCursor([(1,)])
+        if query == "SELECT warns()":
+            for severity, message in self.server.notices:
+                for handler in list(self.notice_handlers):
+                    handler(FakeDiagnostic(severity, message))
+            return FakeCursor([(1,)])
+        if query == "SELECT hung()":
+            self.server.release_hung.wait(10)  # ignores cancels until the test releases it
             return FakeCursor([(1,)])
         if query == "SELECT stubborn()":
             time.sleep(0.2)  # finishes although the timer fired: the cancel arrived too late
@@ -125,7 +181,20 @@ class FakeConnection:
             raise psycopg.ProgrammingError("only '%s', '%b', '%t' are allowed as placeholders, got \"%'\"")
         return FakeCursor(self.server.respond(query, params))
 
-    def cancel_safe(self) -> None:
+    def _version(self) -> FakeCursor:
+        time.sleep(self.server.version_delay_s)
+        if self.server.version_crashes_left:
+            self.server.version_crashes_left -= 1
+            self.broken = True
+            raise psycopg.OperationalError("server closed the connection unexpectedly")
+        if self.server.version_error is not None:
+            raise self.server.version_error
+        return FakeCursor([(self.server.version,)])
+
+    def cancel_safe(self, *, timeout: float = 30.0) -> None:
+        self.cancel_timeouts.append(timeout)
+        if self.server.cancel_error is not None:
+            raise self.server.cancel_error
         if self.closed:
             return  # psycopg's cancel_safe does nothing on a closed connection
         if self.server.cancel_failures_left:
@@ -135,6 +204,9 @@ class FakeConnection:
         self.cancelled.set()
 
     def close(self) -> None:
+        # Closing a psycopg connection from another thread while a statement runs on it frees the
+        # libpq connection under that statement, so the layer must never do it.
+        self.closed_while_executing = self.closed_while_executing or self.executing > 0
         self.closed = True
 
 
@@ -170,7 +242,7 @@ def test_fetch_limited_runs_count_then_rows_in_one_read_only_transaction() -> No
 
     result = database(server).fetch_limited(COUNT_SQL, ROWS_SQL, [1], 2)
 
-    assert server.executed() == ["BEGIN READ ONLY", COUNT_SQL, ROWS_SQL, "ROLLBACK"]
+    assert server.executed() == ["SELECT version()", "BEGIN READ ONLY", COUNT_SQL, ROWS_SQL, "ROLLBACK"]
     assert result.total == 57
     assert result.rows == [(1, "a"), (1, "b")]
     assert result.truncated is True
@@ -185,7 +257,7 @@ def test_fetch_limited_skips_the_row_query_when_nothing_matches() -> None:
 
     result = database(server).fetch_limited(COUNT_SQL, ROWS_SQL, [1], 20)
 
-    assert server.executed() == ["BEGIN READ ONLY", COUNT_SQL, "ROLLBACK"]
+    assert server.executed() == ["SELECT version()", "BEGIN READ ONLY", COUNT_SQL, "ROLLBACK"]
     assert result.total == 0
     assert result.rows == []
     assert result.truncated is False
@@ -266,12 +338,225 @@ def test_connections_are_reused_between_calls() -> None:
     assert len(server.connections) == 1
 
 
+def test_the_pool_keeps_at_most_max_idle_connections() -> None:
+    layer: Database
+
+    def respond(sql: str, params: Sequence[Any] | None) -> list[tuple[Any, ...]]:
+        if sql == "SELECT outer()":
+            layer.fetch_all("SELECT a FROM t")  # a second call while the first holds its connection
+        return [(1,)]
+
+    server = FakeServer(respond)
+    layer = database(server, max_idle_connections=1)
+
+    layer.fetch_all("SELECT outer()")
+
+    inner, outer = server.connections[1], server.connections[0]
+    assert not inner.closed  # pooled first
+    assert outer.closed  # the pool was full when the outer call ended
+    layer.fetch_all("SELECT a FROM t")
+    assert len(server.connections) == 2
+
+
+def test_no_connection_is_pooled_when_max_idle_connections_is_zero() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    layer = database(server, max_idle_connections=0)
+
+    layer.fetch_all("SELECT a FROM t")
+    layer.fetch_all("SELECT a FROM t")
+
+    assert len(server.connections) == 2
+    assert all(conn.closed for conn in server.connections)
+
+
 def test_binding_mode_reaches_the_connector() -> None:
     server = FakeServer(table_responder(3, ROWS))
 
     database(server, client_binding=True).fetch_all("SELECT a FROM t")
 
     assert server.binding == [True]
+
+
+# Binding mode by server version (#60) -------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("version", "release"),
+    [
+        (NEW_SERVER, (26, 10, 1)),
+        (OLD_SERVER, (26, 9, 1, 3)),
+        ("PostgreSQL 18.3 (SereneDB v27.1)", (27, 1)),
+        ("serenedb 26.10.1-rc1 on aarch64", (26, 10, 1)),
+        ("PostgreSQL 16.2 on x86_64-pc-linux-gnu", None),
+        ("SereneDB", None),
+        ("", None),
+    ],
+)
+def test_the_serenedb_release_is_read_from_version(version: str, release: tuple[int, ...] | None) -> None:
+    assert db.serenedb_version(version) == release
+
+
+@pytest.mark.parametrize(
+    ("version", "client_side"),
+    [
+        (OLD_SERVER, True),
+        ("PostgreSQL 18.1 (SereneDB 26.9)", True),
+        ("PostgreSQL 18.1 (SereneDB 25.12.4)", True),
+        ("PostgreSQL 18.3 (SereneDB 26.10)", False),
+        ("PostgreSQL 18.3 (SereneDB 26.10.0)", False),
+        (NEW_SERVER, False),
+        ("PostgreSQL 18.3 (SereneDB 27.0.0)", False),
+    ],
+)
+def test_servers_older_than_26_10_get_client_side_binding(version: str, client_side: bool) -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    server.version = version
+    layer = database(server)
+
+    assert layer.uses_client_binding is None  # nothing chosen before the first connection
+    layer.fetch_all("SELECT a FROM t")
+
+    assert layer.uses_client_binding is client_side
+    assert server.binding[-1] is client_side  # the connection the statements ran on
+
+
+def test_on_26_10_the_connection_that_read_the_version_runs_the_call() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    layer = database(server)
+
+    first = layer.fetch_all("SELECT a FROM t")
+    second = layer.fetch_all("SELECT a FROM t")
+
+    assert server.binding == [False]
+    assert server.executed() == [
+        "SELECT version()",
+        *("BEGIN READ ONLY", "SELECT a FROM t", "ROLLBACK") * 2,
+    ]
+    assert first.notes == second.notes == []
+
+
+def test_on_26_09_a_client_side_connection_replaces_the_one_that_read_the_version() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    server.version = OLD_SERVER
+
+    result = database(server).fetch_all("SELECT a FROM t")
+
+    probe, conn = server.connections
+    assert server.binding == [False, True]
+    assert probe.executed == [("SELECT version()", None)]
+    assert probe.closed
+    assert [sql for sql, _ in conn.executed] == ["BEGIN READ ONLY", "SELECT a FROM t", "ROLLBACK"]
+    assert result.rows == ROWS
+    assert result.notes == [OLD_SERVER_NOTE]
+
+
+def test_the_version_is_read_once_per_layer() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    server.version = OLD_SERVER
+    layer = database(server, max_idle_connections=0)  # every call opens a new connection
+
+    results = [layer.fetch_all("SELECT a FROM t") for _ in range(3)]
+
+    assert server.executed().count("SELECT version()") == 1
+    assert server.binding == [False, True, True, True]
+    assert all(result.notes == [OLD_SERVER_NOTE] for result in results)
+
+
+def test_concurrent_first_calls_read_the_version_once() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    server.version = OLD_SERVER
+    server.version_delay_s = 0.05  # the other callers arrive while the first one reads it
+    layer = database(server)
+    results: list[db.QueryResult] = []
+
+    threads = [
+        threading.Thread(target=lambda: results.append(layer.fetch_all("SELECT a FROM t"))) for _ in range(4)
+    ]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(5)
+
+    assert len(results) == 4
+    assert server.executed().count("SELECT version()") == 1
+    assert server.binding[0] is False  # the connection that read the version, then closed
+    assert server.binding[1:] == [True] * (len(server.binding) - 1)
+    assert all(result.notes == [OLD_SERVER_NOTE] for result in results)
+
+
+@pytest.mark.parametrize("client_binding", [False, True])
+def test_an_explicit_slm_client_binding_wins_over_the_server_version(client_binding: bool) -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    server.version = OLD_SERVER if not client_binding else NEW_SERVER
+
+    result = database(server, client_binding=client_binding).fetch_all("SELECT a FROM t")
+
+    assert "SELECT version()" not in server.executed()
+    assert server.binding == [client_binding]
+    explicit = "Parameters were bound client-side (psycopg ClientCursor), as SLM_CLIENT_BINDING=1 asks."
+    assert result.notes == ([explicit] if client_binding else [])
+
+
+@pytest.mark.parametrize(
+    "answer",
+    [
+        "PostgreSQL 16.2 on x86_64-pc-linux-gnu",
+        psycopg.errors.UndefinedFunction("function version() does not exist"),
+    ],
+    ids=["not-serenedb", "version-fails"],
+)
+def test_an_unknown_version_keeps_server_side_binding_and_is_logged_once(
+    answer: str | psycopg.Error, caplog: pytest.LogCaptureFixture
+) -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    if isinstance(answer, str):
+        server.version = answer
+    else:
+        server.version_error = answer
+    layer = database(server, max_idle_connections=0)
+
+    with caplog.at_level(logging.WARNING, logger="serenedb_log_mcp.db"):
+        results = [layer.fetch_all("SELECT a FROM t") for _ in range(2)]
+
+    assert layer.uses_client_binding is False
+    assert server.binding == [False, False]
+    assert all(result.rows == ROWS and result.notes == [] for result in results)
+    warnings = [record.getMessage() for record in caplog.records if record.name == "serenedb_log_mcp.db"]
+    assert len(warnings) == 1
+    assert "could not read the SereneDB release at host=fake" in warnings[0]
+    assert "SLM_CLIENT_BINDING=1" in warnings[0]
+
+
+def test_a_crash_while_reading_the_version_is_retried_like_any_lost_connection() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    server.version = OLD_SERVER
+    server.version_crashes_left = 1
+    layer = database(server)
+
+    result = layer.fetch_all("SELECT a FROM t")
+
+    assert result.rows == ROWS
+    assert server.executed().count("SELECT version()") == 2  # the crashed read, then the new one
+    assert server.binding == [False, False, True]
+    assert layer.uses_client_binding is True
+    assert result.notes[0].startswith("SereneDB closed the connection during this call")
+    assert result.notes[-1] == OLD_SERVER_NOTE
+
+
+def test_the_chosen_binding_survives_a_restart() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    server.version = OLD_SERVER
+    layer = database(server)
+    layer.fetch_all("SELECT a FROM t")
+
+    server.crashes_left = 1
+    result = layer.fetch_all("SELECT a FROM t")
+
+    assert server.executed().count("SELECT version()") == 1
+    assert server.binding == [False, True, True]  # the reconnect after the restart binds client-side
+    assert len(result.notes) == 2
+    assert result.notes[0].startswith("SereneDB closed the connection during this call")
+    assert result.notes[1] == OLD_SERVER_NOTE
 
 
 # Lost connections ---------------------------------------------------------------------------------
@@ -552,6 +837,241 @@ def test_a_time_limit_that_could_not_be_enforced_is_noted(monkeypatch: pytest.Mo
     assert "cancellation timeout expired" in result.notes[0]
 
 
+def test_a_cancel_request_waits_at_most_cancel_timeout_s() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+
+    with pytest.raises(QueryTimeout):
+        database(server, timeout_s=0.02).fetch_all("SELECT slow()")
+
+    assert server.connections[0].cancel_timeouts == [db.CANCEL_TIMEOUT_S]
+
+
+def wait_until(condition: Callable[[], bool], seconds: float = 5.0) -> bool:
+    deadline = time.monotonic() + seconds
+    while not condition():
+        if time.monotonic() > deadline:
+            return False
+        time.sleep(0.01)
+    return True
+
+
+def test_a_statement_that_cannot_be_cancelled_is_abandoned_after_the_grace_period(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(db, "CANCEL_RETRY_S", 0.01)
+    server = FakeServer(table_responder(3, ROWS))
+    server.cancel_failures_left = 99
+    layer = database(server, timeout_s=0.05, cancel_grace_s=0.1)
+
+    started = time.monotonic()
+    with pytest.raises(QueryTimeout) as caught:
+        layer.fetch_all("SELECT hung()")
+    elapsed = time.monotonic() - started
+
+    message = str(caught.value)
+    assert elapsed < 2
+    assert "0.05 s limit" in message
+    assert "the cancel request failed (cancellation timeout expired.)" in message
+    assert "may still be running on SereneDB" in message
+    assert "Narrow the Data Scope" in message
+    hung = server.connections[0]
+    assert hung.executing == 1  # the statement still runs, on a connection nobody closed under it
+    assert not hung.closed
+    # The layer answers the next call on a new connection meanwhile.
+    assert layer.fetch_all("SELECT a FROM t").total == 3
+    assert len(server.connections) == 2
+
+    server.release_hung.set()
+
+    # The thread that ran the statement closes its connection once the statement returns.
+    assert wait_until(lambda: hung.closed)
+    assert not hung.closed_while_executing
+    layer.fetch_all("SELECT a FROM t")
+    assert len(server.connections) == 2  # the abandoned connection never reached the pool
+
+
+def test_a_statement_that_ignores_a_sent_cancel_is_abandoned_after_the_grace_period() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    layer = database(server, timeout_s=0.05, cancel_grace_s=0.1)
+
+    try:
+        with pytest.raises(QueryTimeout) as caught:
+            layer.fetch_all("SELECT hung()")
+    finally:
+        server.release_hung.set()
+
+    assert "SereneDB did not act on the cancel request" in str(caught.value)
+    assert server.connections[0].cancels_while_open == 1
+    assert wait_until(lambda: server.connections[0].closed)
+    assert not server.connections[0].closed_while_executing
+
+
+def test_the_layer_counts_the_abandoned_statements_that_still_run() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    layer = database(server, timeout_s=0.05, cancel_grace_s=0.1)
+
+    try:
+        assert layer.abandoned_statements == 0
+        with pytest.raises(QueryTimeout):
+            layer.fetch_all("SELECT hung()")
+        assert layer.abandoned_statements == 1
+        layer.fetch_all("SELECT a FROM t")  # a call that ends in time is not counted
+        assert layer.abandoned_statements == 1
+    finally:
+        server.release_hung.set()
+
+    assert wait_until(lambda: layer.abandoned_statements == 0)
+
+
+def test_a_call_is_refused_while_too_many_abandoned_statements_still_run() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    layer = database(server, timeout_s=0.05, cancel_grace_s=0.1, max_abandoned_statements=2)
+
+    try:
+        for _ in range(2):
+            with pytest.raises(QueryTimeout):
+                layer.fetch_all("SELECT hung()")
+        opened = len(server.connections)
+
+        with pytest.raises(DatabaseBusy) as caught:
+            layer.fetch_all("SELECT a FROM t")
+
+        assert isinstance(caught.value, ToolError)
+        message = str(caught.value)
+        assert "2 statements" in message
+        assert "still running on SereneDB" in message
+        assert "Narrow the Data Scope" in message
+        assert "call the tool again" in message
+        assert len(server.connections) == opened  # refused before it opened or used a connection
+    finally:
+        server.release_hung.set()
+
+    assert wait_until(lambda: layer.abandoned_statements == 0)
+    assert layer.fetch_all("SELECT a FROM t").total == 3
+
+
+def test_the_timeout_says_when_the_next_call_will_be_refused() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    layer = database(server, timeout_s=0.05, cancel_grace_s=0.1, max_abandoned_statements=2)
+
+    try:
+        with pytest.raises(QueryTimeout) as first:
+            layer.fetch_all("SELECT hung()")
+        with pytest.raises(QueryTimeout) as second:
+            layer.fetch_all("SELECT hung()")
+    finally:
+        server.release_hung.set()
+
+    assert "1 of at most 2" in str(first.value)
+    assert "2 of at most 2" in str(second.value)
+
+
+@pytest.mark.parametrize("limit", [0, -1])
+def test_the_cap_on_abandoned_statements_is_at_least_one(limit: int) -> None:
+    with pytest.raises(ValueError, match="max_abandoned_statements"):
+        database(FakeServer(table_responder(3, ROWS)), max_abandoned_statements=limit)
+
+
+def test_the_grace_period_starts_only_when_the_cancel_attempts_are_over(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(db, "CANCEL_RETRY_S", 0.3)  # three attempts take 0.6 s
+    server = FakeServer(table_responder(3, ROWS))
+    server.cancel_failures_left = 99
+    layer = database(server, timeout_s=0.02, cancel_grace_s=0.05)
+
+    started = time.monotonic()
+    try:
+        with pytest.raises(QueryTimeout):
+            layer.fetch_all("SELECT hung()")
+    finally:
+        server.release_hung.set()
+
+    assert time.monotonic() - started >= 0.6
+    assert server.cancel_failures_left == 99 - db.CANCEL_ATTEMPTS
+
+
+@pytest.mark.filterwarnings("error::pytest.PytestUnhandledThreadExceptionWarning")
+def test_a_cancel_that_fails_with_an_os_error_still_ends_the_call_after_the_grace_period(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # psycopg's cancel_safe runs a selectors loop, which raises OSError or ValueError, not psycopg.Error.
+    monkeypatch.setattr(db, "CANCEL_RETRY_S", 0.01)
+    server = FakeServer(table_responder(3, ROWS))
+    server.cancel_error = OSError(9, "Bad file descriptor")
+    layer = database(server, timeout_s=0.05, cancel_grace_s=0.1)
+
+    started = time.monotonic()
+    try:
+        with pytest.raises(QueryTimeout) as caught:
+            layer.fetch_all("SELECT hung()")
+    finally:
+        server.release_hung.set()
+
+    assert time.monotonic() - started < 2
+    assert "the cancel request failed ([Errno 9] Bad file descriptor.)" in str(caught.value)
+    assert len(server.connections[0].cancel_timeouts) == db.CANCEL_ATTEMPTS
+
+
+class TimerKilled(BaseException):
+    """Escapes even `except Exception`, so it ends the timer thread."""
+
+
+@pytest.mark.filterwarnings("ignore::pytest.PytestUnhandledThreadExceptionWarning")
+def test_the_caller_is_woken_even_when_the_timer_thread_dies() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    server.cancel_error = TimerKilled()
+    layer = database(server, timeout_s=0.05, cancel_grace_s=0.1)
+
+    started = time.monotonic()
+    try:
+        with pytest.raises(QueryTimeout):
+            layer.fetch_all("SELECT hung()")
+    finally:
+        server.release_hung.set()
+
+    assert time.monotonic() - started < 2
+
+
+def test_a_begin_that_hangs_ends_the_call_after_the_cancel_window_and_the_grace_period(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(db, "CANCEL_TIMEOUT_S", 0.01)
+    monkeypatch.setattr(db, "CANCEL_RETRY_S", 0.01)
+    server = FakeServer(table_responder(3, ROWS))
+    server.hang_begin = True
+    layer = database(server, timeout_s=0.05, cancel_grace_s=0.1)
+
+    started = time.monotonic()
+    with pytest.raises(QueryTimeout) as caught:
+        layer.fetch_all("SELECT a FROM t")
+    elapsed = time.monotonic() - started
+
+    assert elapsed < 2
+    assert "SereneDB did not answer BEGIN READ ONLY" in str(caught.value)
+    conn = server.connections[0]
+    assert not conn.closed  # BEGIN is still waiting on it
+    server.release_hung.set()
+    # Once BEGIN returns, the abandoned thread runs no statement and closes its connection.
+    assert wait_until(lambda: conn.closed)
+    assert [sql for sql, _ in conn.executed] == ["SELECT version()", "BEGIN READ ONLY"]
+    assert not conn.closed_while_executing
+
+
+def test_the_statements_see_the_context_of_the_call() -> None:
+    request = contextvars.ContextVar("request", default="none")
+    seen: list[str] = []
+
+    def respond(sql: str, params: Sequence[Any] | None) -> list[tuple[Any, ...]]:
+        seen.append(request.get())
+        return [(1,)]
+
+    request.set("call-1")
+    database(FakeServer(respond)).fetch_all("SELECT a FROM t")
+
+    assert seen == ["call-1"]
+
+
 def test_the_probe_connection_is_closed_when_the_wait_is_interrupted() -> None:
     server = FakeServer(table_responder(3, ROWS))
     server.crashes_left = 1
@@ -642,6 +1162,20 @@ def test_a_value_psycopg_cannot_send_is_reported_as_an_input_error() -> None:
     assert "value" in message
 
 
+def test_an_io_error_gets_a_hint_about_the_external_source() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+
+    with pytest.raises(QueryFailed) as caught:
+        database(server).fetch_all("SELECT * FROM read_csv('missing.csv')")
+
+    message = str(caught.value)
+    assert "SereneDB could not read an external source (08000)" in message
+    assert 'No files found that match the pattern "missing.csv"' in message
+    assert "describe_corpus" not in message
+    assert "file or URL" in message
+    assert "read_csv('missing.csv')" in message  # the statement is still named
+
+
 def test_a_statement_psycopg_refuses_is_reported_as_a_template_bug() -> None:
     server = FakeServer(table_responder(3, ROWS))
 
@@ -683,6 +1217,59 @@ def test_a_rejected_statement_raises_query_failed_without_a_retry() -> None:
     assert len(server.connections) == 1
 
 
+# Notices ----------------------------------------------------------------------------------------------
+
+TIMEOUT_WARNING = 'parameter "statement_timeout" is accepted for compatibility but is not enforced by serened'
+
+
+def test_a_server_warning_reaches_the_result_notes() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    server.notices = [("WARNING", TIMEOUT_WARNING)]
+
+    result = database(server).fetch_all("SELECT warns()")
+
+    assert result.rows == [(1,)]
+    assert result.notes == [f"SereneDB sent this WARNING while the statements ran: {TIMEOUT_WARNING}."]
+
+
+def test_notices_and_infos_are_noted_but_debug_and_log_messages_are_not() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    server.notices = [("NOTICE", "a notice"), ("DEBUG", "a debug"), ("INFO", "an info"), ("LOG", "a log")]
+
+    result = database(server).fetch_all("SELECT warns()")
+
+    assert result.notes == [
+        "SereneDB sent this NOTICE while the statements ran: a notice.",
+        "SereneDB sent this INFO while the statements ran: an info.",
+    ]
+
+
+def test_a_repeated_notice_is_noted_once_and_many_notices_are_capped() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    server.notices = [("WARNING", "same")] * 3 + [("WARNING", f"warning {i}") for i in range(7)]
+
+    result = database(server).fetch_all("SELECT warns()")
+
+    assert result.notes == [
+        "SereneDB sent this WARNING while the statements ran: same.",
+        *(f"SereneDB sent this WARNING while the statements ran: warning {i}." for i in range(4)),
+        "SereneDB sent 3 more notices while the statements ran; they are not listed.",
+    ]
+
+
+def test_a_notice_goes_only_to_the_call_that_received_it() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    server.notices = [("WARNING", TIMEOUT_WARNING)]
+    layer = database(server)
+
+    layer.fetch_all("SELECT warns()")
+
+    conn = server.connections[0]
+    assert conn.notice_handlers == []
+    assert layer.fetch_all("SELECT a FROM t").notes == []
+    assert len(server.connections) == 1
+
+
 # Per-Role connections -------------------------------------------------------------------------------
 
 
@@ -701,6 +1288,24 @@ def test_get_database_reads_timeout_and_binding_from_settings() -> None:
 
     assert layer.timeout_s == 2.5
     assert layer.client_binding is True
+
+
+def test_get_database_leaves_the_binding_to_the_server_version_when_unset() -> None:
+    set_settings(load_settings({}))
+
+    layer = db.get_database(Role.ENGINEER)
+
+    assert layer.client_binding is None
+    assert layer.uses_client_binding is None
+
+
+def test_get_database_reads_the_reconnect_wait_and_pool_size_from_settings() -> None:
+    set_settings(load_settings({"SLM_RECONNECT_WAIT_S": "7.5", "SLM_MAX_IDLE_CONNECTIONS": "0"}))
+
+    layer = db.get_database(Role.ENGINEER)
+
+    assert layer.reconnect_wait_s == 7.5
+    assert layer.max_idle_connections == 0
 
 
 def test_get_database_returns_one_layer_per_connection_setting() -> None:

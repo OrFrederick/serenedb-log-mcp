@@ -111,9 +111,11 @@ def ranked(server: MCPServer, method: str, question: Question) -> tuple[list[str
                       text=question.text, top=TOP, mode=mode)  # fmt: skip
     columns = result["columns"]
     ids = [str(row[columns.index("template_id")]) for row in result["rows"]]
-    best = max((row[columns.index("similarity")] for row in result["rows"]), default=None) if (
-        "similarity" in columns
-    ) else None
+    best = (
+        max((row[columns.index("similarity")] for row in result["rows"]), default=None)
+        if ("similarity" in columns)
+        else None
+    )
     return ids, best
 
 
@@ -139,7 +141,8 @@ def table(title: str, scores: dict[str, list[list[float]]], para: dict[str, list
     for method in METHODS:
         means = [statistics.fmean(s[i] for s in scores[method]) for i in range(len(METRICS))]
         lines.append(
-            f"| {method} | " + " | ".join(f"{m:.3f}" for m in means)
+            f"| {method} | "
+            + " | ".join(f"{m:.3f}" for m in means)
             + f" | {statistics.fmean(para[method]) if para[method] else float('nan'):.3f} |"
         )
     return lines

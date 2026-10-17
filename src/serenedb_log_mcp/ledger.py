@@ -21,9 +21,13 @@ kept, because dropping it would let the next append reuse its id. Any other unpa
 still a `LedgerError`: such a file is not an Evidence Ledger this server wrote, or it was damaged
 after it was written.
 
-Records are separated by `"\\n"` alone, and the file is never split with `str.splitlines()`, which
-also breaks at U+2028, U+2029, U+0085 and five ASCII control characters that a Log Entry or a SQL
-string may legitimately contain (see `_lines`).
+Records are separated by line endings alone, and the file is never split with `str.splitlines()`,
+which also breaks at U+2028, U+2029, U+0085 and five ASCII control characters that a Log Entry or a
+SQL string may legitimately contain (see `_split`).
+
+The file is read and split as bytes, and each line is decoded on its own (#54). A tear can land
+inside a multi-byte UTF-8 character, which `ensure_ascii=False` puts in the file, and the offset the
+next append truncates at must count the bytes of every CR and multi-byte character before it.
 
 `fcntl` is POSIX-only, which covers the supported platforms (macOS for development, Linux in CI).
 """
@@ -102,17 +106,18 @@ class Ledger:
                 return
 
             self.path.parent.mkdir(parents=True, exist_ok=True)
-            # Mode "a+" creates the file and appends every write at the end, whatever we read first.
-            with self.path.open("a+", encoding="utf-8") as handle:
+            # Mode "a+b" creates the file and appends every write at the end, whatever we read first.
+            with self.path.open("a+b") as handle:
                 fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
                 try:
                     handle.seek(0)
-                    text = handle.read()
-                    written = self._parse(text)
-                    _drop_a_torn_tail(handle, text)
+                    data = handle.read()
+                    written = self._parse(data)
+                    _drop_a_torn_tail(handle, data)
 
                     def write(record: LedgerRecord) -> None:
-                        handle.write(json.dumps(record, ensure_ascii=False, default=str) + "\n")
+                        line = json.dumps(record, ensure_ascii=False, default=str) + "\n"
+                        handle.write(line.encode("utf-8"))
                         handle.flush()
 
                     slot = LedgerSlot(_next_id(written), write)
@@ -139,16 +144,20 @@ class Ledger:
         assert self.path is not None
         if not self.path.exists():
             return []
-        return self._parse(self.path.read_text(encoding="utf-8"))
+        return self._parse(self.path.read_bytes())
 
-    def _parse(self, text: str) -> list[LedgerRecord]:
+    def _parse(self, data: bytes) -> list[LedgerRecord]:
         records: list[LedgerRecord] = []
-        for number, line in enumerate(_complete_lines(text), start=1):
-            if not line.strip():
-                continue
+        for number, raw in enumerate(_complete_lines(data), start=1):
             # The path can be exactly right and the file still damaged, so the message names the
             # line that cannot be read and leaves both causes open.
             where = f"{self.path} line {number}"
+            try:
+                line = raw.decode("utf-8")
+            except UnicodeDecodeError as exc:
+                raise LedgerError(f"{where} is not UTF-8 ({exc.reason}). {_NOT_A_LEDGER_LINE}") from exc
+            if not line.strip():
+                continue
             try:
                 record = json.loads(line)
             except json.JSONDecodeError as exc:
@@ -159,71 +168,79 @@ class Ledger:
         return records
 
 
-def _is_a_record(line: str) -> bool:
+def _is_a_record(line: bytes) -> bool:
     """Whether an unterminated last line is a whole record rather than a torn fragment.
 
     The missing newline alone does not decide it. Ledgers this server did not write can end without
     one and still hold a whole record on that line: a fixture built with `"\\n".join(...)`, a
     hand-edited file, a converted pilot ledger. A torn append, by contrast, leaves bytes that do not
-    parse, or that parse but carry no `evidence_id` and so can never be cited.
+    decode (the tear landed inside a multi-byte character), that do not parse, or that parse but
+    carry no `evidence_id` and so can never be cited.
     """
     try:
-        record = json.loads(line)
-    except json.JSONDecodeError:
+        record = json.loads(line.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
         return False
     return isinstance(record, dict) and _ID_RE.fullmatch(str(record.get("evidence_id"))) is not None
 
 
-def _lines(text: str) -> list[str]:
-    """The ledger file split into lines on `"\\n"` alone, without the empty tail after the last one.
+_LINE_END = re.compile(rb"\r\n|\r|\n")
+
+
+def _split(data: bytes) -> tuple[list[bytes], bytes]:
+    """The ledger file as its terminated lines and the unterminated tail after the last ending.
+
+    It works on bytes, so `len` of everything before the tail is the byte offset the tail starts at,
+    whatever CRs and multi-byte characters come before it (#54). A line ends at CRLF, CR or LF, the
+    endings that reading in text mode used to translate; `json.dumps` escapes CR and LF, so neither
+    can appear inside a record, and in UTF-8 their bytes never occur inside another character.
 
     `str.splitlines()` must not be used here. It also breaks at U+2028, U+2029, U+0085, `\\x0b`,
     `\\x0c`, `\\x1c`, `\\x1d` and `\\x1e`, and `json.dumps` writes the first three of those raw. One
     Log Entry message or SQL string holding such a character then turned a stored record into
     several apparent lines, which made the file unreadable for every later read and append, and cost
-    a whole record its id when it sat on an unterminated last line (#49). Splitting on `"\\n"` keeps
-    one record on one line whatever text it carries, and also recovers ledgers already written that
-    way. Reading translates CR and CRLF endings to `"\\n"` beforehand, and `json.dumps` escapes both,
-    so neither can appear inside a record.
+    a whole record its id when it sat on an unterminated last line (#49). Splitting on line endings
+    alone keeps one record on one line whatever text it carries, and also recovers ledgers already
+    written that way.
     """
-    lines = text.split("\n")
-    if lines[-1] == "":  # split always returns at least one element
-        lines.pop()
-    return lines
+    end = max(data.rfind(b"\n"), data.rfind(b"\r")) + 1
+    lines = _LINE_END.split(data[:end])
+    lines.pop()  # the empty piece after the last ending, or the whole of an empty prefix
+    return lines, data[end:]
 
 
-def _complete_lines(text: str) -> list[str]:
+def _complete_lines(data: bytes) -> list[bytes]:
     """The lines that hold a record, so a torn append does not break every later read.
 
     A process killed during an append leaves an unterminated last line. That line is dropped only
     when it is a fragment: dropping a whole record instead would let the next append reuse its id,
-    and an answer citing it would silently resolve to different Evidence. Any unparseable line that
+    and an answer citing it would silently resolve to different Evidence. Any unreadable line that
     is not the last one still fails loudly: such a file is not a ledger this server wrote, or it was
     damaged after it was written.
     """
-    lines = _lines(text)
-    if lines and not text.endswith("\n") and not _is_a_record(lines[-1]):
-        return lines[:-1]
+    lines, tail = _split(data)
+    if tail and _is_a_record(tail):
+        lines.append(tail)
     return lines
 
 
-def _drop_a_torn_tail(handle: IO[str], text: str) -> None:
+def _drop_a_torn_tail(handle: IO[bytes], data: bytes) -> None:
     """Make the last line safe to append after, under the lock, before the next record is written.
 
     Appending straight after an unterminated line would turn it into a terminated one. For a torn
     fragment that is fatal, because `_complete_lines` only forgives the last line, so every later
     read would raise again; the fragment is cut off instead, and nothing a reader can use is lost,
     because those bytes are the tail of a record that was never finished. A whole record on that
-    line is kept and only terminated, so its id stays taken and its content stays readable.
+    line is kept and only terminated, so its id stays taken and its content stays readable. The cut
+    is a byte offset into the file as read, so no ending or character before it can shift it.
     """
-    if not text or text.endswith("\n"):
+    _, tail = _split(data)
+    if not tail:
         return
-    if _is_a_record(_lines(text)[-1]):
-        handle.write("\n")
-        handle.flush()
-        return
-    whole = text[: text.rindex("\n") + 1] if "\n" in text else ""
-    handle.truncate(len(whole.encode("utf-8")))
+    if _is_a_record(tail):
+        handle.write(b"\n")
+    else:
+        handle.truncate(len(data) - len(tail))
     handle.flush()
 
 

@@ -73,6 +73,7 @@ def test_the_report_lists_scores_disagreements_and_coverage() -> None:
     assert "| E2 | E1 | 3 | 1 | b <*> | `b\\|x` |" in text
     assert "| E7 | none (Tier 2) | 2 | 1 | c <*> d | `trunc` |" in text
     assert "| bgl | loghub2 | 2 | 12 | 998 | 99.8000% |" in text
+    assert "| Tier 1 coverage of labelled lines |" in text
     assert "13 of 13" in text
     assert "FAIL" in text
 

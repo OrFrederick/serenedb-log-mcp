@@ -1,0 +1,88 @@
+# Curated synonym map for search_patterns (T14, #7 Decision proposal).
+#
+# Each key is an everyday word an asker may use; its list holds words that the Pattern template
+# texts of the Base Corpus actually use for the same thing. search_patterns adds the list to the
+# query at half weight (BM25 over the stemmed template texts), so "memory" also finds the DDR,
+# EDRAM and L3 Patterns of BGL and "storage" the Lustre and NFS mount Patterns. The expansion is
+# one-way and one level deep: a synonym is never expanded again.
+#
+# Rules for editing:
+# - keys and values are single lower-case words (letters, digits, underscores);
+# - every value must occur in at least one Pattern template text of the Base Corpus, after
+#   stemming (tests/corpus/test_catalogue_corpus.py checks this against the derived catalogue);
+# - keep it small and reviewable: the catalogue itself (list_patterns) is the primary path, and
+#   this map only helps the lexical fallback over paraphrases.
+#
+# Provenance and caveat: merged from the two #7 research maps
+# (research/7-OrFrederick:research/7/OrFrederick/synonyms.yaml and
+# research/7-NoNaim95:research/7/NoNaim95/experiments/r7e_synonyms.py). Both were written by the
+# Claude that labelled the #7 evaluation queries, after reading the template list, so any recall
+# measured with this map on those queries is optimistic. Fresh, human-labelled queries are needed
+# before retrieval numbers are quoted (#7, decision 3 for the humans).
+
+# Memory and caches
+memory: [ddr, edram, l3, ecc, rank, symbol, sram, cache, parity]
+ram: [ddr, edram, memory, ecc]
+corruption: [parity, ecc, uncorrectable, invalid]
+fixed: [corrected, correctable, steering]
+
+# Interconnect and network
+network: [torus, tree, link, socket, packet, port, connection]
+interconnect: [torus, tree, link, linkcard]
+fabric: [torus, tree, link]
+cable: [wire, link, linkcard]
+connection: [socket, link, severed, reset, closed, communication]
+disconnected: [severed, closed, reset]
+lost: [severed, closed, reset, timeout]
+communication: [socket, link, connection, message]
+
+# Storage
+storage: [lustre, nfs, mount, disk]
+filesystem: [lustre, nfs, mount, disk]
+disk: [mount, lustre, nfs, file]
+attached: [mount]
+
+# Failures of programs and daemons
+crash: [core, signal, abnormally, assertion, terminated, exited]
+die: [signal, abnormally, terminated, exited, killed]
+hang: [timeout, timed, timedout]
+timeout: [timed, timedout]
+restart: [started, restarting, exited, autorestart, reconnect]
+daemon: [ciodb, idoproxy, bglmaster, mmcs_server, mmcs_db_server]
+job: [program, ciod]
+executable: [program, image]
+binary: [program, image]
+access: [permission, denied, chdir]
+rights: [permission, denied]
+misaligned: [alignment]
+
+# Hardware, power and cooling
+hardware: [card, chip, asic, linkcard, nodecard]
+board: [card, linkcard, nodecard]
+power: [pgood, volt, rail]
+voltage: [volt, pgood, rail]
+overheating: [temperature, fan]
+cooling: [fan, temperature]
+cpu: [processor, vcpu, vcpus, core]
+maintenance: [service, prepareforservice, endserviceaction]
+replace: [replacing, service]
+
+# OpenStack instances and services
+vm: [instance, domain, lifecycle]
+virtual: [instance]
+boot: [spawn, build, started, creating, image]
+start: [spawn, build, started]
+delete: [deleting, terminating, destroyed, deletion, removing]
+shutdown: [stopped, stopping, shutting, terminating]
+hypervisor: [compute, host, domain]
+capacity: [limit, total, free, used]
+scheduler: [claim, host]
+placement: [claim, host]
+login: [token, identity]
+authentication: [token, identity]
+api: [get, post, delete, http, status]
+slow: [took, seconds, time]
+latency: [took, seconds, time]
+inventory: [instancelist, sync, synced]
+heartbeat: [record, updated, audit]
+cleanup: [removing, removable, base, swap]

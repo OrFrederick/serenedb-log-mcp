@@ -441,8 +441,22 @@ def _detail(exc: Exception) -> str:
     return text if text.endswith((".", "!", "?")) else f"{text}."
 
 
+SELF_DESCRIBING_ERRORS = (ToolContractError, LedgerError, ToolError)
+"""Errors this server raises with a sentence written for the model; their type adds nothing."""
+
+
 def _first_line(exc: Exception) -> str:
-    return str(exc).strip().splitlines()[0] if str(exc).strip() else type(exc).__name__
+    """The first line of the message, named by its exception type unless it names itself.
+
+    `str(KeyError("entries_total"))` is `"'entries_total'"`, so the detail the model read for a
+    missing summary key was `'entries_total'.`, which does not say what kind of failure it was.
+    Naming the type makes it `KeyError: 'entries_total'`. The errors this server raises itself
+    already explain themselves, so those keep their own wording.
+    """
+    text = str(exc).strip().splitlines()[0] if str(exc).strip() else ""
+    if not text:
+        return type(exc).__name__
+    return text if isinstance(exc, SELF_DESCRIBING_ERRORS) else f"{type(exc).__name__}: {text}"
 
 
 def _validation_detail(exc: ValidationError) -> str:

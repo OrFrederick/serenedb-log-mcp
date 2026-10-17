@@ -323,6 +323,23 @@ def test_an_unexpected_crash_is_logged_with_its_traceback(caplog: pytest.LogCapt
     assert "Traceback" in caplog.text
 
 
+def test_an_unexpected_crash_names_its_exception_type() -> None:
+    # str(KeyError("entries_total")) is "'entries_total'", so the model read the detail
+    # "'entries_total'." with nothing to say what kind of failure it was. The traceback is in the
+    # log, so this is only about the sentence the model gets.
+    server = MCPServer(name="t")
+
+    @evidence_tool(server, title="Crashing tool")
+    def key_error(role: RoleParam) -> ToolOutcome:
+        """Crash on a missing summary key. Inputs: role. Outputs: the envelope."""
+        raise KeyError("entries_total")
+
+    with pytest.raises(ToolError) as raised:
+        anyio.run(lambda: server.call_tool("key_error", {"role": "engineer"}))
+
+    assert "KeyError: 'entries_total'" in str(raised.value)
+
+
 def test_a_validation_error_names_the_field_and_the_reason() -> None:
     # str(ValidationError) starts with "2 validation errors for DataScope.", so keeping only the
     # first line dropped everything actionable.
@@ -341,7 +358,8 @@ def test_a_validation_error_names_the_field_and_the_reason() -> None:
         anyio.run(lambda: server.call_tool("bad_scope", {"role": "engineer"}))
 
     message = str(raised.value)
-    assert "DataScope" in message
+    assert "DataScope is invalid:" in message
+    assert "ValidationError" not in message
     assert "datasets" in message
     assert "time_from" in message
     assert "valid string" in message or "valid list" in message
@@ -366,6 +384,8 @@ def test_a_broken_contract_is_reported_as_a_server_bug_without_a_retry() -> None
 
     message = str(raised.value)
     assert "columns" in message
+    # The sentence is written for the model; naming the type in front of it would only add noise.
+    assert "ToolContractError" not in message
     assert "bug in this server" in message
     assert "calling it again will not help" in message
     assert RETRY_HINT not in message

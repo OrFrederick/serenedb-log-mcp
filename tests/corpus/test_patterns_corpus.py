@@ -151,3 +151,50 @@ def test_tier1_meets_the_merge_gate_and_only_the_truncated_e7_lines_disagree(
     assert (scores["openstack"].lines, scores["openstack"].agreeing) == (207_632, 207_632)
     assert [(d.gold, d.chosen, d.lines) for d in scores["bgl"].disagreements] == [("E7", None, 4)]
     assert score_patterns.gate_problems(list(scores.values()), score_patterns.DEFAULT_MIN_AGREEMENT) == []
+
+
+# ----------------------------------------------------------------- hand-offs for rankings (#64)
+
+
+def test_the_empty_pattern_ranks_18th_by_entries_and_shows_as_no_message(
+    database_url: str, pattern_schema: str
+) -> None:
+    ranked = fetch(
+        database_url,
+        pattern_schema,
+        "SELECT template_source, display_text, entries FROM {pattern} WHERE dataset = 'bgl' "
+        "ORDER BY entries DESC, template_id",
+    )
+
+    rank = next(i for i, row in enumerate(ranked, start=1) if row[0] == "empty")
+    assert (rank, ranked[rank - 1][1:]) == (18, ("(no message)", 34_470))
+    assert all(row[1] for row in ranked)
+
+
+def test_the_register_dump_patterns_have_uninformative_texts(database_url: str, pattern_schema: str) -> None:
+    result = fetch(
+        database_url,
+        pattern_schema,
+        "SELECT p.template_text, count(d.message), min(p.entries) FROM {pattern} p "
+        "JOIN {dict} d ON d.dataset = p.dataset AND d.template_id = p.template_id "
+        "WHERE p.dataset = 'bgl' AND p.template_text IN ('<*>', '<*>:ffffffff <*>') "
+        "GROUP BY 1 ORDER BY 1",
+    )
+
+    assert result == [("<*>", 1_140, 15_193), ("<*>:ffffffff <*>", 535, 4_149)]
+
+
+def test_first_and_last_epoch_put_both_datasets_on_one_clock(database_url: str, pattern_schema: str) -> None:
+    # BGL ts is US Pacific local time: its epochs are 7 or 8 hours after ts read as UTC.
+    result = fetch(
+        database_url,
+        pattern_schema,
+        "SELECT dataset, count(*) FILTER (WHERE first_epoch IS NULL OR last_epoch < first_epoch), "
+        "min(first_epoch - epoch(first_seen)), max(first_epoch - epoch(first_seen)) "
+        "FROM {pattern} GROUP BY 1 ORDER BY 1",
+    )
+
+    assert [(d, bad) for d, bad, _, _ in result] == [("bgl", 0), ("openstack", 0)]
+    (_, _, bgl_low, bgl_high), (_, _, os_low, os_high) = result
+    assert 7 * 3600 <= round(bgl_low) <= round(bgl_high) <= 8 * 3600
+    assert (round(os_low), round(os_high)) == (0, 0)

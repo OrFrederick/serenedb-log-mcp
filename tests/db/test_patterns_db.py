@@ -25,6 +25,7 @@ from psycopg import sql
 import derive
 import gen_pattern_sql
 from serenedb_log_mcp.config import load_settings
+from serenedb_log_mcp.tools._catalogue import NO_MESSAGE
 
 
 class Schemas(Protocol):
@@ -321,7 +322,8 @@ def test_the_pattern_table_has_one_row_per_pattern_with_its_counts(
         expected = rows(
             database_url,
             q(
-                "SELECT template_id, count(*), min(ts), max(ts) FROM {t} GROUP BY 1 ORDER BY 1",
+                "SELECT template_id, count(*), min(ts), max(ts), min(epoch_utc), max(epoch_utc) "
+                "FROM {t} GROUP BY 1 ORDER BY 1",
                 sample.slm,
                 t=table,
             ),
@@ -329,7 +331,8 @@ def test_the_pattern_table_has_one_row_per_pattern_with_its_counts(
         actual = rows(
             database_url,
             q(
-                "SELECT template_id, entries, first_seen, last_seen FROM {p} WHERE dataset = %s ORDER BY 1",
+                "SELECT template_id, entries, first_seen, last_seen, first_epoch, last_epoch FROM {p} "
+                "WHERE dataset = %s ORDER BY 1",
                 sample.slm,
                 p="pattern",
             ),
@@ -352,6 +355,50 @@ def test_the_pattern_table_keeps_the_dictionary_texts(database_url: str, sample:
         ),
     )
     assert mismatches == 0
+
+
+def test_first_and_last_epoch_are_on_one_utc_clock_across_datasets(
+    database_url: str, sample: T9Schemas
+) -> None:
+    # ts is BGL US Pacific local time and OpenStack UTC; the epochs are comparable across both (#64).
+    for dataset, table in ENTRY_TABLES:
+        (mismatches,) = one(
+            database_url,
+            sql.SQL(
+                "SELECT count(*) FROM {p} p JOIN (SELECT template_id, min(epoch_utc) AS f, "
+                "max(epoch_utc) AS l FROM {t} GROUP BY 1) e ON e.template_id = p.template_id "
+                "WHERE p.dataset = %s AND (p.first_epoch <> e.f OR p.last_epoch <> e.l "
+                "OR p.first_epoch > p.last_epoch)"
+            ).format(p=sql.Identifier(sample.slm, "pattern"), t=sql.Identifier(sample.slm, table)),
+            [dataset],
+        )
+        assert mismatches == 0, dataset
+
+
+def test_the_empty_pattern_is_shown_as_no_message_and_every_other_by_its_text(
+    database_url: str, sample: T9Schemas
+) -> None:
+    result = rows(
+        database_url,
+        q(
+            "SELECT dataset, template_source, display_text FROM {p} "
+            "WHERE template_source = 'empty' ORDER BY 1",
+            sample.slm,
+            p="pattern",
+        ),
+    )
+    (others,) = one(
+        database_url,
+        q(
+            "SELECT count(*) FROM {p} WHERE template_source <> 'empty' "
+            "AND display_text IS DISTINCT FROM template_text",
+            sample.slm,
+            p="pattern",
+        ),
+    )
+
+    assert result == [("bgl", "empty", NO_MESSAGE), ("openstack", "empty", NO_MESSAGE)]
+    assert others == 0
 
 
 def test_component_and_level_are_the_most_frequent_ones(database_url: str, sample: T9Schemas) -> None:

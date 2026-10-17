@@ -300,9 +300,7 @@ def test_the_precomputed_table_equals_the_same_chaining_at_query_time(
     assert disagreements == 0
 
 
-def test_no_alert_incident_holds_a_gap_longer_than_the_threshold(
-    database_url: str, slm_schema: str
-) -> None:
+def test_no_alert_incident_holds_a_gap_longer_than_the_threshold(database_url: str, slm_schema: str) -> None:
     # An independent recompute over the alert Log Entries: inside an Incident every neighbouring
     # gap is at most 300 s, and the gap that starts the next Incident of the Pattern is longer.
     inside, between = one(
@@ -394,9 +392,7 @@ def test_an_incident_on_nodes_without_topology_is_never_labelled_one_midplane(
     ) == [("single-node isolated", 54, 1, 32)]
 
 
-def test_a_machine_wide_incident_really_spans_half_the_machine(
-    database_url: str, slm_schema: str
-) -> None:
+def test_a_machine_wide_incident_really_spans_half_the_machine(database_url: str, slm_schema: str) -> None:
     # BlueGene/L has 64 racks with two midplanes each. The "machine-wide" label needs 64 of those
     # 128 midplanes, so the loudest single node can never earn it. The three categories that
     # dominate the label are the ones a Manager should see: job start-up failures (APPSEV),

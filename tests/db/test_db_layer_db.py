@@ -219,6 +219,16 @@ def test_an_injection_string_passed_as_a_value_matches_nothing(
     assert scratch_count(database_url, scratch) == ROWS
 
 
+@pytest.mark.parametrize(
+    ("client_binding", "cursor_type"), [(False, psycopg.Cursor), (True, psycopg.ClientCursor)]
+)
+def test_slm_client_binding_selects_the_cursor(
+    client_binding: bool, cursor_type: type[psycopg.Cursor[tuple[object, ...]]], database_url: str
+) -> None:
+    with db.open_connection(database_url, client_binding=client_binding) as conn:
+        assert type(conn.cursor()) is cursor_type
+
+
 def test_the_module_helpers_use_the_layer_for_the_role() -> None:
     result = db.fetch_all("SELECT 1", role=Role.ENGINEER)
 

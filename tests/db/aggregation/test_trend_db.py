@@ -190,3 +190,13 @@ def test_a_grouped_trend_without_matches_is_one_zero_series_and_zero_groups(corp
     assert sum(column(result, "(all)")) == 0
     assert (result["summary"]["total"], result["summary"]["groups_total"]) == (0, 0)
     assert any("No Log Entries matched" in note for note in result["notes"])
+
+
+def test_an_empty_pattern_trend_skips_the_pattern_family_statement(corpus: str) -> None:
+    result = call(
+        "trend", role="engineer", dataset="bgl", bucket="week", group_by="pattern", query="zebra unicorn"
+    )
+
+    # The ranking, the buckets and the baselines; no family lookup over the whole Dataset.
+    assert len(result["sql"]) == 3
+    assert not any("family_id" in statement for statement in result["sql"])

@@ -309,7 +309,8 @@ def _trend(prepared: Prepared, bucket: str, top: int) -> ToolOutcome:
         collected.add(run(stats_statement([part], {part.dataset: keys}, {part.dataset: keys}), prepared.role))
     )
     handoffs: dict[str, str] = {}
-    patterns = [k for k in keys if k != NULL_LABELS["pattern"]] if group_by == "pattern" and ranked else []
+    grouped = ranked is not None and bool(ranked.groups)
+    patterns = [k for k in keys if k != NULL_LABELS["pattern"]] if group_by == "pattern" and grouped else []
     if patterns:
         family = collected.add(run(family_statement(part, patterns), prepared.role))
         handoffs = handoff_notes(patterns, family.rows)

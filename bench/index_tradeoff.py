@@ -9,8 +9,10 @@ What it does, against DATABASE_URL and SLM_SCHEMA:
     1. Refuses to start when the Dataset already has an agent index (it never touches one it did
        not build), counts the slice and measures the network round trip.
     2. Times count_by and trend through the MCP tools with no agent index.
-    3. Builds the agent index with the create_index tool `--runs` times (dropping it in between),
-       for the median build_ms, and keeps the last one.
+    3. Builds the agent index `--runs` times with the identical CREATE INDEX under EXPLAIN ANALYZE
+       (index_admin, explain=True) for the server-side build time, dropping it each time; then
+       `--runs` times with the create_index tool (dropping it in between) for the median build_ms
+       the agent sees, and keeps the last one.
     4. Times a fixed set of full-text queries over the slice in three modes, interleaved, `--runs`
        times each: `scan` (no inverted index: a whole-word regex on the base table, restricted to
        the slice by ts), `full` (the Dataset's full index) and `agent` (the agent index, resolved
@@ -25,7 +27,8 @@ Query times are server-side execution times from EXPLAIN ANALYZE ("Total Time"):
 time also contains the network round trip, which is the same in every mode and on the shared dev
 instance is larger than the differences being measured. Wall medians are reported next to them.
 The build time is the wall time create_index reports (build_ms = CREATE INDEX + VACUUM
-(REFRESH_TABLE)), so it includes one round trip per statement and the break-even is conservative.
+(REFRESH_TABLE)), so it includes one round trip per statement and the headline break-even is
+conservative; the report also gives a network-free build and its break-evens.
 
 It builds at most one agent index at a time over at most index_admin.MAX_SLICE_ROWS Log Entries.
 """
@@ -35,7 +38,6 @@ from __future__ import annotations
 import argparse
 import math
 import platform
-import re
 import statistics
 import sys
 import time
@@ -56,7 +58,12 @@ from serenedb_log_mcp.config import ConfigError, Settings, load_settings, set_se
 from serenedb_log_mcp.corpus import agent_indexes, facts
 from serenedb_log_mcp.corpus.datasets import Relation, relation
 from serenedb_log_mcp.evidence import DataScope
-from serenedb_log_mcp.index_admin import existing_agent_indexes
+from serenedb_log_mcp.index_admin import (
+    create_agent_index,
+    drop_agent_index,
+    existing_agent_indexes,
+    explain_total_ms,
+)
 from serenedb_log_mcp.server import create_server
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -73,7 +80,6 @@ MODES: tuple[Mode, ...] = ("scan", "full", "agent")
 MODE_TITLES = {"scan": "scan (no index)", "full": "full index", "agent": "agent index"}
 Shape = Literal["count", "by_source", "by_day", "first_rows"]
 
-_TOTAL_TIME_RE = re.compile(r"Total Time: ([0-9.]+)s")
 _T = TypeVar("_T")
 
 
@@ -107,10 +113,10 @@ QUERIES = tuple(Query(words, shape) for words in TERMS for shape in SHAPES)
 
 def total_time_ms(plan: str) -> float:
     """The server-side execution time of an EXPLAIN ANALYZE plan, in milliseconds."""
-    match = _TOTAL_TIME_RE.search(plan)
-    if match is None:
+    found = explain_total_ms(plan)
+    if found is None:
         raise BenchError(f"EXPLAIN ANALYZE printed no 'Total Time': {plan[:200]!r}")
-    return float(match.group(1)) * 1000
+    return found
 
 
 def break_even(build_ms: float, saved_ms_per_query: float) -> int | None:
@@ -222,10 +228,22 @@ class Report:
     queries: list[Timed]
     tools: list[ToolTiming]
     environment: dict[str, str] = field(default_factory=dict)
+    server_builds: list[float] = field(default_factory=list)
+    """Server-side CREATE INDEX times (EXPLAIN ANALYZE) of separate builds of the same slice."""
+    rtt_ms: float | None = None
+    """Median network round trip (SELECT 1)."""
 
     @property
     def build_ms(self) -> float:
         return statistics.median(b.build_ms for b in self.builds)
+
+    @property
+    def network_free_build_ms(self) -> float | None:
+        """Server-side CREATE INDEX plus the refresh minus one round trip (VACUUM has no server time)."""
+        if not self.server_builds or self.rtt_ms is None:
+            return None
+        refresh = statistics.median(b.refresh_ms for b in self.builds)
+        return statistics.median(self.server_builds) + max(0.0, refresh - self.rtt_ms)
 
     def mean(self, mode: str) -> float:
         return statistics.fmean(t.median(mode) for t in self.queries)
@@ -250,9 +268,10 @@ class Report:
             "",
             f"- **Slice:** {self.dataset} from {span}, {self.slice_rows:,} of the Dataset's "
             f"{self.dataset_rows:,} Log Entries.",
-            f"- **Build** (`create_index`, median of {len(self.builds)}): {_ms(self.build_ms)} until the "
-            f"index is usable (CREATE INDEX {_ms(median_build.create_ms)} + VACUUM (REFRESH_TABLE) "
-            f"{_ms(median_build.refresh_ms)}); runs: {_runs([b.build_ms for b in self.builds])} ms.",
+            f"- **Build** (`create_index`, median of {len(self.builds)}): {_ms(self.build_ms)} of client "
+            f"wall time until the index is usable (CREATE INDEX {_ms(median_build.create_ms)} + VACUUM "
+            f"(REFRESH_TABLE) {_ms(median_build.refresh_ms)}), which includes one network round trip per "
+            f"statement{self._rtt_note()}; runs: {_runs([b.build_ms for b in self.builds])} ms.",
             f"- **Queries:** {len(self.queries)} full-text queries over the slice; mean server time per "
             f"query: {_ms(self.mean('scan'))} without an inverted index (scan), "
             f"{_ms(self.mean('full'))} with the Dataset's full index, {_ms(self.mean('agent'))} with the "
@@ -261,6 +280,7 @@ class Report:
             f"{_ms(self.saved('scan'))} per query, so it repays its build time after {_queries(vs_scan)}.",
             f"- **Break-even against the Dataset's full index:** it saves {_ms(self.saved('full'))} per "
             f"query, so it repays its build time after {_queries(vs_full)}.",
+            *self._network_free(),
             *self._highlights(),
             "",
             "## Queries",
@@ -320,10 +340,19 @@ class Report:
             "- **agent index** is the partial inverted index `create_index` built "
             "(`CREATE INDEX … USING inverted (…) WHERE ts >= … AND ts < …`), resolved through "
             "`corpus.datasets.relation()` for a Data Scope inside the slice.",
+            "- **build_ms** is the client wall time `create_index` reports for CREATE INDEX plus VACUUM "
+            "(REFRESH_TABLE), so it includes one network round trip per statement; the headline "
+            "break-evens use it, which can only make them later. The network-free build is the "
+            "server-side time EXPLAIN ANALYZE reports for the identical CREATE INDEX statement (separate "
+            "builds of the same slice, each dropped again), plus the refresh's wall time minus one round "
+            "trip, floored at 0, because EXPLAIN ANALYZE reports no time for VACUUM.",
             "- All three modes returned identical rows for every query on every run (checked).",
             "- Measurements are interleaved (each run times every query in every mode), so a load change "
             "on the shared server affects all modes alike. Break-even uses the median build time and "
             "the mean of the per-query medians.",
+            "- Absolute times and break-evens depend on the host, its network and its load (runs on one "
+            "host agree closely, other hosts give other numbers): compare the modes within one report, "
+            "not numbers across hosts.",
             "",
             "## Reproduce",
             "",
@@ -334,6 +363,22 @@ class Report:
             "",
         ]
         return "\n".join(lines)
+
+    def _rtt_note(self) -> str:
+        return "" if self.rtt_ms is None else f" (round trip median {_ms(self.rtt_ms)})"
+
+    def _network_free(self) -> list[str]:
+        """The build without the network, and the break-evens it gives."""
+        free = self.network_free_build_ms
+        if free is None:
+            return []
+        scan, full = break_even(free, self.saved("scan")), break_even(free, self.saved("full"))
+        return [
+            f"- **Build without the network:** server-side CREATE INDEX (EXPLAIN ANALYZE, median of "
+            f"{len(self.server_builds)} separate builds): {_ms(statistics.median(self.server_builds))}; "
+            f"with the refresh minus one round trip about {_ms(free)}, which repays after "
+            f"{_queries(scan)} against a scan and {_queries(full)} against the full index."
+        ]
 
     def _highlights(self) -> list[str]:
         """Where the agent index pays off fastest against the full index, and where it saves nothing."""
@@ -453,7 +498,8 @@ def _same_numbers(a: dict[str, Any], b: dict[str, Any]) -> bool:
     return bool(a["rows"] == b["rows"] and a["summary"] == b["summary"])
 
 
-def _environment(runner: Runner, settings: Settings, runs: int, note: str) -> dict[str, str]:
+def _environment(runner: Runner, settings: Settings, runs: int, note: str) -> tuple[dict[str, str], float]:
+    """The environment section, and the median round trip in ms."""
     version = str(runner.rows("SELECT version()")[0][0])
     samples = []
     for _ in range(RTT_SAMPLES):
@@ -471,7 +517,7 @@ def _environment(runner: Runner, settings: Settings, runs: int, note: str) -> di
         "Client": f"{platform.platform()}, Python {platform.python_version()}, psycopg {psycopg.__version__}",
         "Runs per measurement": str(runs),
     }
-    return env
+    return env, statistics.median(samples)
 
 
 def run(args: argparse.Namespace) -> Report:
@@ -489,7 +535,7 @@ def run(args: argparse.Namespace) -> Report:
             "an index it did not build. Drop it with drop_index first, or wait for whoever built it."
         )
     runner = Runner(settings.database_url)
-    environment = _environment(runner, settings, args.runs, args.server_note)
+    environment, rtt_ms = _environment(runner, settings, args.runs, args.server_note)
     ts = rel.column("time")
     slice_rows = int(
         runner.rows(
@@ -504,6 +550,7 @@ def run(args: argparse.Namespace) -> Report:
     tools = Tools()
     calls = _tool_calls(dataset, start.isoformat(), end.isoformat())
     without = _time_tools(tools, calls, args.runs, routed=False)
+    server_builds = _server_builds(dataset, start, end, settings, args.runs)
 
     builds: list[Build] = []
     name: str | None = None
@@ -541,7 +588,42 @@ def run(args: argparse.Namespace) -> Report:
             calls, without, with_index, strict=True
         )
     ]
-    return Report(dataset, start, end, slice_rows, dataset_rows, builds, queries, timings, environment)
+    return Report(
+        dataset,
+        start,
+        end,
+        slice_rows,
+        dataset_rows,
+        builds,
+        queries,
+        timings,
+        environment,
+        server_builds=server_builds,
+        rtt_ms=rtt_ms,
+    )
+
+
+def _server_builds(
+    dataset: str, start: datetime, end: datetime, settings: Settings, runs: int
+) -> list[float]:
+    """Server-side CREATE INDEX times: the same agent index built under EXPLAIN ANALYZE, then dropped.
+
+    It goes through index_admin like create_index, so each build is marked, verified and dropped by
+    drop_agent_index, one at a time; a build left behind by a crash is an agent index drop_index removes.
+    """
+    found: list[float] = []
+    for attempt in range(runs):
+        report = create_agent_index(dataset, start, end, settings=settings, explain=True)
+        try:
+            if report.status != "built" or report.create_server_ms is None:
+                raise BenchError(f"the explained build gave no server time: {report.status}")
+            found.append(report.create_server_ms)
+        finally:
+            drop_agent_index(report.index.name, settings=settings)
+        print(
+            f"server-timed build {attempt + 1}: CREATE INDEX {found[-1]:.1f} ms server-side", file=sys.stderr
+        )
+    return found
 
 
 def _time_queries(

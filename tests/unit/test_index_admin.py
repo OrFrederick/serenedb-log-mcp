@@ -60,6 +60,8 @@ class FakeConnection:
                 raise psycopg.OperationalError("server closed the connection unexpectedly")
             raise psycopg.errors.FeatureNotSupported("no such feature")
         self.executed.append(query)
+        if query.startswith("EXPLAIN ANALYZE"):
+            return FakeCursor([("╭─ Summary ───────────╮",), ("│ Total Time: 0.2391s │",), ("╰──╯",)])
         return FakeCursor()
 
     def cancel_safe(self) -> None:
@@ -343,3 +345,46 @@ def test_existing_agent_indexes_lists_only_marked_ones_without_adopting_them(
 
     assert index_admin.existing_agent_indexes(settings=SLM) == [WAVE]
     assert agent_indexes.registered_all() == []
+
+
+# ----------------------------------------------------------------- server-side build time (bench)
+
+
+def test_a_plain_build_reports_no_server_time(monkeypatch: pytest.MonkeyPatch) -> None:
+    conn = FakeConnection()
+    use(monkeypatch, FakeDatabase(), conn)
+
+    report = index_admin.create_agent_index("bgl", START, END, settings=SLM)
+
+    assert report.create_server_ms is None
+    assert conn.executed[1].startswith("CREATE INDEX")
+
+
+def test_an_explained_build_runs_the_same_ddl_and_reports_the_server_time(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    conn = FakeConnection()
+    use(monkeypatch, FakeDatabase(), conn)
+
+    report = index_admin.create_agent_index("bgl", START, END, settings=SLM, explain=True)
+
+    kinds = [statement.split()[0] for statement in conn.executed]
+    assert kinds == ["BEGIN", "EXPLAIN", "COMMENT", "COMMIT", "VACUUM"]
+    plain = index_admin.create_statement(relation("bgl", settings=SLM), NAME, START, END).as_string(None)
+    assert conn.executed[1] == f"EXPLAIN ANALYZE {plain}"
+    assert report.create_server_ms == pytest.approx(239.1)
+    assert agent_indexes.registered("slm", "bgl") == WAVE
+
+
+@pytest.mark.parametrize(
+    ("plan", "expected"),
+    [
+        ("│ Total Time: 0.0016s │", 1.6),
+        ("╭─ Summary ─╮\n│ Total Time: 1.25s │", 1250.0),
+        ("no summary", None),
+    ],
+)
+def test_the_server_time_is_read_from_the_explain_analyze_summary(plan: str, expected: float | None) -> None:
+    found = index_admin.explain_total_ms(plan)
+
+    assert found == (None if expected is None else pytest.approx(expected))

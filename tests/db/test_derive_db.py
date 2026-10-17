@@ -13,6 +13,7 @@ import pytest
 from psycopg import sql
 
 import derive
+from serenedb_log_mcp.corpus.datasets import OWNERSHIP_IS_STUB, OWNERSHIP_NOTE, OWNERSHIP_STUB_SOURCE
 
 CANONICAL_TABLES = ("bgl_entry", "os_entry", "ownership")
 SYNTHETIC_BGL_ROWS = 11  # tests/db/conftest.py adds them to the 2,000-line BGL sample
@@ -214,20 +215,22 @@ def test_alert_lines_set_alert_tag_and_pattern_key(database_url: str, derived_sa
         q(
             "SELECT count(*) FILTER (WHERE r.alert_tag <> '-' AND e.alert_tag = r.alert_tag "
             "AND e.pattern_key = r.alert_tag), count(*) FILTER (WHERE r.alert_tag <> '-'), "
-            "count(*) FILTER (WHERE r.alert_tag = '-' AND e.alert_tag IS NULL AND e.pattern_key IS NULL), "
-            "count(*) FILTER (WHERE r.alert_tag = '-'), count(e.template_id), count(e.family_id) "
+            "count(*) FILTER (WHERE r.alert_tag = '-' AND e.alert_tag IS NULL "
+            "AND e.pattern_key = e.template_id), "
+            "count(*) FILTER (WHERE r.alert_tag = '-'), count(e.template_id), count(e.family_id), count(*) "
             "FROM {e} e JOIN {r} r ON e.entry_id = r.line_no",
             derived_sample,
             e="slm.bgl_entry",
             r="raw.bgl",
         ),
     )
-    alert_ok, alerts, plain_ok, plain, template_ids, family_ids = result
+    alert_ok, alerts, plain_ok, plain, template_ids, family_ids, total = result
 
     assert alerts > 0
     assert alert_ok == alerts
+    # Non-alert lines are keyed by their Pattern once the Pattern step (T9) has run.
     assert plain_ok == plain
-    assert (template_ids, family_ids) == (0, 0)
+    assert template_ids == family_ids == total
 
 
 # ----------------------------------------------------------------- OpenStack derived columns
@@ -276,7 +279,10 @@ def test_openstack_columns_match_an_independent_parse(database_url: str, derived
         else:
             assert (endpoint, status, latency) == (None, None, None), message
         assert instance == expected_instance(message or ""), message
-        assert (template_id, family_id, pattern_key) == (None, None, None)
+        # The Pattern step (T9) gives every Log Entry a Pattern, which is its pattern_key.
+        assert template_id is not None, message
+        assert family_id is not None, message
+        assert pattern_key == template_id, message
     assert with_status > 0
     assert any(r[4] is not None for r in result)
 
@@ -320,6 +326,13 @@ def text_columns(database_url: str, schema: str) -> list[tuple[str, str]]:
     ]
 
 
+GENUINE_PATTERN_TEXT = {
+    ("pattern_dict", "message"),
+    ("pattern_dict", "template_text"),
+    ("pattern", "template_text"),
+}
+
+
 def test_no_text_column_of_any_canonical_relation_contains_abnormal(
     database_url: str, derived_sample: Schemas
 ) -> None:
@@ -329,9 +342,13 @@ def test_no_text_column_of_any_canonical_relation_contains_abnormal(
     hits = {}
     for table, column in columns:
         # BGL's own log text says "exited abnormally" (the MASABNORM alert lines); that is a Log
-        # Entry, not a label. Every other match would be a leak of the OpenStack labels.
-        genuine = (table, column) == ("bgl_entry", "message")
-        exempt = "AND lower({c}) NOT LIKE '%exited abnormally%'" if genuine else ""
+        # Entry, not a label, and the BGL Patterns (T9) carry the same text. Every other match
+        # would be a leak of the OpenStack labels.
+        exempt = ""
+        if (table, column) == ("bgl_entry", "message"):
+            exempt = "AND lower({c}) NOT LIKE '%exited abnormally%'"
+        elif (table, column) in GENUINE_PATTERN_TEXT:
+            exempt = "AND NOT (dataset = 'bgl' AND lower({c}) LIKE '%exited abnormally%')"
         query = sql.SQL("SELECT count(*) FROM {t} WHERE lower({c}) LIKE '%abnormal%' " + exempt).format(
             t=sql.Identifier(derived_sample.slm, table), c=sql.Identifier(column)
         )
@@ -355,7 +372,15 @@ def test_the_genuine_bgl_text_is_kept(database_url: str, derived_sample: Schemas
 
 
 def test_no_label_relation_or_file_name_column_exists(database_url: str, derived_sample: Schemas) -> None:
-    assert relations(database_url, derived_sample.slm) == ["bgl_entry", "os_entry", "ownership"]
+    # os_instance: the OpenStack instance phases (T11), computed from timing only.
+    assert relations(database_url, derived_sample.slm) == [
+        "bgl_entry",
+        "os_entry",
+        "os_instance",
+        "ownership",
+        "pattern",
+        "pattern_dict",
+    ]
     names = {column for _, column in text_columns(database_url, derived_sample.slm)}
     assert not names & {"source_file", "raw", "label", "anomaly", "is_anomaly"}
 
@@ -397,6 +422,40 @@ def test_the_ownership_table_has_one_team_per_component(database_url: str, deriv
     assert duplicates == []
     assert teams >= 2
     assert datasets == 2
+
+
+def test_the_ownership_table_has_the_canonical_columns(database_url: str, derived_sample: Schemas) -> None:
+    described = rows(database_url, q("DESCRIBE {t}", derived_sample, t="slm.ownership"))
+
+    assert [(str(r[0]), str(r[1])) for r in described] == [
+        ("dataset", "VARCHAR"),
+        ("component", "VARCHAR"),
+        ("team", "VARCHAR"),
+        ("team_source", "VARCHAR"),
+    ]
+
+
+def test_every_ownership_row_names_the_source_of_its_team(database_url: str, derived_sample: Schemas) -> None:
+    # The provenance travels with every join on the Ownership Table (#48); T25 sets its own value.
+    sources = dict(
+        rows(
+            database_url,
+            q("SELECT team_source, count(*) FROM {t} GROUP BY 1", derived_sample, t="slm.ownership"),
+        )
+    )
+
+    assert None not in sources
+    assert sources == {OWNERSHIP_STUB_SOURCE: 22}
+    # The Python flag that tools read agrees with the table, so T25 cannot swap one and not the other.
+    assert OWNERSHIP_IS_STUB is (set(sources) == {OWNERSHIP_STUB_SOURCE})
+
+
+def test_the_report_says_the_teams_come_from_the_stub(database_url: str, derived_sample: Schemas) -> None:
+    with psycopg.connect(database_url, autocommit=True) as conn:
+        lines = derive.report(conn, derived_sample.slm)
+
+    assert "Ownership Table team_source: stub 22" in lines
+    assert f"NOTE: {OWNERSHIP_NOTE}" in lines
 
 
 # ----------------------------------------------------------------- inverted indexes

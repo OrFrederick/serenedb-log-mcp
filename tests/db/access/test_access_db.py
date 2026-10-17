@@ -241,6 +241,7 @@ TOOL_CALLS: dict[str, CallSpec] = {
     "find_precursors": lambda role, granted: {"dataset": "bgl", "target_pattern": a_pattern_key(granted)},
     "list_patterns": lambda role, granted: {"dataset": "bgl"},
     "search_patterns": lambda role, granted: {"dataset": "bgl", "query": "error"},
+    "top_patterns": lambda role, granted: {"dataset": "bgl"},
 }
 """One call per registered tool, run as every Role. A new tool must add its call here, so it is
 checked through each Role's login and views."""

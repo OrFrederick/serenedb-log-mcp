@@ -19,6 +19,7 @@ Every tool takes a required `role` (`engineer`, `team_lead` or `manager`), which
 | [`list_patterns`](#list_patterns) | Pattern catalogue of a Dataset: read it first to choose Patterns | [Evidence](#output-evidence) |
 | [`search_logs`](#search_logs) | Search Log Entries by text or Pattern | [Evidence](#output-evidence) |
 | [`search_patterns`](#search_patterns) | Search the Pattern catalogue by words (BM25, stemming, synonyms) | [Evidence](#output-evidence) |
+| [`top_patterns`](#top_patterns) | Rank Patterns by Log Entries, Incidents, sources, recency or priority | [Evidence](#output-evidence) |
 | [`trend`](#trend) | Trend of Log Entries per time bucket, with baselines | [Evidence](#output-evidence) |
 
 ## `count_by`
@@ -630,6 +631,69 @@ not an error.
 
 `structuredContent` is the [Evidence](#output-evidence) object; the description says what its rows and summary hold for this tool.
 
+## `top_patterns`
+
+**Rank Patterns by Log Entries, Incidents, sources, recency or priority**
+
+Annotations: read-only, idempotent, closed world, `anthropic/alwaysLoad` (Claude Code loads it without ToolSearch).
+
+Description, as the agent reads it:
+
+```text
+Patterns ranked within a Data Scope, with Log Entries, Incidents, Spread and flags.
+
+Purpose: rank recurring problems. Use top_patterns to rank Patterns by frequency or
+priority in a Data Scope, and list_patterns to choose Patterns for a concept. A Pattern is a
+BGL alert category for alert lines and a template id otherwise. sort='priority' is the
+Manager ranking: over BGL alert categories plus OpenStack Request Failure Patterns only, the
+equal-weight mean of percentile ranks of Incidents, Spread, active weeks, the 28-day
+Incident trend and recency; the top 5 per Dataset are a band (band=true), to be read as a
+set, not an order. Counts are exact; quote them as given, never round, and never call Log
+Entries Incidents: entries and incidents are separate columns.
+Inputs: role, sort (entries, incidents, sources, recent, priority), and optional dataset,
+top, query, time_from, time_to, components, levels, sources, alert_categories, pattern_ids
+and family_id.
+Outputs: the Evidence envelope. rows: one per Pattern with dataset, pattern, kind
+(alert_category or template), template_text, component, entries, share_pct, pareto_pct
+(cumulative share of Log Entries), incidents, sources, spread (midplanes; instances for
+OpenStack), first_seen, last_seen, active_weeks, chronic, new, handoff_to and handoff_from
+(a wording drift within the Pattern Family); with sort='priority' also band, priority and
+the five factor percentiles. summary: per Dataset entries_total, incidents_total and
+patterns_total. notes: the rules behind every flag. total_matches counts Patterns.
+```
+
+### Inputs
+
+| Name | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `role` | one of `engineer`, `team_lead`, `manager` | yes |  | Who is asking: 'engineer' investigates one failure and needs example Log Entries and nearby events; 'team_lead' needs recurring problems with counts and trends per Component and Team, and receives at most 3 sample Log Entries from a search; 'manager' needs measured frequency and affected Components only, and receives no raw Log Entries (totals and facets, no rows). Every result carries the answer_frame for this Role; get_role_brief(role) has the full playbook. |
+| `sort` | one of `entries`, `incidents`, `sources`, `recent`, `priority` | no | `"entries"` | How to rank: 'entries' (Log Entries, the Pareto view), 'incidents', 'sources' (distinct nodes or instances), 'recent' (latest last Log Entry) or 'priority' (the Manager ranking over BGL alert categories plus OpenStack Request Failure Patterns, with a top-5 band). |
+| `dataset` | one of `bgl`, `openstack` or null | no | `null` | 'bgl' or 'openstack'; omit it for both, ranked per Dataset. |
+| `top` | integer | no | `20` | How many Patterns to list per Dataset (default 20, at most 50). |
+| `query` | string or null | no | `null` | Optional full-text filter on the message: every word must appear, in any order; put a phrase in double quotes, for example '"data TLB error"'. Omit it to count every Log Entry in the Data Scope. |
+| `time_from` | string or null | no | `null` | Start of the time range, inclusive, in UTC for every Dataset: ISO-8601 such as '2005-07-01' or '2005-07-01T12:00:00', or with an offset, which is converted to UTC (a logged BGL ts is US Pacific time: '2005-07-01T05:00:00-07:00'); or a relative range such as 'last 7d' or 'last 24h', which ends at the Dataset's last Log Entry, not today. Omit it to start at the first Log Entry. |
+| `time_to` | string or null | no | `null` | End of the time range, exclusive, in UTC like time_from (ISO-8601, an offset is converted). Omit it to end after the last Log Entry, and always omit it with a relative time_from. |
+| `components` | list of string or null | no | `null` | Only these Components, for example ['KERNEL'] or ['nova.compute.manager']. |
+| `levels` | list of string or null | no | `null` | Only these levels, for example ['FATAL', 'ERROR']. |
+| `sources` | list of string or null | no | `null` | Only these sources: BGL node names such as 'R30-M0-N9-C:J16-U01', or OpenStack instance UUIDs. |
+| `alert_categories` | list of string or null | no | `null` | BGL only: only these alert categories, for example ['KERNDTLB', 'KERNMNTF']. Restricts the Data Scope to BGL. |
+| `pattern_ids` | list of string or null | no | `null` | Only these Patterns: 16-hex template_id values, as list_patterns or count_by(group_by='pattern') return them. |
+| `family_id` | string or null | no | `null` | Only this Pattern Family (family_id): Patterns whose wording differs only by a known drift, counted together. |
+
+### Limits
+
+- `top`: 1 to 50
+- `query`: at most 500 characters
+- `components`: at most 50 items
+- `levels`: at most 20 items
+- `sources`: at most 100 items
+- `alert_categories`: at most 50 items
+- `pattern_ids`: at most 100 items
+
+### Output
+
+`structuredContent` is the [Evidence](#output-evidence) object; the description says what its rows and summary hold for this tool.
+
 ## `trend`
 
 **Trend of Log Entries per time bucket, with baselines**
@@ -697,7 +761,7 @@ method. total_matches counts buckets, not Log Entries.
 
 ## Output: Evidence
 
-Returned by `count_by`, `describe_corpus`, `find_precursors`, `get_context`, `get_evidence`, `latency_stats`, `list_incidents`, `list_patterns`, `search_logs`, `search_patterns`, `trend`.
+Returned by `count_by`, `describe_corpus`, `find_precursors`, `get_context`, `get_evidence`, `latency_stats`, `list_incidents`, `list_patterns`, `search_logs`, `search_patterns`, `top_patterns`, `trend`.
 
 The result of one executed tool call: its query, parameters, Data Scope, counts and rows. Cite it as `[E<n>]` next to every number taken from it. `total_matches` and `truncated` say whether the rows are the whole answer or a sample; a sample is never a frequency.
 

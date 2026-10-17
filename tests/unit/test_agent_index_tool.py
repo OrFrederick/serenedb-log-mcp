@@ -136,15 +136,16 @@ def test_without_time_to_the_slice_ends_after_the_last_log_entry(fake_admin: lis
     result = call("create_index", role="team_lead", dataset="bgl", time_from="2005-12-01")
 
     assert result.is_error is False
-    assert fake_admin == [("create", ("bgl", datetime(2005, 12, 1), datetime(2006, 1, 4, 8, 0, 6)))]
+    # The last BGL Log Entry is 2006-01-04 08:00:05 US Pacific time, 16:00:05 UTC: slices are UTC (#74).
+    assert fake_admin == [("create", ("bgl", datetime(2005, 12, 1), datetime(2006, 1, 4, 16, 0, 6)))]
 
 
 def test_a_relative_slice_resolves_against_the_corpus_end(fake_admin: list[tuple[str, Any]]) -> None:
     result = call("create_index", role="engineer", dataset="bgl", time_from="last 7d")
 
     assert result.is_error is False
-    end = datetime(2006, 1, 4, 8, 0, 6)
-    assert fake_admin == [("create", ("bgl", datetime(2005, 12, 28, 8, 0, 6), end))]
+    end = datetime(2006, 1, 4, 16, 0, 6)  # the UTC corpus end
+    assert fake_admin == [("create", ("bgl", datetime(2005, 12, 28, 16, 0, 6), end))]
     assert result.structured_content is not None
     assert result.structured_content["data_scope"]["time_input"] == "last 7d"
 

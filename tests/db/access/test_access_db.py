@@ -266,8 +266,14 @@ def registered_tools() -> set[str]:
     return anyio.run(names)
 
 
+AGENT_INDEX_TOOLS = {"create_index", "drop_index"}
+"""T19's writing tools build agent indexes in SLM_SCHEMA over the administrative connection
+(index_admin), and a Role reading its own views never routes to one (corpus.datasets.relation), so
+they have no per-Role view to check here; tests/db/agent_index covers them."""
+
+
 def test_every_registered_tool_has_a_call_here() -> None:
-    assert registered_tools() == set(TOOL_CALLS), (
+    assert registered_tools() - AGENT_INDEX_TOOLS == set(TOOL_CALLS), (
         "add the new tool to TOOL_CALLS so it is checked through each Role's login and views"
     )
 

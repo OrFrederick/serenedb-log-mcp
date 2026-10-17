@@ -17,7 +17,7 @@ import psycopg
 import pytest
 from mcp.server.mcpserver.exceptions import ToolError
 
-from serenedb_log_mcp import index_admin
+from serenedb_log_mcp import clock, index_admin
 from serenedb_log_mcp.config import load_settings
 from serenedb_log_mcp.corpus import agent_indexes
 from serenedb_log_mcp.corpus.agent_indexes import AgentIndex
@@ -126,9 +126,26 @@ def test_the_create_statement_indexes_every_canonical_column_over_the_slice_only
     assert '"message" "slm"."log_text"' in text
     for column in BGL_COLUMNS:
         assert f'"{column}"' in text
-    assert text.endswith(
-        "WHERE \"ts\" >= '2005-08-22 00:00:00'::timestamp AND \"ts\" < '2005-09-19 00:00:00'::timestamp"
+    # BGL logs US Pacific time, so the UTC slice (#74) is cut on epoch_utc, not on the local ts.
+    assert text.endswith('WHERE "epoch_utc" >= 1124668800.0 AND "epoch_utc" < 1127088000.0')
+
+
+def test_the_slice_holds_what_a_utc_data_scope_reads_not_the_local_day() -> None:
+    """The routing bug of the #59 review: a slice cut on BGL's local ts missed the Log Entries of a UTC
+    Data Scope that fell outside the local day, while the Evidence said the counts matched."""
+    utc_scope_start = datetime(2005, 8, 22, 3)  # 2005-08-21 20:00 in US Pacific time
+    text = index_admin.create_statement(relation("bgl", settings=SLM), NAME, utc_scope_start, END).as_string(
+        None
     )
+
+    assert f'"epoch_utc" >= {clock.utc_bound(relation("bgl", settings=SLM).dataset, utc_scope_start)}' in text
+    assert '"ts"' not in text.split("WHERE")[1]
+
+
+def test_a_dataset_logged_in_utc_is_cut_on_ts() -> None:
+    text = index_admin.create_statement(relation("openstack", settings=SLM), NAME, START, END).as_string(None)
+
+    assert "WHERE \"ts\" >= '2005-08-22 00:00:00'::timestamp" in text
 
 
 # ----------------------------------------------------------------- the slice

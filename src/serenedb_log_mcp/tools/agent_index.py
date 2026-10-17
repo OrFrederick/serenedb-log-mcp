@@ -14,6 +14,7 @@ from mcp.server.mcpserver import MCPServer
 from mcp_types import ToolAnnotations
 from pydantic import Field
 
+from serenedb_log_mcp.clock import utc_range
 from serenedb_log_mcp.corpus.datasets import DATASET_NAMES, DatasetName
 from serenedb_log_mcp.corpus.facts import dataset_facts
 from serenedb_log_mcp.evidence import DataScope, RoleParam
@@ -54,16 +55,18 @@ def register(server: MCPServer) -> None:
         time_from: Annotated[
             str,
             Field(
-                description="Start of the slice, inclusive: ISO-8601 without a time zone, for example "
-                "'2005-08-22', or a relative range such as 'last 7d', which ends at the Dataset's last "
-                "Log Entry."
+                description="Start of the slice, inclusive, in UTC like every Data Scope: ISO-8601 such as "
+                "'2005-08-22', or with an offset, which is converted to UTC (a logged BGL ts is US Pacific "
+                "time); or a relative range such as 'last 7d', which ends at the Dataset's last Log Entry.",
+                max_length=64,
             ),
         ],
         time_to: Annotated[
             str | None,
             Field(
-                description="End of the slice, exclusive, ISO-8601 without a time zone. Omit it to end "
-                "after the Dataset's last Log Entry, and always omit it with a relative time_from."
+                description="End of the slice, exclusive, in UTC like time_from. Omit it to end after the "
+                "Dataset's last Log Entry, and always omit it with a relative time_from.",
+                max_length=64,
             ),
         ] = None,
     ) -> ToolOutcome:
@@ -93,18 +96,20 @@ def register(server: MCPServer) -> None:
                 f"{dataset} has no Log Entries in this database, so there is nothing to index. Call "
                 "describe_corpus for the Datasets that are loaded."
             )
+        assert facts.first is not None
+        _, last = utc_range(dataset, facts.first, facts.last)
         scope = build_scope(
             [dataset],
             time_from=time_from,
             time_to=time_to,
-            corpus_end={dataset: facts.last},
+            corpus_end={dataset: last},
             known_datasets=DATASET_NAMES,
         )
         start, end = time_bounds(scope)
         if start is None:  # unreachable: time_from is required and always resolves to a start
             raise ScopeError("Pass time_from, the start of the slice to index, for example '2005-08-22'.")
         if end is None:
-            end = facts.last.replace(microsecond=0) + timedelta(seconds=1)
+            end = last.replace(microsecond=0) + timedelta(seconds=1)
             scope = scope.model_copy(update={"time_to": end.isoformat()})
         report = create_agent_index(dataset, start, end)
         return _created(report, scope)

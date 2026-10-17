@@ -45,6 +45,7 @@ import psycopg
 from mcp.server.mcpserver.exceptions import ToolError
 from psycopg import sql
 
+from serenedb_log_mcp import clock
 from serenedb_log_mcp.config import Settings, get_settings
 from serenedb_log_mcp.corpus import agent_indexes
 from serenedb_log_mcp.corpus.agent_indexes import AgentIndex, new_name
@@ -144,6 +145,10 @@ class IndexReport:
 def create_statement(rel: Relation, name: str, start: datetime, end: datetime) -> sql.Composed:
     """The partial inverted index over [start, end) of the Dataset's canonical table.
 
+    [start, end) is naive UTC, like every Data Scope since #74, so the slice is cut on the column the
+    Dataset's time arithmetic reads (`clock.time_column`: `epoch_utc` where `ts` is local time).
+    `relation()` routes a Data Scope to the index by comparing UTC with UTC.
+
     It indexes the same columns as the Dataset's full index (every canonical column, `message` with
     the `log_text` dictionary), so every predicate a tool puts on the full index works on it too.
     The bounds are literals: SereneDB, like PostgreSQL, binds no parameters in DDL.
@@ -154,22 +159,24 @@ def create_statement(rel: Relation, name: str, start: datetime, end: datetime) -
         else sql.Identifier(column)
         for column in rel.dataset.table_columns
     ]
-    ts = rel.column("time")
+    ts = sql.Identifier(clock.time_column(rel.dataset))
     return sql.SQL("CREATE INDEX {} ON {} USING inverted ({}) WHERE {} >= {} AND {} < {}").format(
         sql.Identifier(name),
         rel.table,
         sql.SQL(", ").join(columns),
         ts,
-        sql.Literal(start),
+        sql.Literal(clock.utc_bound(rel.dataset, start)),
         ts,
-        sql.Literal(end),
+        sql.Literal(clock.utc_bound(rel.dataset, end)),
     )
 
 
 def _count_slice(rel: Relation, start: datetime, end: datetime) -> QueryResult:
-    ts = rel.column("time")
+    ts = sql.Identifier(clock.time_column(rel.dataset))
     statement = sql.SQL("SELECT count(*) FROM {} WHERE {} >= %s AND {} < %s").format(rel.table, ts, ts)
-    return fetch_all(statement.as_string(None), [start, end])
+    return fetch_all(
+        statement.as_string(None), [clock.utc_bound(rel.dataset, start), clock.utc_bound(rel.dataset, end)]
+    )
 
 
 def _single_count(result: QueryResult, what: str) -> int:

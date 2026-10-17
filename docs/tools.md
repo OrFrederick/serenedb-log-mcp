@@ -78,12 +78,17 @@ the baseline method. total_matches counts groups, not Log Entries.
 ### Limits
 
 - `query`: at most 500 characters
+- `time_from`: at most 64 characters
+- `time_to`: at most 64 characters
 - `components`: at most 50 items
 - `levels`: at most 20 items
 - `sources`: at most 100 items
 - `alert_categories`: at most 50 items
 - `pattern_ids`: at most 100 items
+- `family_id`: at most 32 characters
 - `top`: 1 to 100
+- `baseline_from`: at most 64 characters
+- `baseline_to`: at most 64 characters
 
 ### Output
 
@@ -241,6 +246,8 @@ total_matches counts passing precursors.
 - `min_support`: at least 1
 - `min_lift`: 1.0 to 1000000.0
 - `limit`: 1 to 50
+- `time_from`: at most 64 characters
+- `time_to`: at most 64 characters
 - `sources`: at most 100 items
 
 ### Output
@@ -523,11 +530,14 @@ reference_patterns, candidates_total and scored_total. total_matches counts Inci
 - `gap_s`: 1 to 86400
 - `limit`: 1 to 100
 - `query`: at most 500 characters
+- `time_from`: at most 64 characters
+- `time_to`: at most 64 characters
 - `components`: at most 50 items
 - `levels`: at most 20 items
 - `sources`: at most 100 items
 - `alert_categories`: at most 50 items
 - `pattern_ids`: at most 100 items
+- `family_id`: at most 32 characters
 - `similar_to`: at least 1
 
 ### Output
@@ -578,6 +588,7 @@ page_components and components; total_matches counts Patterns, not Log Entries.
 
 - `component`: at most 200 characters
 - `pattern_ids`: at most 100 items
+- `family_id`: at most 32 characters
 - `page`: 1 to 100
 
 ### Output
@@ -635,6 +646,9 @@ No match returns a hint in notes, not an error.
 
 - `query`: at most 500 characters
 - `pattern_ids`: at most 100 items
+- `family_id`: at most 32 characters
+- `time_from`: at most 64 characters
+- `time_to`: at most 64 characters
 - `components`: at most 50 items
 - `levels`: at most 20 items
 - `sources`: at most 100 items
@@ -742,11 +756,14 @@ patterns_total. notes: the rules behind every flag. total_matches counts Pattern
 
 - `top`: 1 to 50
 - `query`: at most 500 characters
+- `time_from`: at most 64 characters
+- `time_to`: at most 64 characters
 - `components`: at most 50 items
 - `levels`: at most 20 items
 - `sources`: at most 100 items
 - `alert_categories`: at most 50 items
 - `pattern_ids`: at most 100 items
+- `family_id`: at most 32 characters
 
 ### Output
 
@@ -806,11 +823,14 @@ method. total_matches counts buckets, not Log Entries.
 ### Limits
 
 - `query`: at most 500 characters
+- `time_from`: at most 64 characters
+- `time_to`: at most 64 characters
 - `components`: at most 50 items
 - `levels`: at most 20 items
 - `sources`: at most 100 items
 - `alert_categories`: at most 50 items
 - `pattern_ids`: at most 100 items
+- `family_id`: at most 32 characters
 - `top`: 1 to 5
 
 ### Output
@@ -862,7 +882,7 @@ number checked, with its status and the Evidence ids that hold it), cited_eviden
 
 ### Limits
 
-No bounds in the input schema; the description states any other limits.
+- `draft`: at most 50000 characters
 
 ### Output
 

@@ -140,6 +140,27 @@ def test_a_malformed_ledger_path_fails_at_startup(
     assert fake_server.runs == []
 
 
+def test_a_ledger_path_that_cannot_be_read_fails_at_startup(
+    fake_server: FakeServer,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
+) -> None:
+    # A LEDGER_PATH that points at a directory, or at a file this process may not read, raises
+    # OSError rather than LedgerError. That is still a usage error and not a reason to show the
+    # caller a traceback.
+    directory = tmp_path / "ledger.jsonl"
+    directory.mkdir()
+    monkeypatch.setenv("LEDGER_PATH", str(directory))
+
+    with pytest.raises(SystemExit) as exit_info:
+        cli.main([])
+
+    assert exit_info.value.code == 2
+    assert "LEDGER_PATH" in capsys.readouterr().err
+    assert fake_server.runs == []
+
+
 def test_a_usable_ledger_path_is_loaded_before_the_server_runs(
     fake_server: FakeServer, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:

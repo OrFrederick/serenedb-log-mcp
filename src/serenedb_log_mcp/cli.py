@@ -50,10 +50,11 @@ def main(argv: Sequence[str] | None = None) -> None:
         parser.error(str(exc))
     set_settings(settings)
     # The Evidence Ledger is loaded here, so a broken LEDGER_PATH is a usage error now instead of a
-    # ToolError in the middle of an investigation.
+    # ToolError in the middle of an investigation. A path that is a directory or that this process
+    # may not read raises OSError rather than LedgerError, and is just as much a usage error.
     try:
         get_ledger()
-    except LedgerError as exc:
+    except (LedgerError, OSError) as exc:
         parser.error(f"LEDGER_PATH: {exc}")
     server = create_server()
     if args.transport == "stdio":

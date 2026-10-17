@@ -49,4 +49,5 @@ warn_required_dynamic_aliases = true
 testpaths = ["tests"]
 pythonpath = ["scripts"]
 # The db and corpus markers are defined in tests/conftest.py.
-addopts = ["-ra", "--strict-markers", "-p", "pytester"]
+# importlib mode lets two test files share a name in different directories.
+addopts = ["-ra", "--strict-markers", "--import-mode=importlib", "-p", "pytester"]

@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+from datetime import timedelta
+
 import pytest
-from aggregation_corpus import APPSEV, BGL_FIRST, BGL_LAST, NEWCOMP, STEADY, STORM
+from aggregation_corpus import APPSEV, BGL_FIRST, BGL_LAST, NEWCOMP, OS_FIRST, STEADY, STORM
 from aggregation_tools import call, independent, row_dicts
 from retrieval_corpus import BGL_TOTAL, OS_TOTAL
 
@@ -17,14 +19,17 @@ def test_both_datasets_with_rows_time_range_corpus_end_and_pattern_counts(corpus
     assert list(datasets) == ["bgl", "openstack"]
     bgl = datasets["bgl"]
     assert bgl["entries"] == BGL_TOTAL
-    assert bgl["first_entry"] == BGL_FIRST.isoformat()
-    assert bgl["last_entry"] == bgl["corpus_end"] == BGL_LAST.isoformat()
+    # UTC, the clock of every time input (#73): BGL's ts is logged in PDT here, UTC-7.
+    assert bgl["first_entry"] == (BGL_FIRST + timedelta(hours=7)).isoformat() == "2005-06-01T16:00:00"
+    assert bgl["last_entry"] == bgl["corpus_end"] == (BGL_LAST + timedelta(hours=7)).isoformat()
+    assert datasets["openstack"]["first_entry"] == OS_FIRST.isoformat()
     assert bgl["patterns"] == 3
     assert bgl["entries_with_pattern"] == STEADY + STORM
     assert datasets["openstack"]["entries"] == OS_TOTAL
     assert datasets["openstack"]["patterns"] == 0
     assert result["summary"]["entries_total"] == BGL_TOTAL + OS_TOTAL
     assert result["data_scope"]["datasets"] == ["bgl", "openstack"]
+    assert result["data_scope"]["time_zone"] == "UTC"
 
 
 def test_components_come_with_counts_and_teams(corpus: str) -> None:
@@ -62,7 +67,8 @@ def test_the_notes_say_log_entries_are_not_incidents_and_how_time_works(corpus: 
     notes = " ".join(call("describe_corpus", role="manager")["notes"])
 
     assert "not Incidents" in notes
-    assert "corpus_end" in notes
+    assert "first_entry, last_entry and corpus_end are UTC" in notes
+    assert "For a logged bgl ts, UTC = ts + 7 h" in notes
     assert "stub Ownership Table" in notes
     assert "No Pattern ids are assigned in openstack" in notes
 

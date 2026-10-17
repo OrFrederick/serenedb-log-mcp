@@ -31,6 +31,7 @@ from mcp.server.mcpserver import MCPServer
 from psycopg import sql
 from pydantic import Field
 
+from serenedb_log_mcp.config import Role
 from serenedb_log_mcp.corpus.datasets import (
     DEFAULT_GAP_S,
     DEFAULT_MERGE_SCOPE,
@@ -41,7 +42,7 @@ from serenedb_log_mcp.corpus.datasets import (
 )
 from serenedb_log_mcp.corpus.facts import dataset_facts
 from serenedb_log_mcp.db import QueryResult
-from serenedb_log_mcp.evidence import RoleParam, ScopeFilters
+from serenedb_log_mcp.evidence import DataScope, RoleParam, ScopeFilters
 from serenedb_log_mcp.scope import ScopeError, validate_choice
 from serenedb_log_mcp.toolkit import ToolOutcome, evidence_tool
 from serenedb_log_mcp.tools._aggregate import (
@@ -54,8 +55,8 @@ from serenedb_log_mcp.tools._aggregate import (
     Q,
     QueryParam,
     SourcesParam,
-    TimeFromParam,
-    TimeToParam,
+    UtcTimeFromParam,
+    UtcTimeToParam,
     bound,
     choose_datasets,
     literal,
@@ -64,7 +65,16 @@ from serenedb_log_mcp.tools._aggregate import (
     run,
 )
 
-__all__ = ["DEFAULT_LIMIT", "MAX_LIMIT", "SORTS", "pattern_key_of", "reads_table", "register"]
+__all__ = [
+    "DEFAULT_LIMIT",
+    "MAX_LIMIT",
+    "SORTS",
+    "check_similar_to",
+    "pattern_key_of",
+    "reads_table",
+    "register",
+    "source_of",
+]
 
 DEFAULT_LIMIT = 20
 MAX_LIMIT = 100
@@ -157,6 +167,23 @@ class _Call:
         return self.dataset == "bgl"
 
 
+def _host(rel: Relation, alias: str) -> sql.Composable:
+    """The host of an OpenStack Log Entry: the nova service whose log file carries it (nova-api, ...)."""
+    log = sql.SQL("{}.{}").format(sql.SQL(alias), rel.column("log_file"))
+    return sql.SQL("coalesce(nullif(regexp_extract({log}, '^([A-Za-z0-9_-]+)', 1), ''), {log})").format(
+        log=log
+    )
+
+
+def source_of(rel: Relation, alias: str = "e") -> sql.Composable:
+    """The source of a Log Entry, as Incidents count Spread: the BGL node; for OpenStack the instance
+    the Log Entry names, or its host when it names none. sql/derive/35_os_incidents.sql uses the same."""
+    if rel.dataset.name == "bgl":
+        return sql.SQL("{}.{}").format(sql.SQL(alias), rel.column("node"))
+    instance = sql.SQL("{}.{}").format(sql.SQL(alias), rel.column("instance_ref"))
+    return sql.SQL("coalesce({}, {})").format(instance, _host(rel, alias))
+
+
 def _entries(call: _Call, *, filtered: bool) -> Q:
     """The Log Entries the Incidents are made of, one row each, with their source and topology."""
     rel = call.rel
@@ -170,15 +197,11 @@ def _entries(call: _Call, *, filtered: bool) -> Q:
             "CAST(NULL AS VARCHAR) AS instance, CAST(NULL AS VARCHAR) AS host"
         ).format(node=col("node"), nodecard=col("nodecard"), midplane=col("midplane"), rack=col("rack"))
     else:
-        # The host of a Log Entry: the nova service whose log file carries it (nova-api, ...).
-        host = sql.SQL("coalesce(nullif(regexp_extract({log}, '^([A-Za-z0-9_-]+)', 1), ''), {log})").format(
-            log=col("log_file")
-        )
         topology = sql.SQL(
-            "coalesce({instance}, {host}) AS src, CAST(NULL AS VARCHAR) AS nodecard, "
+            "{src} AS src, CAST(NULL AS VARCHAR) AS nodecard, "
             "CAST(NULL AS VARCHAR) AS midplane, CAST(NULL AS VARCHAR) AS rack, {instance} AS instance, "
             "CASE WHEN {instance} IS NULL THEN {host} END AS host"
-        ).format(instance=col("instance_ref"), host=host)
+        ).format(src=source_of(rel), instance=col("instance_ref"), host=_host(rel, "e"))
     conditions = [q("{} IS NOT NULL", col("pattern_key"))]
     if not call.is_bgl:
         # The Request Failure predicate; sql/derive/35_os_incidents.sql uses the same.
@@ -517,6 +540,273 @@ def _notes(call: _Call, from_table: bool, summary: dict[str, Any]) -> list[str]:
     return notes
 
 
+# Similar Incidents (T16, #7) -----------------------------------------------------------------------------
+
+SIMILAR_EXTRA = ["jaccard", "shared_patterns", "signature_patterns", "same_component"]
+_REF = ("pattern_key", "incident_id", "t0", "t1", "entries", "nodes", "shape")
+_SIMILAR_ORDER = (
+    "jaccard DESC, same_component DESC, same_shape DESC, spread_gap, t0_utc DESC, pattern_key, incident_id"
+)
+
+
+def check_similar_to(
+    similar_to: int | None, pattern_key: str | None, gap_s: int, merge_scope: str, filters: Sequence[str]
+) -> None:
+    """Raise ScopeError when a `similar_to` call cannot name its reference Incident in the table."""
+    if similar_to is None:
+        return
+    if pattern_key is None:
+        raise ScopeError(
+            "similar_to is the incident_id of one Incident of pattern_key, because incident ids count "
+            "within one Pattern: pass pattern_key too, for example pattern_key='KERNTERM', similar_to=98, "
+            "with the pattern_key and incident_id of a row of list_incidents."
+        )
+    if pattern_key == LIFECYCLE_KEY:
+        raise ScopeError(
+            f"similar_to compares the Patterns seen on an Incident's sources while it lasts; the "
+            f"{LIFECYCLE_KEY!r} Request Failures are whole instance lifecycles, not chained Log Entries. "
+            "Pass the template_id of a chained Request Failure instead."
+        )
+    if gap_s != DEFAULT_GAP_S or merge_scope != DEFAULT_MERGE_SCOPE or filters:
+        given = ", ".join(filters) or "gap_s or merge_scope"
+        raise ScopeError(
+            f"similar_to ranks the Incidents of the precomputed table (gap_s={DEFAULT_GAP_S}, merge_scope="
+            f"'{DEFAULT_MERGE_SCOPE}'), so it takes no other parameters; drop {given}."
+        )
+
+
+def _members(call: _Call, incident: str) -> Q:
+    """The Log Entries an Incident of the table is made of: its Pattern's entries during it (BGL, or the
+    failing ones for OpenStack), because an Incident is a maximal chain merged across every source."""
+    rel = call.rel
+    failing = (
+        Q(sql.SQL(""))
+        if call.is_bgl
+        else q(
+            " AND ({} IN ('ERROR', 'CRITICAL') OR {} >= 500)",
+            sql.SQL("e.{}").format(rel.column("level")),
+            sql.SQL("e.{}").format(rel.column("http_status")),
+        )
+    )
+    return q(
+        "JOIN {} AS e ON e.{} = {}.pattern_key AND e.{} >= {}.t0_utc AND e.{} <= {}.t1_utc{}",
+        rel.table,
+        rel.column("pattern_key"),
+        sql.SQL(incident),
+        rel.column("epoch"),
+        sql.SQL(incident),
+        rel.column("epoch"),
+        sql.SQL(incident),
+        failing,
+    )
+
+
+def _on_sources(call: _Call, sources: str) -> Q:
+    """The Log Entries on the sources of `sources` (columns src, t0_utc, t1_utc) while the Incident lasts."""
+    rel = call.rel
+    return q(
+        "JOIN {} AS e ON {} = {}.src AND e.{} >= {}.t0_utc AND e.{} <= {}.t1_utc WHERE e.{} IS NOT NULL",
+        rel.table,
+        source_of(rel),
+        sql.SQL(sources),
+        rel.column("epoch"),
+        sql.SQL(sources),
+        rel.column("epoch"),
+        sql.SQL(sources),
+        rel.column("pattern_key"),
+    )
+
+
+def _reference_statement(call: _Call, similar_to: int) -> Q:
+    """The reference Incident, one row per Pattern of its signature."""
+    return q(
+        """WITH ref AS (
+    SELECT * FROM {} WHERE dataset = {} AND pattern_key = {} AND incident_id = {}
+),
+ref_sources AS (SELECT DISTINCT {} AS src, r.t0_utc, r.t1_utc FROM ref AS r {})
+SELECT r.pattern_key, r.incident_id, r.t0, r.t1, r.entries, r.nodes, r.shape, sig.p
+FROM ref AS r LEFT JOIN (SELECT DISTINCT e.{} AS p FROM ref_sources AS s {}) AS sig ON TRUE
+ORDER BY sig.p""",
+        call.rel.incidents_table,
+        bound(call.dataset),
+        bound(call.pattern_key),
+        bound(similar_to),
+        source_of(call.rel),
+        _members(call, "r"),
+        call.rel.column("pattern_key"),
+        _on_sources(call, "s"),
+    )
+
+
+def _similar_statement(call: _Call, similar_to: int) -> Q:
+    """Earlier Incidents ranked by the Jaccard similarity of their signatures to the reference's.
+
+    A signature is the set of Patterns seen on an Incident's sources while it lasts. Candidates are
+    the earlier Incidents whose own Pattern is in the reference signature (blocking); every other
+    Incident would need its whole signature computed, which over 42,199 BGL Incidents takes about 15 s.
+    """
+    rel = call.rel
+    return q(
+        """WITH incidents AS (SELECT * FROM {} WHERE dataset = {} AND pattern_key <> {}),
+ref AS (SELECT * FROM incidents WHERE pattern_key = {} AND incident_id = {}),
+ref_entries AS (SELECT {} AS src, e.{} AS component, r.t0_utc, r.t1_utc FROM ref AS r {}),
+ref_sources AS (SELECT DISTINCT src, t0_utc, t1_utc FROM ref_entries),
+ref_component AS (
+    SELECT component FROM ref_entries GROUP BY component ORDER BY count(*) DESC, component LIMIT 1
+),
+ref_sig AS (SELECT DISTINCT e.{} AS p FROM ref_sources AS s {}),
+ref_size AS (SELECT count(*) AS n FROM ref_sig),
+cand AS (
+    SELECT c.* FROM incidents AS c CROSS JOIN ref AS r
+    WHERE c.t0_utc < r.t0_utc AND c.pattern_key IN (SELECT p FROM ref_sig)
+),
+cand_entries AS (
+    SELECT c.pattern_key AS k, c.incident_id AS id, c.t0_utc, c.t1_utc, {} AS src, e.{} AS component
+    FROM cand AS c {}
+),
+cand_sources AS (SELECT DISTINCT k, id, t0_utc, t1_utc, src FROM cand_entries),
+cand_component AS (
+    SELECT k, id, component FROM (
+        SELECT k, id, component,
+               row_number() OVER (PARTITION BY k, id ORDER BY count(*) DESC, component) AS rnk
+        FROM cand_entries GROUP BY k, id, component) AS ranked
+    WHERE rnk = 1
+),
+cand_sig AS (SELECT DISTINCT s.k, s.id, e.{} AS p FROM cand_sources AS s {}),
+scored AS (
+    SELECT k, id, count(*) AS sig_n, count(*) FILTER (WHERE p IN (SELECT p FROM ref_sig)) AS shared
+    FROM cand_sig GROUP BY k, id
+),
+ranked AS (
+    SELECT c.pattern_key, c.incident_id, c.t0, c.t1, c.t0_utc, c.t1_utc, c.entries, c.bursts, c.nodes,
+           c.nodecards, c.midplanes, c.racks, c.top_node, c.top_node_share, c.shape,
+           CAST(s.shared AS DOUBLE) / (s.sig_n + z.n - s.shared) AS jaccard, s.shared, s.sig_n,
+           coalesce(cc.component = rc.component, FALSE) AS same_component,
+           coalesce(c.shape, '') = coalesce(r.shape, '') AS same_shape,
+           abs(c.nodes - r.nodes) AS spread_gap
+    FROM cand AS c
+    JOIN scored AS s ON s.k = c.pattern_key AND s.id = c.incident_id
+    LEFT JOIN cand_component AS cc ON cc.k = c.pattern_key AND cc.id = c.incident_id
+    CROSS JOIN ref AS r CROSS JOIN ref_size AS z
+    LEFT JOIN ref_component AS rc ON TRUE
+)
+SELECT (SELECT count(*) FROM ranked) AS scored_total, (SELECT count(*) FROM cand) AS candidates_total,
+       l.pattern_key, l.incident_id, l.t0, l.t1, round(l.t1_utc - l.t0_utc, 3) AS duration_s, l.entries,
+       l.bursts, l.nodes, l.nodecards, l.midplanes, l.racks, l.top_node, round(l.top_node_share, 4),
+       l.shape, round(l.jaccard, 4), l.shared, l.sig_n, l.same_component
+FROM (SELECT 1 AS one) AS o
+LEFT JOIN (SELECT * FROM ranked ORDER BY {} LIMIT {}) AS l ON TRUE
+ORDER BY {}""",
+        rel.incidents_table,
+        bound(call.dataset),
+        bound(LIFECYCLE_KEY),
+        bound(call.pattern_key),
+        bound(similar_to),
+        source_of(rel),
+        rel.column("component"),
+        _members(call, "r"),
+        rel.column("pattern_key"),
+        _on_sources(call, "s"),
+        source_of(rel),
+        rel.column("component"),
+        _members(call, "c"),
+        rel.column("pattern_key"),
+        _on_sources(call, "s"),
+        sql.SQL(_SIMILAR_ORDER),
+        bound(call.limit),
+        sql.SQL("l." + _SIMILAR_ORDER.replace(", ", ", l.")),
+    )
+
+
+def _similar_rows(call: _Call, rows: Sequence[Sequence[Any]]) -> tuple[dict[str, int], list[list[Any]]]:
+    totals = {"scored_total": int(rows[0][0] or 0), "candidates_total": int(rows[0][1] or 0)} if rows else {}
+    names = (*_ROW, "jaccard", "shared_patterns", "signature_patterns", "same_component")
+    listed: list[list[Any]] = []
+    for row in rows:
+        incident = dict(zip(names, row[2:], strict=True))
+        if incident["incident_id"] is None:
+            continue
+        incident["duration_s"] = _number(incident["duration_s"])
+        incident["jaccard"] = _number(incident["jaccard"])
+        columns = BGL_COLUMNS if call.is_bgl else OS_COLUMNS
+        keys = columns if call.is_bgl else [_OS_FROM.get(c, c) for c in columns]
+        listed.append([incident[k] for k in [*keys, *SIMILAR_EXTRA]])
+    return totals, listed
+
+
+def _similar_notes(
+    call: _Call, reference: dict[str, Any], signature: list[str], totals: dict[str, int]
+) -> list[str]:
+    where = "nodes" if call.is_bgl else "sources (instances, or hosts for Log Entries that name none)"
+    notes = [
+        f"Similar Incidents: earlier Incidents ranked by the Jaccard similarity of their signatures to the "
+        f"signature of {call.pattern_key} Incident {reference['incident_id']}. A signature is the set of "
+        f"Patterns seen on an Incident's {where} from its first to its last Log Entry; Jaccard is shared "
+        "Patterns over all Patterns of both. Ties are broken by the same dominant Component, then the same "
+        "Shape, then the closest number of sources, then the most recent. It is an exact set comparison, "
+        "never a BM25 or text-relevance sort, and uses no embeddings.",
+        f"The reference signature has {len(signature)} Patterns. Candidates are the earlier Incidents whose "
+        f"own Pattern is in it: {totals.get('candidates_total', 0):,} of them, all scored "
+        f"({totals.get('scored_total', 0):,}); an Incident of another Pattern can share Patterns with the "
+        "reference and is not scored. Read from the precomputed Incident table "
+        f"(gap_s={DEFAULT_GAP_S}, merge_scope='{DEFAULT_MERGE_SCOPE}').",
+        "A look-alike is a Hypothesis that the Incidents share a cause; the Jaccard value is an Observed "
+        "Fact about the Pattern sets.",
+    ]
+    if not call.is_bgl:
+        notes.append(
+            f"The {LIFECYCLE_KEY!r} Request Failures are not compared: they are not chained Log Entries."
+        )
+    if totals.get("scored_total", 0) == 0:
+        notes.append(
+            "No earlier Incident shares a Pattern with the reference signature: nothing similar came before."
+        )
+    return notes
+
+
+def _similar(call: _Call, similar_to: int, role: Role, scope: DataScope) -> ToolOutcome:
+    found = run(_reference_statement(call, similar_to), role)
+    if not found.rows:
+        raise ScopeError(
+            f"There is no {call.dataset} Incident with pattern_key={call.pattern_key!r} and incident_id="
+            f"{similar_to}. Call list_incidents(dataset={call.dataset!r}, pattern_key={call.pattern_key!r}) "
+            "for its incident ids."
+        )
+    reference = dict(zip(_REF, found.rows[0][: len(_REF)], strict=True))
+    if call.dataset != "bgl":
+        reference["sources"] = reference.pop("nodes")
+        reference.pop("shape")
+    signature = [str(row[len(_REF)]) for row in found.rows if row[len(_REF)] is not None]
+    result = run(_similar_statement(call, similar_to), role)
+    totals, rows = _similar_rows(call, result.rows)
+    summary: dict[str, Any] = {
+        "dataset": call.dataset,
+        "pattern_key": call.pattern_key,
+        "similar_to": similar_to,
+        "reference": reference,
+        "reference_patterns": signature,
+        "candidates_total": totals.get("candidates_total", 0),
+        "scored_total": totals.get("scored_total", 0),
+        "gap_s": call.gap_s,
+        "merge_scope": call.merge_scope,
+        "computed": TABLE,
+    }
+    total = summary["scored_total"]
+    return ToolOutcome(
+        result=QueryResult.combine(found, result, total=total, rows=rows),
+        scope=scope,
+        columns=(BGL_COLUMNS if call.is_bgl else OS_COLUMNS) + SIMILAR_EXTRA,
+        summary=summary,
+        notes=_similar_notes(call, reference, signature, totals),
+        rows=rows,
+        total_matches=total,
+        truncation_note=(
+            f"Showing the {len(rows)} most similar of {total:,} scored earlier Incidents; "
+            "scored_total in summary counts all of them."
+        ),
+    )
+
+
 # The tool --------------------------------------------------------------------------------------------------
 
 
@@ -573,14 +863,24 @@ def register(server: MCPServer) -> None:
             ),
         ] = DEFAULT_LIMIT,
         query: QueryParam = None,
-        time_from: TimeFromParam = None,
-        time_to: TimeToParam = None,
+        time_from: UtcTimeFromParam = None,
+        time_to: UtcTimeToParam = None,
         components: ComponentsParam = None,
         levels: LevelsParam = None,
         sources: SourcesParam = None,
         alert_categories: AlertCategoriesParam = None,
         pattern_ids: PatternIdsParam = None,
         family_id: FamilyIdParam = None,
+        similar_to: Annotated[
+            int | None,
+            Field(
+                ge=1,
+                description="The incident_id of one Incident of pattern_key (both from a list_incidents "
+                "row): list the earlier Incidents most like it, ranked by the Jaccard similarity of the "
+                "Pattern sets seen on their sources while they lasted, then same Component, then Spread. "
+                "Needs pattern_key and no other filter; sort is then ignored.",
+            ),
+        ] = None,
     ) -> ToolOutcome:
         """Incidents: Log Entries of one Pattern chained in time, with Spread and Shape, next to
         the Log Entry counts.
@@ -594,6 +894,10 @@ def register(server: MCPServer) -> None:
         multi-midplane, machine-wide). OpenStack Incidents are Request Failures (ERROR or CRITICAL
         lines and HTTP 5xx responses, plus instances whose lifecycle never completes), with sources
         (instances, or hosts for lines that name no instance) as Spread and no Shape.
+        similar_to: with pattern_key, the incident_id of a reference Incident: the rows are then
+        the earlier Incidents most like it (exact Jaccard similarity of the Pattern sets seen on
+        their sources while they lasted, then same Component, then Spread; never a BM25 sort), with
+        jaccard, shared_patterns, signature_patterns and same_component columns.
         pattern_key: a BGL alert category (the alert_category value of count_by and search_logs,
         for example 'KERNDTLB'), or a template_id from list_patterns (choose Patterns there, then
         pass one here), or 'lifecycle-incomplete' for OpenStack.
@@ -603,12 +907,13 @@ def register(server: MCPServer) -> None:
         pattern_ids, components, levels, sources, query or a time range).
         Inputs: role, dataset, and optional pattern_key, gap_s, merge_scope, sort (entries, spread,
         time, recent, duration), limit (default 20, at most 100), query, time_from, time_to,
-        components, levels, sources, alert_categories, pattern_ids and family_id.
+        components, levels, sources, alert_categories, pattern_ids, family_id and similar_to.
         Outputs: the Evidence envelope. rows: one per Incident with pattern_key, incident_id, t0, t1,
         duration_s, entries, bursts and the Spread columns. summary: entries_total, incidents_total,
         the Spread totals (BGL nodes_total, nodecards_total, midplanes_total, racks_total and
         incidents_by_shape; OpenStack sources_total, instances_total, hosts_total) and computed
-        (precomputed table or chained at query time). total_matches counts Incidents.
+        (precomputed table or chained at query time); with similar_to, the reference Incident, its
+        reference_patterns, candidates_total and scored_total. total_matches counts Incidents.
         """
         datasets, _ = choose_datasets(dataset, None, alert_categories)
         facts = dataset_facts(dataset, role)
@@ -628,6 +933,7 @@ def register(server: MCPServer) -> None:
             )
             if value
         ]
+        check_similar_to(similar_to, key, gap_s, merge_scope, given)
         from_table = reads_table(gap_s, merge_scope, given, pattern_key=key)
         prepared = prepare(
             role,
@@ -654,6 +960,11 @@ def register(server: MCPServer) -> None:
             }
         )
         call = _Call(dataset, prepared.parts[0], key, gap_s, merge_scope, sort, limit)
+        if similar_to is not None:
+            similar_scope = scope.model_copy(
+                update={"filters": ScopeFilters.of(**scope.filters.model_dump(), similar_to=similar_to)}
+            )
+            return _similar(call, similar_to, role, similar_scope)
         result = run(_statement(call, from_table), role)
         totals, rows = _read(call, result.rows)
         summary = _summary(call, from_table, totals)

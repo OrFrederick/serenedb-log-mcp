@@ -27,8 +27,8 @@ from serenedb_log_mcp.tools._aggregate import (
     Prepared,
     QueryParam,
     SourcesParam,
-    TimeFromParam,
-    TimeToParam,
+    UtcTimeFromParam,
+    UtcTimeToParam,
     baseline_of,
     baseline_summary,
     choose_datasets,
@@ -69,8 +69,8 @@ def register(server: MCPServer) -> None:
             Field(description="'bgl' or 'openstack'; omit it for the whole Base Corpus (both Datasets)."),
         ] = None,
         query: QueryParam = None,
-        time_from: TimeFromParam = None,
-        time_to: TimeToParam = None,
+        time_from: UtcTimeFromParam = None,
+        time_to: UtcTimeToParam = None,
         components: ComponentsParam = None,
         levels: LevelsParam = None,
         sources: SourcesParam = None,
@@ -89,13 +89,13 @@ def register(server: MCPServer) -> None:
         baseline_from: Annotated[
             str | None,
             Field(
-                description="Optional baseline period start (ISO-8601), with baseline_to. Its count, "
-                "scaled to the Data Scope's length, becomes expected and drives baseline_flag "
-                "(baseline_basis 'named_period'); without it the median week is the reference."
+                description="Optional baseline period start (ISO-8601, UTC like time_from), with "
+                "baseline_to. Its count, scaled to the Data Scope's length, becomes expected and drives "
+                "baseline_flag (baseline_basis 'named_period'); without it the median week is the reference."
             ),
         ] = None,
         baseline_to: Annotated[
-            str | None, Field(description="Optional baseline period end, exclusive (ISO-8601).")
+            str | None, Field(description="Optional baseline period end, exclusive (ISO-8601, UTC).")
         ] = None,
     ) -> ToolOutcome:
         """Exact counts of matching Log Entries grouped by one dimension, with a baseline per count.
@@ -103,6 +103,8 @@ def register(server: MCPServer) -> None:
         Purpose: answer "how often", "which Components, Teams, nodes or categories" and "is this
         unusual" over any Data Scope, including the whole Base Corpus.
         Counts are Log Entries, not Incidents: one failing node can write thousands of lines.
+        Times are UTC for every Dataset, in the inputs and the results: BGL's ts is US Pacific local
+        time, so its time range and baselines are computed on epoch_utc (data_scope.time_columns).
         Quote exact numbers, never round, and quote share_pct, top_n_sum and other_count instead of
         adding or dividing yourself. Use search_logs for example Log Entries and trend for the
         change over time.
@@ -110,9 +112,9 @@ def register(server: MCPServer) -> None:
         time_to, components, levels, sources, alert_categories, pattern_ids, family_id, top,
         baseline_from and baseline_to.
         Outputs: the Evidence envelope. rows: one per group, largest first, with columns dataset,
-        the group_by value, count, share_pct, distinct_sources, first_seen, last_seen, prev_period,
-        median_week, expected, baseline_basis (named_period, median_week, previous_period or none)
-        and baseline_flag (normal, unusual_high, unusual_low or no_baseline),
+        the group_by value, count, share_pct, distinct_sources, first_seen and last_seen (UTC),
+        prev_period, median_week, expected, baseline_basis (named_period, median_week,
+        previous_period or none) and baseline_flag (normal, unusual_high, unusual_low or no_baseline),
         plus an (other) row per Dataset for the groups beyond top. summary: total, groups_total,
         top_n_sum, top_n_share_pct, other_count, other_groups and the baseline periods. notes:
         the baseline method. total_matches counts groups, not Log Entries.

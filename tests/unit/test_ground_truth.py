@@ -5,11 +5,12 @@ from __future__ import annotations
 import re
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 import pytest
 
 import ground_truth
-from ground_truth import Ranked, parse_labels, replace_section, score
+from ground_truth import MetricResult, Ranked, parse_labels, render_openstack, replace_section, score
 
 ROOT = Path(__file__).resolve().parents[2]
 LABEL_FILE_TEXT = """The following VM instances have injected anomalies as observed in openstack_abnormal.log.
@@ -196,3 +197,79 @@ def test_the_bgl_report_leaves_no_placeholder_unformatted() -> None:
     assert body.startswith("## BGL:")
     assert "**Result: 1,202 of 1,202 distinct failures" in body
     assert "48,628 Incidents in total" in body
+
+
+# ----------------------------------------------------------------- the OpenStack report
+
+LABELS = ["a", "b"]
+
+
+def metric_result(metric: str, flags: dict[float, list[str]]) -> MetricResult:
+    """A MetricResult whose ranking is a, b, x, y and whose flags per min_z are given."""
+    order = ["a", "b", "x", "y"]
+    scores = [
+        score([Ranked(i, i in flagged) for i in order], set(LABELS), min_z)
+        for min_z, flagged in flags.items()
+    ]
+    rows: list[dict[str, Any]] = [
+        {
+            "instance_id": i,
+            "source_id": "os-1",
+            "spawn_s": 30.0 - n,
+            "spawn_z": 20.0 - n,
+            "image_s": 20.0 - n,
+            "image_z": 10.0 - n,
+            "spawn_ts": "2017-05-14T21:00:00",
+            "flagged": i in flags[ground_truth.OPENSTACK_DEFAULT_MIN_Z],
+        }
+        for n, i in enumerate(order)
+    ]
+    summary = {"reference_instances": 4, "median_s": 19.7, "mad_s": 0.4}
+    return MetricResult(metric=metric, rows=rows, summary=summary, query_ms=1.0, scores=scores)
+
+
+def render(flags: dict[float, list[str]]) -> str:
+    return render_openstack(
+        labels=LABELS,
+        results=[metric_result("spawn", flags), metric_result("build", flags)],
+        entries=[("a", 28, 0), ("b", 28, 0)],
+        derive_s=0.1,
+        schema="slm",
+        version="SereneDB 26.10.1",
+        generated=datetime(2026, 10, 18, tzinfo=UTC),
+    )
+
+
+def test_the_report_says_the_default_cut_was_chosen_with_the_labels_in_view() -> None:
+    flags = {3.5: ["a", "b", "x", "y"], 5.0: ["a", "b", "x"], 8.0: ["a", "b"]}
+
+    text = render(flags)
+
+    assert "research that had already seen the labels" in text
+    assert (
+        "Recall is 2 of 2 at all 3 thresholds reported (3.5, 5, 8), so it does not depend on the cut" in text
+    )
+    assert "precision does: 2/4 at 3.5, 2/3 at 5, 2/2 at 8" in text
+
+
+def test_the_report_says_when_recall_depends_on_the_cut() -> None:
+    flags = {3.5: ["a", "b"], 5.0: ["a"], 8.0: ["a"]}
+
+    text = render(flags)
+
+    assert "research that had already seen the labels" in text
+    assert "Recall depends on the cut: 2 of 2 at 3.5, 1 of 2 at 5, 1 of 2 at 8" in text
+
+
+def test_main_dispatches_on_the_dataset(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    called: list[Path] = []
+    monkeypatch.setitem(ground_truth.RUNNERS, "openstack", lambda output: called.append(output) or "body")
+
+    assert ground_truth.main(["openstack", "--output", str(tmp_path / "gt.md")]) == 0
+    assert called == [tmp_path / "gt.md"]
+
+
+def test_the_cli_offers_exactly_the_datasets_with_a_runner() -> None:
+    with pytest.raises(SystemExit):
+        ground_truth.main(["nosuchdataset"])
+    assert set(ground_truth.RUNNERS) == {"bgl", "openstack"}

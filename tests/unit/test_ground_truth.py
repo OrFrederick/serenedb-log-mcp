@@ -272,4 +272,4 @@ def test_main_dispatches_on_the_dataset(monkeypatch: pytest.MonkeyPatch, tmp_pat
 def test_the_cli_offers_exactly_the_datasets_with_a_runner() -> None:
     with pytest.raises(SystemExit):
         ground_truth.main(["nosuchdataset"])
-    assert set(ground_truth.RUNNERS) == {"openstack"}
+    assert set(ground_truth.RUNNERS) == {"bgl", "openstack"}

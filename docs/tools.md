@@ -631,7 +631,8 @@ time, recent, duration), limit (default 20, at most 100), query, time_from, time
 components, levels, sources, alert_categories, pattern_ids, family_id and similar_to.
 Outputs: the Evidence envelope. rows: one per Incident with pattern_key, incident_id, t0, t1,
 duration_s, entries, bursts and the Spread columns. summary: entries_total, incidents_total,
-the Spread totals (BGL nodes_total, nodecards_total, midplanes_total, racks_total and
+incident_days (distinct days of t0), widest_incidents (Incidents at the widest Spread), the
+Spread totals (BGL nodes_total, nodecards_total, midplanes_total, racks_total and
 incidents_by_shape; OpenStack sources_total, instances_total, hosts_total) and computed
 (precomputed table or chained at query time); with similar_to, the reference Incident, its
 reference_patterns, candidates_total and scored_total. total_matches counts Incidents.

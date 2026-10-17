@@ -20,6 +20,7 @@ from __future__ import annotations
 import functools
 import inspect
 import json
+import textwrap
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Annotated, Any, Protocol, get_args, get_origin, runtime_checkable
@@ -316,7 +317,7 @@ def _store(tool: str, role: Role, outcome: ToolOutcome) -> Evidence:
             evidence_id=slot.evidence_id,
             tool=tool,
             role=role,
-            sql=[" ".join(statement.split()) for statement in source.sql],
+            sql=[_as_it_ran(statement) for statement in source.sql],
             params=[list(values) for values in source.params],
             data_scope=outcome.scope,
             total_matches=total,
@@ -331,6 +332,18 @@ def _store(tool: str, role: Role, outcome: ToolOutcome) -> Evidence:
         )
         slot.store(evidence.model_dump(mode="json"))
     return evidence
+
+
+def _as_it_ran(statement: str) -> str:
+    """One stored statement: the string that ran, minus the template's own indentation.
+
+    Nothing else is rewritten. `" ".join(statement.split())` used to collapse every run of
+    whitespace, which turned a `--` comment line into a comment over the rest of the statement and
+    rewrote string literals containing runs of whitespace. The `sql` field promises the statements
+    that actually ran, and T13's `replay_ledger.py` re-runs exactly these strings. Compacting SQL
+    for display belongs in T13's renderer, not here.
+    """
+    return textwrap.dedent(statement).strip()
 
 
 def _check_columns(tool: str, columns: list[str], rows: list[list[Any]]) -> None:

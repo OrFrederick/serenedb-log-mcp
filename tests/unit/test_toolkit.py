@@ -216,6 +216,63 @@ def test_a_truncated_result_says_so_in_the_notes(server: MCPServer) -> None:
     assert any("count_by" in note for note in data["notes"])
 
 
+def test_the_stored_sql_is_the_statement_that_ran() -> None:
+    # Collapsing whitespace changed the statement: a "--" comment swallowed the rest of the line,
+    # and a literal with two spaces was rewritten. T13's replay re-runs exactly these strings.
+    server = MCPServer(name="t")
+    commented = "SELECT count(*)\n  FROM bgl_entry -- index scan, see #2\n WHERE component = %s"
+    with_literal = "SELECT 'two  spaces' AS marker"
+
+    @evidence_tool(server, title="Commented SQL")
+    def commenting(role: RoleParam) -> ToolOutcome:
+        """Run SQL with a comment and a literal. Inputs: role. Outputs: the envelope."""
+        return ToolOutcome(
+            result=FakeQueryResult(
+                total=1,
+                rows=[["KERNEL", 1]],
+                sql=[commented, with_literal],
+                params=[["KERNEL"], []],
+            ),
+            scope=DataScope(datasets=["bgl"]),
+            columns=["alert_tag", "entries"],
+        )
+
+    result = anyio.run(lambda: server.call_tool("commenting", {"role": "engineer"}))
+    assert isinstance(result, CallToolResult)
+    stored = envelope(result)["sql"]
+
+    assert stored == [commented, with_literal]
+    # The WHERE clause stays on its own line, so the comment cannot comment it out.
+    assert "-- index scan, see #2\n" in stored[0]
+    assert "'two  spaces'" in stored[1]
+    assert get_ledger().get("E1")["sql"] == [commented, with_literal]
+
+
+def test_an_indented_sql_template_is_dedented_and_stripped() -> None:
+    # A triple-quoted template carries the module's indentation; dedent removes it without
+    # touching the line structure or anything inside a literal.
+    server = MCPServer(name="t")
+    template = """
+        SELECT alert_tag, count(*)
+          FROM bgl
+         GROUP BY 1
+    """
+
+    @evidence_tool(server, title="Indented SQL")
+    def indented(role: RoleParam) -> ToolOutcome:
+        """Run an indented template. Inputs: role. Outputs: the envelope."""
+        return ToolOutcome(
+            result=FakeQueryResult(total=1, rows=[["KERNEL", 1]], sql=[template], params=[[]]),
+            scope=DataScope(datasets=["bgl"]),
+            columns=["alert_tag", "entries"],
+        )
+
+    result = anyio.run(lambda: server.call_tool("indented", {"role": "engineer"}))
+    assert isinstance(result, CallToolResult)
+
+    assert envelope(result)["sql"] == ["SELECT alert_tag, count(*)\n  FROM bgl\n GROUP BY 1"]
+
+
 def test_an_aggregation_tool_replaces_the_truncation_note_with_its_own() -> None:
     # A top-N aggregation returns exact counts plus an (other) row, so the default note ("a sample,
     # not a frequency; use count_by") states the opposite of the truth and points count_by at itself.

@@ -56,8 +56,9 @@ def test_kernterm_precedes_kernrec_on_each_node_by_85_s_median(golden_schema: st
         dataset="bgl",
         target_pattern="KERNREC",
         window_s=150,
-        time_from="2005-11-15",
-        time_to="2005-11-16",
+        # The local day of the wave: time inputs are UTC (#74), and BGL logs US Pacific time (PST).
+        time_from="2005-11-15T00:00:00-08:00",
+        time_to="2005-11-16T00:00:00-08:00",
         min_support=1,
     )
 

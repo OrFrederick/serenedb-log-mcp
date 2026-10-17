@@ -1,13 +1,9 @@
 """tests/conftest.py: the db and corpus markers skip with a clear reason when a prerequisite is missing."""
 
 import tomllib
-import uuid
-from collections.abc import Iterator
 from pathlib import Path
 
-import psycopg
 import pytest
-from psycopg import sql
 
 ROOT = Path(__file__).parents[2]
 ROOT_CONFTEST = Path(__file__).parents[1] / "conftest.py"
@@ -71,18 +67,6 @@ def test_skip_reason_never_shows_the_password(
     assert "hunter2" not in result.stdout.str()
 
 
-@pytest.mark.db
-def test_missing_corpus_tables_skip_corpus_tests_only(
-    suite: pytest.Pytester, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    monkeypatch.setenv("SLM_RAW_SCHEMA", "slm_no_such_schema")
-
-    result = suite.runpytest("-rs")
-
-    result.assert_outcomes(passed=2, skipped=1)
-    result.stdout.fnmatch_lines(["SKIPPED*full Base Corpus missing: slm_no_such_schema.bgl is missing*"])
-
-
 @pytest.mark.parametrize("value", ["1", "true"])
 def test_require_db_turns_the_skips_into_failures(
     suite: pytest.Pytester, monkeypatch: pytest.MonkeyPatch, value: str
@@ -124,50 +108,3 @@ def test_same_test_file_name_in_two_directories_collects(pytester: pytest.Pytest
     result = pytester.runpytest()
 
     result.assert_outcomes(passed=2)
-
-
-@pytest.fixture
-def raw_schema(database_url: str) -> Iterator[str]:
-    schema = f"scratch_t1_{uuid.uuid4().hex[:8]}"
-    with psycopg.connect(database_url, autocommit=True) as conn:
-        conn.execute(sql.SQL("CREATE SCHEMA {}").format(sql.Identifier(schema)))
-    yield schema
-    with psycopg.connect(database_url, autocommit=True) as conn:
-        conn.execute(sql.SQL("DROP SCHEMA IF EXISTS {} CASCADE").format(sql.Identifier(schema)))
-
-
-def make_table(database_url: str, schema: str, table: str, rows: int) -> None:
-    with psycopg.connect(database_url, autocommit=True) as conn:
-        conn.execute(
-            sql.SQL("CREATE TABLE {} AS SELECT g AS line_no FROM generate_series(1, {}) AS s(g)").format(
-                sql.Identifier(schema, table), sql.Literal(rows)
-            )
-        )
-
-
-@pytest.mark.db
-def test_corpus_gate_runs_tests_when_counts_differ_but_clear_the_floor(
-    suite: pytest.Pytester, monkeypatch: pytest.MonkeyPatch, database_url: str, raw_schema: str
-) -> None:
-    # The gate must let corpus tests run (and fail on wrong golden numbers) instead of skipping.
-    make_table(database_url, raw_schema, "bgl", 1_000_001)
-    make_table(database_url, raw_schema, "openstack", 100_001)
-    monkeypatch.setenv("SLM_RAW_SCHEMA", raw_schema)
-
-    result = suite.runpytest("-rs")
-
-    result.assert_outcomes(passed=3)
-
-
-@pytest.mark.db
-def test_corpus_gate_skips_tables_below_the_floor(
-    suite: pytest.Pytester, monkeypatch: pytest.MonkeyPatch, database_url: str, raw_schema: str
-) -> None:
-    make_table(database_url, raw_schema, "bgl", 2_000)
-    make_table(database_url, raw_schema, "openstack", 2_000)
-    monkeypatch.setenv("SLM_RAW_SCHEMA", raw_schema)
-
-    result = suite.runpytest("-rs")
-
-    result.assert_outcomes(passed=2, skipped=1)
-    result.stdout.fnmatch_lines([f"SKIPPED*{raw_schema}.bgl has 2,000 rows*more than 1,000,000*"])

@@ -29,6 +29,12 @@ from serenedb_log_mcp.config import load_settings
 # 2k sample. The exact golden numbers (4,747,963 and 207,820 rows) live in the corpus tests, so a
 # wrong load makes them fail instead of skipping them.
 BASE_CORPUS_FLOOR = {"bgl": 1_000_000, "openstack": 100_000}
+# The columns tests/corpus reads. A table without them came from a different loader, so the corpus
+# tests skip with a reason instead of failing with UndefinedColumn.
+REQUIRED_COLUMNS = {
+    "bgl": ("alert_tag", "ts", "node", "component", "level", "message"),
+    "openstack": ("ts", "pid", "component", "level", "message"),
+}
 CONNECT_TIMEOUT_S = 3
 MARKER_DIRS = {"db": "db", "corpus": "corpus"}
 TESTS_DIR = Path(__file__).parent
@@ -116,6 +122,20 @@ def _corpus_problem() -> str | None:
             ).fetchone()
             if not exists or exists[0] == 0:
                 return f"full Base Corpus missing: {schema}.{table} is missing. Load it with `make load-dev`."
+            present = {
+                r[0]
+                for r in conn.execute(
+                    "SELECT column_name FROM information_schema.columns "
+                    "WHERE table_schema = %s AND table_name = %s",
+                    [schema, table],
+                ).fetchall()
+            }
+            missing = [c for c in REQUIRED_COLUMNS[table] if c not in present]
+            if missing:
+                return (
+                    f"full Base Corpus missing: {schema}.{table} has no column {', '.join(missing)}; it was "
+                    "loaded by a different loader. Reload with `make load-dev`."
+                )
             row = conn.execute(
                 sql.SQL("SELECT count(*) FROM {}").format(sql.Identifier(schema, table))
             ).fetchone()

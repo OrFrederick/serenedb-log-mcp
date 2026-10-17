@@ -260,6 +260,8 @@ def test_an_unexpected_error_still_gets_the_generic_reason() -> None:
     assert "host=db.example" in reason
     assert "something new" in reason
     assert "make db-up" in reason
+
+
 def test_the_database_comes_before_the_optional_loghub2_tables_and_stays_strict(
     suite: pytest.Pytester, monkeypatch: pytest.MonkeyPatch
 ) -> None:

@@ -250,6 +250,8 @@ def test_a_role_without_connect_privilege_is_told_from_bad_credentials(
     secret = conninfo_to_dict(no_connect_privilege)["password"]
     assert isinstance(secret, str)
     assert secret not in result.stdout.str()
+
+
 def test_missing_loghub2_tables_skip_only_the_tests_that_read_them_even_when_required(
     suite: pytest.Pytester, monkeypatch: pytest.MonkeyPatch, database_url: str, raw_schema: str
 ) -> None:

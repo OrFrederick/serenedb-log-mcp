@@ -22,6 +22,12 @@
 --   <phase>_z     robust z-score: (x - median) / (1.4826 * MAD), median and MAD over every
 --                 instance that has the phase; NULL when the phase is missing or the MAD is 0
 -- Durations from timestamps are rounded to the millisecond, the precision of the logged times.
+-- spawn_ts and spawn_s come from the same Log Entry, the first spawn line (arg_min_null over
+-- epoch_utc), and build_s from the first build line, so an instance that is reused and spawns
+-- twice cannot take its time from one line and its duration from another.
+-- "VM Resumed (Lifecycle Event)" is logged twice per spawned instance, 0.1 to 0.4 s apart, because
+-- the sync_power_state handler logs it again; min() takes the first, so paused_s is the time to the
+-- first resume. image_s uses "Creating image" and "VM Started", which appear once per instance.
 -- Teardown durations are not scored: their MAD is a few milliseconds, so a robust z-score would
 -- call ordinary jitter an anomaly.
 
@@ -33,7 +39,7 @@ WITH phases AS (
         count(*)                                                            AS entries,
         min(ts)                                                             AS first_ts,
         max(ts)                                                             AS last_ts,
-        min(ts) FILTER (
+        arg_min(ts, epoch_utc) FILTER (
             WHERE message LIKE '%] Took % seconds to spawn the instance on the hypervisor.')
                                                                             AS spawn_ts,
         round(
@@ -44,12 +50,16 @@ WITH phases AS (
             min(epoch_utc) FILTER (WHERE message LIKE '%] VM Resumed (Lifecycle Event)')
             - min(epoch_utc) FILTER (WHERE message LIKE '%] VM Paused (Lifecycle Event)'), 3)
                                                                             AS paused_s,
-        max(TRY_CAST(nullif(regexp_extract(
+        arg_min_null(TRY_CAST(nullif(regexp_extract(
             message, '\] Took ([0-9.]+) seconds to spawn the instance on the hypervisor', 1), '')
-            AS DOUBLE))                                                     AS spawn_s,
-        max(TRY_CAST(nullif(regexp_extract(
+            AS DOUBLE), epoch_utc) FILTER (
+            WHERE message LIKE '%] Took % seconds to spawn the instance on the hypervisor.')
+                                                                            AS spawn_s,
+        arg_min_null(TRY_CAST(nullif(regexp_extract(
             message, '\] Took ([0-9.]+) seconds to build instance', 1), '')
-            AS DOUBLE))                                                     AS build_s
+            AS DOUBLE), epoch_utc) FILTER (
+            WHERE message LIKE '%] Took % seconds to build instance.')
+                                                                            AS build_s
     FROM ${slm}.os_entry
     WHERE instance_ref IS NOT NULL
     GROUP BY instance_ref

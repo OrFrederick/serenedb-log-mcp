@@ -22,11 +22,16 @@ SQL files use two kinds of placeholders, replaced before execution:
     ${create_log_text_dictionary}    the dictionary DDL for the server version: the
                                      `AS split_text(...)` form on SereneDB 26.10.1 or later, the
                                      legacy `(TEMPLATE = 'text', ...)` form before that
+    ${create_pattern_text_dictionary}
+                                     the same choice for the Pattern catalogue's dictionary, which
+                                     also stems English words (search_patterns, T14)
     ${pattern_tier1}                 the Tier 1 Pattern SQL that scripts/gen_pattern_sql.py
                                      generates from the Loghub-2.0 template files (T9)
 
 Environment: DATABASE_URL, SLM_SCHEMA (default slm), SLM_RAW_SCHEMA (default public),
 SLM_DATA_DIR and SLM_PATTERN_TIER1 (default 1; 0 derives Patterns without the Loghub-2.0 files).
+Only a run that includes a step with ${pattern_tier1} reads the Loghub-2.0 files, so
+`--only 90_indexes` works without them.
 """
 
 from __future__ import annotations
@@ -44,13 +49,16 @@ import psycopg
 
 import gen_pattern_sql
 from gen_pattern_sql import Template
-from serenedb_log_mcp.config import SCHEMA_RE, ConfigError, load_settings
-from serenedb_log_mcp.corpus.datasets import OWNERSHIP_NOTE, OWNERSHIP_STUB_SOURCE
+from serenedb_log_mcp.config import ROLES, SCHEMA_RE, ConfigError, load_settings
+from serenedb_log_mcp.corpus.datasets import OWNERSHIP_NOTE, OWNERSHIP_STUB_SOURCE, role_schema
 
 SQL_DIR = Path(__file__).resolve().parent.parent / "sql"
 SPLIT_TEXT_SINCE = (26, 10, 1)
 CONNECT_TIMEOUT_S = 10
 ENTRY_INDEXES = {"bgl_entry": "bgl_entry_idx", "os_entry": "os_entry_idx"}
+# Every index a usable schema has: the entry indexes (90_indexes) and the Pattern catalogue's
+# search index (20_patterns), which search_patterns reads.
+REQUIRED_INDEXES = (*ENTRY_INDEXES.values(), "pattern_idx")
 PLACEHOLDER_RE = re.compile(r"\$\{([A-Za-z0-9_]+)\}")
 VERSION_RE = re.compile(r"SereneDB v?(\d+(?:\.\d+)*)")
 
@@ -181,6 +189,25 @@ def dictionary_ddl(name: str, version: tuple[int, ...]) -> str:
     )
 
 
+def pattern_dictionary_ddl(name: str, version: tuple[int, ...]) -> str:
+    """The DDL for the Pattern text dictionary: lower-case words with English (Snowball) stemming,
+    so 'failing' and 'failed' meet at 'fail', with the flags BM25 needs (frequency, norm).
+
+    search_patterns (T14) ranks the Pattern catalogue with it. The Log Entry text stays unstemmed
+    (`dictionary_ddl`), because search_logs promises whole-word matches."""
+    if version >= SPLIT_TEXT_SINCE:
+        return (
+            f"CREATE TEXT SEARCH DICTIONARY {name} AS split_text(case := 'lower') "
+            "| stem_words('en_US.UTF-8') WITH (frequency, norm)"
+        )
+    # The legacy form of `dictionary_ddl` with stemming on, as the SereneDB cookbook describes it
+    # ("stemming = true ... picked by locale"); like that form, untested on 26.09.1.3.
+    return (
+        f"CREATE TEXT SEARCH DICTIONARY {name} (TEMPLATE = 'text', locale = 'en_US.UTF-8', "
+        "\"case\" = 'lower', stemming = true, accent = false, frequency = true, norm = true)"
+    )
+
+
 def _quoted(schema: str) -> str:
     if not SCHEMA_RE.fullmatch(schema):
         raise DeriveError(f"schema {schema!r} is not a plain lowercase identifier ({SCHEMA_RE.pattern})")
@@ -210,6 +237,7 @@ def variables(
         "slm": slm_q,
         "raw": raw_q,
         "create_log_text_dictionary": dictionary_ddl(f"{slm_q}.log_text", version),
+        "create_pattern_text_dictionary": pattern_dictionary_ddl(f"{slm_q}.pattern_text", version),
         "pattern_tier1": gen_pattern_sql.tier1_sql(slm_q, tier1),
     }
 
@@ -234,6 +262,12 @@ def select_steps(files: Sequence[Path], names: Sequence[str]) -> list[Path]:
         if name not in derive_steps:
             raise DeriveError(f"unknown derive step {name!r}; derive steps: {', '.join(derive_steps)}")
     return [p for p in files if p.parent.name == "derive" and p.stem in names]
+
+
+def needs_tier1(files: Sequence[Path]) -> bool:
+    """Whether any of `files` uses the ${pattern_tier1} placeholder, so the run needs the Loghub-2.0
+    templates; `--only 90_indexes` does not."""
+    return any("${pattern_tier1}" in path.read_text() for path in files)
 
 
 def load_tier1(enabled: bool, data_dir: Path) -> dict[str, list[Template]] | None:
@@ -348,6 +382,25 @@ def check_adapter(conn: psycopg.Connection[Any], adapter: str) -> None:
         raise DeriveError(f"sql/adapters/{adapter}.sql breaks the adapter contract: " + "; ".join(problems))
 
 
+def drop_role_views(conn: psycopg.Connection[Any], slm: str) -> list[str]:
+    """Drop the per-Role view schemas of `slm` (T22, `make access`); return the ones dropped.
+
+    Their views block CREATE OR REPLACE TABLE on the tables a run rebuilds (DependentObjectsStillExist
+    on SereneDB 26.10.1), and their inverted indexes are snapshots that would go stale, so they go
+    first and `make access` re-creates them. The LOGIN roles stay; they own nothing.
+    """
+    dropped = []
+    for role in ROLES:
+        schema = role_schema(slm, role)
+        row = conn.execute(
+            "SELECT count(*) FROM information_schema.schemata WHERE schema_name = %s", [schema]
+        ).fetchone()
+        if row and row[0]:
+            conn.execute(f"DROP SCHEMA {_quoted(schema)} CASCADE")
+            dropped.append(schema)
+    return dropped
+
+
 def drop_adapter_relations(conn: psycopg.Connection[Any], slm: str) -> None:
     """Drop this session's temporary adapter tables, and the persistent adapter views that derives
     before T4's review left in `slm` (they block every reload of the raw tables)."""
@@ -360,7 +413,7 @@ def report(conn: psycopg.Connection[Any], slm: str) -> list[str]:
     """Row counts and coverage of the derived columns, one line each."""
     s = _quoted(slm)
     lines = []
-    for table in ("bgl_entry", "os_entry", "ownership"):
+    for table in ("bgl_entry", "os_entry", "os_instance", "ownership"):
         (count,) = _rows(conn, f"SELECT count(*) FROM {s}.{table}")[0]
         lines.append(f"{slm}.{table}: {count:,} rows")
     no_card, no_mid, no_rack = _rows(
@@ -424,9 +477,7 @@ def result_problems(conn: psycopg.Connection[Any], slm: str) -> list[str]:
     indexes = {
         name for (name,) in _rows(conn, "SELECT indexname FROM pg_indexes WHERE schemaname = %s", [slm])
     }
-    problems += [
-        f"index {slm}.{index} is missing" for index in ENTRY_INDEXES.values() if index not in indexes
-    ]
+    problems += [f"index {slm}.{index} is missing" for index in REQUIRED_INDEXES if index not in indexes]
     return problems
 
 
@@ -496,7 +547,12 @@ def main(argv: Sequence[str] | None = None) -> int:
                 f"{files[0].relative_to(SQL_DIR.parent)} has no statements yet: TODO(organiser), "
                 "it is filled in when the organisers' loader arrives (T25)"
             )
-        tier1 = load_tier1(settings.pattern_tier1, settings.data_dir)
+        # A run without the Pattern step renders ${pattern_tier1} nowhere, so it needs no files.
+        tier1 = (
+            load_tier1(settings.pattern_tier1, settings.data_dir)
+            if needs_tier1(files if only is None else only)
+            else None
+        )
         started = time.perf_counter()
         with psycopg.connect(
             settings.database_url, autocommit=True, connect_timeout=CONNECT_TIMEOUT_S
@@ -506,6 +562,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"SereneDB {'.'.join(map(str, version))}: deriving {raw} -> {slm} ({args.adapter})")
             conn.execute(f"CREATE SCHEMA IF NOT EXISTS {slm_q}")
             values = variables(slm, raw, version, tier1)
+            if dropped := drop_role_views(conn, slm):
+                print(
+                    f"Dropped the per-Role views in {', '.join(dropped)}: they depend on the tables this "
+                    "run rebuilds. Run `make access` again afterwards."
+                )
             began = True
             if only is not None:
                 run(conn, only, values)

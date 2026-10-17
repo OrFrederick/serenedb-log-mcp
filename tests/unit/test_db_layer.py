@@ -71,6 +71,8 @@ class FakeServer:
         self.interrupt_select_1 = False
         self.notices: list[tuple[str, str]] = []  # (severity, message) sent by `SELECT warns()`
         self.release_hung = threading.Event()  # ends `SELECT hung()`, which ignores every cancel
+        self.hang_begin = False  # BEGIN READ ONLY waits for release_hung too
+        self.cancel_error: BaseException | None = None  # what every cancel request raises
 
     def connect(self, dsn: str, *, client_binding: bool) -> FakeConnection:
         self.binding.append(client_binding)
@@ -125,6 +127,8 @@ class FakeConnection:
         if self.closed or self.broken:
             raise psycopg.OperationalError("the connection is lost")
         self.executed.append((query, params))
+        if query == "BEGIN READ ONLY" and self.server.hang_begin:
+            self.server.release_hung.wait(10)
         if query == "SELECT 1" and self.server.interrupt_select_1:
             raise KeyboardInterrupt
         if query in CONTROL:
@@ -165,6 +169,8 @@ class FakeConnection:
 
     def cancel_safe(self, *, timeout: float = 30.0) -> None:
         self.cancel_timeouts.append(timeout)
+        if self.server.cancel_error is not None:
+            raise self.server.cancel_error
         if self.closed:
             return  # psycopg's cancel_safe does nothing on a closed connection
         if self.server.cancel_failures_left:
@@ -711,6 +717,73 @@ def test_the_grace_period_starts_only_when_the_cancel_attempts_are_over(
 
     assert time.monotonic() - started >= 0.6
     assert server.cancel_failures_left == 99 - db.CANCEL_ATTEMPTS
+
+
+@pytest.mark.filterwarnings("error::pytest.PytestUnhandledThreadExceptionWarning")
+def test_a_cancel_that_fails_with_an_os_error_still_ends_the_call_after_the_grace_period(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # psycopg's cancel_safe runs a selectors loop, which raises OSError or ValueError, not psycopg.Error.
+    monkeypatch.setattr(db, "CANCEL_RETRY_S", 0.01)
+    server = FakeServer(table_responder(3, ROWS))
+    server.cancel_error = OSError(9, "Bad file descriptor")
+    layer = database(server, timeout_s=0.05, cancel_grace_s=0.1)
+
+    started = time.monotonic()
+    try:
+        with pytest.raises(QueryTimeout) as caught:
+            layer.fetch_all("SELECT hung()")
+    finally:
+        server.release_hung.set()
+
+    assert time.monotonic() - started < 2
+    assert "the cancel request failed ([Errno 9] Bad file descriptor.)" in str(caught.value)
+    assert len(server.connections[0].cancel_timeouts) == db.CANCEL_ATTEMPTS
+
+
+class TimerKilled(BaseException):
+    """Escapes even `except Exception`, so it ends the timer thread."""
+
+
+@pytest.mark.filterwarnings("ignore::pytest.PytestUnhandledThreadExceptionWarning")
+def test_the_caller_is_woken_even_when_the_timer_thread_dies() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    server.cancel_error = TimerKilled()
+    layer = database(server, timeout_s=0.05, cancel_grace_s=0.1)
+
+    started = time.monotonic()
+    try:
+        with pytest.raises(QueryTimeout):
+            layer.fetch_all("SELECT hung()")
+    finally:
+        server.release_hung.set()
+
+    assert time.monotonic() - started < 2
+
+
+def test_a_begin_that_hangs_ends_the_call_after_the_cancel_window_and_the_grace_period(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(db, "CANCEL_TIMEOUT_S", 0.01)
+    monkeypatch.setattr(db, "CANCEL_RETRY_S", 0.01)
+    server = FakeServer(table_responder(3, ROWS))
+    server.hang_begin = True
+    layer = database(server, timeout_s=0.05, cancel_grace_s=0.1)
+
+    started = time.monotonic()
+    with pytest.raises(QueryTimeout) as caught:
+        layer.fetch_all("SELECT a FROM t")
+    elapsed = time.monotonic() - started
+
+    assert elapsed < 2
+    assert "SereneDB did not answer BEGIN READ ONLY" in str(caught.value)
+    conn = server.connections[0]
+    assert not conn.closed  # BEGIN is still waiting on it
+    server.release_hung.set()
+    # Once BEGIN returns, the abandoned thread runs no statement and closes its connection.
+    assert wait_until(lambda: conn.closed)
+    assert [sql for sql, _ in conn.executed] == ["BEGIN READ ONLY"]
+    assert not conn.closed_while_executing
 
 
 def test_the_statements_see_the_context_of_the_call() -> None:

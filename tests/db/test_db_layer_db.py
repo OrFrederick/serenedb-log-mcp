@@ -222,8 +222,16 @@ def test_a_bound_slow_query_is_never_returned_silently(database_url: str) -> Non
         layer.close()
 
 
+@pytest.mark.parametrize(
+    "cancel_error",
+    [
+        psycopg.errors.CancellationTimeout("cancellation timeout expired"),
+        OSError(9, "Bad file descriptor"),  # psycopg's selectors loop raises OSError, not psycopg.Error
+    ],
+    ids=["cancellation-timeout", "os-error"],
+)
 def test_a_statement_whose_cancel_fails_is_abandoned_and_closed_by_its_own_thread(
-    database_url: str, monkeypatch: pytest.MonkeyPatch
+    cancel_error: Exception, database_url: str, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Every cancel request fails, so the call ends after the grace period; the statement runs on."""
     monkeypatch.setattr(db, "CANCEL_RETRY_S", 0.05)
@@ -233,7 +241,7 @@ def test_a_statement_whose_cancel_fails_is_abandoned_and_closed_by_its_own_threa
         conn = db.open_connection(dsn, client_binding=client_binding)
 
         def cancel_safe(*, timeout: float = 30.0) -> None:
-            raise psycopg.errors.CancellationTimeout("cancellation timeout expired")
+            raise cancel_error
 
         conn.cancel_safe = cancel_safe  # type: ignore[method-assign]
         opened.append(conn)

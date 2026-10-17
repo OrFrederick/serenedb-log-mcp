@@ -303,9 +303,15 @@ class _Abandoned(Exception):
 class _Session:
     """The statements of one attempt, with the time they took."""
 
-    def __init__(self, conn: ConnectionLike, deadline: _Deadline | None = None) -> None:
+    def __init__(
+        self,
+        conn: ConnectionLike,
+        deadline: _Deadline | None = None,
+        abandoned: threading.Event | None = None,
+    ) -> None:
         self._conn = conn
         self._deadline = deadline
+        self._abandoned = abandoned  # set when the caller stopped waiting for these statements
         self.sql: list[str] = []
         self.params: list[list[Any]] = []
         self.notes: list[str] = []
@@ -316,6 +322,8 @@ class _Session:
 
     def fetch(self, sql: str, params: Sequence[Any]) -> list[tuple[Any, ...]]:
         values = list(params)
+        if self._abandoned is not None and self._abandoned.is_set():
+            raise _Abandoned  # nobody waits for the result, so no further statement runs
         if self._deadline is not None and self._deadline.fired:
             # A cancel that reached the backend between two statements was dropped by the server,
             # so the next statement would run without a limit: stop here instead.
@@ -356,10 +364,11 @@ class _Deadline:
 
     A timer cancels the statements after `timeout_s` and retries a cancel request that fails, each
     request bounded by `CANCEL_TIMEOUT_S`. Once a request went out, or `CANCEL_ATTEMPTS` failed, the
-    timer has done all it can and calls `on_settled`. `stop()` ends it: once `stop()` has returned,
-    no cancel request is in flight and none will be sent, and `fired` says whether one was. A
-    connection whose deadline fired is never reused, so a cancel can never reach a later call on a
-    pooled connection.
+    timer has done all it can and calls `on_settled`; it does so also when a cancel raised something
+    unexpected or the timer thread died, so the caller is always woken. `stop()` ends it: once
+    `stop()` has returned, no cancel request is in flight and none will be sent, and `fired` says
+    whether one was. A connection whose deadline fired is never reused, so a cancel can never reach a
+    later call on a pooled connection.
     """
 
     def __init__(self, conn: ConnectionLike, timeout_s: float, on_settled: Callable[[], None]) -> None:
@@ -370,10 +379,12 @@ class _Deadline:
         self._stopped = threading.Event()
         self._timer = threading.Timer(timeout_s, self._cancel)
         self._timer.daemon = True
+        self.started = False
         self.fired = False
         self.errors: list[str] = []
 
     def start(self) -> None:
+        self.started = True
         self._timer.start()
 
     def stop(self) -> None:
@@ -382,20 +393,22 @@ class _Deadline:
         self._timer.cancel()
 
     def _cancel(self) -> None:
-        for attempt in range(CANCEL_ATTEMPTS):
-            if attempt and self._stopped.wait(CANCEL_RETRY_S):
-                return
-            with self._lock:
-                if self._stopped.is_set():
+        try:
+            for attempt in range(CANCEL_ATTEMPTS):
+                if attempt and self._stopped.wait(CANCEL_RETRY_S):
                     return
-                self.fired = True
-                try:
-                    self._conn.cancel_safe(timeout=CANCEL_TIMEOUT_S)
-                except psycopg.Error as exc:
-                    self.errors.append(_first_line(exc))
-                    continue
-            break  # the request went out
-        self._on_settled()
+                with self._lock:
+                    if self._stopped.is_set():
+                        return
+                    self.fired = True
+                    try:
+                        self._conn.cancel_safe(timeout=CANCEL_TIMEOUT_S)
+                    except Exception as exc:  # psycopg's wait loop raises OSError and ValueError too
+                        self.errors.append(_first_line(exc))
+                        continue
+                break  # the request went out
+        finally:
+            self._on_settled()  # whatever happened here, the caller must not wait without a bound
 
     @property
     def why_it_ran_on(self) -> str:
@@ -404,14 +417,23 @@ class _Deadline:
             return f"the cancel request failed ({self.errors[-1]})"
         if self.fired:
             return "SereneDB did not act on the cancel request"
+        if not self.started:
+            return "SereneDB did not answer BEGIN READ ONLY in time"
         return "the time limit did not fire in time"
+
+
+def _cancel_window_s() -> float:
+    """The longest the timer takes to send a cancel request or give up on it."""
+    return CANCEL_ATTEMPTS * CANCEL_TIMEOUT_S + (CANCEL_ATTEMPTS - 1) * CANCEL_RETRY_S
 
 
 class _Statements[T]:
     """The statements of one attempt, run on a thread of their own that owns the connection.
 
     The caller waits for them, but only until `grace_s` after the deadline has done all it can (a
-    cancel request went out, or every one failed). Then it gives up with `_Abandoned` and leaves the
+    cancel request went out, or every one failed), and never longer than `grace_s` after the limit
+    plus the cancel window, which also bounds a `BEGIN READ ONLY` that hangs before the timer
+    starts. Then it gives up with `_Abandoned`, the session runs no further statement, and it leaves the
     connection alone: psycopg's `close()` does not take the connection lock, so closing it from the
     caller would free the libpq connection under the statement still waiting on it. The statement
     thread closes the connection itself once the statement returns, so an abandoned connection is
@@ -427,13 +449,13 @@ class _Statements[T]:
         self._lock = threading.Lock()  # decides who closes the connection: the caller or the thread
         self._started = False
         self._finished = False
-        self._abandoned = False
+        self._abandoned = threading.Event()  # set under _lock when the caller stops waiting
         self._value: tuple[T] | None = None  # a box, so that a work() returning None is told apart
         self._error: BaseException | None = None
         self.deadline = _Deadline(conn, timeout_s, self._wake.set)
         # The session checks the deadline before each statement, on the statement thread: a cancel
         # that reaches the backend between two statements is dropped, so the next one must not run.
-        self.session = _Session(conn, self.deadline)
+        self.session = _Session(conn, self.deadline, self._abandoned)
 
     def start(self) -> None:
         context = contextvars.copy_context()  # the statements run in the context of the call
@@ -445,7 +467,8 @@ class _Statements[T]:
 
     def result(self, grace_s: float) -> T:
         """The value of `work`, or its exception; `_Abandoned` once the grace period ran out."""
-        self._wake.wait()
+        # The deadline settles within the limit plus the cancel window, unless BEGIN hangs.
+        self._wake.wait(self.deadline.timeout_s + _cancel_window_s())
         if not self._done.wait(grace_s) and self.abandon():
             raise _Abandoned
         if self._error is not None:
@@ -457,8 +480,8 @@ class _Statements[T]:
         """Leave the connection to the statement thread if it still runs; True when it does."""
         with self._lock:
             if self._started and not self._finished:
-                self._abandoned = True
-            return self._abandoned
+                self._abandoned.set()
+            return self._abandoned.is_set()
 
     def _run(self) -> None:
         on_notice = self.session.notice
@@ -478,7 +501,7 @@ class _Statements[T]:
         finally:
             with self._lock:
                 self._finished = True
-                abandoned = self._abandoned
+                abandoned = self._abandoned.is_set()
             if abandoned:
                 _close_quietly(self._conn)  # this thread owns it, and its statement has returned
             self._done.set()

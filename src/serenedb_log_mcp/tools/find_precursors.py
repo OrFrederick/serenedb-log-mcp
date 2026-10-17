@@ -46,8 +46,8 @@ from serenedb_log_mcp.tools._aggregate import (
     Part,
     Q,
     SourcesParam,
-    TimeFromParam,
-    TimeToParam,
+    UtcTimeFromParam,
+    UtcTimeToParam,
     bound,
     choose_datasets,
     prepare,
@@ -388,8 +388,8 @@ def register(server: MCPServer) -> None:
                 f"{MAX_LIMIT}).",
             ),
         ] = DEFAULT_LIMIT,
-        time_from: TimeFromParam = None,
-        time_to: TimeToParam = None,
+        time_from: UtcTimeFromParam = None,
+        time_to: UtcTimeToParam = None,
         sources: SourcesParam = None,
     ) -> ToolOutcome:
         """Patterns that precede a target Pattern more often than chance, each a Hypothesis.

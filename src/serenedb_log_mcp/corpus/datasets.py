@@ -8,6 +8,16 @@ slice to that index, T20 adds remote Datasets, and T22 returns per-Role views.
 
 The canonical tables are built by `make derive` (sql/adapters/*.sql, sql/derive/*.sql) in the
 schema named by SLM_SCHEMA.
+
+Per-Role views (T22). `make access` (sql/access/roles.sql) gives each Role a schema of its own,
+`<SLM_SCHEMA>_<role>` (`role_schema`), with a view of every canonical table under the same name, an
+inverted index over the entry views of the Roles that may read Log Entry text, and a LOGIN role
+that may read only that schema. When a Role's `DATABASE_URL_<ROLE>` is set, its calls connect as
+that login (`db.get_database`) and the resolver returns that Role's views. The Manager's views leave
+out the columns in `ROLE_WITHHELD_COLUMNS` (the message), so asking for one, or for the full-text
+index over it, raises `RoleAccessError` with what the Role can do instead. Without the DSN a Role
+reads the canonical tables, and the Role-scoped tools (`roles.shape_for_role`) remain the
+guarantee; the grants are defence in depth (docs/access-control.md).
 """
 
 from __future__ import annotations
@@ -18,6 +28,7 @@ from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import Literal, get_args
 
+from mcp.server.mcpserver.exceptions import ToolError
 from psycopg import sql
 
 from serenedb_log_mcp.config import ROLES, RoleName, Settings, get_settings
@@ -142,6 +153,35 @@ class UnknownColumnError(ValueError):
     """The Dataset has no column for the requested concept."""
 
 
+ROLE_WITHHELD_COLUMNS: Mapping[RoleName, frozenset[str]] = MappingProxyType(
+    {RoleName.MANAGER: frozenset({"message"})}
+)
+"""Canonical columns a Role's views leave out (sql/access/roles.sql, T22). The Manager decides from
+measured frequency and affected Components (#4), so its database login cannot read Log Entry text."""
+
+
+class RoleAccessError(ToolError):
+    """A Role's views (T22) lack what the call needs; the text says what the Role can do instead.
+
+    A `ToolError`, so the toolkit hands its text to the agent unchanged.
+    """
+
+
+def role_schema(schema: str, role: RoleName) -> str:
+    """The schema that holds one Role's views of `schema`'s tables (sql/access/roles.sql)."""
+    return f"{schema}_{RoleName(role).value}"
+
+
+def _no_text_message(dataset: str, role: RoleName) -> str:
+    return (
+        f"Role {role.value!r} reads {dataset} through its own database views (access control per Role), "
+        "which hold no Log Entry text, so this call cannot run for it: full-text matching (query), "
+        "search_logs and get_context all read the message. Count instead with count_by or trend "
+        "without query, filtered by alert_categories, pattern_ids, family_id, components or levels; "
+        "Log Entry text is for the Engineer and the Team Lead."
+    )
+
+
 @dataclass(frozen=True)
 class Dataset:
     """One Dataset of the registry."""
@@ -214,11 +254,28 @@ class Relation:
     schema: str
     table_ident: str = field(repr=False)
     index_ident: str = field(repr=False)
+    views_for: RoleName | None = None
+    """The Role whose views (T22) `schema` holds; None for the canonical tables."""
+
+    @property
+    def withheld(self) -> frozenset[str]:
+        """The canonical columns this Role's views leave out (empty for the canonical tables)."""
+        if self.views_for is None:
+            return frozenset()
+        return ROLE_WITHHELD_COLUMNS.get(self.views_for, frozenset())
 
     @property
     def columns(self) -> Mapping[str, str]:
-        """Concept or canonical column name -> column name."""
-        return self.dataset.columns
+        """Concept or canonical column name -> column name, without the columns the views withhold."""
+        if not self.withheld:
+            return self.dataset.columns
+        return MappingProxyType(
+            {
+                concept: column
+                for concept, column in self.dataset.columns.items()
+                if column not in self.withheld
+            }
+        )
 
     @property
     def table(self) -> sql.Identifier:
@@ -227,7 +284,12 @@ class Relation:
 
     @property
     def index(self) -> sql.Identifier:
-        """The inverted index over that table, for @@, BM25 and ts_* predicates."""
+        """The inverted index over that table, for @@, BM25 and ts_* predicates.
+
+        RoleAccessError for a Role whose views hold no message: its login has no full-text index.
+        """
+        if self.views_for is not None and "message" in self.withheld:
+            raise RoleAccessError(_no_text_message(self.dataset.name, self.views_for))
         return sql.Identifier(self.schema, self.index_ident)
 
     @property
@@ -267,11 +329,21 @@ class Relation:
         return sql.Identifier(self.schema, INSTANCES)
 
     def column(self, concept: str) -> sql.Identifier:
-        """The column for a concept or canonical column name; UnknownColumnError if absent."""
+        """The column for a concept or canonical column name; UnknownColumnError if absent, and
+        RoleAccessError if this Role's views withhold it."""
+        name = self.dataset.columns.get(concept)
+        if self.views_for is not None and name in self.withheld:
+            if name == "message":
+                raise RoleAccessError(_no_text_message(self.dataset.name, self.views_for))
+            raise RoleAccessError(
+                f"Role {self.views_for.value!r} reads {self.dataset.name} through its own database views "
+                f"(access control per Role), which leave out the column {name!r}, so this call cannot run "
+                "for it."
+            )
         try:
             return sql.Identifier(self.dataset.columns[concept])
         except KeyError:
-            available = ", ".join(sorted(self.dataset.columns))
+            available = ", ".join(sorted(self.columns))
             raise UnknownColumnError(
                 f"{self.dataset.name} has no column {concept!r}; available: {available}"
             ) from None
@@ -298,12 +370,19 @@ def relation(
 ) -> Relation:
     """Resolve the tables and index of a Dataset for a Role and Data Scope.
 
-    `role` and `scope` are accepted now so every tool passes them from the start; they do not
-    change the result yet. T22 returns the Role's views, T19 the agent index that covers the
-    Data Scope.
+    A Role whose `DATABASE_URL_<ROLE>` is set connects as its own LOGIN role, which may read only
+    its views, so it gets the relations of `role_schema(SLM_SCHEMA, role)` (T22); every other call
+    gets the canonical tables in SLM_SCHEMA. `scope` is accepted so every tool passes it from the
+    start; it does not change the result yet (T19 returns the agent index that covers it).
     """
     if role is not None and role not in ROLES:
         raise ValueError(f"unknown Role {role!r}; valid: {', '.join(ROLES)}")
     entry = dataset(dataset_name)
-    schema = (settings if settings is not None else get_settings()).slm_schema
-    return Relation(dataset=entry, schema=schema, table_ident=entry.table, index_ident=entry.index)
+    settings = settings if settings is not None else get_settings()
+    schema = settings.slm_schema
+    views_for = RoleName(role) if role is not None and role in settings.role_database_urls else None
+    if views_for is not None:
+        schema = role_schema(schema, views_for)
+    return Relation(
+        dataset=entry, schema=schema, table_ident=entry.table, index_ident=entry.index, views_for=views_for
+    )

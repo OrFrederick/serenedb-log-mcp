@@ -23,6 +23,7 @@ from serenedb_log_mcp import db
 from serenedb_log_mcp.config import Role, load_settings, set_settings
 from serenedb_log_mcp.db import (
     Database,
+    DatabaseBusy,
     DatabaseMisconfigured,
     DatabaseRestarted,
     DatabaseUnavailable,
@@ -905,6 +906,72 @@ def test_a_statement_that_ignores_a_sent_cancel_is_abandoned_after_the_grace_per
     assert not server.connections[0].closed_while_executing
 
 
+def test_the_layer_counts_the_abandoned_statements_that_still_run() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    layer = database(server, timeout_s=0.05, cancel_grace_s=0.1)
+
+    try:
+        assert layer.abandoned_statements == 0
+        with pytest.raises(QueryTimeout):
+            layer.fetch_all("SELECT hung()")
+        assert layer.abandoned_statements == 1
+        layer.fetch_all("SELECT a FROM t")  # a call that ends in time is not counted
+        assert layer.abandoned_statements == 1
+    finally:
+        server.release_hung.set()
+
+    assert wait_until(lambda: layer.abandoned_statements == 0)
+
+
+def test_a_call_is_refused_while_too_many_abandoned_statements_still_run() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    layer = database(server, timeout_s=0.05, cancel_grace_s=0.1, max_abandoned_statements=2)
+
+    try:
+        for _ in range(2):
+            with pytest.raises(QueryTimeout):
+                layer.fetch_all("SELECT hung()")
+        opened = len(server.connections)
+
+        with pytest.raises(DatabaseBusy) as caught:
+            layer.fetch_all("SELECT a FROM t")
+
+        assert isinstance(caught.value, ToolError)
+        message = str(caught.value)
+        assert "2 statements" in message
+        assert "still running on SereneDB" in message
+        assert "Narrow the Data Scope" in message
+        assert "call the tool again" in message
+        assert len(server.connections) == opened  # refused before it opened or used a connection
+    finally:
+        server.release_hung.set()
+
+    assert wait_until(lambda: layer.abandoned_statements == 0)
+    assert layer.fetch_all("SELECT a FROM t").total == 3
+
+
+def test_the_timeout_says_when_the_next_call_will_be_refused() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    layer = database(server, timeout_s=0.05, cancel_grace_s=0.1, max_abandoned_statements=2)
+
+    try:
+        with pytest.raises(QueryTimeout) as first:
+            layer.fetch_all("SELECT hung()")
+        with pytest.raises(QueryTimeout) as second:
+            layer.fetch_all("SELECT hung()")
+    finally:
+        server.release_hung.set()
+
+    assert "1 of at most 2" in str(first.value)
+    assert "2 of at most 2" in str(second.value)
+
+
+@pytest.mark.parametrize("limit", [0, -1])
+def test_the_cap_on_abandoned_statements_is_at_least_one(limit: int) -> None:
+    with pytest.raises(ValueError, match="max_abandoned_statements"):
+        database(FakeServer(table_responder(3, ROWS)), max_abandoned_statements=limit)
+
+
 def test_the_grace_period_starts_only_when_the_cancel_attempts_are_over(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1093,6 +1160,20 @@ def test_a_value_psycopg_cannot_send_is_reported_as_an_input_error() -> None:
     assert "template" not in message
     assert "NUL" in message
     assert "value" in message
+
+
+def test_an_io_error_gets_a_hint_about_the_external_source() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+
+    with pytest.raises(QueryFailed) as caught:
+        database(server).fetch_all("SELECT * FROM read_csv('missing.csv')")
+
+    message = str(caught.value)
+    assert "SereneDB could not read an external source (08000)" in message
+    assert 'No files found that match the pattern "missing.csv"' in message
+    assert "describe_corpus" not in message
+    assert "file or URL" in message
+    assert "read_csv('missing.csv')" in message  # the statement is still named
 
 
 def test_a_statement_psycopg_refuses_is_reported_as_a_template_bug() -> None:

@@ -34,7 +34,7 @@ from serenedb_log_mcp.server import create_server
 
 pytestmark = pytest.mark.db
 
-DERIVED = ("bgl_entry", "os_entry", "ownership", "pattern", "pattern_dict", "os_instance")
+DERIVED = ("bgl_entry", "os_entry", "ownership", "pattern", "pattern_dict", "os_instance", "incident")
 INDEXES = ("bgl_entry_idx", "os_entry_idx")
 NO_TEXT = "no Log Entry text"
 
@@ -208,6 +208,19 @@ def _evidence(role: Role, _: Access) -> dict[str, Any]:
     return {"evidence_id": produced["evidence_id"]}
 
 
+def a_pattern_key(granted: Access) -> str:
+    """The BGL Pattern key with the most Incidents in the derived samples."""
+    with connect(granted.admin_dsn) as conn:
+        row = conn.execute(
+            sql.SQL(
+                "SELECT pattern_key FROM {} WHERE dataset = 'bgl' "
+                "GROUP BY 1 ORDER BY count(*) DESC, 1 LIMIT 1"
+            ).format(sql.Identifier(granted.slm, "incident"))
+        ).fetchone()
+    assert row is not None
+    return str(row[0])
+
+
 CallSpec = Callable[[Role, Access], dict[str, Any]]
 TOOL_CALLS: dict[str, CallSpec] = {
     "describe_corpus": lambda role, granted: {},
@@ -223,6 +236,8 @@ TOOL_CALLS: dict[str, CallSpec] = {
     "latency_stats": lambda role, granted: {"metric": "api"},
     "get_evidence": _evidence,
     "get_role_brief": lambda role, granted: {},
+    "list_incidents": lambda role, granted: {"dataset": "bgl"},
+    "find_precursors": lambda role, granted: {"dataset": "bgl", "target_pattern": a_pattern_key(granted)},
 }
 """One call per registered tool, run as every Role. A new tool must add its call here, so it is
 checked through each Role's login and views."""
@@ -291,7 +306,9 @@ def test_the_text_roles_find_what_the_canonical_index_finds(
         role: call("search_logs", role=role.value, dataset="bgl", query="error", sort="relevance")
         for role in (Role.ENGINEER, Role.TEAM_LEAD)
     }
-    monkeypatch.setattr(config, "_active", load_settings({}, slm_schema=as_logins.slm))
+    monkeypatch.setattr(
+        config, "_active", load_settings({"DATABASE_URL": as_logins.admin_dsn}, slm_schema=as_logins.slm)
+    )
     facts.clear_cache()
     canonical = call("search_logs", role="engineer", dataset="bgl", query="error", sort="relevance")
 

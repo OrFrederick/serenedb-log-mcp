@@ -140,7 +140,7 @@ def test_grants_name_only_the_roles_own_schema_and_one_object_each() -> None:
         assert all(f" {own}" in g for g in mine)
 
 
-VIEWS = ("bgl_entry", "os_entry", "ownership", "pattern", "pattern_dict", "os_instance")
+VIEWS = ("bgl_entry", "os_entry", "ownership", "pattern", "pattern_dict", "os_instance", "incident")
 
 
 @pytest.mark.parametrize("role", list(Role))

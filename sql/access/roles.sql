@@ -37,6 +37,8 @@ CREATE VIEW ${engineer_schema}.ownership AS SELECT * FROM ${slm}.ownership;
 CREATE VIEW ${engineer_schema}.pattern AS SELECT * FROM ${slm}.pattern;
 CREATE VIEW ${engineer_schema}.pattern_dict AS SELECT * FROM ${slm}.pattern_dict;
 CREATE VIEW ${engineer_schema}.os_instance AS SELECT * FROM ${slm}.os_instance;
+-- Incidents (T10, T27) carry counts, times and node names, no Log Entry text.
+CREATE VIEW ${engineer_schema}.incident AS SELECT * FROM ${slm}.incident;
 -- The same columns and dictionary as the canonical indexes (sql/derive/90_indexes.sql).
 CREATE INDEX bgl_entry_idx ON ${engineer_schema}.bgl_entry USING inverted (
     entry_id, message ${slm}.log_text, ts, epoch_utc,
@@ -56,6 +58,7 @@ GRANT SELECT ON ${engineer_schema}.ownership TO ${engineer_login};
 GRANT SELECT ON ${engineer_schema}.pattern TO ${engineer_login};
 GRANT SELECT ON ${engineer_schema}.pattern_dict TO ${engineer_login};
 GRANT SELECT ON ${engineer_schema}.os_instance TO ${engineer_login};
+GRANT SELECT ON ${engineer_schema}.incident TO ${engineer_login};
 
 -- Team Lead: looks for recurring problems and shows at most three sample Log Entries per problem
 -- (roles.shape_for_role), so it needs the message text too; its views have the Engineer's columns,
@@ -67,6 +70,7 @@ CREATE VIEW ${team_lead_schema}.ownership AS SELECT * FROM ${slm}.ownership;
 CREATE VIEW ${team_lead_schema}.pattern AS SELECT * FROM ${slm}.pattern;
 CREATE VIEW ${team_lead_schema}.pattern_dict AS SELECT * FROM ${slm}.pattern_dict;
 CREATE VIEW ${team_lead_schema}.os_instance AS SELECT * FROM ${slm}.os_instance;
+CREATE VIEW ${team_lead_schema}.incident AS SELECT * FROM ${slm}.incident;
 CREATE INDEX bgl_entry_idx ON ${team_lead_schema}.bgl_entry USING inverted (
     entry_id, message ${slm}.log_text, ts, epoch_utc,
     node, rack, midplane, nodecard, component, level, alert_tag,
@@ -85,6 +89,7 @@ GRANT SELECT ON ${team_lead_schema}.ownership TO ${team_lead_login};
 GRANT SELECT ON ${team_lead_schema}.pattern TO ${team_lead_login};
 GRANT SELECT ON ${team_lead_schema}.pattern_dict TO ${team_lead_login};
 GRANT SELECT ON ${team_lead_schema}.os_instance TO ${team_lead_login};
+GRANT SELECT ON ${team_lead_schema}.incident TO ${team_lead_login};
 
 -- Manager: decides from measured frequency and affected Components, so its views hold no Log Entry
 -- text: every canonical column but message (corpus.datasets.ROLE_WITHHELD_COLUMNS), and no
@@ -106,6 +111,7 @@ CREATE VIEW ${manager_schema}.pattern_dict AS SELECT
     dataset, template_id, template_text, template_source, event_id, family_id
 FROM ${slm}.pattern_dict;
 CREATE VIEW ${manager_schema}.os_instance AS SELECT * FROM ${slm}.os_instance;
+CREATE VIEW ${manager_schema}.incident AS SELECT * FROM ${slm}.incident;
 GRANT USAGE ON SCHEMA ${manager_schema} TO ${manager_login};
 GRANT SELECT ON ${manager_schema}.bgl_entry TO ${manager_login};
 GRANT SELECT ON ${manager_schema}.os_entry TO ${manager_login};
@@ -113,3 +119,4 @@ GRANT SELECT ON ${manager_schema}.ownership TO ${manager_login};
 GRANT SELECT ON ${manager_schema}.pattern TO ${manager_login};
 GRANT SELECT ON ${manager_schema}.pattern_dict TO ${manager_login};
 GRANT SELECT ON ${manager_schema}.os_instance TO ${manager_login};
+GRANT SELECT ON ${manager_schema}.incident TO ${manager_login};

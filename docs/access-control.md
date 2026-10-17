@@ -15,7 +15,7 @@ schema itself.
 
 | Role | Its views (in `slm_<role>`) | Full-text index | Cannot read |
 |---|---|---|---|
-| Engineer | every column of `bgl_entry`, `os_entry`, `ownership`, `pattern`, `pattern_dict`, `os_instance` | its own, over its entry views | `slm.*`, the raw loader tables, the Team Lead's and the Manager's views |
+| Engineer | every column of `bgl_entry`, `os_entry`, `ownership`, `pattern`, `pattern_dict`, `os_instance`, `incident` | its own, over its entry views | `slm.*`, the raw loader tables, the Team Lead's and the Manager's views |
 | Team Lead | the same columns as the Engineer; the cap of 3 sample Log Entries stays in the Role shaping | its own, over its entry views | `slm.*`, the raw loader tables, the Engineer's and the Manager's views |
 | Manager | every column **except `message`** (and `pattern_dict` without `message`) | none | Log Entry text in any form, `slm.*`, the raw loader tables, the other Roles' views |
 

@@ -41,6 +41,8 @@ from serenedb_log_mcp.config import SCHEMA_RE, ConfigError, load_settings
 
 SQL_DIR = Path(__file__).resolve().parent.parent / "sql"
 SPLIT_TEXT_SINCE = (26, 10, 1)
+CONNECT_TIMEOUT_S = 10
+ENTRY_INDEXES = {"bgl_entry": "bgl_entry_idx", "os_entry": "os_entry_idx"}
 PLACEHOLDER_RE = re.compile(r"\$\{([a-z_]+)\}")
 VERSION_RE = re.compile(r"SereneDB v?(\d+(?:\.\d+)*)")
 
@@ -80,6 +82,16 @@ ADAPTER_TABLES: dict[str, tuple[tuple[str, str], ...]] = {
 
 class DeriveError(Exception):
     """A problem the user can fix; printed without a traceback."""
+
+
+class StepFailed(DeriveError):
+    """A statement of a SQL step failed; carries the step, the statement and the database error."""
+
+    def __init__(self, step: str, statement: str, cause: psycopg.Error) -> None:
+        self.step = step
+        self.statement = statement
+        self.cause = cause
+        super().__init__(f"{step} failed at `{statement}`: {type(cause).__name__}: {_first_line(cause)}")
 
 
 # ----------------------------------------------------------------- SQL files
@@ -247,7 +259,10 @@ def run(conn: psycopg.Connection[Any], files: Sequence[Path], values: Mapping[st
         step = f"{path.parent.name}/{path.name}"
         for statement in split_statements(render(path.read_text(), values)):
             started = time.perf_counter()
-            conn.execute(statement)
+            try:
+                conn.execute(statement)
+            except psycopg.Error as exc:
+                raise StepFailed(step, _summary(statement), exc) from exc
             timing = Timing(step, _summary(statement), time.perf_counter() - started)
             timings.append(timing)
             print(f"{timing.seconds:8.2f}s  {step:28s} {timing.statement}", flush=True)
@@ -344,10 +359,59 @@ def report(conn: psycopg.Connection[Any], slm: str) -> list[str]:
         f"LEFT JOIN {s}.ownership o ON o.dataset = e.dataset AND o.component = e.component "
         "WHERE e.component IS NOT NULL AND o.team IS NULL ORDER BY 1, 2",
     )
+    # A warning, not a failure: T6 reports unmapped Components as "(unmapped)" by design, and the
+    # organisers' Ownership Table may not cover every Component.
     lines.append(
-        "Components without a Team: " + (", ".join(f"{d}/{c}" for d, c in unmapped) if unmapped else "none")
+        "Components without a Team: none"
+        if not unmapped
+        else "WARNING: Components without a Team: " + ", ".join(f"{d}/{c}" for d, c in unmapped)
     )
     return lines
+
+
+def result_problems(conn: psycopg.Connection[Any], slm: str) -> list[str]:
+    """Why the derived schema is not usable: an empty entry table or a missing index."""
+    problems = []
+    for table in ENTRY_INDEXES:
+        (count,) = _rows(conn, f"SELECT count(*) FROM {_quoted(slm)}.{_ident(table)}")[0]
+        if count == 0:
+            problems.append(
+                f"{slm}.{table} is empty; do the raw tables in SLM_RAW_SCHEMA hold the loaded data?"
+            )
+    indexes = {
+        name for (name,) in _rows(conn, "SELECT indexname FROM pg_indexes WHERE schemaname = %s", [slm])
+    }
+    problems += [
+        f"index {slm}.{index} is missing" for index in ENTRY_INDEXES.values() if index not in indexes
+    ]
+    return problems
+
+
+def failure(exc: Exception, slm: str, *, began: bool) -> tuple[str, int]:
+    """The message and exit code for an error that stopped the derive step.
+
+    Only a lost or refused connection is worth retrying (exit 1): the server restarts after a
+    crash, and every step is re-runnable. Every other database error is deterministic (exit 2):
+    running again gives the same error, so the message names the step and says so.
+    """
+    half_built = f" Schema {slm} is half-built until a derive completes." if began else ""
+    cause = exc.cause if isinstance(exc, StepFailed) else exc
+    if isinstance(cause, psycopg.OperationalError):
+        where = f" during {exc.step}" if isinstance(exc, StepFailed) else ""
+        return (
+            f"derive: lost the database connection{where} ({_first_line(cause)}). Every step is "
+            f"re-runnable: once the database is up, run `make derive` again.{half_built}",
+            1,
+        )
+    if isinstance(exc, StepFailed):
+        return (
+            f"derive: {exc}. This is not a lost connection, so running it unchanged gives the same "
+            f"error; fix the cause first.{half_built}",
+            2,
+        )
+    if isinstance(exc, psycopg.Error):
+        return f"derive: {type(exc).__name__}: {_first_line(exc)}.{half_built}", 2
+    return f"derive: {exc}.{half_built}" if half_built else f"derive: {exc}", 2
 
 
 # ----------------------------------------------------------------- command line
@@ -366,6 +430,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    slm, began = "", False
     try:
         settings = load_settings()
         slm = args.schema or settings.slm_schema
@@ -382,12 +447,15 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "it is filled in when the organisers' loader arrives (T25)"
             )
         started = time.perf_counter()
-        with psycopg.connect(settings.database_url, autocommit=True) as conn:
+        with psycopg.connect(
+            settings.database_url, autocommit=True, connect_timeout=CONNECT_TIMEOUT_S
+        ) as conn:
             row = conn.execute("SELECT version()").fetchone()
             version = serenedb_version(str(row[0]) if row else "")
             print(f"SereneDB {'.'.join(map(str, version))}: deriving {raw} -> {slm} ({args.adapter})")
             conn.execute(f"CREATE SCHEMA IF NOT EXISTS {slm_q}")
             values = variables(slm, raw, version)
+            began = True
             drop_adapter_relations(conn, slm)
             run(conn, files[:1], values)
             check_adapter(conn, args.adapter)
@@ -396,14 +464,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"derive finished in {time.perf_counter() - started:.1f}s")
             for line in report(conn, slm):
                 print(line)
-    except (DeriveError, ConfigError) as exc:
-        print(f"derive: {exc}", file=sys.stderr)
-        return 2
-    except psycopg.Error as exc:
-        # Every step is re-runnable, so after a lost connection (the server restarts after a
-        # crash) running it again is safe.
-        print(f"derive: {type(exc).__name__}: {exc}; once the database is up, run it again", file=sys.stderr)
-        return 1
+            if problems := result_problems(conn, slm):
+                raise DeriveError("the derived schema is not usable: " + "; ".join(problems))
+    except (DeriveError, ConfigError, psycopg.Error) as exc:
+        message, code = failure(exc, slm, began=began)
+        print(message, file=sys.stderr)
+        return code
     return 0
 
 

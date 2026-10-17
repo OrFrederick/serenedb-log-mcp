@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+import psycopg
 import pytest
 
 import derive
@@ -280,3 +281,91 @@ def test_the_derive_steps_read_the_adapter_tables_from_the_temporary_schema() ->
 
     for table in derive.ADAPTER_TABLES:
         assert f"FROM temp.main.{table}" in text
+
+
+# ----------------------------------------------------------------- failures
+
+
+class FailingConnection:
+    """Runs statements until the n-th, which raises `error`."""
+
+    def __init__(self, fail_at: int, error: Exception) -> None:
+        self.fail_at = fail_at
+        self.error = error
+        self.executed: list[str] = []
+
+    def execute(self, statement: str) -> None:
+        if len(self.executed) + 1 == self.fail_at:
+            raise self.error
+        self.executed.append(statement)
+
+
+def test_a_failing_statement_names_its_step_and_statement(tmp_path: Path) -> None:
+    step = tmp_path / "derive" / "90_indexes.sql"
+    step.parent.mkdir()
+    step.write_text(
+        "CREATE INDEX a_idx ON t USING inverted (x);\nCREATE INDEX b_idx ON u USING inverted (y);\n"
+    )
+    denied = psycopg.errors.InsufficientPrivilege("permission denied for table u")
+
+    with pytest.raises(derive.StepFailed) as excinfo:
+        derive.run(FailingConnection(2, denied), [step], {})  # type: ignore[arg-type]
+
+    assert excinfo.value.step == "derive/90_indexes.sql"
+    assert excinfo.value.statement == "CREATE INDEX b_idx ON u USING inverted (y)"
+    assert excinfo.value.cause is denied
+
+
+def step_failed(error: psycopg.Error) -> derive.StepFailed:
+    return derive.StepFailed("derive/90_indexes.sql", "CREATE INDEX b_idx ON u", error)
+
+
+def test_a_deterministic_database_error_is_not_reported_as_a_lost_connection() -> None:
+    message, code = derive.failure(
+        step_failed(psycopg.errors.InsufficientPrivilege("permission denied for table u")), "slm", began=True
+    )
+
+    assert code == 2
+    assert "derive/90_indexes.sql" in message
+    assert "InsufficientPrivilege: permission denied for table u" in message
+    assert "half-built" in message
+    assert "run it again" not in message
+    assert "same error" in message
+
+
+def test_a_lost_connection_during_a_step_says_to_run_again() -> None:
+    message, code = derive.failure(
+        step_failed(psycopg.OperationalError("server closed the connection")), "slm", began=True
+    )
+
+    assert code == 1
+    assert "make derive" in message
+    assert "half-built" in message
+
+
+def test_a_failed_connect_says_to_start_the_database_and_built_nothing() -> None:
+    message, code = derive.failure(psycopg.OperationalError("connection refused"), "slm", began=False)
+
+    assert code == 1
+    assert "connection refused" in message
+    assert "half-built" not in message
+
+
+def test_main_gives_up_quickly_on_an_unreachable_database(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.setenv("DATABASE_URL", "host=127.0.0.1 port=1 dbname=postgres user=postgres")
+
+    assert derive.main(["--schema", "slm_unreachable"]) == 1
+
+    err = capsys.readouterr().err
+    assert "derive:" in err
+    assert "half-built" not in err
+    assert derive.CONNECT_TIMEOUT_S <= 10
+
+
+def test_a_contract_break_after_the_run_began_says_the_schema_is_half_built() -> None:
+    message, code = derive.failure(derive.DeriveError("sql/adapters/official.sql breaks"), "slm", began=True)
+
+    assert code == 2
+    assert "half-built" in message

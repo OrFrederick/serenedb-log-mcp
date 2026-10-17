@@ -615,3 +615,62 @@ def test_a_leftover_persistent_adapter_view_is_dropped(database_url: str, small_
     assert derive.main(["--schema", small_raw.slm, "--raw-schema", small_raw.raw]) == 0
 
     assert views(database_url, small_raw.slm) == []
+
+
+# ----------------------------------------------------------------- failures and the floor check
+
+
+@pytest.fixture
+def scratch_pair(database_url: str) -> Iterator[Schemas]:
+    """An empty raw schema and a target schema, both dropped afterwards."""
+    suffix = uuid.uuid4().hex[:8]
+    schemas = SimpleSchemas(raw=f"scratch_t4_{suffix}_raw", slm=f"scratch_t4_{suffix}")
+    with psycopg.connect(database_url, autocommit=True) as conn:
+        conn.execute(sql.SQL("CREATE SCHEMA {}").format(sql.Identifier(schemas.raw)))
+    try:
+        yield schemas
+    finally:
+        with psycopg.connect(database_url, autocommit=True) as conn:
+            for schema in (schemas.slm, schemas.raw):
+                conn.execute(sql.SQL("DROP SCHEMA IF EXISTS {} CASCADE").format(sql.Identifier(schema)))
+
+
+def test_a_missing_raw_table_names_the_adapter_step_and_does_not_advise_a_retry(
+    scratch_pair: Schemas, capsys: pytest.CaptureFixture[str]
+) -> None:
+    assert derive.main(["--schema", scratch_pair.slm, "--raw-schema", scratch_pair.raw]) == 2
+
+    err = capsys.readouterr().err
+    assert "adapters/dev.sql" in err
+    assert "bgl" in err
+    assert "run it again" not in err
+
+
+def test_empty_raw_tables_fail_the_floor_check(
+    database_url: str, derived_sample: Schemas, scratch_pair: Schemas, capsys: pytest.CaptureFixture[str]
+) -> None:
+    with psycopg.connect(database_url, autocommit=True) as conn:
+        for table in ("bgl", "openstack"):
+            conn.execute(
+                sql.SQL("CREATE TABLE {} AS SELECT * FROM {} LIMIT 0").format(
+                    sql.Identifier(scratch_pair.raw, table), sql.Identifier(derived_sample.raw, table)
+                )
+            )
+
+    assert derive.main(["--schema", scratch_pair.slm, "--raw-schema", scratch_pair.raw]) == 2
+
+    err = capsys.readouterr().err
+    assert f"{scratch_pair.slm}.bgl_entry is empty" in err
+    assert f"{scratch_pair.slm}.os_entry is empty" in err
+
+
+def test_the_floor_check_names_a_missing_index(database_url: str, derived_sample: Schemas) -> None:
+    with psycopg.connect(database_url, autocommit=True) as conn:
+        assert derive.result_problems(conn, derived_sample.slm) == []
+        conn.execute(sql.SQL("DROP INDEX {}").format(sql.Identifier(derived_sample.slm, "os_entry_idx")))
+        try:
+            problems = derive.result_problems(conn, derived_sample.slm)
+        finally:
+            assert derive.main(["--schema", derived_sample.slm, "--raw-schema", derived_sample.raw]) == 0
+
+    assert problems == [f"index {derived_sample.slm}.os_entry_idx is missing"]

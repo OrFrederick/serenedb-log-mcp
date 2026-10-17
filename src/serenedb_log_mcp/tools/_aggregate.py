@@ -33,6 +33,7 @@ from pydantic import Field
 
 from serenedb_log_mcp import fts
 from serenedb_log_mcp.baseline import MIN_WEEKS, DatasetWindow, few_weeks_notes, judge, method_note, window
+from serenedb_log_mcp.clock import UTC_ZONE, clock_note, time_columns, utc_input, utc_range, utc_time
 from serenedb_log_mcp.config import Role
 from serenedb_log_mcp.corpus.datasets import DATASET_NAMES, OWNERSHIP_NOTE, DatasetName, Relation, relation
 from serenedb_log_mcp.corpus.facts import DatasetFacts, dataset_facts
@@ -101,6 +102,24 @@ TimeToParam = Annotated[
     Field(
         description="End of the time range, exclusive, ISO-8601 without a time zone. Omit it to end "
         "after the last Log Entry, and always omit it with a relative time_from."
+    ),
+]
+UtcTimeFromParam = Annotated[
+    str | None,
+    Field(
+        description="Start of the time range, inclusive, in UTC for every Dataset: ISO-8601 such as "
+        "'2005-07-01' or '2005-07-01T12:00:00', or with an offset, which is converted to UTC (a logged "
+        "BGL ts is US Pacific time: '2005-07-01T05:00:00-07:00'); or a relative range such as "
+        "'last 7d' or 'last 24h', which ends at the Dataset's last Log Entry, not today. Omit it to "
+        "start at the first Log Entry."
+    ),
+]
+UtcTimeToParam = Annotated[
+    str | None,
+    Field(
+        description="End of the time range, exclusive, in UTC like time_from (ISO-8601, an offset is "
+        "converted). Omit it to end after the last Log Entry, and always omit it with a relative "
+        "time_from."
     ),
 ]
 ComponentsParam = Annotated[
@@ -221,6 +240,11 @@ class Part:
         return sql.SQL("e.{}").format(self.rel.column(concept))
 
     @property
+    def clock(self) -> sql.Composable:
+        """A Log Entry's time in UTC, which every time comparison and bucket uses (clock.py, #65)."""
+        return utc_time(self.rel)
+
+    @property
     def key(self) -> sql.Composable:
         """The group of a Log Entry, never NULL (missing values get their NULL_LABELS label)."""
         if self.group_by is None:
@@ -272,7 +296,7 @@ class Part:
         return joined(" AND ", found) if found else Q(sql.SQL("TRUE"))
 
     def between(self, start: datetime, end: datetime) -> Q:
-        ts = self.col("time")
+        ts = self.clock
         return q("{} >= {} AND {} < {}", ts, bound(start), ts, bound(end))
 
 
@@ -332,12 +356,24 @@ def prepare(
     baseline_to: str | None = None,
     notes: Sequence[str] = (),
 ) -> Prepared:
-    """Validate the inputs against the Datasets' facts and build the Data Scope and the Parts."""
+    """Validate the inputs against the Datasets' facts and build the Data Scope and the Parts.
+
+    Every time is UTC (clock.py): the time inputs, the Datasets' ranges and so every window.
+    """
+    converted: list[str] = []
+
+    def as_utc(name: str, value: str | None) -> str | None:
+        found, note = utc_input(name, value)
+        converted.extend([note] if note else [])
+        return found
+
+    time_from, time_to = as_utc("time_from", time_from), as_utc("time_to", time_to)
+    baseline_from, baseline_to = as_utc("baseline_from", baseline_from), as_utc("baseline_to", baseline_to)
     known = {name: dataset_facts(name, role) for name in datasets}
     ranges: dict[str, tuple[datetime, datetime]] = {}
     for name, found in known.items():
         if found.first is not None and found.last is not None:
-            ranges[name] = (found.first, found.last)
+            ranges[name] = utc_range(name, found.first, found.last)
     empty = [name for name in known if name not in ranges]
     if empty:
         raise ScopeError(
@@ -364,6 +400,8 @@ def prepare(
         sources=sources_,
         alert_categories=alerts_,
     )
+    scope = scope.model_copy(update={"time_zone": UTC_ZONE, "time_columns": time_columns(scope.datasets)})
+    notes = [*notes, *converted, clock_note({name: ranges[name] for name in scope.datasets})]
     start, end = time_bounds(scope)
     baseline = _baseline(baseline_from, baseline_to)
     filters = EntryFilters(
@@ -477,7 +515,7 @@ def stats_statement(
                 p.key,
                 literal(OTHER),
                 p.col("source"),
-                p.col("time"),
+                p.clock,
                 p.between(p.window.start, p.window.end),
                 q("({})", p.between(*p.window.previous)) if p.window.previous else Q(sql.SQL("FALSE")),
                 p.source,
@@ -772,6 +810,8 @@ __all__ = [
     "SourcesParam",
     "TimeFromParam",
     "TimeToParam",
+    "UtcTimeFromParam",
+    "UtcTimeToParam",
     "baseline_of",
     "baseline_summary",
     "bound",

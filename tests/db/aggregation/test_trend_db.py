@@ -54,8 +54,9 @@ def test_an_ungrouped_trend_is_zero_filled_and_adds_up(corpus: str) -> None:
 def test_the_buckets_match_time_bucket_in_independent_sql(corpus: str) -> None:
     result = call("trend", role="team_lead", dataset="bgl", bucket="week")
 
+    utc = "make_timestamp(CAST(round(epoch_utc * 1000000) AS BIGINT))"
     expected = independent(
-        corpus, "SELECT time_bucket(INTERVAL '7 days', ts), count(*) FROM {bgl} GROUP BY 1 ORDER BY 1"
+        corpus, f"SELECT time_bucket(INTERVAL '7 days', {utc}), count(*) FROM {{bgl}} GROUP BY 1 ORDER BY 1"
     )
     assert [(date.fromisoformat(r[0]), r[1]) for r in result["rows"]] == [(b.date(), n) for b, n in expected]
     assert sum(column(result, "(all)")) == BGL_TOTAL

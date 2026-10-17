@@ -2,7 +2,8 @@
 
 BGL is tests/support/aggregation_corpus.py (see its numbers) plus two INFO lines of Component DST
 on NODE_DST that share one ts, 2005-07-10 01:30:00.5, but lie an hour apart in epoch_utc, as two
-lines do in the hour BGL's local time repeats at the daylight-saving fall-back.
+lines do in the hour BGL's local time repeats at the daylight-saving fall-back. The first is that ts
+in US Pacific time (08:30:00.5 UTC), whatever the zone of the machine that builds the corpus.
 
 OpenStack adds what get_context's request and instance scopes need:
 - the 2 nova.compute.manager ERROR lines for U1 (2017-05-16 20:00:00 and 20:00:05) carry request
@@ -21,7 +22,7 @@ from datetime import datetime
 from typing import Any
 
 import aggregation_corpus
-from aggregation_corpus import OS_FIRST, U1, _bgl, _os
+from aggregation_corpus import OS_FIRST, PACIFIC, U1, _bgl, _os
 
 REQ = "req-11111111-aaaa-bbbb-cccc-000000000001"
 REQ_OTHER = "req-22222222-aaaa-bbbb-cccc-000000000002"
@@ -39,7 +40,7 @@ BGL_TOTAL = aggregation_corpus.BGL_TOTAL + len(DST_MESSAGES)
 
 def bgl_rows() -> list[dict[str, Any]]:
     rows = aggregation_corpus.bgl_rows()
-    first_epoch = DST_TS.timestamp()
+    first_epoch = DST_TS.replace(tzinfo=PACIFIC).timestamp()
     for hour, message in enumerate(DST_MESSAGES):
         row = _bgl(DST_TS, NODE_DST, "DST", "INFO", None, message, None, None)
         row["epoch_utc"] = first_epoch + 3600 * hour

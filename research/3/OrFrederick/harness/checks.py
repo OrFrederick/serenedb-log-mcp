@@ -110,10 +110,46 @@ def check_citations_resolve(tr: Trace):
     return (not dangling, f"dangling citations: {dangling}" if dangling else f"{len(cited)} citations resolve")
 
 
+TABLE_ROW_RE = re.compile(r"^\s*\|.*\|\s*$")
+
+
+def _is_table_separator(line: str) -> bool:
+    """A markdown header-separator row: only pipes, dashes, colons and spaces, with >=1 dash."""
+    return "-" in line and bool(re.match(r"^[\s|:\-]+$", line))
+
+
+def _inherit_table_citations(text: str) -> str:
+    """A markdown table data row with no citation of its own inherits the citations of its header
+    row (if the header carries one), else of its caption: the nearest preceding non-blank line."""
+    lines = text.split("\n")
+    i = 0
+    while i < len(lines):
+        header, sep_idx = lines[i], i + 1
+        if TABLE_ROW_RE.match(header) and sep_idx < len(lines) and _is_table_separator(lines[sep_idx]):
+            cites = CITE_RE.findall(header)
+            if not cites:
+                j = i - 1
+                while j >= 0 and not lines[j].strip():
+                    j -= 1
+                if j >= 0:
+                    cites = CITE_RE.findall(lines[j])
+            if cites:
+                marker = " " + " ".join(f"[E{n}]" for n in cites)
+                k = sep_idx + 1
+                while k < len(lines) and TABLE_ROW_RE.match(lines[k]):
+                    if not CITE_RE.search(lines[k]):
+                        lines[k] += marker
+                    k += 1
+            i = sep_idx + 1
+        else:
+            i += 1
+    return "\n".join(lines)
+
+
 def check_numbers_grounded(tr: Trace, min_value: float = 10, pct_tol: float = 0.6):
     """Every number >= min_value in Observed Facts must be (a) in a sentence with a citation and
     (b) present in the cited Evidence, or a percentage derivable from two numbers in it."""
-    facts = split_sections(tr.final_text).get("Observed Facts", tr.final_text)
+    facts = _inherit_table_citations(split_sections(tr.final_text).get("Observed Facts", tr.final_text))
     ledger = {e["evidence_id"]: e for e in tr.ledger}
     problems, checked = [], 0
     for sent in re.split(r"(?<=[.!?])\s+|\n+", facts):

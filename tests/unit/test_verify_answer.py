@@ -19,6 +19,7 @@ from serenedb_log_mcp.evidence import Evidence, Role, RoleParam
 from serenedb_log_mcp.ledger import Ledger, get_ledger
 from serenedb_log_mcp.server import create_server
 from serenedb_log_mcp.toolkit import ALWAYS_LOAD_META, role_tool
+from serenedb_log_mcp.verify import INCIDENT_TOOLS
 
 # sample_count stores E1: KERNDTLB 152,734, KERNSTOR 63,491, APPSEV 49,651, entries_total 265,876.
 GOOD = """\
@@ -190,6 +191,10 @@ def test_the_manager_rules_apply_through_the_tool(server: MCPServer) -> None:
 
 
 def test_the_side_by_side_check_waits_for_an_incident_tool(server: MCPServer) -> None:
+    # The product server offers list_incidents and top_patterns since T27 and T28; take them away to
+    # see the check wait for them.
+    for name in INCIDENT_TOOLS:
+        server.remove_tool(name)
     call(server, "sample_count", role="team_lead")
 
     data = verify(server, "team_lead", GOOD)

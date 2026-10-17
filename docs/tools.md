@@ -21,6 +21,7 @@ Every tool takes a required `role` (`engineer`, `team_lead` or `manager`), which
 | [`search_patterns`](#search_patterns) | Search the Pattern catalogue by words (BM25, stemming, synonyms) | [Evidence](#output-evidence) |
 | [`top_patterns`](#top_patterns) | Rank Patterns by Log Entries, Incidents, sources, recency or priority | [Evidence](#output-evidence) |
 | [`trend`](#trend) | Trend of Log Entries per time bucket, with baselines | [Evidence](#output-evidence) |
+| [`verify_answer`](#verify_answer) | Check a draft answer against the Evidence | VerifyResult |
 
 ## `count_by`
 
@@ -758,6 +759,65 @@ method. total_matches counts buckets, not Log Entries.
 ### Output
 
 `structuredContent` is the [Evidence](#output-evidence) object; the description says what its rows and summary hold for this tool.
+
+## `verify_answer`
+
+**Check a draft answer against the Evidence**
+
+Annotations: read-only, idempotent, closed world, `anthropic/alwaysLoad` (Claude Code loads it without ToolSearch).
+
+Description, as the agent reads it:
+
+```text
+Check a draft answer against the Evidence Ledger. Call it before every final answer.
+
+Purpose: call it with your full draft before every final answer, fix every problem it reports,
+and call it again until ok is true. It checks that every [E<n>] exists in the Evidence Ledger
+(this session and earlier ones on the same LEDGER_PATH); that every number appears exactly in
+the Evidence its sentence cites (rows, summary, totals, parameters), never rounded, bracketed
+as a range or bound, or added up by hand, unless the sentence is marked "(derived from [E1],[E2])"
+and the number recomputes from those records; that the sections Observed Facts, Hypotheses,
+Unknowns and Next Step are all there, in that order; and that a count called Incidents cites
+list_incidents or top_patterns Evidence. For team_lead and manager, Log Entry counts must stand
+next to Incident and Spread Evidence (once list_incidents or top_patterns is offered), and money
+or time impact (cost, downtime) belongs in Unknowns or in a sentence saying the logs cannot
+establish it. For manager, customer and SLA terms too, no raw-line Evidence (search_logs,
+get_context) may be cited, and Unknowns must name cost, downtime and customer impact. Matching:
+a number must equal a value of the cited Evidence after thousands separators and k or M suffixes
+are read; a percentage may quote a stored fraction (100% for 1.0); a derived sum or difference
+must be exact and a derived share or ratio right to its printed precision. It runs no query and
+adds nothing to the Evidence Ledger.
+Inputs: role (the Role the answer is for), draft (the full answer text in Markdown).
+Outputs: ok (true when there is nothing to fix), role, summary (the verdict in one line),
+problems (each with kind, section, the offending text and a fix hint), checked_numbers (every
+number checked, with its status and the Evidence ids that hold it), cited_evidence and notes
+(checks that were skipped, and why).
+```
+
+### Inputs
+
+| Name | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `role` | one of `engineer`, `team_lead`, `manager` | yes |  | Who is asking: 'engineer' investigates one failure and needs example Log Entries and nearby events; 'team_lead' needs recurring problems with counts and trends per Component and Team, and receives at most 3 sample Log Entries from a search; 'manager' needs measured frequency and affected Components only, and receives no raw Log Entries (totals and facets, no rows). Every result carries the answer_frame for this Role; get_role_brief(role) has the full playbook. |
+| `draft` | string | yes |  | The full draft answer in Markdown, exactly as you would send it: the four sections Observed Facts, Hypotheses, Unknowns and Next Step, with [E&lt;n&gt;] next to every number. |
+
+### Limits
+
+No bounds in the input schema; the description states any other limits.
+
+### Output
+
+`structuredContent` is a `VerifyResult` object:
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `ok` | boolean | yes | True when no problem was found: send the draft as your answer. |
+| `role` | one of `engineer`, `team_lead`, `manager` | yes | The Role the draft was checked for. |
+| `summary` | string | yes | One line: the verdict, the problem counts by kind and what to do next. |
+| `problems` | list of object | yes | Every problem found, in answer order: kind, section, the offending text and a fix hint. |
+| `checked_numbers` | list of object | yes | Every number that was checked: as written, its value, section, cited Evidence ids, status and the Evidence ids that hold it. |
+| `cited_evidence` | list of string | yes | The Evidence ids the draft cites, in order of first use. |
+| `notes` | list of string | yes | Checks that were skipped, and why. |
 
 ## Output: Evidence
 

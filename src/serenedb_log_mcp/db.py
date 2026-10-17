@@ -88,6 +88,7 @@ __all__ = [
     "int_or_float",
     "open_connection",
     "serenedb_version",
+    "set_connector",
 ]
 
 logger = logging.getLogger(__name__)
@@ -1066,6 +1067,26 @@ def _is_misconfigured(exc: psycopg.Error) -> bool:
 
 _databases: dict[tuple[str, float, bool | None, float, int], Database] = {}
 _databases_lock = threading.Lock()
+_connector: Connector = open_connection
+
+
+def set_connector(connect: Connector | None) -> Connector:
+    """Open the connections of every process-wide layer with `connect`; None restores `open_connection`.
+
+    Returns the connector that was in place, so a caller can put it back. The ledger replay (T13,
+    `export.replay`) wraps the real connection with it, so that every statement a tool issues runs
+    with the parameters the Evidence Ledger stored for it. The layers built so far are dropped with
+    their idle connections, so no connection opened the other way is reused afterwards.
+    """
+    global _connector
+    with _databases_lock:
+        layers = list(_databases.values())
+        _databases.clear()
+        previous = _connector
+        _connector = open_connection if connect is None else connect
+    for layer in layers:
+        layer.close()
+    return previous
 
 
 def get_database(role: Role | None = None) -> Database:
@@ -1092,6 +1113,7 @@ def get_database(role: Role | None = None) -> Database:
                 client_binding=settings.client_binding,
                 reconnect_wait_s=settings.reconnect_wait_s,
                 max_idle_connections=settings.max_idle_connections,
+                connect=_connector,
             )
             _databases[key] = layer
         return layer

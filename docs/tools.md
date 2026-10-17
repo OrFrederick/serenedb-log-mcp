@@ -10,6 +10,7 @@ Every tool takes a required `role` (`engineer`, `team_lead` or `manager`), which
 |---|---|---|
 | [`count_by`](#count_by) | Count Log Entries by one dimension, with baselines | [Evidence](#output-evidence) |
 | [`describe_corpus`](#describe_corpus) | Describe the Datasets: size, time range, Components, Teams | [Evidence](#output-evidence) |
+| [`export_investigation`](#export_investigation) | Export the investigation as a Markdown report | InvestigationExport |
 | [`find_precursors`](#find_precursors) | Patterns that precede a target Pattern, with support and lift | [Evidence](#output-evidence) |
 | [`get_context`](#get_context) | Log Entries just before and after one entry | [Evidence](#output-evidence) |
 | [`get_evidence`](#get_evidence) | Get stored Evidence by id | [Evidence](#output-evidence) |
@@ -126,6 +127,62 @@ No bounds in the input schema; the description states any other limits.
 ### Output
 
 `structuredContent` is the [Evidence](#output-evidence) object; the description says what its rows and summary hold for this tool.
+
+## `export_investigation`
+
+**Export the investigation as a Markdown report**
+
+Annotations: read-only, idempotent, closed world, `anthropic/alwaysLoad` (Claude Code loads it without ToolSearch).
+
+Description, as the agent reads it:
+
+```text
+Render the investigation as a Markdown report: questions, tool calls, SQL, results and answers.
+
+Purpose: turn the final answers and the Evidence Ledger behind them into the reproducible report
+of an investigation. Per answering Role it shows the question, every tool call with its
+parameters and Data Scope, the SQL with its bound parameters, the result tables (totals,
+truncated, first 10 rows), the answer with its verify_answer check, and a closing section "What
+the data does and does not establish" (Observed Facts and Data Scopes, then Hypotheses, Unknowns,
+samples and what these logs do not measure). Call it once every answer is final. It is
+read-only: it returns the Markdown and writes no file; scripts/export_report.py writes the same
+report to disk, and scripts/replay_ledger.py re-runs its SQL.
+Inputs: role (the audience of the report, not of the answers: 'manager' leaves raw Log Entry
+rows out of every table while counts, SQL and Data Scope stay; 'engineer' and 'team_lead' get
+the first 10 rows; export the worked investigation with role='engineer'), title, answers (each
+with role, question and the final answer as sent), evidence_ids (optional subset of the ledger).
+Outputs: role, title, markdown (the report), size_chars and size_bytes (its size), evidence_ids
+(the Evidence shown in full) and notes (cited Evidence the ledger does not hold, size hints).
+```
+
+### Inputs
+
+| Name | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `role` | one of `engineer`, `team_lead`, `manager` | yes |  | The audience of the report: 'manager' gets no raw Log Entry rows in any table (counts, summaries, SQL and Data Scopes stay); 'engineer' and 'team_lead' get tables with the first 10 rows of each result. Export the worked investigation with role='engineer'. |
+| `title` | string | yes |  | The report title. |
+| `answers` | list of object | yes |  | The answers of the investigation in the order it was handed on, each with role (the Role that asked), question and answer (the final answer exactly as sent, with its [E&lt;n&gt;] citations). |
+| `evidence_ids` | list of string or null | no | `null` | Optional: only these Evidence ids, for example ['E1', 'E2']; Evidence an answer cites is always included. Omit it to include every record of the Evidence Ledger. |
+
+### Limits
+
+- `title`: at least 1 characters, at most 200 characters
+- `answers`: at least 1 items, at most 20 items
+- `evidence_ids`: at most 500 items
+
+### Output
+
+`structuredContent` is a `InvestigationExport` object:
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `role` | one of `engineer`, `team_lead`, `manager` | yes | The audience the report was rendered for. |
+| `title` | string | yes | The report title. |
+| `markdown` | string | yes | The report in Markdown. |
+| `size_chars` | integer | yes | Length of markdown in characters. |
+| `size_bytes` | integer | yes | Length of markdown in UTF-8 bytes. |
+| `evidence_ids` | list of string | yes | The Evidence ids shown in full in the report, in ledger order. |
+| `notes` | list of string | yes | What to know about the report: cited or requested Evidence ids the ledger does not hold, and a hint when the report is too long to read in a tool result. |
 
 ## `find_precursors`
 

@@ -4,6 +4,8 @@ SHELL := /bin/bash
 
 UV ?= uv
 SERENEDB_IMAGE ?= serenedb/serenedb:26.10.1
+# 26.10.1 is published for linux/amd64 only; Apple Silicon runs it under emulation.
+SERENEDB_PLATFORM ?= linux/amd64
 SERENEDB_CONTAINER ?= serenedb-log-mcp-db
 SERENEDB_PORT ?= 7890
 # Extra arguments for the dev loader, for example LOAD_ARGS="--replace" or LOAD_ARGS="--schema scratch".
@@ -43,7 +45,7 @@ run: ## Start the MCP server over stdio
 	$(UV) run serenedb-log-mcp --transport stdio
 
 db-up: ## Start a local SereneDB container on port 7890 (trust auth)
-	docker run -d --name $(SERENEDB_CONTAINER) -p $(SERENEDB_PORT):7890 \
+	docker run -d --platform $(SERENEDB_PLATFORM) --name $(SERENEDB_CONTAINER) -p $(SERENEDB_PORT):7890 \
 		-e SERENEDB_HOST_AUTH_METHOD=trust $(SERENEDB_IMAGE)
 	@echo "SereneDB starting at host=localhost port=$(SERENEDB_PORT) dbname=postgres user=postgres"
 

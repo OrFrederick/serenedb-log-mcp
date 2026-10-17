@@ -86,10 +86,12 @@ class QueryResult:
 
     `sql` holds each statement exactly as the tool passed it to psycopg: `%s` where parameters were
     bound and `%%` for a literal `%` in a statement that binds parameters, so running `sql[i]` with
-    `params[i]` through psycopg (or this layer) repeats the call; a SQL client needs `%%` read as
-    `%`. `params` holds the bound values, one list per statement in the same order. `query_ms` is the
-    wall-clock time of those statements only. `notes` carries what the agent must know about how
-    the numbers were obtained, for example a retry after a database restart.
+    `params[i]` through psycopg (or this layer) repeats the call, provided a statement without
+    parameters is run with `params[i] or None` (an empty list makes psycopg parse placeholders, so a
+    bare `%` would fail); a SQL client needs `%%` read as `%`. `params` holds the bound values, one
+    list per statement in the same order. `query_ms` is the wall-clock time of those statements
+    only. `notes` carries what the agent must know about how the numbers were obtained, for example
+    a retry after a database restart.
     """
 
     total: int
@@ -242,8 +244,9 @@ class _ConnectionLost(Exception):
 class _Session:
     """The statements of one attempt, with the time they took."""
 
-    def __init__(self, conn: ConnectionLike) -> None:
+    def __init__(self, conn: ConnectionLike, deadline: _Deadline | None = None) -> None:
         self._conn = conn
+        self._deadline = deadline
         self.sql: list[str] = []
         self.params: list[list[Any]] = []
         self.notes: list[str] = []
@@ -252,6 +255,10 @@ class _Session:
 
     def fetch(self, sql: str, params: Sequence[Any]) -> list[tuple[Any, ...]]:
         values = list(params)
+        if self._deadline is not None and self._deadline.fired:
+            # A cancel that reached the backend between two statements was dropped by the server,
+            # so the next statement would run without a limit: stop here instead.
+            raise QueryTimeout(_timeout_message(self._deadline.timeout_s))
         self.running = sql
         started = time.perf_counter()
         # No parameter list at all when there are no values, so a literal % stays a literal.
@@ -273,6 +280,7 @@ class _Deadline:
 
     def __init__(self, conn: ConnectionLike, timeout_s: float) -> None:
         self._conn = conn
+        self.timeout_s = timeout_s
         self._lock = threading.Lock()  # held while a cancel request is decided and sent
         self._stopped = threading.Event()
         self._timer = threading.Timer(timeout_s, self._cancel)
@@ -474,8 +482,8 @@ class Database:
             conn = self._acquire()
         except psycopg.Error as exc:
             raise _ConnectionLost from exc
-        session = _Session(conn)
         deadline = _Deadline(conn, self.timeout_s)
+        session = _Session(conn, deadline)
         try:
             conn.execute("BEGIN READ ONLY")
             deadline.start()  # after BEGIN, so the limit covers only the statements
@@ -489,11 +497,7 @@ class Database:
                 raise _ConnectionLost from exc
             self._end(conn, discard=deadline.fired)
             if deadline.fired and isinstance(exc, psycopg.errors.QueryCanceled):
-                raise QueryTimeout(
-                    f"The query ran longer than the {self.timeout_s:g} s limit (SLM_QUERY_TIMEOUT_S) "
-                    "and was cancelled. Narrow the Data Scope: a shorter time range, a Component, "
-                    "level or Pattern filter, or a coarser trend bucket."
-                ) from exc
+                raise QueryTimeout(_timeout_message(self.timeout_s)) from exc
             raise _rejected(exc, session.running) from exc
         except BaseException:
             self._end(conn, discard=True)
@@ -570,9 +574,25 @@ class Database:
             _close_quietly(conn)
 
 
+def _timeout_message(timeout_s: float) -> str:
+    return (
+        f"The query ran longer than the {timeout_s:g} s limit (SLM_QUERY_TIMEOUT_S) and was "
+        "cancelled. Narrow the Data Scope: a shorter time range, a Component, level or Pattern "
+        "filter, or a coarser trend bucket."
+    )
+
+
 def _rejected(exc: psycopg.Error, sql: str | None) -> QueryFailed:
     """The error for a statement that did not run, with the hint that fits who refused it."""
     statement = f" Statement: {_compact(sql)}" if sql else ""
+    if exc.sqlstate is None and isinstance(exc, psycopg.DataError):
+        # psycopg could not encode a bound value, for example a NUL byte in a string.
+        return QueryFailed(
+            f"A value you passed cannot be sent to SereneDB: {_first_line(exc)} Remove the offending "
+            f"characters from the value and call the tool again.{statement}",
+            None,
+            sql,
+        )
     if exc.sqlstate is None:
         # psycopg refused the statement before sending it, so no input of the agent's can fix it.
         return QueryFailed(

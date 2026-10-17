@@ -118,6 +118,8 @@ class FakeConnection:
             raise psycopg.errors.ConnectionException('No files found that match the pattern "missing.csv"')
         if query == "SELECT * FROM missing":
             raise psycopg.errors.UndefinedTable('relation "missing" does not exist\nLINE 1: ...')
+        if query == "SELECT a FROM t WHERE b = %s" and params and "\x00" in str(params[0]):
+            raise psycopg.DataError("PostgreSQL text fields cannot contain NUL (0x00) bytes")
         if query == "SELECT 'FAT%' LIMIT %s":
             # psycopg refuses this before anything is sent: a bare % next to a placeholder.
             raise psycopg.ProgrammingError("only '%s', '%b', '%t' are allowed as placeholders, got \"%'\"")
@@ -479,6 +481,30 @@ class ManualTimer:
         self.entered.wait(5)
 
 
+def test_a_fired_limit_stops_the_call_before_the_next_statement(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A cancel that reaches a backend idle between two statements is dropped by the server."""
+    monkeypatch.setattr(threading, "Timer", ManualTimer)
+    ManualTimer.instances.clear()
+
+    def respond(sql: str, params: Sequence[Any] | None) -> list[tuple[Any, ...]]:
+        if sql == COUNT_SQL:
+            timer = ManualTimer.instances[-1]
+            timer.fire_and_pause()
+            timer.proceed.set()
+            assert timer.thread is not None
+            timer.thread.join(5)  # the limit fires as the count finishes
+            return [(57,)]
+        return ROWS
+
+    server = FakeServer(respond)
+
+    with pytest.raises(QueryTimeout):
+        database(server, timeout_s=1).fetch_limited(COUNT_SQL, ROWS_SQL, [1], 2)
+
+    assert ROWS_SQL not in server.executed()
+    assert server.connections[0].closed
+
+
 def test_a_cancel_that_starts_as_the_statements_finish_never_reaches_a_pooled_connection(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -602,6 +628,18 @@ def test_a_failing_cancel_request_does_not_escape_the_timer_thread() -> None:
 
     assert server.connections[0].closed
     assert layer.fetch_all("SELECT a FROM t").total == 3
+
+
+def test_a_value_psycopg_cannot_send_is_reported_as_an_input_error() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+
+    with pytest.raises(QueryFailed) as caught:
+        database(server).fetch_all("SELECT a FROM t WHERE b = %s", ["bad\x00value"])
+
+    message = str(caught.value)
+    assert "template" not in message
+    assert "NUL" in message
+    assert "value" in message
 
 
 def test_a_statement_psycopg_refuses_is_reported_as_a_template_bug() -> None:

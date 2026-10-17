@@ -20,8 +20,11 @@ from serenedb_log_mcp.config import load_settings
 pytestmark = pytest.mark.db
 
 
-def draft(counts: dict[str, Any], search: dict[str, Any] | None = None) -> str:
-    """An answer built from the returned numbers: E1 is the count_by result, E2 the search."""
+def draft(
+    counts: dict[str, Any], search: dict[str, Any] | None = None, incidents: dict[str, Any] | None = None
+) -> str:
+    """An answer built from the returned numbers: E1 is the count_by result, E2 the search, and
+    `incidents` a list_incidents result cited by its own id (the side-by-side rule of T12)."""
     top = row_dicts(counts)[0]
     summary = counts["summary"]
     lines = [
@@ -32,6 +35,12 @@ def draft(counts: dict[str, Any], search: dict[str, Any] | None = None) -> str:
     ]
     if search is not None:
         lines.append(f"- A search for TLB error matched {search['total_matches']:,} Log Entries [E2].")
+    if incidents is not None:
+        totals = incidents["summary"]
+        lines.append(
+            f"- The KERNEL Log Entries form {totals['incidents_total']:,} Incidents on "
+            f"{totals['nodes_total']:,} nodes [{incidents['evidence_id']}]."
+        )
     lines += [
         "",
         "## Hypotheses",
@@ -73,13 +82,13 @@ def test_one_changed_number_fails_and_names_the_true_value(corpus: str) -> None:
 def test_the_manager_may_not_cite_the_search(corpus: str) -> None:
     counts = call("count_by", role="manager", dataset="bgl", group_by="component", top=2)
     search = call("search_logs", role="manager", dataset="bgl", query="TLB error")
+    incidents = call("list_incidents", role="manager", dataset="bgl", components=["KERNEL"])
 
-    result = call("verify_answer", role="manager", draft=draft(counts, search))
+    result = call("verify_answer", role="manager", draft=draft(counts, search, incidents))
 
     kinds = [p["kind"] for p in result["problems"]]
     assert kinds == ["manager_raw_line_evidence"]
     assert "E2" in result["problems"][0]["hint"]
-    assert any("list_incidents" in note for note in result["notes"])  # no Incident tool yet
 
 
 def test_evidence_from_an_earlier_session_on_the_ledger_path_resolves(
@@ -89,9 +98,10 @@ def test_evidence_from_an_earlier_session_on_the_ledger_path_resolves(
     monkeypatch.setattr(config, "_active", load_settings(slm_schema=corpus, ledger_path=path))
     ledger.reset_ledger()
     counts = call("count_by", role="team_lead", dataset="bgl", group_by="component", top=2)
+    incidents = call("list_incidents", role="team_lead", dataset="bgl", components=["KERNEL"])
 
     ledger.reset_ledger()  # a new session: a fresh server process reads the ledger from the file
-    result = call("verify_answer", role="team_lead", draft=draft(counts))
+    result = call("verify_answer", role="team_lead", draft=draft(counts, incidents=incidents))
 
     assert result["ok"] is True, result["problems"]
-    assert len(path.read_text().splitlines()) == 1  # verifying added nothing
+    assert len(path.read_text().splitlines()) == 2  # verifying added nothing

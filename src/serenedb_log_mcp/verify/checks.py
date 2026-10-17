@@ -6,14 +6,18 @@ every problem it finds, each with the offending text and a fix hint. It never ra
 
 What it checks (decisions.md: Evidence Ledger, Differentiator 3; #3, #4 and #1 Decision proposals):
 
-- Citations: every `[E<n>]` resolves in the ledger, and Observed Facts cite Evidence at all.
+- Citations: every `[E<n>]` resolves in the ledger, and Observed Facts cite Evidence at all. A range
+  `[E5-E16]` cites every record in it.
 - Numbers: every number in a sentence that cites Evidence appears in that Evidence: its rows
   (including numbers inside text cells, such as "Total memory: 64172 MB"), summary, totals,
-  arguments, bound parameters and Data Scope. A number that is not there is accepted only in a
-  sentence marked "(derived from [E1],[E2])", and only when it recomputes from those records as a
-  sum, a difference or a ratio of two of their numbers, a column total or a running total of a
-  column. A number with no citation in its sentence is a problem everywhere except in Next Step,
-  which holds suggested parameters rather than measurements.
+  arguments, bound parameters and Data Scope. A number followed by a counted noun ("83 racks") must
+  sit in a field that may count it: one named after that noun, or one that names none ("count",
+  "total"), never only in a field that counts something else (incidents). A number that is not
+  there is accepted only in a sentence marked "(derived from [E1],[E2])", and only when it
+  recomputes from those records as a sum, a difference or a ratio of two of their numbers, a column
+  total or a running total of a column. A number with no citation in its sentence is a problem
+  everywhere except in parameter position in Next Step ("with top=20", "a 600 s window"), which
+  suggests a call, not a measurement.
 - The #3 pilot failures get their own problem kinds, so the hint can say what to do: a rounded
   number ("about 150k", "43.8%" for 43.83), a bound or a bracketed range ("fewer than 2,500",
   "~32k-36k"), and a self-computed sum or share without the derived mark.
@@ -30,16 +34,23 @@ What it checks (decisions.md: Evidence Ledger, Differentiator 3; #3, #4 and #1 D
   cost, downtime and customer impact (roles.NOT_MEASURED).
 
 What a number is: digits, optionally with thousands separators, decimals, a percent sign or a k, M,
-thousand or million suffix. Identifiers are not numbers and are masked first: dates, times, BGL
-locations (R30-M0-N9-C:J16-U01), UUIDs, IP addresses and versions, hex ids, identifiers that contain
-digits (p95, nova.api.v21, E1), line and entry numbers, HTTP status codes, ordinals, bare years,
-inline code with letters in it, and ordered-list markers. Whole integers up to 10 need no Evidence
-("the top 3", "5 lines before"), except a count of Incidents, which is the headline number.
+thousand or million suffix, and a fraction in words ("half of", "a third", "two thirds"), read as a
+percentage that is rounded when a bound comes before it ("roughly half"). Identifiers are not
+numbers and are masked first: dates, times, BGL locations (R30-M0-N9-C:J16-U01), UUIDs, IP addresses
+and versions, hex ids, identifiers that contain digits (p95, nova.api.v21, E1), line and entry numbers
+("line numbers such as 27179-27202"), HTTP status codes (also as an adjective: "the 404 Log
+Entries"), ordinals, bare years, inline code with letters in it, and ordered-list markers. Whole
+integers up to 10 need no Evidence ("the top 3", "5 lines before"), except a count of Incidents, which
+is the headline number.
 
 Known limits: the checker cannot tell which of several cited records a number belongs to, so a
 sentence citing two records is checked against both; a derived number is accepted when any two
 numbers of its sources recompute it, which a small difference can do by chance; and a sentence is
 the unit, so a citation at the end of a bullet does not cover an earlier sentence of that bullet.
+
+Size (#81): the lookups of an Evidence record are built only when a draft cites it, so a large ledger
+costs little; a draft over MAX_DRAFT characters is not checked, and a sentence over MAX_SENTENCE has its
+citations checked but not its numbers or claims; each is a problem that says so, never a stall.
 """
 
 from __future__ import annotations
@@ -47,6 +58,7 @@ from __future__ import annotations
 import bisect
 import math
 import re
+import sys
 from collections.abc import Iterable, Iterator, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any
@@ -61,6 +73,8 @@ from serenedb_log_mcp.roles.shaping import RAW_LINE_COLUMN, RAW_LINE_TOOLS
 __all__ = [
     "INCIDENT_TOOLS",
     "LOG_ENTRY_TOOLS",
+    "MAX_DRAFT",
+    "MAX_SENTENCE",
     "PREAMBLE",
     "AnswerReport",
     "CheckedNumber",
@@ -96,6 +110,22 @@ numbers in a record, some two of them differ by any small number by chance."""
 MAX_TEXT = 240
 """Problem texts are cut to this many characters."""
 
+MAX_DRAFT = 50_000
+"""A longer draft is not checked: it is a `draft_too_long` problem (#81). A long answer is a tenth of it."""
+
+MAX_SENTENCE = 2_000
+"""A longer sentence or table row is a `sentence_too_long` problem and its numbers and claims are not
+checked: some searches grow with the square of a sentence's length (#81)."""
+
+WINDOW = 160
+"""How far before or after a number the checks read its context, in characters."""
+
+MAX_CITED_RANGE = 100
+"""A range citation wider than this ("[E1-E999999]") cites its two ends only, not every id between."""
+
+HINT_SCAN = 1_000
+"""An "it is in E3" hint looks for the number in at most this many of the newest Evidence records."""
+
 FOUR_SECTIONS = ", ".join(SECTIONS)
 
 
@@ -111,7 +141,8 @@ class Problem(BaseModel):
         description="What is wrong: unknown_evidence, no_citation, uncited_number, number_not_in_evidence, "
         "rounded_number, range, unmarked_derivation, derived_mismatch, missing_section, empty_section, "
         "section_order, incident_count_without_incident_evidence, log_entries_without_incidents, "
-        "manager_raw_line_evidence, not_measured_claim, missing_unknown or checker_error."
+        "manager_raw_line_evidence, not_measured_claim, missing_unknown, draft_too_long, sentence_too_long "
+        "or checker_error."
     )
     section: str = Field(description="The answer section the problem is in, for example 'Observed Facts'.")
     text: str = Field(description="The offending text: the sentence, table row or section concerned.")
@@ -180,11 +211,10 @@ _HEADINGS = (
     re.compile(rf"^\s*(?:[0-9]+[.)]\s*)?{_NAME}\s*(?P<rest>)$", re.I),
 )
 
-_CITE = re.compile(r"\[(E[0-9]+(?:\s*[,;]\s*E[0-9]+)*)\]")
-_DERIVED = re.compile(
-    r"derived\s+from\s+(?P<ids>\[E[0-9]+(?:\s*[,;]\s*E[0-9]+)*\](?:\s*(?:,|;|and|&)?\s*\[E[0-9]+(?:\s*[,;]\s*E[0-9]+)*\])*)",
-    re.I,
-)
+_IDS = r"E[0-9]+(?:\s*(?:[,;]|[\u2013\u2014-])\s*E[0-9]+)*"
+"""The ids inside one citation: "E1", "E1, E8", or a range "E5\u2013E16" (#81)."""
+_CITE = re.compile(rf"\[({_IDS})\]")
+_DERIVED = re.compile(rf"derived\s+from\s+(?P<ids>\[{_IDS}\](?:\s*(?:,|;|and|&)?\s*\[{_IDS}\])*)", re.I)
 _NEW_ITEM = re.compile(r"^\s*(?:[-*+\u2022]|[0-9]{1,3}[.)])\s+")
 _LIST_MARKER = re.compile(r"^\s*(?:>\s*)*(?:[-*+\u2022]\s+|[0-9]+[.)]\s+)?")
 _FENCE = re.compile(r"^\s*(?:```|~~~)")
@@ -192,6 +222,7 @@ _TABLE_ROW = re.compile(r"^\s*\|.*\|\s*$")
 _TABLE_SEPARATOR = re.compile(r"^[\s|:\-]+$")
 _ABBREVIATIONS = re.compile(r"\b(?:e\.g|i\.e|vs|etc|approx|cf|ca|no|fig)\.(?=\s)", re.I)
 _SENTENCE_END = re.compile(r"(?<=[.!?])\s+(?=\S)")
+_LEADING_CITES = re.compile(rf"^\s*(?:\[{_IDS}\][\s.,;:]*)+")
 _ONLY_CITATIONS = re.compile(r"^[\s.,;:()*_\-]*$")
 
 _MONTH = r"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]*\.?"
@@ -212,7 +243,7 @@ _ID_MASKS: tuple[re.Pattern[str], ...] = tuple(
         (r"\b(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])\b", 0),  # month and day: 06-11, 12-14
         (r"\b[0-9]{1,2}:[0-9]{2}(?::[0-9]{2}(?:\.[0-9]+)?)?\b", 0),
         (
-            rf"\b[0-9]{{1,2}}(?:st|nd|rd|th)?(?:\s*(?:,|and|or|&|\u2013|\u2014|-|to)\s*[0-9]{{1,2}}(?:st|nd|rd|th)?)*"
+            rf"\b[0-9]{{1,2}}(?:st|nd|rd|th)?(?:\s*(?:,|and|or|&|\u2013|\u2014|-|to)\s*[0-9]{{1,2}}(?:st|nd|rd|th)?){{0,12}}"
             rf",?\s+{_MONTH}(?:,?\s+[0-9]{{4}})?",
             0,
         ),
@@ -220,18 +251,22 @@ _ID_MASKS: tuple[re.Pattern[str], ...] = tuple(
         (rf"\b{_MONTH}\s+(?:19|20)[0-9]{{2}}\b", 0),  # month and year: June 2005
         (r"\b0x[0-9a-fA-F]+\b", 0),
         (r"\b(?=[0-9a-f]*[a-f])(?=[0-9a-f]*[0-9])[0-9a-f]{8,}\b", 0),  # hex ids such as template ids
-        (r"\b[0-9]+(?:\.[0-9]+){2,}(?::[0-9]+)?\b", 0),  # IP addresses, versions
-        (r"\b[A-Za-z_][A-Za-z0-9_.]*[0-9][A-Za-z0-9_.]*", 0),  # identifiers with digits: p95, E1, v21
+        (r"(?<![0-9.])[0-9]+(?:\.[0-9]+){2,}(?::[0-9]+)?\b", 0),  # IP addresses, versions
+        (r"(?<![A-Za-z0-9_.])[A-Za-z_][A-Za-z0-9_.]*[0-9][A-Za-z0-9_.]*", 0),  # identifiers: p95, E1, v21
     )
 )
 """Identifiers, dates and times: never a measured number, in a draft or in Evidence text."""
+
+_HTTP_STATUS = r"(?:20[0-6]|30[0-8]|40[0-9]|41[0-8]|42[1-9]|431|451|50[0-8])(?![0-9,.])"
+"""HTTP status codes as OpenStack logs them."""
 
 _CLAIM_MASKS: tuple[re.Pattern[str], ...] = tuple(
     re.compile(pattern, flags)
     for pattern, flags in (
         (r"`[^`\n]*[A-Za-z_=(][^`\n]*`", 0),  # inline code with letters: SQL, calls, arguments
         (
-            r"\b(?:lines?|line_no|line\s+numbers?|entry_id|entry|pid|jobs?|job_id)\s*[:#=]?\s*[0-9][0-9,]*"
+            r"\b(?:lines?|line_no|line\s+numbers?|entry_ids?|entry|pid|jobs?|job_id)"
+            r"(?:\s+(?:such\s+as|like|e\.g\.,?|including|between))?\s*[:#=]?\s*[0-9][0-9,]*"
             r"(?:\s*(?:\u2013|\u2014|-|to|and|or)\s*[0-9][0-9,]*)*",
             re.I,
         ),
@@ -241,6 +276,11 @@ _CLAIM_MASKS: tuple[re.Pattern[str], ...] = tuple(
             re.I,
         ),
         (r"\b[1-5][0-9]{2}(?:s\b|(?=\s+(?:responses?|errors?|status(?:es)?|codes?)\b))", re.I),
+        (  # a status code used as an adjective: "the 404 Log Entries" (#81)
+            rf"\b(?:the|these|those|all|any|its|their)\s+(?:HTTP\s+)?{_HTTP_STATUS}"
+            r"(?=\s+(?:log\s+entr(?:y|ies)|entries|lines|requests?|responses?|calls?)\b)",
+            re.I,
+        ),
         (r"\blen\s*[:=]?\s*[0-9]+", re.I),
         (r"\b[0-9]+(?:st|nd|rd|th)\b", 0),
     )
@@ -253,38 +293,62 @@ these: "status: 503" in a row is the value a draft may quote as "returned 503"."
 # customer impact; T7's Team Lead playbook: "Avoid: ... money or time impact"). An amount is always a
 # claim; a bare term is a claim unless its clause defers it or says the logs cannot establish it.
 _QTY = (
-    r"(?:[0-9][0-9,.]*|an?|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|several|(?<!how\s)many|"
-    r"a\s+few|few)"
+    r"(?:(?<![0-9,.])[0-9][0-9,.]*+|an?|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|"
+    r"several|(?<!how\s)many|a\s+few|few)"
 )
-_SPAN = r"(?:hours?|hrs?|h|minutes?|mins?|days?|weeks?|seconds?|secs?)"
-_ABOUT = r"(?:about\s+|around\s+|nearly\s+|almost\s+|over\s+|roughly\s+|some\s+)?"
+_SPAN = r"(?:hours?|hrs?|h|minutes?|mins?|days?|weeks?|seconds?|secs?|nights?|shifts?)"
+_ABOUT = r"(?:about\s+|around\s+|nearly\s+|almost\s+|over\s+|roughly\s+|some\s+|at\s+least\s+)?"
+_HEDGE = (  # modality never makes an amount a refusal: "downtime was probably around 3 hours" (#45)
+    r"(?:(?:probably|likely|perhaps|possibly|maybe|approximately|estimated\s+(?:at\s+)?|an\s+estimated)\s+)?"
+)
+_FULL = r"(?:full\s+|whole\s+|entire\s+)?"
+_DURATION = (
+    rf"(?:{_ABOUT}{_QTY}\s*-?\s*{_FULL}{_SPAN}\b|half\s+an?\s+(?:hour|day|week|shift)\b|overnight\b|"
+    r"all\s+(?:night|day|afternoon|morning|evening|weekend)\b|"
+    r"(?:most|much|part)\s+of\s+(?:a|an|the)\s+(?:day|week|night|afternoon|morning|evening|weekend)\b)"
+)
+_FAILED = (
+    r"(?:unavailable|down|offline|degraded|idle|dark|stalled|stuck|blocked|failed|"
+    r"(?:could\s+not|couldn't|unable\s+to)\s+\w+(?:\s+(?:in|on|to|out))?)"
+)
 _MONEY_AMOUNTS = (
-    r"[$\u20ac\u00a3]\s?[0-9][0-9,.]*(?:\s?(?:[kKmM]\b|bn\b|thousand|million|billion))?"
-    r"|\b[0-9][0-9,.]*\s?(?:[kKmM]\s?|bn\s?)?(?:(?-i:USD|EUR|GBP|CHF)|dollars?|euros?|pounds?)\b"
-    r"|\b(?-i:USD|EUR|GBP|CHF)\s?[0-9][0-9,.]*(?:\s?(?:[kKmM]\b|bn\b|thousand|million|billion))?"
+    r"[$\u20ac\u00a3]\s?[0-9][0-9,.]*+(?:\s?(?:[kKmM]\b|bn\b|thousand|million|billion))?"
+    r"|(?<![0-9,.])\b[0-9][0-9,.]*+\s?(?:[kKmM]\s?|bn\s?|thousand\s+|million\s+|billion\s+)?"
+    r"(?:(?-i:USD|EUR|GBP|CHF)|dollars?|euros?|pounds?)\b"
+    r"|\b(?-i:USD|EUR|GBP|CHF)\s?[0-9][0-9,.]*+(?:\s?(?:[kKmM]\b|bn\b|thousand|million|billion))?"
 )
 _DOWNTIME_AMOUNTS = (
-    rf"\b{_QTY}\s*-?\s*{_SPAN}\s+(?:of\s+)?(?:downtime|outages?|unavailability|recovery|disruption|degradation)\b"
-    rf"|\b(?:unavailable|down|offline|degraded)\s+for\s+{_ABOUT}{_QTY}\s*-?\s*{_SPAN}\b"
-    rf"|\btook\s+{_ABOUT}{_QTY}\s*-?\s*{_SPAN}\s+to\s+(?:recover|restore|come\s+back|be\s+restored)\b"
-    r"|\b[0-9][0-9.]*\s*%\s+(?:availability|uptime)\b"
+    rf"\b{_QTY}\s*-?\s*{_FULL}{_SPAN}\s+(?:of\s+)?(?:service\s+)?"
+    r"(?:downtime|outages?|unavailability|recovery|disruption|degradation|interruption|idle\s+time)\b"
+    rf"|\b(?:downtime|outage|unavailability|interruption|disruption)\s*(?:of|was|lasted|:|=)?\s*{_HEDGE}{_DURATION}"
+    rf"|\b{_FAILED}\s+(?:for\s+{_DURATION}|overnight\b|all\s+(?:night|day|afternoon|morning|evening|weekend)\b)"
+    rf"|\btook\s+{_ABOUT}{_QTY}\s*-?\s*{_FULL}{_SPAN}\s+to\s+(?:recover|restore|come\s+back|be\s+restored)\b"
+    rf"|\blost\s+{_DURATION}"
+    r"|(?<![0-9.])\b[0-9][0-9.]*+\s*%\s+(?:availability|uptime)\b"
 )
 _CUSTOMER_AMOUNTS = (
-    rf"\b{_QTY}\s+(?:customers|users|clients|tenants)\s+(?:were\s+|was\s+)?(?:affected|impacted|hit)\b"
+    rf"\b{_QTY}\s+(?:customers|users|clients|tenants|subscribers)\s+(?:were\s+|was\s+)?"
+    r"(?:affected|impacted|hit)\b"
 )
 _MONEY_TERMS = (
     r"\b(?:costs?|costly|costing|money|monetary|financial(?:ly)?|revenue|profits?|dollars?|euros?|prices?|"
-    r"pricing|billing|invoices?|penalt(?:y|ies)|(?-i:USD|EUR|GBP|CHF))\b|[$\u20ac\u00a3]"
+    r"pricing|billing|invoices?|penalt(?:y|ies)|expensive|cheap|budgets?|sales|compensation|refunds?|"
+    r"(?-i:USD|EUR|GBP|CHF))\b|[$\u20ac\u00a3]"
 )
 _DOWNTIME_TERMS = (
-    r"\b(?:downtime|outages?|uptime|availability(?!\s+zones?)|unavailab\w*|"
+    r"\b(?:downtime|outages?|uptime|availability(?!\s+zones?)|unavailab\w*|offline|interruptions?|disruptions?|"
     r"(?:was|were|went|is|are|been|being)\s+down(?!\s+(?:to|by|from|in|over|after|sharply|slightly|steadily|[0-9]))|"
-    r"(?:was|were|is|are|been|became|got)\s+(?:\w+\s+)?degraded)\b"
+    r"(?:was|were|is|are|been|became|got)\s+(?:\w+\s+)?degraded|"
+    r"(?:sat|stood|stayed|was|were|went|remained)\s+(?:idle|dark)|"
+    r"lost\s+(?:compute|time|productivity|work|output|capacity|hours|days))\b"
+)
+_TECHNICAL_CLIENT = (  # an API client, not a customer: "a periodic client poll" (#45)
+    r"[- ](?:polls?|polling|requests?|calls?|sides?|librar(?:y|ies)|errors?|code|timeouts?|retr(?:y|ies)|"
+    r"connections?|certificates?|tools?|ids?|sdks?|versions?|tokens?)\b"
 )
 _CUSTOMER_TERMS = (
-    r"\b(?:customers?|end[- ]users?|users?\s+(?:were\s+|was\s+)?(?:affected|impacted)|"
-    r"user[- ](?:impact|facing)|"
-    r"business\s+impact)\b"
+    rf"\b(?:customers?|subscribers?|clients?(?!{_TECHNICAL_CLIENT})|end[- ]users?|"
+    r"users?\s+(?:were\s+|was\s+)?(?:affected|impacted)|user[- ](?:impact|facing)|business\s+impact)\b"
 )
 _SLA_TERMS = r"\b(?:(?-i:SLAs?|SLOs?)|service[- ]levels?)\b"
 
@@ -305,47 +369,92 @@ _CLAIM_RULES: Mapping[Role, _ClaimRule] = {
         _union(_MONEY_AMOUNTS, _DOWNTIME_AMOUNTS, _CUSTOMER_AMOUNTS),
         _union(_MONEY_TERMS, _DOWNTIME_TERMS, _CUSTOMER_TERMS, _SLA_TERMS),
         "These logs do not measure cost, money, downtime, customer impact or SLAs, so a Manager answer never "
-        "states or estimates them. Name them in Unknowns as not measured by these logs, or say here that the "
-        "logs cannot establish them, and give the measured alternative (Log Entries, Incidents, affected "
-        "Components and Teams, active weeks) with [E<n>].",
+        "states or estimates them. Say in Unknowns that these logs do not measure them, without any figure, "
+        "or say here that the logs cannot establish them, and give the measured alternative (Log Entries, "
+        "Incidents, affected Components and Teams, active weeks) with [E<n>].",
     ),
     Role.TEAM_LEAD: _ClaimRule(
         _union(_MONEY_AMOUNTS, _DOWNTIME_AMOUNTS),
         _union(_MONEY_TERMS, _DOWNTIME_TERMS),
         "A Team Lead answer states no money or time impact (cost, downtime, outages): these logs do not "
         "measure them. Say what the logs measure instead (Log Entries, Incidents, Spread, the trend) with "
-        "[E<n>], and name the impact in Unknowns if it matters.",
+        "[E<n>], and say in Unknowns that the impact is not measured, without any figure.",
     ),
 }
 """The not-measured claims each Role must not make. The Engineer has none."""
+
+UNKNOWNS_AMOUNT_HINT = (
+    "Unknowns names what these logs cannot measure; it never gives a figure for it. Replace the amount "
+    "with a statement that these logs do not measure it, and name the data that would (billing, uptime "
+    "monitoring, support tickets)."
+)
 
 _CLAUSE_BREAK = re.compile(  # independent clauses only: a list ("A, B, and C") or a colon stays whole
     r"\s*;\s+|\s+[\u2014\u2013-]\s+|,\s*(?=which\b)|,?\s+but\s+|"
     r",\s*(?:and|so|yet)\s+(?=(?:i|we|you|they|it|he|she|the|this|that|these|those|our|its|their)\b)",
     re.I,
 )
-_NEGATION = re.compile(r"\b(?:not|no|cannot|can\s?not|never|neither|nor|unable|without|none)\b|n't\b", re.I)
-_EPISTEMIC = re.compile(
-    r"\b(?:logs?|data|evidence|measur\w*|record\w*|tell|establish\w*|show\w*|say|know\w*|giv\w*|"
-    r"estimat\w*|quantif\w*|track\w*|report\w*|count\w*|figures?|metrics?|captur\w*|determin\w*|infer\w*|"
-    r"claim\w*|assess\w*|comput\w*|calculat\w*|label\w*|rank\w*|priorit\w*|weigh\w*|based|visible)\b",
-    re.I,
-)
-_HEDGE = re.compile(r"\b(?:could|might|may)\b", re.I)
-_DEFERRAL = re.compile(
-    r"\b(?:unknown|not[ _]measured|proxy|proxies|elsewhere|"
+_CLAUSE_DEFERRAL = re.compile(
+    r"\b(?:unknown|not[ _]measured|proxy|proxies|tracked\s+elsewhere|elsewhere|"
     r"outside\s+(?:of\s+)?(?:these|the|this|our)\s+(?:logs?|data|corpus|datasets?)|"
     r"beyond\s+(?:what\s+)?(?:these|the)\s+logs|separate\s+(?:system|source|tool|dataset)s?|"
-    r"other\s+(?:systems|sources|tools)|(?:would|you'?d|we'?d|i'?d|they'?d)\s+(?:need|have\s+to|require)|"
+    r"other\s+(?:systems|sources|tools)|(?:will|would|you'?d|we'?d|i'?d|they'?d)\s+(?:need|have\s+to|require)|"
     r"only\s+way\s+to\s+(?:estimate|get|know|measure|tell|establish|quantify)|"
-    r"ask\s+(?:[\w-]+\s+){0,8}?(?:for|to|whether|about)|request\s+(?:[\w-]+\s+){0,6}?(?:from|for)|"
-    r"if\s+you\s+(?:can|could|have|share|send|tell))\b"
-    r"|(?:^|,)\s*(?:ask|request|obtain|collect|pull|gather|get|send|check|confirm)\b",
+    r"needs?\s+(?:data|figures?|records?|numbers?|input)\s+from|"
+    r"(?:finance|financial|billing|accounting|job-accounting|ticketing|support|uptime|monitoring|"
+    r"service[- ]desk|"
+    r"operations|ops|incident)\s+(?:team|records?|systems?|data|reports?|tickets?|tools?|owners?))\b",
     re.I,
 )
-"""Phrases that defer a figure to other data. Bare words such as share, record or need are not on it
-(#69 review): they are a Manager answer's everyday vocabulary and switched the guard off."""
+"""Phrases that put a whole clause's figure outside these logs ("tracked outside these logs")."""
+_REQUEST_CLAUSE = re.compile(r"^\W*(?:get|obtain|collect|request|gather|pull)\b.*\bfrom\b", re.I)
+"""A request for the data from its owners: "Get cost estimates from the owning teams"."""
+_MEASURING = (
+    r"(?:measur\w*|record\w*|show\w*|establish\w*|tell\w*|told|giv\w*|estimat\w*|quantif\w*|track\w*|"
+    r"report\w*|captur\w*|contain\w*|hold\w*|held|includ\w*|say\w*|said|know\w*|knew|determin\w*|infer\w*|"
+    r"state[sd]?|stating|assess\w*|comput\w*|calculat\w*|confirm\w*|prov\w*|label\w*|see|seen|saw|pric\w*|"
+    r"count\w*|evidence|signs?|proof|mark\w*|indicat\w*)"
+)
+_NEGATED_MEASURE = re.compile(
+    r"(?:\bnot|n't|\bcannot|\bcan\s?not|\bnever|\bnone|\bnobody|\bno\s+one|\bno|\bnothing|\bunable\s+to)\s+"
+    rf"(?:[\w']+\s+){{0,3}}?{_MEASURING}\b",
+    re.I,
+)
+"""A negation that scopes a measuring verb: the term after it is what the logs cannot measure."""
+_DENIED = re.compile(
+    r"\bnot\s+(?:(?:(?:a|an|the|by|as|from|for|on|in|of|about|over)\s+){1,2}(?:[\w-]+\s+)?|"
+    r"(?:what|how\s+much|how\s+long|how\s+many)\s+(?:[\w-]+\s+){0,3})?"
+    r"(?:[\w-]+\s*(?:,|\bor\b|\band\b|\bnor\b)\s*){0,3}$",
+    re.I,
+)
+"""The term itself is denied: "not a machine-wide outage", "not incidents or outages", "not what it cost".
+A verb between "not" and the term breaks it: "did not cause downtime" still claims there was none."""
+_METRIC_AFTER = re.compile(
+    r"^(?:[\s,/]*+[\w'-]++){0,4}?[\s,/-]+(?:figures?|numbers?|estimates?|data|records?|counts?|metrics?|"
+    r"definitions?|reports?|monitoring|tickets?|thresholds?|targets?|accounting|fields?|markers?|labels?|"
+    r"values?|text|information|measures?|measurements?|questions?|owners?|windows?|columns?)\b",
+    re.I,
+)
+"""The term names a metric someone else holds ("a cost figure", "no downtime figure", "SLA definitions")."""
+_REQUESTED = re.compile(
+    r"\b(?:ask(?:s|ed|ing)?|request(?:s|ed|ing)?)\s+(?:(?!to\b)[\w'-]+\s+){0,8}?(?:for|about)\b"
+    r"|\b(?:send|tell|show|give|share\s+with)\s+(?:me|us)\b|\b(?:whether|if)\b",
+    re.I,
+)
+"""The term is the object of a request ("ask finance for the cost") or of an open question ("whether
+customers noticed"). "Ask the board to approve compensation for ..." is not: the request is "to"."""
 _QUOTED = re.compile(r'"[^"\n]*"|\u201c[^\u201d\n]*\u201d|`[^`\n]*`')
+_LABEL_BEFORE = re.compile(r"^[\W_]*(?:[\w/'-]+\s+){0,3}?$")
+_LABEL_AFTER = re.compile(r"^[\w\s/'-]{0,30}?[*_]*\s*:(?P<rest>.*)$", re.S)
+_REFUSING = re.compile(r"\b(?:no|not|cannot|never|none|unknown)\b|n't\b", re.I)
+
+
+def _refusing_label(before: str, after: str) -> bool:
+    """Whether the term heads a label whose text is a refusal ("**Cost:** these logs hold no prices")."""
+    label = _LABEL_AFTER.match(after)
+    return bool(_LABEL_BEFORE.match(before) and label and _REFUSING.search(label.group("rest")))
+
+
 _REQUIRED_UNKNOWNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     (NOT_MEASURED[0], re.compile(r"\b(?:cost|financial|money|monetary|revenue|price|billing)", re.I)),
     (NOT_MEASURED[1], re.compile(r"\b(?:downtime|availability|uptime|outage)", re.I)),
@@ -366,6 +475,29 @@ _APPROXIMATE = re.compile(
     r"\s*$",
     re.I,
 )
+_FRACTION = re.compile(
+    r"\b(?:(?P<count>an?|one|two|three|four|five|six|seven|eight|nine)[\s-]+"
+    r"(?P<part>half|thirds?|quarters?|fifths?|sixths?|eighths?|tenths?)|(?P<half>half))\b(?!-)",
+    re.I,
+)
+"""A fraction written as words: "half", "a third", "two thirds", "three quarters" (#81)."""
+_NUMERATORS = {"a": 1, "an": 1, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5}
+_NUMERATORS.update({"six": 6, "seven": 7, "eight": 8, "nine": 9})
+_DENOMINATORS = {"half": 2, "third": 3, "quarter": 4, "fifth": 5, "sixth": 6, "eighth": 8, "tenth": 10}
+_FRACTION_OF = re.compile(r"^\s+(?:of|the|all|its|their|those|these|them)\b", re.I)
+_NOT_A_FRACTION_AFTER = re.compile(
+    r"^[\s-]+(?:(?:an?\s+)?(?:hour|day|week|month|year|minute|second|shift|night|dozen)s?|part(?:y|ies)|"
+    r"time|place|round|century)\b",
+    re.I,
+)
+_NOT_A_FRACTION_BEFORE = re.compile(
+    r"\b(?:first|second|third|fourth|last|latter|former|back|front|top|bottom|upper|lower|and|this|that|"
+    r"next|previous|past)\s+$",
+    re.I,
+)
+"""Not a fraction: "half an hour", "a third party", "the second half of June", "one and a half", "two
+quarters" of a year."""
+
 _RANGE_JOIN = re.compile(r"^\s*(?:[\u2013\u2014-]|to|until)\s*~?\s*$", re.I)
 _BETWEEN = re.compile(r"\b(?:between|from)\s*~?\s*$", re.I)
 _AND = re.compile(r"^\s*(?:and|to)\s*~?\s*$", re.I)
@@ -375,21 +507,29 @@ _COUNTED_COLUMN = re.compile(rf"\b{_SPREAD_NOUNS}\b", re.I)
 _SELECTION_BEFORE = re.compile(r"\b(?:top|first|last|next)\s+$", re.I)
 """Small numbers that count Incidents or Spread (nodes, midplanes, racks) are measurements, not "the top
 3": the #1 side-by-side rule rests on them (#69 review)."""
+_CODE_CALL = re.compile(r"`[^`\n]*[A-Za-z_=(][^`\n]*`")
 _PARAMETER_BEFORE = re.compile(r"[A-Za-z_][A-Za-z0-9_]*\s*[=:]\s*~?$")
 _TOOL_NAME = re.compile(
     r"\b(?:describe_corpus|search_logs|get_context|count_by|trend|list_patterns|search_patterns|top_patterns|"
     r"list_incidents|latency_stats|find_precursors|get_evidence|export_investigation)\b"
 )
-_MEASURED_AFTER = re.compile(
-    r"^\s*(?:[A-Za-z-]+\s+){0,2}?(?:log\s+entr\w*|entries|lines|incidents?|nodes?|node\s+cards?|midplanes?|"
-    r"racks?|hosts?|instances?|sources?|components?|teams?|patterns?|requests?|errors?|events?|groups?|"
-    r"categories)\b",
+_PARAMETER_WORD = re.compile(
+    r"\b(?:top|limit|before|after|window(?:_s)?|gap(?:_s)?|buckets?|weeks|min_z|rise_factor)"
+    r"\s*[(:=]?\s*(?:(?:of|to|at|up\s+to)\s*)?[(~]?\s*$",
     re.I,
 )
-"""Next Step holds suggested parameters, which need no Evidence: a `name=value` or `name: value` pair, or
-a number in a sentence that names a tool, unless a measured noun follows it (#69 review)."""
+_DURATION_AFTER = re.compile(
+    r"^\s*-?\s*(?:ms|s|secs?|seconds?|mins?|minutes?|h|hrs?|hours?|days?|weeks?)\b", re.I
+)
+"""Next Step holds suggested parameters, which need no Evidence: a `name=value` or `name: value` pair, and
+in a sentence that is a call (it names a tool, holds code or a `name=value`), a number in parameter
+position: after a parameter name ("with top 20", "a higher limit (up to 50)") or before a time unit ("a
+600 s window"). Any other number in such a sentence is a measurement (#81: "Run count_by to confirm the
+9,999 failing jobs")."""
 _INCIDENT_COUNT = re.compile(
-    r"(?<![0-9A-Za-z_.])[0-9][0-9,]*(?:\.[0-9]+)?\s+(?:(?!not\b|no\b|never\b)[A-Za-z-]+\s+){0,2}incidents?\b"
+    r"(?:(?<![0-9A-Za-z_.,])[0-9][0-9,]*+(?:\.[0-9]+)?|\b(?:two|three|four|five|six|seven|eight|nine|ten|"
+    r"eleven|twelve|a\s+dozen|dozens\s+of|hundreds\s+of|thousands\s+of|several|multiple))"
+    r"\s+(?:(?!not\b|no\b|never\b)[A-Za-z-]+\s+){0,2}incidents?\b"
     r"|\bincidents?\s*[:=]\s*[0-9]",
     re.I,
 )
@@ -420,8 +560,13 @@ class _Parsed:
     units: list[_Unit] = field(default_factory=list)
 
 
-def _heading(line: str) -> tuple[str, str] | None:
-    for pattern in _HEADINGS:
+def _heading(line: str, *, plain: bool = True) -> tuple[str, str] | None:
+    """The section a heading line opens, and the text after it on the same line.
+
+    With `plain` false only Markdown headings and bold labels count: a plain "Unknowns: ..." inside a
+    paragraph is a wrapped line or an inline label, not a section (#69 review, round 2).
+    """
+    for pattern in _HEADINGS if plain else _HEADINGS[:2]:
         match = pattern.match(line)
         if match:
             name = _SECTION_NAMES[re.sub(r"\s+", " ", match.group("name").lower())]
@@ -430,7 +575,25 @@ def _heading(line: str) -> tuple[str, str] | None:
 
 
 def _cites(text: str) -> list[str]:
-    return [part.strip() for group in _CITE.findall(text) for part in re.split(r"[,;]", group)]
+    return [i for group in _CITE.findall(text) for part in re.split(r"[,;]", group) for i in _id_range(part)]
+
+
+def _id_range(part: str) -> list[str]:
+    """The ids one part of a citation names: "E3", or every id of a range "E5\u2013E16" (#81).
+
+    A range wider than MAX_CITED_RANGE names its two ends only, so "[E1-E999999999]" cannot make the
+    checker build a list of a billion ids.
+    """
+    ends = re.findall(r"E[0-9]+", part)
+    if len(ends) < 2:
+        return [part.strip()]
+    first, last = ends[0], ends[-1]
+    if max(len(first), len(last)) > 10:
+        return [first, last]
+    low, high = sorted((int(first[1:]), int(last[1:])))
+    if high - low > MAX_CITED_RANGE:
+        return [f"E{low}", f"E{high}"]
+    return [f"E{n}" for n in range(low, high + 1)]
 
 
 def _derived(text: str) -> list[str] | None:
@@ -443,10 +606,13 @@ def _sentences(text: str) -> list[str]:
     parts = [part.replace("\u2024", ".") for part in _SENTENCE_END.split(protected) if part.strip()]
     merged: list[str] = []
     for part in parts:
-        # A citation after the full stop ("... Log Entries. [E1]") belongs to the sentence before it.
-        if merged and _CITE.search(part) and _ONLY_CITATIONS.match(_CITE.sub("", part)):
-            merged[-1] = f"{merged[-1]} {part}"
-        else:
+        # A citation after the full stop ("... Log Entries. [E1] Next ...") belongs to the sentence
+        # before it, also when the next sentence follows on the same line.
+        lead = _LEADING_CITES.match(part)
+        if merged and lead is not None:
+            merged[-1] = f"{merged[-1]} {lead.group(0).strip()}"
+            part = part[lead.end() :]
+        if part.strip() and not (merged and _ONLY_CITATIONS.match(part) and lead is not None):
             merged.append(part)
     return merged
 
@@ -460,6 +626,7 @@ def _parse(draft: str) -> _Parsed:
     lines = draft.splitlines()
     section = PREAMBLE
     in_fence = False
+    paragraph_start = True  # a plain "Name:" label opens a section only here, or after another label
     # (section, line) pairs of content, so tables and captions can be read with their neighbours.
     body: list[tuple[str, str]] = []
     for line in lines:
@@ -471,7 +638,8 @@ def _parse(draft: str) -> _Parsed:
         if in_fence:
             parsed.content.setdefault(section, []).append(line)
             continue
-        found = _heading(line)
+        found = _heading(line, plain=paragraph_start)
+        paragraph_start = not line.strip() or found is not None
         if found is not None and found[0] != section:
             section, rest = found
             parsed.order.append(section)
@@ -593,7 +761,7 @@ class Number:
         """The precision the number is written with, for example 10,000 for '150k' or 0.1 for '43.8'."""
         if self.decimals:
             return 10.0**-self.decimals * self.multiplier
-        return 10.0**self.trailing_zeros * self.multiplier
+        return 10.0 ** min(self.trailing_zeros, 300) * self.multiplier
 
     @property
     def small(self) -> bool:
@@ -673,6 +841,18 @@ _COUNTED_WORDS = frozenset(
         "bursts",
         "episode",
         "episodes",
+        "node",
+        "nodes",
+        "midplane",
+        "midplanes",
+        "rack",
+        "racks",
+        "host",
+        "hosts",
+        "instance",
+        "instances",
+        "source",
+        "sources",
     ]
 )
 """Capitalised glossary nouns that make a four-digit number a count ("2005 Log Entries")."""
@@ -687,7 +867,7 @@ def _mask_years(masked: str) -> str:
     """
 
     def year_or_count(match: re.Match[str]) -> str:
-        if _YEAR_CONTEXT.search(masked[: match.start()]):
+        if _YEAR_CONTEXT.search(masked[max(0, match.start() - 40) : match.start()]):
             return " " * len(match.group(0))
         following = _NEXT_WORD.match(masked, match.end())
         if following is not None:
@@ -724,7 +904,7 @@ def numbers_in(text: str, *, role: Role | str | None = None, evidence: bool = Fa
     identifiers, dates and times are masked, so status codes and sizes in Evidence text still count.
     """
     masked = _mask(text, role=None if role is None else Role(role), evidence=evidence)
-    found: list[Number] = []
+    found: list[Number] = [] if evidence else _fractions(text, masked)
     for match in _NUMBER.finditer(masked):
         raw = match.group("num")
         suffix = (match.group("suffix") or "").strip().lower()
@@ -732,8 +912,6 @@ def numbers_in(text: str, *, role: Role | str | None = None, evidence: bool = Fa
         try:
             value = float(digits)
         except ValueError:  # pragma: no cover - the pattern only matches ASCII digits
-            continue
-        if not math.isfinite(value):
             continue
         whole, _, fraction = digits.partition(".")
         multiplier = _MULTIPLIERS.get(suffix.replace(" ", ""), 1.0)
@@ -751,6 +929,42 @@ def numbers_in(text: str, *, role: Role | str | None = None, evidence: bool = Fa
                 trailing_zeros=0 if fraction or len(whole) < 2 else len(whole) - len(whole.rstrip("0")),
             )
         )
+    return sorted(found, key=lambda number: number.start)
+
+
+def _fractions(text: str, masked: str) -> list[Number]:
+    """Fractions written as words, read as percentages: "roughly half" is a rounded 50% (#81).
+
+    A bare "half" is a fraction only before "of", "the", "all" and the like ("half of the Log
+    Entries") or after a bound ("about half"); "a quarter" or "two quarters" only before "of" or after
+    a bound, because a quarter is also three months.
+    """
+    found: list[Number] = []
+    for match in _FRACTION.finditer(masked):
+        before = masked[max(0, match.start() - 30) : match.start()]
+        after = masked[match.end() : match.end() + 30]
+        if _NOT_A_FRACTION_BEFORE.search(before) or _NOT_A_FRACTION_AFTER.match(after):
+            continue
+        bounded = bool(_APPROXIMATE.search(before)) or bool(re.search(r"\bthan\s*$", before, re.I))
+        part = (match.group("part") or "half").lower()
+        count = _NUMERATORS[match.group("count").lower()] if match.group("count") else 1
+        loose = match.group("half") is not None or part.startswith("quarter")
+        if loose and not (bounded or _FRACTION_OF.match(after)):
+            continue
+        denominator = _DENOMINATORS[part.rstrip("s")] if part != "halves" else 2
+        found.append(
+            Number(
+                text=text[match.start() : match.end()],
+                value=100.0 * count / denominator,
+                decimals=0,
+                percent=True,
+                multiplier=1.0,
+                approximate=bounded,
+                start=match.start(),
+                end=match.end(),
+                trailing_zeros=0,
+            )
+        )
     return found
 
 
@@ -764,12 +978,27 @@ class _Pool:
 
     values: set[float] = field(default_factory=set)
     operands: list[float] = field(default_factory=list)
+    percents: set[float] = field(default_factory=set)
+    """Values held as percentages: fields named *pct* or *percent*, shares above 1, "43.83%" in text."""
+    fractions: set[float] = field(default_factory=set)
+    """Values held as fractions: fields named *share*, *ratio* or *rate* up to 1 (top_node_share 1.0)."""
+    fields: dict[float, set[str]] = field(default_factory=dict)
+    """The fields and columns each value sits in ('' for a value outside any named field)."""
 
-    def holds(self, number: Number) -> bool:
-        if _key(number.value) in self.values:
-            return True
-        # A percentage may quote a share the record holds as a fraction (top_node_share 1.0 = 100%).
-        return number.percent and _key(number.value / 100) in self.values
+    def holds(self, number: Number, noun: str | None = None) -> bool:
+        """Whether the record holds `number`; with a counted `noun`, in a field that may count it."""
+        if not number.percent:
+            key = _key(number.value)
+            return key in self.values and (noun is None or self.fits(key, noun))
+        # A percentage matches a percentage or a fraction of the record, not any count: "1%" is not
+        # "1 node" (#69 review, round 2).
+        return _key(number.value) in self.percents or _key(number.value / 100) in self.fractions
+
+    def fits(self, key: float, noun: str) -> bool:
+        """Whether a field holding `key` may count `noun`: one named after it, or one that names no
+        counted noun ("count", "total", "distinct_sources"). "83 racks" does not fit `incidents` (#81)."""
+        kinds = {_field_kind(name) for name in self.fields.get(key, {""})}
+        return None in kinds or noun in kinds
 
 
 _SKIPPED_FIELDS = frozenset(
@@ -778,39 +1007,113 @@ _SKIPPED_FIELDS = frozenset(
 """Envelope fields that hold no measured values: query text, steering notes and the Role frame."""
 
 
-def _walk(value: Any, out: list[float]) -> None:
-    if isinstance(value, bool) or value is None:
-        return
-    if isinstance(value, int | float):
-        if math.isfinite(value):
-            out.append(abs(float(value)))
-    elif isinstance(value, str):
-        out.extend(number.value for number in numbers_in(value, evidence=True))
+_PERCENT_NAME = re.compile(r"pct|percent", re.I)
+_SHARE_NAME = re.compile(r"share|ratio|fraction|rate|proportion", re.I)
+_FIELD_KINDS: tuple[tuple[str, re.Pattern[str]], ...] = tuple(
+    (kind, re.compile(pattern, re.I))
+    for kind, pattern in (
+        ("share", r"pct|percent|share|ratio|fraction|rate|proportion"),
+        ("id", r"(?:^|_)ids?$"),
+        ("rank", r"(?:^|_)rank$"),
+        ("incidents", r"^(?:n_)?incidents?(?:_total|_count)?$"),
+        ("nodes", r"(?:^|_)nodes?(?:_total|_count)?$"),
+        ("midplanes", r"(?:^|_)midplanes?(?:_total|_count)?$"),
+        ("racks", r"(?:^|_)racks?(?:_total|_count)?$"),
+        ("entries", r"^(?:log_)?entr(?:y|ies)(?:_total|_count|_in_scope)?$"),
+        ("weeks", r"^(?:active_)?weeks$"),
+    )
+)
+"""What a field counts, by its name. Any other field ("count", "total", "distinct_sources", arguments)
+names no counted noun, so a number with any noun may quote it."""
+_COUNTED_NOUN = re.compile(
+    r"^\s+(?:(?!(?:not|no|never|is|are|was|were|be|been|in|on|of|at|by|to|for|from|with|across|over|per|"
+    r"and|or|one|a|an|the|than|times|more|less|fewer)\b)[A-Za-z-]+\s+){0,2}?"
+    r"(?P<noun>log\s+entr(?:y|ies)|entries|lines|incidents?|nodes?(?!\s+cards?)|midplanes?|racks?)\b",
+    re.I,
+)
+"""The counted noun a number names: "83 racks", "1,103 distinct nodes", "26,426 Log Entries"."""
+
+
+def _field_kind(name: str) -> str | None:
+    return next((kind for kind, pattern in _FIELD_KINDS if pattern.search(name)), None)
+
+
+def _noun(masked: str, number: Number) -> str | None:
+    """The kind of thing `number` counts by the noun after it, or None (also for a percentage)."""
+    if number.percent:
+        return None
+    match = _COUNTED_NOUN.match(_after(masked, number))
+    if match is None:
+        return None
+    noun = match.group("noun").lower()
+    if noun.startswith(("log", "entr", "line")):
+        return "entries"
+    return noun if noun.endswith("s") else noun + "s"
+
+
+def _finite(value: Any) -> float | None:
+    """`value` as a non-negative float, or None for booleans, non-numbers, infinities and huge ints."""
+    if isinstance(value, bool) or not isinstance(value, int | float):
+        return None
+    try:
+        number = abs(float(value))
+    except OverflowError:
+        return None
+    return number if math.isfinite(number) else None
+
+
+def _walk(value: Any, pool: _Pool, name: str = "") -> None:
+    """Collect the numbers of `value` into `pool`; `name` is the field or column they sit in."""
+    if isinstance(value, str):
+        for number in numbers_in(value, evidence=True):
+            if math.isfinite(number.value):
+                pool.values.add(_key(number.value))
+                pool.fields.setdefault(_key(number.value), set()).add(name)
+                if number.percent:
+                    pool.percents.add(_key(number.value))
     elif isinstance(value, Mapping):
-        for item in value.values():
-            _walk(item, out)
+        for key, item in value.items():
+            _walk(item, pool, str(key))
     elif isinstance(value, list | tuple):
         for item in value:
-            _walk(item, out)
+            _walk(item, pool, name)
+    elif (scalar := _finite(value)) is not None:
+        pool.values.add(_key(scalar))
+        pool.fields.setdefault(_key(scalar), set()).add(name)
+        if _PERCENT_NAME.search(name) or (_SHARE_NAME.search(name) and scalar > 1):
+            pool.percents.add(_key(scalar))
+        elif _SHARE_NAME.search(name):
+            pool.fractions.add(_key(scalar))
 
 
 def _pool(record: Mapping[str, Any]) -> _Pool:
-    found: list[float] = []
-    for name, value in record.items():
-        if name not in _SKIPPED_FIELDS:
-            _walk(value, found)
-    operands = set(found)
+    pool = _Pool()
+    columns = record.get("columns")
     rows = record.get("rows")
+    for name, value in record.items():
+        if name in _SKIPPED_FIELDS:
+            continue
+        if name == "rows" and isinstance(columns, list) and isinstance(rows, list):
+            for row in rows:  # each cell under its column name, so share_pct reads as a percentage
+                if isinstance(row, list):
+                    for column, cell in zip(columns, row, strict=False):
+                        _walk(cell, pool, str(column))
+                else:
+                    _walk(row, pool)
+        else:
+            _walk(value, pool, name)
+    operands = set(pool.values)
     if isinstance(rows, list) and rows and all(isinstance(row, list) for row in rows):
         width = max(len(row) for row in rows)
         for column in range(width):
-            cells = [row[column] for row in rows if column < len(row)]
-            if all(isinstance(c, int | float) and not isinstance(c, bool) for c in cells):
+            cells = [_finite(row[column]) for row in rows if column < len(row)]
+            if all(cell is not None for cell in cells):
                 running = 0.0
                 for cell in cells:
-                    running += float(cell)
+                    running += cell or 0.0
                     operands.add(abs(running))  # running totals: "the top 3 hold ..."
-    return _Pool(values={_key(v) for v in found}, operands=sorted(operands))
+    pool.operands = sorted(operands)
+    return pool
 
 
 def _fmt(value: float) -> str:
@@ -876,11 +1179,18 @@ def _nearest_derivation(number: Number, operands: Sequence[float]) -> float | No
 class _Context:
     role: Role
     records: dict[str, Mapping[str, Any]]
-    pools: dict[str, _Pool]
     incident_tools: bool
     problems: list[Problem] = field(default_factory=list)
     numbers: list[CheckedNumber] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
+    pools: dict[str, _Pool] = field(default_factory=dict)
+    """The Evidence lookups, built on first use: only cited records need them (#81)."""
+
+    def pool(self, evidence_id: str) -> _Pool:
+        found = self.pools.get(evidence_id)
+        if found is None:
+            found = self.pools[evidence_id] = _pool(self.records[evidence_id])
+        return found
 
     def add(self, kind: str, section: str, text: str, hint: str) -> None:
         self.problems.append(Problem(kind=kind, section=section, text=_cut(text), hint=hint))
@@ -905,7 +1215,7 @@ def _id_list(ids: Sequence[str]) -> str:
 def check_answer(
     role: Role | str,
     draft: str,
-    ledger: Iterable[Mapping[str, Any]],
+    ledger: Iterable[Mapping[str, Any]] | None,
     *,
     incident_tools: bool = True,
 ) -> AnswerReport:
@@ -926,8 +1236,19 @@ def check_answer(
             hint=f"role={role!r} is not a Role, so the draft was not checked. Pass one of: {roles}.",
         )
         return AnswerReport(ok=False, problems=[problem], checked_numbers=[], cited_evidence=[], notes=[])
+    if isinstance(draft, bytes | bytearray):
+        draft = bytes(draft).decode("utf-8", errors="replace")
+    if not isinstance(draft, str):
+        problem = Problem(
+            kind="checker_error",
+            section=PREAMBLE,
+            text=f"draft={type(draft).__name__}",
+            hint="The draft must be the answer's text (a string), so nothing was checked. Pass the full "
+            "draft.",
+        )
+        return AnswerReport(ok=False, problems=[problem], checked_numbers=[], cited_evidence=[], notes=[])
     try:
-        return _check(role, draft, ledger, incident_tools)
+        return _check(role, draft, ledger or [], incident_tools)
     except Exception as exc:  # the agent must always get an answer it can act on
         problem = Problem(
             kind="checker_error",
@@ -945,15 +1266,26 @@ def _check(role: Role, draft: str, ledger: Iterable[Mapping[str, Any]], incident
         evidence_id = record.get("evidence_id") if isinstance(record, Mapping) else None
         if isinstance(evidence_id, str):
             records[evidence_id] = record
-    ctx = _Context(role, records, {i: _pool(r) for i, r in records.items()}, incident_tools)
+    ctx = _Context(role, records, incident_tools)
+    if len(draft) > MAX_DRAFT:
+        ctx.add(
+            "draft_too_long",
+            PREAMBLE,
+            draft[:MAX_TEXT],
+            f"The draft is {len(draft):,} characters long; verify_answer checks drafts of up to "
+            f"{MAX_DRAFT:,} characters, so nothing was checked. An answer is the four sections with the "
+            "numbers that matter, each with its [E<n>]: shorten the draft, then call verify_answer again.",
+        )
+        return AnswerReport(ok=False, problems=ctx.problems, checked_numbers=[], cited_evidence=[], notes=[])
     parsed = _parse(draft)
     _check_sections(ctx, parsed)
     _check_citations(ctx, parsed, draft)
-    _check_numbers(ctx, parsed)
-    _check_incident_counts(ctx, parsed)
+    short = _check_sentence_sizes(ctx, parsed)
+    _check_numbers(ctx, short)
+    _check_incident_counts(ctx, short)
     if role in (Role.TEAM_LEAD, Role.MANAGER):
-        _check_side_by_side(ctx, parsed)
-    _check_not_measured(ctx, parsed)
+        _check_side_by_side(ctx, short)
+    _check_not_measured(ctx, short)
     if role is Role.MANAGER:
         _check_manager(ctx, parsed)
     cited = list(dict.fromkeys(i for unit in parsed.units for i in unit.cites))
@@ -1005,6 +1337,28 @@ def _check_sections(ctx: _Context, parsed: _Parsed) -> None:
         )
 
 
+def _check_sentence_sizes(ctx: _Context, parsed: _Parsed) -> _Parsed:
+    """Report every sentence or table row longer than MAX_SENTENCE, and return `parsed` without them.
+
+    Their citations are still checked, but their numbers and claims are not: some searches grow with
+    the square of a sentence's length, and a long sentence must not stall the server (#81).
+    """
+    short: list[_Unit] = []
+    for unit in parsed.units:
+        if len(unit.text) <= MAX_SENTENCE:
+            short.append(unit)
+            continue
+        ctx.add(
+            "sentence_too_long",
+            unit.section,
+            unit.text,
+            f"This sentence is {len(unit.text):,} characters long; verify_answer checks sentences and table "
+            f"rows of up to {MAX_SENTENCE:,} characters, so its numbers and claims were not checked. Split "
+            "it into shorter sentences, each with the [E<n>] of its own numbers.",
+        )
+    return _Parsed(parsed.order, parsed.content, short)
+
+
 def _check_citations(ctx: _Context, parsed: _Parsed, draft: str) -> None:
     reported: set[str] = set()
     for unit in parsed.units:
@@ -1051,11 +1405,12 @@ def _check_numbers(ctx: _Context, parsed: _Parsed) -> None:
         ranges = _ranges(numbers, masked)
         unknown_only = bool(unit.cites) and not ctx.known(unit.cites)
         reported_ranges: set[int] = set()
+        call = unit.section == "Next Step" and _is_call(unit.text)
         for index, number in enumerate(numbers):
             if number.small and not _counts_spread(unit, number, masked):
                 continue
             if not unit.cites:
-                if unit.section != "Next Step" or not _is_parameter(unit.text, masked, number):
+                if unit.section != "Next Step" or not _is_parameter(masked, number, call=call):
                     _uncited(ctx, unit, number)
                 continue
             if unknown_only:
@@ -1068,11 +1423,19 @@ def _check_numbers(ctx: _Context, parsed: _Parsed) -> None:
                 reported_ranges.add(span[0])
 
 
+def _before(masked: str, number: Number) -> str:
+    return masked[max(0, number.start - WINDOW) : number.start]
+
+
+def _after(masked: str, number: Number) -> str:
+    return masked[number.end : number.end + WINDOW]
+
+
 def _counts_spread(unit: _Unit, number: Number, masked: str) -> bool:
     """Whether a small number counts Incidents or Spread, in prose or in a column named after them."""
-    if _SELECTION_BEFORE.search(masked[: number.start]):
+    if _SELECTION_BEFORE.search(_before(masked, number)):
         return False
-    if _COUNTED_AFTER.match(masked[number.end :]):
+    if _COUNTED_AFTER.match(_after(masked, number)):
         return True
     if unit.header is None:
         return False
@@ -1080,11 +1443,15 @@ def _counts_spread(unit: _Unit, number: Number, masked: str) -> bool:
     return 0 <= column < len(unit.header) and bool(_COUNTED_COLUMN.search(unit.header[column]))
 
 
-def _is_parameter(text: str, masked: str, number: Number) -> bool:
-    if _PARAMETER_BEFORE.search(masked[: number.start]):
+def _is_call(text: str) -> bool:
+    return bool(_TOOL_NAME.search(text) or _CODE_CALL.search(text) or re.search(r"[A-Za-z_]\s*=\s*\S", text))
+
+
+def _is_parameter(masked: str, number: Number, *, call: bool) -> bool:
+    before = _before(masked, number)
+    if _PARAMETER_BEFORE.search(before):
         return True
-    call = _TOOL_NAME.search(text) or "`" in text or re.search(r"[A-Za-z_]\s*=\s*\S", text)
-    return bool(call) and not _MEASURED_AFTER.match(masked[number.end :])
+    return call and bool(_PARAMETER_WORD.search(before) or _DURATION_AFTER.match(_after(masked, number)))
 
 
 def _ranges(numbers: list[Number], masked: str) -> dict[int, tuple[int, int]]:
@@ -1105,7 +1472,7 @@ def _record_number(
     ctx.numbers.append(
         CheckedNumber(
             text=number.text,
-            value=number.value,
+            value=number.value if math.isfinite(number.value) else sys.float_info.max,
             section=unit.section,
             cited=list(dict.fromkeys(unit.cites)),
             status=status,
@@ -1114,13 +1481,25 @@ def _record_number(
     )
 
 
-def _holders(ctx: _Context, number: Number, ids: Iterable[str]) -> list[str]:
-    return [i for i in ids if ctx.pools[i].holds(number)]
+def _holders(ctx: _Context, number: Number, ids: Iterable[str], noun: str | None = None) -> list[str]:
+    return [i for i in ids if ctx.pool(i).holds(number, noun)]
+
+
+def _held_anywhere(ctx: _Context, number: Number, noun: str | None = None) -> list[str]:
+    """Up to three records that hold `number`, for an "it is in E3" hint, from the newest HINT_SCAN
+    records only: on a large ledger a hint must not build the lookups of every record (#81)."""
+    found: list[str] = []
+    for evidence_id in list(ctx.records)[-HINT_SCAN:]:
+        if ctx.pool(evidence_id).holds(number, noun):
+            found.append(evidence_id)
+            if len(found) == 3:
+                break
+    return found
 
 
 def _uncited(ctx: _Context, unit: _Unit, number: Number) -> None:
     _record_number(ctx, unit, number, "uncited_number")
-    holders = _holders(ctx, number, ctx.records)
+    holders = _held_anywhere(ctx, number)
     where = (
         f" It is in {', '.join(holders[:3])}: cite {_id_list(holders[:1])} in this sentence."
         if holders
@@ -1143,33 +1522,55 @@ def _ground(
     numbers: list[Number],
     masked: str,
 ) -> str:
-    """Check one cited number; record it and report a problem when it is not in the cited Evidence."""
+    """Check one cited number; record it and report a problem when it is not in the cited Evidence.
+
+    The lookups only a problem's hint needs (nearby values, derivations, other records) are made once
+    the number is known not to be in the cited Evidence (#81).
+    """
     cited = ctx.known(unit.cites)
-    holders = _holders(ctx, number, cited)
+    if not math.isfinite(number.value):
+        _record_number(ctx, unit, number, "number_not_in_evidence")
+        ctx.add(
+            "number_not_in_evidence",
+            unit.section,
+            unit.text,
+            f"{number.text[:40]} is too large to be a value of {', '.join(cited)}. Quote the number exactly "
+            "as the Evidence gives it.",
+        )
+        return "number_not_in_evidence"
+    noun = _noun(masked, number)
+    holders = _holders(ctx, number, cited, noun)
     if holders:
         _record_number(ctx, unit, number, "in_evidence", holders)
         return "in_evidence"
+    if noun is not None and (other_fields := _holders(ctx, number, cited)):
+        return _wrong_field(ctx, unit, number, noun, other_fields)
     sources = ctx.known((unit.derived or []) + unit.cites)
-    operands = sorted({v for i in sources for v in ctx.pools[i].operands})
-    near = _near_values(ctx, number, cited)
-    exact = (
-        " Values near it in the cited Evidence: "
-        + ", ".join(f"{_fmt(value)} ({', '.join(ids)})" for value, ids in near)
-        + "."
-        if near
-        else ""
-    )
+
+    def operands() -> list[float]:
+        return sorted({v for i in sources for v in ctx.pool(i).operands})
+
+    def exact() -> str:
+        near = _near_values(ctx, number, cited)
+        if not near:
+            return ""
+        return (
+            " Values near it in the cited Evidence: "
+            + ", ".join(f"{_fmt(value)} ({', '.join(ids)})" for value, ids in near)
+            + "."
+        )
+
     if span is not None:
         first, second = numbers[span[0]], numbers[span[1]]
         start = first.start
-        while start > 0 and masked[start - 1] in "~\u2248 ":
+        while start > 0 and masked[start - 1] in "~≈ ":
             start -= 1
         written = unit.text[start : second.end].strip()
         candidates = sorted(
             {
                 v
                 for i in cited
-                for v in ctx.pools[i].values
+                for v in ctx.pool(i).values
                 if first.value - first.unit <= v <= second.value + second.unit
             }
         )
@@ -1180,7 +1581,7 @@ def _ground(
             unit.section,
             unit.text,
             f"'{written}' is a range, not a measured number. Quote the exact value from the Evidence"
-            + (f" ({_id_list(cited)} holds {values})." if values else f".{exact}")
+            + (f" ({_id_list(cited)} holds {values})." if values else f".{exact()}")
             + " Use count_by or trend for an exact count.",
         )
         return "range"
@@ -1191,14 +1592,15 @@ def _ground(
             unit.section,
             unit.text,
             f"{number.text} is rounded or bracketed. Quote the number exactly as the Evidence gives it, "
-            f"never rounded, abbreviated or as a bound.{exact}{_share_advice(number, cited)}",
+            f"never rounded, abbreviated or as a bound.{exact()}{_share_advice(number, cited)}",
         )
         return "rounded_number"
     if unit.derived:
-        if _recomputes(number, operands):
+        given = operands()
+        if _recomputes(number, given):
             _record_number(ctx, unit, number, "derived", sources)
             return "derived"
-        best = _nearest_derivation(number, operands)
+        best = _nearest_derivation(number, given)
         closest = f" The nearest value they give is {_fmt(best)}." if best is not None else ""
         _record_number(ctx, unit, number, "derived_mismatch")
         ctx.add(
@@ -1215,7 +1617,7 @@ def _ground(
     rounding = any(
         abs(value - number.value) <= number.unit / 2
         and (number.decimals or abs(value - number.value) <= 0.05 * number.value)
-        for value, _ in near
+        for value, _ in _near_values(ctx, number, cited)
     )
     if rounding and (number.decimals or number.trailing_zeros):
         _record_number(ctx, unit, number, "rounded_number")
@@ -1223,12 +1625,12 @@ def _ground(
             "rounded_number",
             unit.section,
             unit.text,
-            f"{number.text} is rounded. Quote the number exactly as the Evidence gives it.{exact}"
+            f"{number.text} is rounded. Quote the number exactly as the Evidence gives it.{exact()}"
             f"{_share_advice(number, cited)}",
         )
         return "rounded_number"
     meaningful = number.value >= DERIVATION_FLOOR or number.percent or number.decimals
-    if meaningful and _recomputes(number, operands):
+    if meaningful and _recomputes(number, operands()):
         _record_number(ctx, unit, number, "unmarked_derivation")
         ctx.add(
             "unmarked_derivation",
@@ -1239,7 +1641,7 @@ def _ground(
             f"sentence '(derived from {_id_list(cited)})' so the computation can be checked.",
         )
         return "unmarked_derivation"
-    elsewhere = [i for i in _holders(ctx, number, ctx.records) if i not in cited]
+    elsewhere = [i for i in _held_anywhere(ctx, number, noun) if i not in cited]
     _record_number(ctx, unit, number, "number_not_in_evidence")
     if elsewhere:
         hint = (
@@ -1248,10 +1650,26 @@ def _ground(
         )
     else:
         hint = (
-            f"{number.text} is not in {', '.join(cited)}.{exact} Quote the number exactly as the Evidence "
+            f"{number.text} is not in {', '.join(cited)}.{exact()} Quote the number exactly as the Evidence "
             "gives it, cite the Evidence that holds it, or call a tool that measures it."
         )
     ctx.add("number_not_in_evidence", unit.section, unit.text, hint)
+    return "number_not_in_evidence"
+
+
+def _wrong_field(ctx: _Context, unit: _Unit, number: Number, noun: str, holders: Sequence[str]) -> str:
+    """The number is in the cited Evidence, but only in fields that count something other than its noun."""
+    key = _key(number.value)
+    fields = sorted({name for i in holders for name in ctx.pool(i).fields.get(key, set()) if name})
+    _record_number(ctx, unit, number, "number_not_in_evidence")
+    ctx.add(
+        "number_not_in_evidence",
+        unit.section,
+        unit.text,
+        f"{number.text} is in {', '.join(holders)} as {', '.join(fields) or 'another value'}, not as a count "
+        f"of {noun}. Quote the value {_id_list(holders[:1])} gives for {noun}, or say what the number "
+        "counts.",
+    )
     return "number_not_in_evidence"
 
 
@@ -1269,7 +1687,7 @@ def _near_values(ctx: _Context, number: Number, cited: Sequence[str]) -> list[tu
     window = max(number.unit, 0.1 * abs(number.value))
     holders: dict[float, list[str]] = {}
     for evidence_id in cited:
-        for value in ctx.pools[evidence_id].values:
+        for value in ctx.pool(evidence_id).values:
             if abs(value - number.value) <= window:
                 holders.setdefault(value, []).append(evidence_id)
     nearest = sorted(holders, key=lambda v: abs(v - number.value))[:3]
@@ -1281,7 +1699,13 @@ def _incident_ids(ctx: _Context, ids: Iterable[str]) -> list[str]:
 
 
 def _check_incident_counts(ctx: _Context, parsed: _Parsed) -> None:
+    """A count called Incident(s) needs Incident Evidence in its own sentence. Only an uncited Hypothesis or
+    Next Step that refers back to Incidents ("the two Incidents") may rely on Incident Evidence cited
+    elsewhere in the answer."""
+    answered = bool(_incident_ids(ctx, (i for u in parsed.units for i in u.cites)))
     for unit in parsed.units:
+        if answered and not unit.cites and unit.section not in ("Observed Facts", PREAMBLE):
+            continue  # an uncited back-reference ("the two Incidents") to Incident Evidence cited above
         masked = _mask(unit.text)
         counts = _INCIDENT_COUNT.search(masked)
         in_column = (
@@ -1378,40 +1802,67 @@ def _check_manager(ctx: _Context, parsed: _Parsed) -> None:
 
 
 def _check_not_measured(ctx: _Context, parsed: _Parsed) -> None:
-    """Money, downtime, customer or SLA claims outside Unknowns; the Team Lead only money and time."""
+    """Money, downtime, customer or SLA claims; the Team Lead only money and time.
+
+    In Unknowns a bare term is expected ("Downtime: not measured by these logs"), but an amount is not:
+    naming an impact as unknown never needs a figure for it.
+    """
     rule = _CLAIM_RULES.get(ctx.role)
     if rule is None:
         return
     for unit in parsed.units:
+        plain = _QUOTED.sub(lambda m: " " * len(m.group(0)), unit.text.replace("\u2019", "'"))
         if unit.section == "Unknowns":
+            amount = rule.amounts.search(plain)
+            if amount is not None:
+                ctx.add(
+                    "not_measured_claim",
+                    unit.section,
+                    unit.text,
+                    f"'{amount.group(0).strip()}': {UNKNOWNS_AMOUNT_HINT}",
+                )
             continue
-        claim = _not_measured_claim(unit.text, rule)
+        claim = _not_measured_claim(plain, rule)
         if claim is not None:
             ctx.add("not_measured_claim", unit.section, unit.text, f"'{claim.strip()}': {rule.hint}")
 
 
-def _not_measured_claim(text: str, rule: _ClaimRule) -> str | None:
+def _not_measured_claim(plain: str, rule: _ClaimRule) -> str | None:
     """The phrase that states money, downtime, customer impact or SLAs as measured, if there is one.
 
-    An amount ("EUR 240,000", "unavailable for 6 hours", "took 6 hours to recover") always does. A term
-    alone does unless its own clause defers the figure to other data ("ask finance for the billing
-    records", "tracked outside these logs", "you'd need the SLA definitions") or says the logs cannot
-    establish it (a negation with a word about measuring or knowing, or with a hedge: "these logs do not
-    measure downtime", "a burst, and not an outage"). The clause is the window, so a disclaimer in one
-    clause does not excuse a claim in another ("The outage cost us money, which the logs do not show").
-    A quoted search term is a mention, not a claim.
+    An amount ("EUR 240,000", "unavailable for 6 hours", "offline for half a day") always does. A term
+    does unless something scopes that very term (#69 review, round 2):
+    - a negation of a measuring verb before it: "these logs do not measure downtime";
+    - a denial of the term: "one node, not a machine-wide outage";
+    - a metric someone else holds: "a cost figure", "no downtime figure";
+    - a request or an open question it is the object of: "ask finance for the cost", "whether customers
+      noticed";
+    or its clause puts the figure outside these logs ("tracked outside these logs", "you'd need") or asks
+    for it from its owners ("Get cost estimates from the owning teams"). A negation elsewhere in the clause
+    does not count: "The storm cost us money that these logs don't show" still claims the cost.
+
+    Modality never excuses a claim (#45): "downtime was probably around 3 hours" and "the outage may have
+    hit customers" still state an impact the logs do not measure. What the #3 pilot's hedges excused was
+    a deferral ("SLA breaches are probably tracked outside these logs"), which the clause rule covers.
+    The problem quotes the sentence (`_Unit`) and the hint quotes the phrase that triggered it.
     """
-    plain = _QUOTED.sub(lambda m: " " * len(m.group(0)), text.replace("\u2019", "'"))
     amount = rule.amounts.search(plain)
     if amount is not None:
         return amount.group(0)
     for clause in _CLAUSE_BREAK.split(plain):
-        term = rule.terms.search(clause)
-        if term is None or _DEFERRAL.search(clause):
+        if _CLAUSE_DEFERRAL.search(clause) or _REQUEST_CLAUSE.match(clause):
             continue
-        if _NEGATION.search(clause) and (_EPISTEMIC.search(clause) or _HEDGE.search(clause)):
-            continue
-        return term.group(0)
+        for term in rule.terms.finditer(clause):
+            before, after = clause[: term.start()], clause[term.end() :]
+            if (
+                _NEGATED_MEASURE.search(before)
+                or _DENIED.search(before)
+                or _METRIC_AFTER.match(after)
+                or _REQUESTED.search(before)
+                or _refusing_label(before, after)
+            ):
+                continue
+            return term.group(0)
     return None
 
 

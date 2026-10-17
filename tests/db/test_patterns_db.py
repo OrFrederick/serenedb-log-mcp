@@ -3,7 +3,7 @@
 Each Tier gets its own throwaway schemas: a copy of the sample raw tables (from the `derived_sample`
 fixture) plus a few synthetic rows, derived once with Pattern Tier 1 on and once with it off. The
 Tier 1 tests need the Loghub-2.0 template files in SLM_DATA_DIR (`make fetch-data`) and skip
-without them.
+without them, also under SLM_REQUIRE_DB; the Tier 2 tests run either way.
 """
 
 from __future__ import annotations
@@ -14,8 +14,10 @@ import uuid
 from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Protocol
 
+import optional_data
 import psycopg
 import pytest
 from psycopg import sql
@@ -23,6 +25,7 @@ from psycopg import sql
 import derive
 import gen_pattern_sql
 from serenedb_log_mcp.config import load_settings
+from serenedb_log_mcp.tools._catalogue import NO_MESSAGE
 
 
 class Schemas(Protocol):
@@ -86,10 +89,10 @@ def run_derive(tier1: bool, *argv: str) -> int:
 
 
 def templates_or_skip() -> dict[str, list[gen_pattern_sql.Template]]:
-    try:
-        return gen_pattern_sql.load_templates(load_settings().data_dir)
-    except gen_pattern_sql.TemplatesMissingError as exc:
-        pytest.skip(f"Pattern Tier 1 tests need the Loghub-2.0 files: {exc}")
+    """The Loghub-2.0 templates; a Pattern Tier 1 test skips without them, even with SLM_REQUIRE_DB."""
+    if (problem := optional_data.templates_problem()) is not None:
+        pytest.skip(problem)
+    return gen_pattern_sql.load_templates(load_settings().data_dir)
 
 
 def _drop(database_url: str, *schemas: str) -> None:
@@ -319,7 +322,8 @@ def test_the_pattern_table_has_one_row_per_pattern_with_its_counts(
         expected = rows(
             database_url,
             q(
-                "SELECT template_id, count(*), min(ts), max(ts) FROM {t} GROUP BY 1 ORDER BY 1",
+                "SELECT template_id, count(*), min(ts), max(ts), min(epoch_utc), max(epoch_utc) "
+                "FROM {t} GROUP BY 1 ORDER BY 1",
                 sample.slm,
                 t=table,
             ),
@@ -327,7 +331,8 @@ def test_the_pattern_table_has_one_row_per_pattern_with_its_counts(
         actual = rows(
             database_url,
             q(
-                "SELECT template_id, entries, first_seen, last_seen FROM {p} WHERE dataset = %s ORDER BY 1",
+                "SELECT template_id, entries, first_seen, last_seen, first_epoch, last_epoch FROM {p} "
+                "WHERE dataset = %s ORDER BY 1",
                 sample.slm,
                 p="pattern",
             ),
@@ -350,6 +355,50 @@ def test_the_pattern_table_keeps_the_dictionary_texts(database_url: str, sample:
         ),
     )
     assert mismatches == 0
+
+
+def test_first_and_last_epoch_are_on_one_utc_clock_across_datasets(
+    database_url: str, sample: T9Schemas
+) -> None:
+    # ts is BGL US Pacific local time and OpenStack UTC; the epochs are comparable across both (#64).
+    for dataset, table in ENTRY_TABLES:
+        (mismatches,) = one(
+            database_url,
+            sql.SQL(
+                "SELECT count(*) FROM {p} p JOIN (SELECT template_id, min(epoch_utc) AS f, "
+                "max(epoch_utc) AS l FROM {t} GROUP BY 1) e ON e.template_id = p.template_id "
+                "WHERE p.dataset = %s AND (p.first_epoch <> e.f OR p.last_epoch <> e.l "
+                "OR p.first_epoch > p.last_epoch)"
+            ).format(p=sql.Identifier(sample.slm, "pattern"), t=sql.Identifier(sample.slm, table)),
+            [dataset],
+        )
+        assert mismatches == 0, dataset
+
+
+def test_the_empty_pattern_is_shown_as_no_message_and_every_other_by_its_text(
+    database_url: str, sample: T9Schemas
+) -> None:
+    result = rows(
+        database_url,
+        q(
+            "SELECT dataset, template_source, display_text FROM {p} "
+            "WHERE template_source = 'empty' ORDER BY 1",
+            sample.slm,
+            p="pattern",
+        ),
+    )
+    (others,) = one(
+        database_url,
+        q(
+            "SELECT count(*) FROM {p} WHERE template_source <> 'empty' "
+            "AND display_text IS DISTINCT FROM template_text",
+            sample.slm,
+            p="pattern",
+        ),
+    )
+
+    assert result == [("bgl", "empty", NO_MESSAGE), ("openstack", "empty", NO_MESSAGE)]
+    assert others == 0
 
 
 def test_component_and_level_are_the_most_frequent_ones(database_url: str, sample: T9Schemas) -> None:
@@ -504,6 +553,45 @@ def test_the_six_over_n_seconds_template_pairs_each_share_one_family_id(
         assert result[short][1] == result[long][1], (short, long)
         assert result[short][0] != result[long][0], (short, long)
     assert len({family_id for _, family_id in result.values()}) == len(OVER_N_SECONDS_PAIRS)
+
+
+# ----------------------------------------------------------------- without the optional Loghub-2.0 files
+
+
+def test_the_shared_sample_is_derived_with_tier1_exactly_when_the_templates_are_there(
+    database_url: str, derived_sample: Schemas
+) -> None:
+    used = rows(
+        database_url, q("SELECT DISTINCT template_source FROM {d}", derived_sample.slm, d="pattern_dict")
+    )
+
+    assert (("loghub2",) in used) is optional_data.derive_with_tier1()
+
+
+def write_template_files(data_dir: Path) -> None:
+    for name in gen_pattern_sql.TEMPLATE_FILES.values():
+        (data_dir / name).parent.mkdir(parents=True, exist_ok=True)
+        (data_dir / name).write_text(",".join(gen_pattern_sql.HEADER) + "\n")
+
+
+def test_a_schema_without_tier1_patterns_is_a_skip_only_without_the_template_files(
+    database_url: str, tier2_sample: T9Schemas, tmp_path: Path
+) -> None:
+    problem = optional_data.tier1_patterns_problem(database_url, tier2_sample.slm, tmp_path)
+    write_template_files(tmp_path)
+
+    assert problem is not None
+    assert f"schema {tier2_sample.slm!r} has no Tier 1 Pattern" in problem
+    assert f"Loghub-2.0 templates not found in {tmp_path / 'lh2'}" in problem
+    assert "make derive" in problem
+    # With the files there, a schema without Tier 1 Patterns is a derive to redo, not a skip.
+    assert optional_data.tier1_patterns_problem(database_url, tier2_sample.slm, tmp_path) is None
+
+
+def test_a_schema_with_tier1_patterns_needs_no_template_files(
+    database_url: str, tier1_sample: T9Schemas, tmp_path: Path
+) -> None:
+    assert optional_data.tier1_patterns_problem(database_url, tier1_sample.slm, tmp_path) is None
 
 
 # ----------------------------------------------------------------- re-runs

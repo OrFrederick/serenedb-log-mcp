@@ -21,6 +21,8 @@ pytestmark = pytest.mark.corpus
 BGL_ROWS = 4_747_963
 OPENSTACK_ROWS = 207_820
 KERNDTLB = 152_734
+UTC_TS = "make_timestamp(CAST(round(epoch_utc * 1000000) AS BIGINT))"
+"""BGL's time in UTC, independently of the tools: its ts is US Pacific local time (#65)."""
 
 
 @pytest.fixture(autouse=True)
@@ -109,7 +111,7 @@ def test_trend_over_the_whole_bgl_dataset_adds_up(slm_schema: str) -> None:
     result = call("trend", role="team_lead", dataset="bgl", bucket="week")
 
     expected = independent(
-        slm_schema, "SELECT time_bucket(INTERVAL '7 days', ts), count(*) FROM {bgl} GROUP BY 1"
+        slm_schema, f"SELECT time_bucket(INTERVAL '7 days', {UTC_TS}), count(*) FROM {{bgl}} GROUP BY 1"
     )
     assert {r[0]: r[1] for r in result["rows"] if r[1]} == {b.date().isoformat(): n for b, n in expected}
     assert sum(r[1] for r in result["rows"]) == BGL_ROWS
@@ -123,11 +125,13 @@ def test_trend_by_alert_category_finds_the_kerndtlb_storm_day(slm_schema: str) -
     storm = next(s for s in result["summary"]["series"] if s["series"] == "KERNDTLB")
     peak = independent(
         slm_schema,
-        "SELECT time_bucket(INTERVAL '1 day', ts) AS d, count(*) FROM {bgl} WHERE alert_tag = 'KERNDTLB' "
-        "GROUP BY 1 ORDER BY 2 DESC LIMIT 1",
+        f"SELECT time_bucket(INTERVAL '1 day', {UTC_TS}) AS d, count(*) FROM {{bgl}} "
+        "WHERE alert_tag = 'KERNDTLB' GROUP BY 1 ORDER BY 2 DESC LIMIT 1",
     )[0]
     assert storm["count"] == KERNDTLB
     assert (storm["peak_bucket"], storm["peak_count"]) == (peak[0].date().isoformat(), peak[1])
+    # The storm runs 17:17 to 23:39 local time on 2005-06-11, which is 2005-06-12 in UTC.
+    assert storm["peak_bucket"] == "2005-06-12"
     # A whole-Dataset trend has no week outside its scope to compare with.
     assert storm["baseline_flag"] == "no_baseline"
     within_timeout(result)
@@ -149,3 +153,32 @@ def test_a_week_of_bgl_is_judged_against_the_weeks_outside_it(slm_schema: str) -
     assert weeks == 29  # 30 whole weeks in BGL, minus the one in the Data Scope
     assert rows["(non-alert)"]["median_week"] is not None
     assert rows["(non-alert)"]["baseline_basis"] == "median_week"
+
+
+def test_an_hourly_trend_across_the_2005_fall_back_counts_each_utc_hour_once(slm_schema: str) -> None:
+    result = call(
+        "trend",
+        role="engineer",
+        dataset="bgl",
+        bucket="hour",
+        time_from="2005-10-30T07:00",
+        time_to="2005-10-30T11:00",
+    )
+
+    utc = independent(
+        slm_schema,
+        f"SELECT time_bucket(INTERVAL '1 hour', {UTC_TS}), count(*) FROM {{bgl}} "
+        f"WHERE {UTC_TS} >= TIMESTAMP '2005-10-30 07:00:00' AND {UTC_TS} < TIMESTAMP '2005-10-30 11:00:00' "
+        "GROUP BY 1 ORDER BY 1",
+    )
+    # On local ts the hour from 01:00 (08:00 to 09:59 UTC) is one bucket of 49 Log Entries.
+    local = independent(
+        slm_schema,
+        "SELECT count(*) FROM {bgl} WHERE ts >= TIMESTAMP '2005-10-30 01:00:00' "
+        "AND ts < TIMESTAMP '2005-10-30 02:00:00'",
+    )[0][0]
+    assert result["rows"] == [[b.strftime("%Y-%m-%dT%H:%M"), n] for b, n in utc]
+    assert [n for _, n in result["rows"]] == [472, 11, 38, 26]
+    assert local == 11 + 38
+    assert result["data_scope"]["time_columns"] == {"bgl": "epoch_utc"}
+    within_timeout(result)

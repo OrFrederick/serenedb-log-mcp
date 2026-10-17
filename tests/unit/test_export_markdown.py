@@ -172,3 +172,58 @@ def test_sql_with_backticks_gets_a_longer_fence() -> None:
     ).markdown
 
     assert "````sql\nSELECT '```' AS fence\n````" in markdown
+
+
+def _engineer_answer(fact: str) -> str:
+    return f"## Observed Facts\n- {fact}\n## Hypotheses\n- h\n## Unknowns\n- u\n## Next Step\n- s\n"
+
+
+def test_evidence_is_shown_under_the_answer_that_cites_it_when_a_role_answers_twice() -> None:
+    first = Answer(
+        role=Role.ENGINEER,
+        question="What failed on the node?",
+        answer=_engineer_answer("The search matched 152,734 Log Entries [E1]."),
+    )
+    second = Answer(
+        role=Role.ENGINEER,
+        question="How many FATAL Log Entries are there?",
+        answer=_engineer_answer("855,501 Log Entries are FATAL [E6]."),
+    )
+
+    markdown = render_investigation(
+        Role.ENGINEER, TITLE, [first, second], records(), evidence_ids=["E1", "E6"], incident_tools=False
+    ).markdown
+
+    one, two = markdown.split("## 1. Engineer", 1)[1].split("## 2. Engineer", 1)
+    two = two.split("## What the data", 1)[0]
+    assert "#### E1: search_logs" in one
+    assert "#### E6: count_by" not in one
+    assert "#### E6: count_by" in two
+    assert "#### E1" not in two
+
+
+def test_uncited_evidence_goes_to_the_answer_of_its_role_it_was_produced_for() -> None:
+    first = Answer(
+        role=Role.ENGINEER,
+        question="What failed on the node?",
+        answer=_engineer_answer("The search matched 152,734 Log Entries [E1]."),
+    )
+    second = Answer(
+        role=Role.ENGINEER,
+        question="How many FATAL Log Entries are there?",
+        answer=_engineer_answer("855,501 Log Entries are FATAL [E6]."),
+    )
+
+    markdown = render_investigation(
+        Role.ENGINEER,
+        TITLE,
+        [first, second],
+        records(),
+        evidence_ids=["E1", "E2", "E6"],
+        incident_tools=False,
+    ).markdown
+
+    # E2 was produced after the last Evidence the first answer cites and before the second answer's.
+    one, two = markdown.split("## 1. Engineer", 1)[1].split("## 2. Engineer", 1)
+    assert "#### E2: get_context" not in one
+    assert "#### E2: get_context" in two.split("## What the data", 1)[0]

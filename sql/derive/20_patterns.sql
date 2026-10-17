@@ -196,6 +196,17 @@ JOIN counts AS n ON n.dataset = t.dataset AND n.template_id = t.template_id
 LEFT JOIN components AS c ON c.dataset = t.dataset AND c.template_id = t.template_id AND c.rank = 1
 LEFT JOIN levels AS l ON l.dataset = t.dataset AND l.template_id = t.template_id AND l.rank = 1;
 
+-- The catalogue's inverted index for search_patterns (T14): BM25 over template_text, whose
+-- dictionary lower-cases and stems English words ('failing' and 'failed' meet at 'fail'), and the
+-- dataset verbatim for a score-neutral Dataset filter. It is built here rather than in
+-- 90_indexes, because CREATE OR REPLACE TABLE above drops it, and `derive.py --only 20_patterns`
+-- must leave a searchable catalogue. The index goes first: it blocks dropping its dictionary.
+DROP INDEX IF EXISTS ${slm}.pattern_idx;
+DROP TEXT SEARCH DICTIONARY IF EXISTS ${slm}.pattern_text;
+${create_pattern_text_dictionary};
+CREATE INDEX pattern_idx ON ${slm}.pattern USING inverted (dataset, template_text ${slm}.pattern_text);
+VACUUM (REFRESH_TABLE) ${slm}.pattern;
+
 -- When the step runs on its own, the inverted indexes already exist; publish the updated columns.
 VACUUM (REFRESH_TABLE) ${slm}.bgl_entry;
 VACUUM (REFRESH_TABLE) ${slm}.os_entry;

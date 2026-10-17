@@ -22,6 +22,9 @@ SQL files use two kinds of placeholders, replaced before execution:
     ${create_log_text_dictionary}    the dictionary DDL for the server version: the
                                      `AS split_text(...)` form on SereneDB 26.10.1 or later, the
                                      legacy `(TEMPLATE = 'text', ...)` form before that
+    ${create_pattern_text_dictionary}
+                                     the same choice for the Pattern catalogue's dictionary, which
+                                     also stems English words (search_patterns, T14)
     ${pattern_tier1}                 the Tier 1 Pattern SQL that scripts/gen_pattern_sql.py
                                      generates from the Loghub-2.0 template files (T9)
 
@@ -51,6 +54,9 @@ SQL_DIR = Path(__file__).resolve().parent.parent / "sql"
 SPLIT_TEXT_SINCE = (26, 10, 1)
 CONNECT_TIMEOUT_S = 10
 ENTRY_INDEXES = {"bgl_entry": "bgl_entry_idx", "os_entry": "os_entry_idx"}
+# Every index a usable schema has: the entry indexes (90_indexes) and the Pattern catalogue's
+# search index (20_patterns), which search_patterns reads.
+REQUIRED_INDEXES = (*ENTRY_INDEXES.values(), "pattern_idx")
 PLACEHOLDER_RE = re.compile(r"\$\{([A-Za-z0-9_]+)\}")
 VERSION_RE = re.compile(r"SereneDB v?(\d+(?:\.\d+)*)")
 
@@ -181,6 +187,25 @@ def dictionary_ddl(name: str, version: tuple[int, ...]) -> str:
     )
 
 
+def pattern_dictionary_ddl(name: str, version: tuple[int, ...]) -> str:
+    """The DDL for the Pattern text dictionary: lower-case words with English (Snowball) stemming,
+    so 'failing' and 'failed' meet at 'fail', with the flags BM25 needs (frequency, norm).
+
+    search_patterns (T14) ranks the Pattern catalogue with it. The Log Entry text stays unstemmed
+    (`dictionary_ddl`), because search_logs promises whole-word matches."""
+    if version >= SPLIT_TEXT_SINCE:
+        return (
+            f"CREATE TEXT SEARCH DICTIONARY {name} AS split_text(case := 'lower') "
+            "| stem_words('en_US.UTF-8') WITH (frequency, norm)"
+        )
+    # The legacy form of `dictionary_ddl` with stemming on, as the SereneDB cookbook describes it
+    # ("stemming = true ... picked by locale"); like that form, untested on 26.09.1.3.
+    return (
+        f"CREATE TEXT SEARCH DICTIONARY {name} (TEMPLATE = 'text', locale = 'en_US.UTF-8', "
+        "\"case\" = 'lower', stemming = true, accent = false, frequency = true, norm = true)"
+    )
+
+
 def _quoted(schema: str) -> str:
     if not SCHEMA_RE.fullmatch(schema):
         raise DeriveError(f"schema {schema!r} is not a plain lowercase identifier ({SCHEMA_RE.pattern})")
@@ -210,6 +235,7 @@ def variables(
         "slm": slm_q,
         "raw": raw_q,
         "create_log_text_dictionary": dictionary_ddl(f"{slm_q}.log_text", version),
+        "create_pattern_text_dictionary": pattern_dictionary_ddl(f"{slm_q}.pattern_text", version),
         "pattern_tier1": gen_pattern_sql.tier1_sql(slm_q, tier1),
     }
 
@@ -424,9 +450,7 @@ def result_problems(conn: psycopg.Connection[Any], slm: str) -> list[str]:
     indexes = {
         name for (name,) in _rows(conn, "SELECT indexname FROM pg_indexes WHERE schemaname = %s", [slm])
     }
-    problems += [
-        f"index {slm}.{index} is missing" for index in ENTRY_INDEXES.values() if index not in indexes
-    ]
+    problems += [f"index {slm}.{index} is missing" for index in REQUIRED_INDEXES if index not in indexes]
     return problems
 
 

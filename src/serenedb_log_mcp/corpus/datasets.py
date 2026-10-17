@@ -33,12 +33,13 @@ ENTRY_INDEXES: Mapping[DatasetName, str] = MappingProxyType(
 OWNERSHIP = "ownership"
 PATTERN_DICT = "pattern_dict"
 PATTERNS = "pattern"
+PATTERN_INDEX = "pattern_idx"
 INCIDENTS = "incident"
 INSTANCES = "os_instance"
 CANONICAL_TABLES = frozenset(
     {*ENTRY_TABLES.values(), OWNERSHIP, PATTERN_DICT, PATTERNS, INCIDENTS, INSTANCES}
 )
-CANONICAL_INDEXES = frozenset(ENTRY_INDEXES.values())
+CANONICAL_INDEXES = frozenset({*ENTRY_INDEXES.values(), PATTERN_INDEX})
 
 OWNERSHIP_IS_STUB = True
 OWNERSHIP_NOTE = (
@@ -214,6 +215,11 @@ class Relation:
     def patterns_table(self) -> sql.Identifier:
         """The Pattern catalogue, one row per Pattern (T9)."""
         return sql.Identifier(self.schema, PATTERNS)
+
+    @property
+    def patterns_index(self) -> sql.Identifier:
+        """The inverted index over the Pattern catalogue: template_text with English stemming (T14)."""
+        return sql.Identifier(self.schema, PATTERN_INDEX)
 
     @property
     def incidents_table(self) -> sql.Identifier:

@@ -6,15 +6,17 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 import pytest
+from mcp.server.mcpserver.exceptions import ToolError
 from psycopg import sql
 
 from serenedb_log_mcp import config
-from serenedb_log_mcp.config import ROLES, load_settings
+from serenedb_log_mcp.config import ROLES, Role, load_settings
 from serenedb_log_mcp.corpus import datasets
 from serenedb_log_mcp.corpus.datasets import (
     DATASET_NAMES,
     DATASETS,
     DatasetName,
+    RoleAccessError,
     UnknownColumnError,
     UnknownDatasetError,
     relation,
@@ -84,8 +86,8 @@ def test_an_unknown_dataset_names_the_valid_ones_and_a_close_match() -> None:
 
 
 @pytest.mark.parametrize("role", [*ROLES, None])
-def test_every_role_resolves_to_the_same_relation_for_now(role: config.RoleName | None) -> None:
-    # T22 gives each Role its own views; until then the Role does not change the relation.
+def test_without_a_role_dsn_every_role_resolves_to_the_canonical_tables(role: config.RoleName | None) -> None:
+    # T22's per-Role views apply only to a Role whose DATABASE_URL_<ROLE> is set.
     assert relation("bgl", role, settings=SLM) == relation("bgl", settings=SLM)
 
 
@@ -229,3 +231,110 @@ def test_the_registry_lists_every_canonical_table_and_index_name() -> None:
         "ownership",
     }
     assert indexes == {"bgl_entry_idx", "os_entry_idx"}
+
+
+# ----------------------------------------------------------------- per-Role views (T22)
+
+ROLE_DSNS = {
+    "DATABASE_URL_ENGINEER": "host=db user=slm_engineer password=e",
+    "DATABASE_URL_TEAM_LEAD": "host=db user=slm_team_lead password=t",
+    "DATABASE_URL_MANAGER": "host=db user=slm_manager password=m",
+}
+WITH_LOGINS = load_settings(ROLE_DSNS)
+
+
+def test_role_schema_names_the_schema_of_a_roles_views() -> None:
+    assert datasets.role_schema("slm", Role.ENGINEER) == "slm_engineer"
+    assert datasets.role_schema("slm", Role.TEAM_LEAD) == "slm_team_lead"
+    assert datasets.role_schema("scratch_x", Role.MANAGER) == "scratch_x_manager"
+
+
+@pytest.mark.parametrize("role", ROLES)
+def test_a_role_with_its_own_dsn_resolves_to_its_views(role: Role) -> None:
+    rel = relation("bgl", role, settings=WITH_LOGINS)
+
+    assert rel.schema == f"slm_{role.value}"
+    assert rel.table_name == f"slm_{role.value}.bgl_entry"
+    assert rel.views_for is role
+    assert text(rel.ownership_table) == f'"slm_{role.value}"."ownership"'
+    assert text(rel.patterns_table) == f'"slm_{role.value}"."pattern"'
+    assert text(rel.instances_table) == f'"slm_{role.value}"."os_instance"'
+
+
+def test_only_the_roles_with_a_dsn_get_views() -> None:
+    settings = load_settings({"DATABASE_URL_MANAGER": ROLE_DSNS["DATABASE_URL_MANAGER"]})
+
+    assert relation("bgl", "manager", settings=settings).table_name == "slm_manager.bgl_entry"
+    assert relation("bgl", "engineer", settings=settings).table_name == "slm.bgl_entry"
+    assert relation("bgl", None, settings=settings).table_name == "slm.bgl_entry"
+    assert relation("bgl", "engineer", settings=settings).views_for is None
+
+
+def test_the_role_views_follow_slm_schema() -> None:
+    settings = load_settings({**ROLE_DSNS, "SLM_SCHEMA": "scratch_t22"})
+
+    assert (
+        relation("openstack", "team_lead", settings=settings).table_name == "scratch_t22_team_lead.os_entry"
+    )
+
+
+@pytest.mark.parametrize("role", [Role.ENGINEER, Role.TEAM_LEAD])
+def test_the_engineer_and_the_team_lead_search_their_own_index(role: Role) -> None:
+    rel = relation("bgl", role, settings=WITH_LOGINS)
+
+    assert text(rel.index) == f'"slm_{role.value}"."bgl_entry_idx"'
+    assert text(rel.column("message")) == '"message"'
+    assert "message" in rel.columns
+
+
+@pytest.mark.parametrize("dataset", DATASET_NAMES)
+def test_the_managers_views_hold_no_log_entry_text(dataset: str) -> None:
+    rel = relation(dataset, Role.MANAGER, settings=WITH_LOGINS)
+
+    assert "message" not in rel.columns
+    assert "message" not in rel.columns.values()
+    assert text(rel.column("component")) == '"component"'
+    assert text(rel.column("time")) == '"ts"'
+    with pytest.raises(RoleAccessError) as excinfo:
+        rel.column("message")
+    message = str(excinfo.value)
+    assert "'manager'" in message
+    assert "no Log Entry text" in message
+    assert "count_by" in message
+
+
+@pytest.mark.parametrize("dataset", DATASET_NAMES)
+def test_the_manager_has_no_full_text_index(dataset: str) -> None:
+    rel = relation(dataset, Role.MANAGER, settings=WITH_LOGINS)
+
+    with pytest.raises(RoleAccessError, match="full-text"):
+        _ = rel.index
+
+
+def test_the_manager_without_its_own_dsn_keeps_every_column() -> None:
+    rel = relation("bgl", Role.MANAGER, settings=SLM)
+
+    assert "message" in rel.columns
+    assert text(rel.index) == '"slm"."bgl_entry_idx"'
+
+
+def test_a_role_access_error_reaches_the_agent_as_a_tool_error() -> None:
+    # Its text, not a generic retry hint, is what the agent reads (toolkit passes ToolError through).
+    assert issubclass(RoleAccessError, ToolError)
+
+
+def test_an_unknown_column_is_still_unknown_for_a_role() -> None:
+    rel = relation("openstack", Role.MANAGER, settings=WITH_LOGINS)
+
+    with pytest.raises(UnknownColumnError, match="openstack has no column 'rack'"):
+        rel.column("rack")
+
+
+def test_every_withheld_column_is_a_canonical_column() -> None:
+    for role, withheld in datasets.ROLE_WITHHELD_COLUMNS.items():
+        assert role in ROLES
+        for dataset in DATASETS.values():
+            assert withheld <= set(dataset.table_columns)
+    assert datasets.ROLE_WITHHELD_COLUMNS[Role.MANAGER] == frozenset({"message"})
+    assert Role.ENGINEER not in datasets.ROLE_WITHHELD_COLUMNS
+    assert Role.TEAM_LEAD not in datasets.ROLE_WITHHELD_COLUMNS

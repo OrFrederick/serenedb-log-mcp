@@ -1,7 +1,8 @@
 """Agent indexes (T19): inverted indexes the agent builds over a time slice of one Dataset.
 
 `create_index` builds a partial inverted index over the Dataset's canonical table
-(`CREATE INDEX … USING inverted (…) WHERE ts >= … AND ts < …`, verified on SereneDB 26.10.1) and
+(`CREATE INDEX … USING inverted (…) WHERE ts >= … AND ts < …`, verified on SereneDB 26.10.1 and,
+in the PR #59 review, on 26.09.1.3) and
 `drop_index` removes it; both live in `index_admin.py` and run on a separate write connection. This
 module is the pure part both sides and the resolver share, with no database access:
 

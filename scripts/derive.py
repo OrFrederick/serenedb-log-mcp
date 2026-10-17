@@ -311,7 +311,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         settings = load_settings()
         slm = args.schema or settings.slm_schema
         raw = args.raw_schema or settings.raw_schema
-        _quoted(slm), _quoted(raw)
+        slm_q, _ = _quoted(slm), _quoted(raw)
         if slm == raw:
             raise DeriveError(
                 f"SLM_SCHEMA and SLM_RAW_SCHEMA are both {slm!r}; derive into its own schema (default slm)"
@@ -327,7 +327,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             row = conn.execute("SELECT version()").fetchone()
             version = serenedb_version(str(row[0]) if row else "")
             print(f"SereneDB {'.'.join(map(str, version))}: deriving {raw} -> {slm} ({args.adapter})")
-            conn.execute(f"CREATE SCHEMA IF NOT EXISTS {_quoted(slm)}")
+            conn.execute(f"CREATE SCHEMA IF NOT EXISTS {slm_q}")
             values = variables(slm, raw, version)
             run(conn, files[:1], values)
             check_adapter(conn, slm, args.adapter)
@@ -339,7 +339,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"derive: {exc}", file=sys.stderr)
         return 2
     except psycopg.Error as exc:
-        print(f"derive: the database rejected a statement: {exc}", file=sys.stderr)
+        # Every step is re-runnable, so after a lost connection (the server restarts after a
+        # crash) running it again is safe.
+        print(f"derive: {type(exc).__name__}: {exc}; once the database is up, run it again", file=sys.stderr)
         return 1
     return 0
 

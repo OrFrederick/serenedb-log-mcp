@@ -8,6 +8,7 @@ connection usable after a ROLLBACK. The real server is covered by tests/db/test_
 
 from __future__ import annotations
 
+import contextvars
 import threading
 import time
 from collections.abc import Callable, Sequence
@@ -69,6 +70,7 @@ class FakeServer:
         self.cancel_failures_left = 0
         self.interrupt_select_1 = False
         self.notices: list[tuple[str, str]] = []  # (severity, message) sent by `SELECT warns()`
+        self.release_hung = threading.Event()  # ends `SELECT hung()`, which ignores every cancel
 
     def connect(self, dsn: str, *, client_binding: bool) -> FakeConnection:
         self.binding.append(client_binding)
@@ -101,7 +103,10 @@ class FakeConnection:
         self.broken = False
         self.cancelled = threading.Event()
         self.cancels_while_open = 0
+        self.cancel_timeouts: list[float] = []
         self.notice_handlers: list[Callable[[Any], None]] = []
+        self.executing = 0
+        self.closed_while_executing = False
 
     def add_notice_handler(self, callback: Callable[[Any], None]) -> None:
         self.notice_handlers.append(callback)
@@ -110,6 +115,13 @@ class FakeConnection:
         self.notice_handlers.remove(callback)
 
     def execute(self, query: str, params: Sequence[Any] | None = None) -> FakeCursor:
+        self.executing += 1
+        try:
+            return self._execute(query, params)
+        finally:
+            self.executing -= 1
+
+    def _execute(self, query: str, params: Sequence[Any] | None) -> FakeCursor:
         if self.closed or self.broken:
             raise psycopg.OperationalError("the connection is lost")
         self.executed.append((query, params))
@@ -133,6 +145,9 @@ class FakeConnection:
                 for handler in list(self.notice_handlers):
                     handler(FakeDiagnostic(severity, message))
             return FakeCursor([(1,)])
+        if query == "SELECT hung()":
+            self.server.release_hung.wait(10)  # ignores cancels until the test releases it
+            return FakeCursor([(1,)])
         if query == "SELECT stubborn()":
             time.sleep(0.2)  # finishes although the timer fired: the cancel arrived too late
             return FakeCursor([(1,)])
@@ -148,7 +163,8 @@ class FakeConnection:
             raise psycopg.ProgrammingError("only '%s', '%b', '%t' are allowed as placeholders, got \"%'\"")
         return FakeCursor(self.server.respond(query, params))
 
-    def cancel_safe(self) -> None:
+    def cancel_safe(self, *, timeout: float = 30.0) -> None:
+        self.cancel_timeouts.append(timeout)
         if self.closed:
             return  # psycopg's cancel_safe does nothing on a closed connection
         if self.server.cancel_failures_left:
@@ -158,6 +174,9 @@ class FakeConnection:
         self.cancelled.set()
 
     def close(self) -> None:
+        # Closing a psycopg connection from another thread while a statement runs on it frees the
+        # libpq connection under that statement, so the layer must never do it.
+        self.closed_while_executing = self.closed_while_executing or self.executing > 0
         self.closed = True
 
 
@@ -604,6 +623,108 @@ def test_a_time_limit_that_could_not_be_enforced_is_noted(monkeypatch: pytest.Mo
     assert len(result.notes) == 1
     assert "the cancel request failed" in result.notes[0]
     assert "cancellation timeout expired" in result.notes[0]
+
+
+def test_a_cancel_request_waits_at_most_cancel_timeout_s() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+
+    with pytest.raises(QueryTimeout):
+        database(server, timeout_s=0.02).fetch_all("SELECT slow()")
+
+    assert server.connections[0].cancel_timeouts == [db.CANCEL_TIMEOUT_S]
+
+
+def wait_until(condition: Callable[[], bool], seconds: float = 5.0) -> bool:
+    deadline = time.monotonic() + seconds
+    while not condition():
+        if time.monotonic() > deadline:
+            return False
+        time.sleep(0.01)
+    return True
+
+
+def test_a_statement_that_cannot_be_cancelled_is_abandoned_after_the_grace_period(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(db, "CANCEL_RETRY_S", 0.01)
+    server = FakeServer(table_responder(3, ROWS))
+    server.cancel_failures_left = 99
+    layer = database(server, timeout_s=0.05, cancel_grace_s=0.1)
+
+    started = time.monotonic()
+    with pytest.raises(QueryTimeout) as caught:
+        layer.fetch_all("SELECT hung()")
+    elapsed = time.monotonic() - started
+
+    message = str(caught.value)
+    assert elapsed < 2
+    assert "0.05 s limit" in message
+    assert "the cancel request failed (cancellation timeout expired.)" in message
+    assert "may still be running on SereneDB" in message
+    assert "Narrow the Data Scope" in message
+    hung = server.connections[0]
+    assert hung.executing == 1  # the statement still runs, on a connection nobody closed under it
+    assert not hung.closed
+    # The layer answers the next call on a new connection meanwhile.
+    assert layer.fetch_all("SELECT a FROM t").total == 3
+    assert len(server.connections) == 2
+
+    server.release_hung.set()
+
+    # The thread that ran the statement closes its connection once the statement returns.
+    assert wait_until(lambda: hung.closed)
+    assert not hung.closed_while_executing
+    layer.fetch_all("SELECT a FROM t")
+    assert len(server.connections) == 2  # the abandoned connection never reached the pool
+
+
+def test_a_statement_that_ignores_a_sent_cancel_is_abandoned_after_the_grace_period() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    layer = database(server, timeout_s=0.05, cancel_grace_s=0.1)
+
+    try:
+        with pytest.raises(QueryTimeout) as caught:
+            layer.fetch_all("SELECT hung()")
+    finally:
+        server.release_hung.set()
+
+    assert "SereneDB did not act on the cancel request" in str(caught.value)
+    assert server.connections[0].cancels_while_open == 1
+    assert wait_until(lambda: server.connections[0].closed)
+    assert not server.connections[0].closed_while_executing
+
+
+def test_the_grace_period_starts_only_when_the_cancel_attempts_are_over(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(db, "CANCEL_RETRY_S", 0.3)  # three attempts take 0.6 s
+    server = FakeServer(table_responder(3, ROWS))
+    server.cancel_failures_left = 99
+    layer = database(server, timeout_s=0.02, cancel_grace_s=0.05)
+
+    started = time.monotonic()
+    try:
+        with pytest.raises(QueryTimeout):
+            layer.fetch_all("SELECT hung()")
+    finally:
+        server.release_hung.set()
+
+    assert time.monotonic() - started >= 0.6
+    assert server.cancel_failures_left == 99 - db.CANCEL_ATTEMPTS
+
+
+def test_the_statements_see_the_context_of_the_call() -> None:
+    request = contextvars.ContextVar("request", default="none")
+    seen: list[str] = []
+
+    def respond(sql: str, params: Sequence[Any] | None) -> list[tuple[Any, ...]]:
+        seen.append(request.get())
+        return [(1,)]
+
+    request.set("call-1")
+    database(FakeServer(respond)).fetch_all("SELECT a FROM t")
+
+    assert seen == ["call-1"]
 
 
 def test_the_probe_connection_is_closed_when_the_wait_is_interrupted() -> None:

@@ -10,6 +10,11 @@ What is true for every statement is written once here:
   ignore it (measured in the #47 review), while 26.10.1 honoured every cancel, bound or literal, in
   both binding modes (33 of 33 runs). So every result is also checked against the limit, and a
   call that ran past it says so in `QueryResult.notes`;
+- the call itself is bounded too: the statements run on a thread of their own, and the caller
+  stops waiting `CANCEL_GRACE_S` after the timer sent its cancel request or gave up on sending one.
+  A statement that is still running then ends the call with `QueryTimeout`; its thread closes the
+  connection once SereneDB returns, because closing it from another thread mid-statement would free
+  the libpq connection under it (see `_Statements`);
 - only a closed or broken connection counts as lost: SereneDB reports ordinary IO errors (a
   missing `read_csv` file, an unreachable HTTP source) as SQLSTATE `08000` on a healthy session;
 - on a lost connection (SereneDB 26.10.1 SIGSEGVs intermittently and restarts in a few seconds) the
@@ -28,6 +33,7 @@ The layer never builds an `Evidence`; tools hand its `QueryResult` to `toolkit.e
 from __future__ import annotations
 
 import contextlib
+import contextvars
 import re
 import threading
 import time
@@ -82,11 +88,21 @@ CANCEL_ATTEMPTS = 3
 """How often the timer sends a cancel request that failed (for example psycopg's CancellationTimeout)."""
 CANCEL_RETRY_S = 1.0
 """Pause between two cancel requests."""
+CANCEL_TIMEOUT_S = 5.0
+"""How long one cancel request may take (psycopg's own default is 30 s)."""
+CANCEL_GRACE_S = 5.0
+"""How long the caller still waits for the statements once the timer has sent a cancel request or
+given up on sending one. 26.10.1 ended a cancelled statement within 1.4 s in every #47 run."""
 
 NOTED_SEVERITIES = frozenset({"WARNING", "NOTICE", "INFO"})
 """Notice severities that reach `QueryResult.notes`; DEBUG and LOG are left out."""
 MAX_NOTICE_NOTES = 5
 """Distinct notices listed per call; the rest are counted in one more note."""
+
+NARROW_THE_SCOPE = (
+    "Narrow the Data Scope: a shorter time range, a Component, level or Pattern filter, or a coarser "
+    "trend bucket."
+)
 
 _T = TypeVar("_T")
 
@@ -195,7 +211,8 @@ class DatabaseLayerError(ToolError):
 
 
 class QueryTimeout(DatabaseLayerError):
-    """The statements ran longer than `SLM_QUERY_TIMEOUT_S` and were cancelled."""
+    """The statements ran longer than `SLM_QUERY_TIMEOUT_S` and were cancelled, or were still running
+    `CANCEL_GRACE_S` after the cancel request went out or failed."""
 
 
 class QueryFailed(DatabaseLayerError):
@@ -241,7 +258,7 @@ class ConnectionLike(Protocol):
 
     def execute(self, query: str, params: Sequence[Any] | None = None) -> CursorLike: ...
 
-    def cancel_safe(self) -> None: ...
+    def cancel_safe(self, *, timeout: float = 30.0) -> None: ...
 
     def add_notice_handler(self, callback: NoticeHandler) -> None: ...
 
@@ -277,6 +294,10 @@ def open_connection(dsn: str, *, client_binding: bool) -> psycopg.Connection[tup
 
 class _ConnectionLost(Exception):
     """Internal: the session ended under a statement; the caller waits and retries once."""
+
+
+class _Abandoned(Exception):
+    """Internal: the statements outlived the cancel and the grace period; the caller stopped waiting."""
 
 
 class _Session:
@@ -333,15 +354,18 @@ class _Session:
 class _Deadline:
     """The time limit of one attempt.
 
-    A timer cancels the statements after `timeout_s` and retries a cancel request that fails.
-    `stop()` ends it: once `stop()` has returned, no cancel request is in flight and none will be
-    sent, and `fired` says whether one was. A connection whose deadline fired is never reused, so a
-    cancel can never reach a later call on a pooled connection.
+    A timer cancels the statements after `timeout_s` and retries a cancel request that fails, each
+    request bounded by `CANCEL_TIMEOUT_S`. Once a request went out, or `CANCEL_ATTEMPTS` failed, the
+    timer has done all it can and calls `on_settled`. `stop()` ends it: once `stop()` has returned,
+    no cancel request is in flight and none will be sent, and `fired` says whether one was. A
+    connection whose deadline fired is never reused, so a cancel can never reach a later call on a
+    pooled connection.
     """
 
-    def __init__(self, conn: ConnectionLike, timeout_s: float) -> None:
+    def __init__(self, conn: ConnectionLike, timeout_s: float, on_settled: Callable[[], None]) -> None:
         self._conn = conn
         self.timeout_s = timeout_s
+        self._on_settled = on_settled
         self._lock = threading.Lock()  # held while a cancel request is decided and sent
         self._stopped = threading.Event()
         self._timer = threading.Timer(timeout_s, self._cancel)
@@ -358,19 +382,107 @@ class _Deadline:
         self._timer.cancel()
 
     def _cancel(self) -> None:
-        for _ in range(CANCEL_ATTEMPTS):
+        for attempt in range(CANCEL_ATTEMPTS):
+            if attempt and self._stopped.wait(CANCEL_RETRY_S):
+                return
             with self._lock:
                 if self._stopped.is_set():
                     return
                 self.fired = True
                 try:
-                    self._conn.cancel_safe()
+                    self._conn.cancel_safe(timeout=CANCEL_TIMEOUT_S)
                 except psycopg.Error as exc:
                     self.errors.append(_first_line(exc))
-                else:
-                    return
-            if self._stopped.wait(CANCEL_RETRY_S):
-                return
+                    continue
+            break  # the request went out
+        self._on_settled()
+
+    @property
+    def why_it_ran_on(self) -> str:
+        """Why statements outlived the limit, for a note or an error message."""
+        if len(self.errors) >= CANCEL_ATTEMPTS:
+            return f"the cancel request failed ({self.errors[-1]})"
+        if self.fired:
+            return "SereneDB did not act on the cancel request"
+        return "the time limit did not fire in time"
+
+
+class _Statements[T]:
+    """The statements of one attempt, run on a thread of their own that owns the connection.
+
+    The caller waits for them, but only until `grace_s` after the deadline has done all it can (a
+    cancel request went out, or every one failed). Then it gives up with `_Abandoned` and leaves the
+    connection alone: psycopg's `close()` does not take the connection lock, so closing it from the
+    caller would free the libpq connection under the statement still waiting on it. The statement
+    thread closes the connection itself once the statement returns, so an abandoned connection is
+    never pooled. The price is that SereneDB may keep running the statement, holding that connection,
+    until it ends by itself; the layer cannot stop it once the cancel failed.
+    """
+
+    def __init__(self, conn: ConnectionLike, work: Callable[[_Session], T], timeout_s: float):
+        self._conn = conn
+        self._work = work
+        self._wake = threading.Event()  # the statements ended, or the deadline has done all it can
+        self._done = threading.Event()
+        self._lock = threading.Lock()  # decides who closes the connection: the caller or the thread
+        self._started = False
+        self._finished = False
+        self._abandoned = False
+        self._value: tuple[T] | None = None  # a box, so that a work() returning None is told apart
+        self._error: BaseException | None = None
+        self.deadline = _Deadline(conn, timeout_s, self._wake.set)
+        # The session checks the deadline before each statement, on the statement thread: a cancel
+        # that reaches the backend between two statements is dropped, so the next one must not run.
+        self.session = _Session(conn, self.deadline)
+
+    def start(self) -> None:
+        context = contextvars.copy_context()  # the statements run in the context of the call
+        thread = threading.Thread(
+            target=context.run, args=(self._run,), name="serenedb-statements", daemon=True
+        )
+        thread.start()
+        self._started = True
+
+    def result(self, grace_s: float) -> T:
+        """The value of `work`, or its exception; `_Abandoned` once the grace period ran out."""
+        self._wake.wait()
+        if not self._done.wait(grace_s) and self.abandon():
+            raise _Abandoned
+        if self._error is not None:
+            raise self._error
+        assert self._value is not None, "the statement thread ended without a value or an error"
+        return self._value[0]
+
+    def abandon(self) -> bool:
+        """Leave the connection to the statement thread if it still runs; True when it does."""
+        with self._lock:
+            if self._started and not self._finished:
+                self._abandoned = True
+            return self._abandoned
+
+    def _run(self) -> None:
+        on_notice = self.session.notice
+        try:
+            self._conn.add_notice_handler(on_notice)  # removed below, so a pooled connection keeps none
+            try:
+                self._conn.execute("BEGIN READ ONLY")
+                self.deadline.start()  # after BEGIN, so the limit covers only the statements
+                try:
+                    self._value = (self._work(self.session),)
+                finally:
+                    self.deadline.stop()
+            finally:
+                self._conn.remove_notice_handler(on_notice)
+        except BaseException as exc:  # handed to the caller, which raises it
+            self._error = exc
+        finally:
+            with self._lock:
+                self._finished = True
+                abandoned = self._abandoned
+            if abandoned:
+                _close_quietly(self._conn)  # this thread owns it, and its statement has returned
+            self._done.set()
+            self._wake.set()
 
 
 class Database:
@@ -390,6 +502,7 @@ class Database:
         reconnect_wait_s: float = DEFAULT_RECONNECT_WAIT_S,
         max_idle_connections: int = DEFAULT_MAX_IDLE_CONNECTIONS,
         poll_interval_s: float = POLL_INTERVAL_S,
+        cancel_grace_s: float = CANCEL_GRACE_S,
         connect: Connector = open_connection,
         sleep: Callable[[float], None] = time.sleep,
         monotonic: Callable[[], float] = time.monotonic,
@@ -400,6 +513,7 @@ class Database:
         self.reconnect_wait_s = reconnect_wait_s
         self.max_idle_connections = max_idle_connections
         self.poll_interval_s = poll_interval_s
+        self.cancel_grace_s = cancel_grace_s
         self._connect = connect
         self._sleep = sleep
         self._monotonic = monotonic
@@ -547,20 +661,18 @@ class Database:
             conn = self._acquire()
         except psycopg.Error as exc:
             raise _ConnectionLost from exc
-        deadline = _Deadline(conn, self.timeout_s)
-        session = _Session(conn, deadline)
-        on_notice = session.notice
+        statements = _Statements(conn, work, self.timeout_s)
+        session, deadline = statements.session, statements.deadline
         try:
-            conn.add_notice_handler(on_notice)  # removed below, so a pooled connection keeps none
-            try:
-                conn.execute("BEGIN READ ONLY")
-                deadline.start()  # after BEGIN, so the limit covers only the statements
-                try:
-                    value = work(session)
-                finally:
-                    deadline.stop()
-            finally:
-                conn.remove_notice_handler(on_notice)
+            statements.start()
+            value = statements.result(self.cancel_grace_s)
+        except _Abandoned:
+            raise QueryTimeout(
+                f"The query ran longer than the {self.timeout_s:g} s limit (SLM_QUERY_TIMEOUT_S) and "
+                f"was not stopped, because {deadline.why_it_ran_on}. The database layer stopped "
+                f"waiting for it {self.cancel_grace_s:g} s later; the statement may still be running "
+                f"on SereneDB until it ends by itself. {NARROW_THE_SCOPE}"
+            ) from None
         except psycopg.Error as exc:
             if _is_lost(conn):
                 _close_quietly(conn)
@@ -570,7 +682,8 @@ class Database:
                 raise QueryTimeout(_timeout_message(self.timeout_s)) from exc
             raise _rejected(exc, session.running) from exc
         except BaseException:
-            self._end(conn, discard=True)
+            if not statements.abandon():  # otherwise the statement thread closes the connection
+                self._end(conn, discard=True)
             raise
         session.notes.extend(session.notice_notes())
         if (note := self._overrun_note(session, deadline)) is not None:
@@ -581,10 +694,12 @@ class Database:
     def _overrun_note(self, session: _Session, deadline: _Deadline) -> str | None:
         """A note when the statements finished although the time limit fired or was exceeded.
 
-        `cancel_safe()` is the only thing that enforces the limit, and it is not always honoured:
-        on 26.09.1.3 a bound parameter inside a table function such as `generate_series` makes
-        SereneDB ignore the cancel (measured by OrFrederick's Claude in the #47 review; 26.10.1
-        honoured every cancel, bound or literal). So every result is checked against the limit.
+        `cancel_safe()` is the only thing that stops a statement at the limit, and it is not always
+        honoured: on 26.09.1.3 a bound parameter inside a table function such as `generate_series`
+        makes SereneDB ignore the cancel (measured by OrFrederick's Claude in the #47 review;
+        26.10.1 honoured every cancel, bound or literal). So every result that comes back is
+        checked against the limit; one that did not come back within `CANCEL_GRACE_S` ended the
+        call with `QueryTimeout` instead.
         """
         seconds = session.query_ms / 1000
         if not deadline.fired and seconds <= self.timeout_s:
@@ -595,16 +710,10 @@ class Database:
                 f"The statements finished just as the {limit} expired. The numbers are complete, "
                 "but a wider Data Scope may time out."
             )
-        if len(deadline.errors) >= CANCEL_ATTEMPTS:
-            why = f"the cancel request failed ({deadline.errors[-1]})"
-        elif deadline.fired:
-            why = "SereneDB did not act on the cancel request"
-        else:
-            why = "the time limit did not fire in time"
         return (
-            f"The statements ran {seconds:.1f} s, past the {limit}, because {why}. The numbers are "
-            "complete, but the call took longer than allowed: narrow the Data Scope (a shorter time "
-            "range or more filters) before the next call."
+            f"The statements ran {seconds:.1f} s, past the {limit}, because {deadline.why_it_ran_on}. "
+            "The numbers are complete, but the call took longer than allowed: narrow the Data Scope "
+            "(a shorter time range or more filters) before the next call."
         )
 
     def _end(self, conn: ConnectionLike, *, discard: bool) -> None:
@@ -648,8 +757,7 @@ class Database:
 def _timeout_message(timeout_s: float) -> str:
     return (
         f"The query ran longer than the {timeout_s:g} s limit (SLM_QUERY_TIMEOUT_S) and was "
-        "cancelled. Narrow the Data Scope: a shorter time range, a Component, level or Pattern "
-        "filter, or a coarser trend bucket."
+        f"cancelled. {NARROW_THE_SCOPE}"
     )
 
 

@@ -222,6 +222,42 @@ def test_a_bound_slow_query_is_never_returned_silently(database_url: str) -> Non
         layer.close()
 
 
+def test_a_statement_whose_cancel_fails_is_abandoned_and_closed_by_its_own_thread(
+    database_url: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Every cancel request fails, so the call ends after the grace period; the statement runs on."""
+    monkeypatch.setattr(db, "CANCEL_RETRY_S", 0.05)
+    opened: list[psycopg.Connection[tuple[object, ...]]] = []
+
+    def refuse_cancels(dsn: str, *, client_binding: bool) -> psycopg.Connection[tuple[object, ...]]:
+        conn = db.open_connection(dsn, client_binding=client_binding)
+
+        def cancel_safe(*, timeout: float = 30.0) -> None:
+            raise psycopg.errors.CancellationTimeout("cancellation timeout expired")
+
+        conn.cancel_safe = cancel_safe  # type: ignore[method-assign]
+        opened.append(conn)
+        return conn
+
+    layer = Database(database_url, timeout_s=0.5, cancel_grace_s=0.5, connect=refuse_cancels)
+    try:
+        started = time.monotonic()
+        with pytest.raises(QueryTimeout, match="the cancel request failed"):
+            layer.fetch_all("SELECT sleep_ms(8000)")
+        elapsed = time.monotonic() - started
+
+        abandoned = opened[0]
+        assert elapsed < 5.0  # long before sleep_ms returns
+        assert not abandoned.closed
+        assert layer.fetch_all("SELECT 1").rows == [(1,)]  # on a new connection
+        give_up = time.monotonic() + 20
+        while not abandoned.closed and time.monotonic() < give_up:
+            time.sleep(0.1)
+        assert abandoned.closed  # by the statement thread, once SereneDB returned
+    finally:
+        layer.close()
+
+
 # Statement errors -------------------------------------------------------------------------------------
 
 

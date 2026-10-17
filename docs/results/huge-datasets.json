@@ -1,0 +1,1284 @@
+{
+ "url": "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_000.parquet",
+ "env": {
+  "Date (UTC)": "2026-10-17 04:44",
+  "SereneDB": "PostgreSQL 18.3 (SereneDB 26.10.1)",
+  "Server": "localhost:7890 (shared dev instance reached through an SSH tunnel; it fetches the S3 file itself; other agents ran queries at the same time)",
+  "Server threads": "12",
+  "Server memory_limit": "28.0 GiB",
+  "External file cache": "on",
+  "Schema": "huge",
+  "File": "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_000.parquet",
+  "Round trip (SELECT 1), median of 11": "42.1 ms",
+  "Client": "macOS-26.5-arm64-arm-64bit-Mach-O, Python 3.13.13, psycopg 3.3.6",
+  "Runs per measurement": "3"
+ },
+ "sizes": [
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_000.parquet",
+   40991166725
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_001.parquet",
+   40990291204
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_002.parquet",
+   41332071224
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_003.parquet",
+   40973968266
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_004.parquet",
+   41005580798
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_005.parquet",
+   40932515429
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_006.parquet",
+   40895368274
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_007.parquet",
+   41012526180
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_008.parquet",
+   41019206436
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_009.parquet",
+   41035949042
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_010.parquet",
+   41091394512
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_011.parquet",
+   40940846363
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_012.parquet",
+   41034480870
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_013.parquet",
+   41130640589
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_014.parquet",
+   40911792254
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_015.parquet",
+   41259746719
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_016.parquet",
+   40864885430
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_017.parquet",
+   41013922113
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_018.parquet",
+   41085954178
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_019.parquet",
+   40975253509
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_020.parquet",
+   40979826456
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_021.parquet",
+   41003499764
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_022.parquet",
+   40887825599
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_023.parquet",
+   40938523478
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_024.parquet",
+   40927893431
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_025.parquet",
+   40837421898
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_026.parquet",
+   40768503706
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_027.parquet",
+   40948157782
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_028.parquet",
+   41052196559
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_029.parquet",
+   40902485966
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_030.parquet",
+   40861607460
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_031.parquet",
+   40775068015
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_032.parquet",
+   41044913003
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_033.parquet",
+   41061438896
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_034.parquet",
+   40888048974
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_035.parquet",
+   41014517467
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_036.parquet",
+   40964172653
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_037.parquet",
+   41041046714
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_038.parquet",
+   41009296792
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_039.parquet",
+   41142939023
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_040.parquet",
+   41290282993
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_041.parquet",
+   41129728333
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_042.parquet",
+   41170227265
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_043.parquet",
+   41040229245
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_044.parquet",
+   40999577784
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_045.parquet",
+   41131065554
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_046.parquet",
+   41006814527
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_047.parquet",
+   40943123950
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_048.parquet",
+   41012900145
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_049.parquet",
+   41002840700
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_050.parquet",
+   3878697368
+  ],
+  [
+   "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_051.parquet",
+   null
+  ]
+ ],
+ "layout": {
+  "file": "https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_000.parquet",
+  "created_by": "ClickHouse version 25.12.1 (build 79af32430351ccda57d673a4495621522a6a6f5c)",
+  "rows": 1000000000,
+  "row_groups": 1624,
+  "bytes": 40991166725,
+  "rows_per_group": 615763,
+  "bytes_per_group": 25240866,
+  "first": "2025-09-23 00:00:00",
+  "last": "2025-09-23 00:29:24.039037",
+  "seconds": 1764.039037,
+  "rows_per_second": 566880,
+  "sorted": "yes",
+  "footer_ms": 670.3396670054644
+ },
+ "columns": [
+  [
+   "LogAttributes, key_value, value",
+   12452030069,
+   121896711239
+  ],
+  [
+   "Body",
+   9074835467,
+   87206695395
+  ],
+  [
+   "ResourceAttributes, key_value, value",
+   4542229779,
+   26046428168
+  ],
+  [
+   "TraceId",
+   3563153925,
+   12655047182
+  ],
+  [
+   "SpanId",
+   2756592329,
+   8327510622
+  ],
+  [
+   "Timestamp",
+   1951464034,
+   8000598681
+  ],
+  [
+   "ResourceAttributes, key_value, key",
+   1418124774,
+   15298226728
+  ],
+  [
+   "LogAttributes, key_value, key",
+   946897526,
+   3742131306
+  ],
+  [
+   "ServiceName",
+   297560211,
+   483030014
+  ],
+  [
+   "SeverityText",
+   229130735,
+   366346338
+  ],
+  [
+   "ScopeName",
+   206961940,
+   506493905
+  ],
+  [
+   "SeverityNumber",
+   144988851,
+   303975725
+  ],
+  [
+   "TraceFlags",
+   112633942,
+   141612314
+  ],
+  [
+   "ScopeVersion",
+   25296585,
+   56940088
+  ],
+  [
+   "ResourceSchemaUrl",
+   4016713,
+   7282967
+  ],
+  [
+   "TimestampTime",
+   236882,
+   184914
+  ],
+  [
+   "ScopeSchemaUrl",
+   151032,
+   99064
+  ],
+  [
+   "ScopeAttributes, key_value, value",
+   149406,
+   102310
+  ],
+  [
+   "ScopeAttributes, key_value, key",
+   149406,
+   102310
+  ]
+ ],
+ "setup_s": null,
+ "in_place": [
+  {
+   "label": "Whole file: Log Entries per Component and level",
+   "statement": "SELECT component, level, count(*) AS n FROM \"huge\".\"tb_entry\" GROUP BY component, level",
+   "runs": [
+    {
+     "total_ms": 2860.0,
+     "rows_scanned": 1000000000,
+     "row_groups": [
+      1624,
+      1624
+     ],
+     "http_in": 0,
+     "http_gets": 0,
+     "data_read": null
+    }
+   ]
+  },
+  {
+   "label": "Whole file: error Log Entries per minute",
+   "statement": "SELECT time_bucket(INTERVAL '1 minute', ts) AS minute, count(*) AS n FROM \"huge\".\"tb_entry\" WHERE level = 'error' GROUP BY 1 ORDER BY 1",
+   "runs": [
+    {
+     "total_ms": 4090.0,
+     "rows_scanned": 122846925,
+     "row_groups": [
+      1624,
+      1624
+     ],
+     "http_in": 0,
+     "http_gets": 0,
+     "data_read": null
+    }
+   ]
+  },
+  {
+   "label": "Whole file, straight from the Parquet file: Log Entries per instrumentation scope",
+   "statement": "SELECT \"ScopeName\", count(*) AS n FROM read_parquet('https://public-pme.s3.eu-west-3.amazonaws.com/text_bench/part_000.parquet') GROUP BY 1",
+   "runs": [
+    {
+     "total_ms": 29690.0,
+     "rows_scanned": 1000000000,
+     "row_groups": [
+      1624,
+      1624
+     ],
+     "http_in": 213594931,
+     "http_gets": 1624,
+     "data_read": 213600000
+    }
+   ]
+  },
+  {
+   "label": "60 s slice: count",
+   "statement": "SELECT count(*) FROM \"huge\".\"tb_entry\" WHERE ts >= '2025-09-23 00:21:00'::timestamp AND ts < '2025-09-23 00:22:00'::timestamp",
+   "runs": [
+    {
+     "total_ms": 248.0,
+     "rows_scanned": 36945920,
+     "row_groups": [
+      60,
+      1624
+     ],
+     "http_in": 0,
+     "http_gets": 0,
+     "data_read": null
+    },
+    {
+     "total_ms": 259.0,
+     "rows_scanned": 36945920,
+     "row_groups": [
+      60,
+      1624
+     ],
+     "http_in": 0,
+     "http_gets": 0,
+     "data_read": null
+    },
+    {
+     "total_ms": 304.0,
+     "rows_scanned": 36945920,
+     "row_groups": [
+      60,
+      1624
+     ],
+     "http_in": 0,
+     "http_gets": 0,
+     "data_read": null
+    }
+   ]
+  },
+  {
+   "label": "60 s slice: Log Entries per Component and level",
+   "statement": "SELECT component, level, count(*) AS n FROM \"huge\".\"tb_entry\" WHERE ts >= '2025-09-23 00:21:00'::timestamp AND ts < '2025-09-23 00:22:00'::timestamp GROUP BY component, level",
+   "runs": [
+    {
+     "total_ms": 419.0,
+     "rows_scanned": 36945920,
+     "row_groups": [
+      60,
+      1624
+     ],
+     "http_in": 0,
+     "http_gets": 0,
+     "data_read": null
+    },
+    {
+     "total_ms": 420.0,
+     "rows_scanned": 36945920,
+     "row_groups": [
+      60,
+      1624
+     ],
+     "http_in": 0,
+     "http_gets": 0,
+     "data_read": null
+    },
+    {
+     "total_ms": 365.0,
+     "rows_scanned": 36945920,
+     "row_groups": [
+      60,
+      1624
+     ],
+     "http_in": 0,
+     "http_gets": 0,
+     "data_read": null
+    }
+   ]
+  },
+  {
+   "label": "60 s slice: distinct traces of error Log Entries per Component",
+   "statement": "SELECT component, count(*) AS n, count(DISTINCT trace_id) AS traces FROM \"huge\".\"tb_entry\" WHERE ts >= '2025-09-23 00:21:00'::timestamp AND ts < '2025-09-23 00:22:00'::timestamp AND level = 'error' GROUP BY component",
+   "runs": [
+    {
+     "total_ms": 17770.0,
+     "rows_scanned": 4879329,
+     "row_groups": [
+      60,
+      1624
+     ],
+     "http_in": 125619405,
+     "http_gets": 110,
+     "data_read": 125600000
+    },
+    {
+     "total_ms": 558.0,
+     "rows_scanned": 4879329,
+     "row_groups": [
+      60,
+      1624
+     ],
+     "http_in": 0,
+     "http_gets": 0,
+     "data_read": null
+    },
+    {
+     "total_ms": 579.0,
+     "rows_scanned": 4879329,
+     "row_groups": [
+      60,
+      1624
+     ],
+     "http_in": 0,
+     "http_gets": 0,
+     "data_read": null
+    }
+   ]
+  }
+ ],
+ "tools": [
+  {
+   "tool": "count_by",
+   "call": "group_by='component', 60 s slice",
+   "query_ms": [
+    1945.4,
+    1701.2,
+    1997.5
+   ],
+   "wall_ms": [
+    2336.72295906581,
+    1931.4677908550948,
+    2178.417708957568
+   ],
+   "summary": "total 35,434,983 Log Entries in 17 groups",
+   "routed": false
+  },
+  {
+   "tool": "trend",
+   "call": "bucket='minute', group_by='level', 60 s slice",
+   "query_ms": [
+    2863.6,
+    2933.6,
+    3369.9
+   ],
+   "wall_ms": [
+    3340.075584128499,
+    3341.483916854486,
+    3877.3880421649665
+   ],
+   "summary": "total 35,434,983 Log Entries in 6 groups",
+   "routed": false
+  }
+ ],
+ "guard": "text_bench is about 1,000,000,000 OTel Log Entries (2025-09-23 00:00:00 to 00:29:25 UTC, about 567,000 per second) in one 41 GB Parquet file on S3, queried in place without a full index. Every call on it needs a time slice of at most 60 seconds: pass both time_from and time_to (for example time_from='2025-09-23T00:10:00', time_to='2025-09-23T00:10:10', or time_from='last 1min'). For several full-text calls on one slice, call create_index(dataset='text_bench', time_from=..., time_to=...) first (at most 5,000,000 Log Entries, about 8 seconds of text_bench).",
+ "cold_scans": {
+  "label": "Full-text scan, 8 s slice, no index, cold",
+  "statement": "SELECT count(*) FROM \"huge\".\"tb_entry\" AS e WHERE regexp_matches(e.message, '(?i)(^|[^a-z0-9])visa([^a-z0-9]|$)') AND e.ts >= '2025-09-23 00:27:00'::timestamp AND e.ts < '2025-09-23 00:27:08'::timestamp",
+  "runs": [
+   {
+    "total_ms": 8420.0,
+    "rows_scanned": 6152192,
+    "row_groups": [
+     10,
+     1624
+    ],
+    "http_in": 55993958,
+    "http_gets": 30,
+    "data_read": 56000000
+   },
+   {
+    "total_ms": 8790.0,
+    "rows_scanned": 6807552,
+    "row_groups": [
+     11,
+     1624
+    ],
+    "http_in": 60922266,
+    "http_gets": 33,
+    "data_read": 61000000
+   },
+   {
+    "total_ms": 9020.0,
+    "rows_scanned": 6791168,
+    "row_groups": [
+     11,
+     1624
+    ],
+    "http_in": 61236838,
+    "http_gets": 33,
+    "data_read": 61200000
+   }
+  ]
+ },
+ "builds": [
+  {
+   "build_ms": 16434.6,
+   "create_ms": 16306.0,
+   "refresh_ms": 128.6,
+   "rows": 4686470
+  },
+  {
+   "build_ms": 2344.0,
+   "create_ms": 2212.4,
+   "refresh_ms": 131.7,
+   "rows": 4686470
+  },
+  {
+   "build_ms": 2477.4,
+   "create_ms": 2209.8,
+   "refresh_ms": 267.6,
+   "rows": 4686470
+  }
+ ],
+ "tradeoffs": [
+  {
+   "shape": "count",
+   "term": "visa",
+   "warm": {
+    "label": "visa / count scan",
+    "statement": "SELECT count(*) FROM \"huge\".\"tb_entry\" AS e WHERE regexp_matches(e.message, '(?i)(^|[^a-z0-9])visa([^a-z0-9]|$)') AND e.ts >= '2025-09-23 00:26:00'::timestamp AND e.ts < '2025-09-23 00:26:08'::timestamp",
+    "runs": [
+     {
+      "total_ms": 345.0,
+      "rows_scanned": 6766592,
+      "row_groups": [
+       11,
+       1624
+      ],
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     },
+     {
+      "total_ms": 370.0,
+      "rows_scanned": 6766592,
+      "row_groups": [
+       11,
+       1624
+      ],
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     },
+     {
+      "total_ms": 326.0,
+      "rows_scanned": 6766592,
+      "row_groups": [
+       11,
+       1624
+      ],
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     }
+    ]
+   },
+   "agent": {
+    "label": "visa / count agent",
+    "statement": "SELECT count(*) FROM \"huge\".\"agent_idx_text_bench_f874da19\" AS e WHERE e.message @@ websearch_to_tsquery('visa') AND e.ts >= '2025-09-23 00:26:00'::timestamp AND e.ts < '2025-09-23 00:26:08'::timestamp",
+    "runs": [
+     {
+      "total_ms": 13.899999999999999,
+      "rows_scanned": 287971,
+      "row_groups": null,
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     },
+     {
+      "total_ms": 8.200000000000001,
+      "rows_scanned": 287971,
+      "row_groups": null,
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     },
+     {
+      "total_ms": 12.1,
+      "rows_scanned": 287971,
+      "row_groups": null,
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     }
+    ]
+   },
+   "scan_count": 287971,
+   "agent_count": 287971
+  },
+  {
+   "shape": "by_component",
+   "term": "visa",
+   "warm": {
+    "label": "visa / by_component scan",
+    "statement": "SELECT e.component, count(*) AS n FROM \"huge\".\"tb_entry\" AS e WHERE regexp_matches(e.message, '(?i)(^|[^a-z0-9])visa([^a-z0-9]|$)') AND e.ts >= '2025-09-23 00:26:00'::timestamp AND e.ts < '2025-09-23 00:26:08'::timestamp GROUP BY 1 ORDER BY n DESC, 1 LIMIT 10",
+    "runs": [
+     {
+      "total_ms": 369.0,
+      "rows_scanned": 6766592,
+      "row_groups": [
+       11,
+       1624
+      ],
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     },
+     {
+      "total_ms": 376.0,
+      "rows_scanned": 6766592,
+      "row_groups": [
+       11,
+       1624
+      ],
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     },
+     {
+      "total_ms": 387.0,
+      "rows_scanned": 6766592,
+      "row_groups": [
+       11,
+       1624
+      ],
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     }
+    ]
+   },
+   "agent": {
+    "label": "visa / by_component agent",
+    "statement": "SELECT e.component, count(*) AS n FROM \"huge\".\"agent_idx_text_bench_f874da19\" AS e WHERE e.message @@ websearch_to_tsquery('visa') AND e.ts >= '2025-09-23 00:26:00'::timestamp AND e.ts < '2025-09-23 00:26:08'::timestamp GROUP BY 1 ORDER BY n DESC, 1 LIMIT 10",
+    "runs": [
+     {
+      "total_ms": 9.4,
+      "rows_scanned": 35,
+      "row_groups": null,
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     },
+     {
+      "total_ms": 8.6,
+      "rows_scanned": 35,
+      "row_groups": null,
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     },
+     {
+      "total_ms": 8.9,
+      "rows_scanned": 35,
+      "row_groups": null,
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     }
+    ]
+   },
+   "scan_count": null,
+   "agent_count": null
+  },
+  {
+   "shape": "by_level",
+   "term": "visa",
+   "warm": {
+    "label": "visa / by_level scan",
+    "statement": "SELECT e.level, count(*) AS n FROM \"huge\".\"tb_entry\" AS e WHERE regexp_matches(e.message, '(?i)(^|[^a-z0-9])visa([^a-z0-9]|$)') AND e.ts >= '2025-09-23 00:26:00'::timestamp AND e.ts < '2025-09-23 00:26:08'::timestamp GROUP BY 1 ORDER BY n DESC, 1",
+    "runs": [
+     {
+      "total_ms": 449.0,
+      "rows_scanned": 6766592,
+      "row_groups": [
+       11,
+       1624
+      ],
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     },
+     {
+      "total_ms": 418.0,
+      "rows_scanned": 6766592,
+      "row_groups": [
+       11,
+       1624
+      ],
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     },
+     {
+      "total_ms": 353.0,
+      "rows_scanned": 6766592,
+      "row_groups": [
+       11,
+       1624
+      ],
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     }
+    ]
+   },
+   "agent": {
+    "label": "visa / by_level agent",
+    "statement": "SELECT e.level, count(*) AS n FROM \"huge\".\"agent_idx_text_bench_f874da19\" AS e WHERE e.message @@ websearch_to_tsquery('visa') AND e.ts >= '2025-09-23 00:26:00'::timestamp AND e.ts < '2025-09-23 00:26:08'::timestamp GROUP BY 1 ORDER BY n DESC, 1",
+    "runs": [
+     {
+      "total_ms": 8.9,
+      "rows_scanned": 30,
+      "row_groups": null,
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     },
+     {
+      "total_ms": 9.5,
+      "rows_scanned": 28,
+      "row_groups": null,
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     },
+     {
+      "total_ms": 8.8,
+      "rows_scanned": 28,
+      "row_groups": null,
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     }
+    ]
+   },
+   "scan_count": null,
+   "agent_count": null
+  },
+  {
+   "shape": "first_rows",
+   "term": "visa",
+   "warm": {
+    "label": "visa / first_rows scan",
+    "statement": "SELECT e.ts, e.component, e.trace_id, left(e.message, 200) FROM \"huge\".\"tb_entry\" AS e WHERE regexp_matches(e.message, '(?i)(^|[^a-z0-9])visa([^a-z0-9]|$)') AND e.ts >= '2025-09-23 00:26:00'::timestamp AND e.ts < '2025-09-23 00:26:08'::timestamp ORDER BY e.ts LIMIT 20",
+    "runs": [
+     {
+      "total_ms": 476.0,
+      "rows_scanned": 6768640,
+      "row_groups": [
+       12,
+       3248
+      ],
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     },
+     {
+      "total_ms": 451.0,
+      "rows_scanned": 6768640,
+      "row_groups": [
+       12,
+       3248
+      ],
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     },
+     {
+      "total_ms": 514.0,
+      "rows_scanned": 6768640,
+      "row_groups": [
+       12,
+       3248
+      ],
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     }
+    ]
+   },
+   "agent": {
+    "label": "visa / first_rows agent",
+    "statement": "SELECT e.ts, e.component, e.trace_id, left(e.message, 200) FROM \"huge\".\"agent_idx_text_bench_f874da19\" AS e WHERE e.message @@ websearch_to_tsquery('visa') AND e.ts >= '2025-09-23 00:26:00'::timestamp AND e.ts < '2025-09-23 00:26:08'::timestamp ORDER BY e.ts LIMIT 20",
+    "runs": [
+     {
+      "total_ms": 541.0,
+      "rows_scanned": 23368,
+      "row_groups": null,
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     },
+     {
+      "total_ms": 379.0,
+      "rows_scanned": 36183,
+      "row_groups": null,
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     },
+     {
+      "total_ms": 421.0,
+      "rows_scanned": 38264,
+      "row_groups": null,
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     }
+    ]
+   },
+   "scan_count": null,
+   "agent_count": null
+  },
+  {
+   "shape": "count",
+   "term": "currency",
+   "warm": {
+    "label": "currency / count scan",
+    "statement": "SELECT count(*) FROM \"huge\".\"tb_entry\" AS e WHERE regexp_matches(e.message, '(?i)(^|[^a-z0-9])currency([^a-z0-9]|$)') AND e.ts >= '2025-09-23 00:26:00'::timestamp AND e.ts < '2025-09-23 00:26:08'::timestamp",
+    "runs": [
+     {
+      "total_ms": 346.0,
+      "rows_scanned": 6766592,
+      "row_groups": [
+       11,
+       1624
+      ],
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     },
+     {
+      "total_ms": 414.0,
+      "rows_scanned": 6766592,
+      "row_groups": [
+       11,
+       1624
+      ],
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     },
+     {
+      "total_ms": 380.0,
+      "rows_scanned": 6766592,
+      "row_groups": [
+       11,
+       1624
+      ],
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     }
+    ]
+   },
+   "agent": {
+    "label": "currency / count agent",
+    "statement": "SELECT count(*) FROM \"huge\".\"agent_idx_text_bench_f874da19\" AS e WHERE e.message @@ websearch_to_tsquery('currency') AND e.ts >= '2025-09-23 00:26:00'::timestamp AND e.ts < '2025-09-23 00:26:08'::timestamp",
+    "runs": [
+     {
+      "total_ms": 34.8,
+      "rows_scanned": 60850,
+      "row_groups": null,
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     },
+     {
+      "total_ms": 30.3,
+      "rows_scanned": 60850,
+      "row_groups": null,
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     },
+     {
+      "total_ms": 33.099999999999994,
+      "rows_scanned": 60850,
+      "row_groups": null,
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     }
+    ]
+   },
+   "scan_count": 138377,
+   "agent_count": 60850
+  },
+  {
+   "shape": "by_component",
+   "term": "currency",
+   "warm": {
+    "label": "currency / by_component scan",
+    "statement": "SELECT e.component, count(*) AS n FROM \"huge\".\"tb_entry\" AS e WHERE regexp_matches(e.message, '(?i)(^|[^a-z0-9])currency([^a-z0-9]|$)') AND e.ts >= '2025-09-23 00:26:00'::timestamp AND e.ts < '2025-09-23 00:26:08'::timestamp GROUP BY 1 ORDER BY n DESC, 1 LIMIT 10",
+    "runs": [
+     {
+      "total_ms": 375.0,
+      "rows_scanned": 6766592,
+      "row_groups": [
+       11,
+       1624
+      ],
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     },
+     {
+      "total_ms": 349.0,
+      "rows_scanned": 6766592,
+      "row_groups": [
+       11,
+       1624
+      ],
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     },
+     {
+      "total_ms": 364.0,
+      "rows_scanned": 6766592,
+      "row_groups": [
+       11,
+       1624
+      ],
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     }
+    ]
+   },
+   "agent": {
+    "label": "currency / by_component agent",
+    "statement": "SELECT e.component, count(*) AS n FROM \"huge\".\"agent_idx_text_bench_f874da19\" AS e WHERE e.message @@ websearch_to_tsquery('currency') AND e.ts >= '2025-09-23 00:26:00'::timestamp AND e.ts < '2025-09-23 00:26:08'::timestamp GROUP BY 1 ORDER BY n DESC, 1 LIMIT 10",
+    "runs": [
+     {
+      "total_ms": 44.4,
+      "rows_scanned": 7,
+      "row_groups": null,
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     },
+     {
+      "total_ms": 38.1,
+      "rows_scanned": 7,
+      "row_groups": null,
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     },
+     {
+      "total_ms": 39.199999999999996,
+      "rows_scanned": 7,
+      "row_groups": null,
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     }
+    ]
+   },
+   "scan_count": null,
+   "agent_count": null
+  },
+  {
+   "shape": "by_level",
+   "term": "currency",
+   "warm": {
+    "label": "currency / by_level scan",
+    "statement": "SELECT e.level, count(*) AS n FROM \"huge\".\"tb_entry\" AS e WHERE regexp_matches(e.message, '(?i)(^|[^a-z0-9])currency([^a-z0-9]|$)') AND e.ts >= '2025-09-23 00:26:00'::timestamp AND e.ts < '2025-09-23 00:26:08'::timestamp GROUP BY 1 ORDER BY n DESC, 1",
+    "runs": [
+     {
+      "total_ms": 342.0,
+      "rows_scanned": 6766592,
+      "row_groups": [
+       11,
+       1624
+      ],
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     },
+     {
+      "total_ms": 369.0,
+      "rows_scanned": 6766592,
+      "row_groups": [
+       11,
+       1624
+      ],
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     },
+     {
+      "total_ms": 328.0,
+      "rows_scanned": 6766592,
+      "row_groups": [
+       11,
+       1624
+      ],
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     }
+    ]
+   },
+   "agent": {
+    "label": "currency / by_level agent",
+    "statement": "SELECT e.level, count(*) AS n FROM \"huge\".\"agent_idx_text_bench_f874da19\" AS e WHERE e.message @@ websearch_to_tsquery('currency') AND e.ts >= '2025-09-23 00:26:00'::timestamp AND e.ts < '2025-09-23 00:26:08'::timestamp GROUP BY 1 ORDER BY n DESC, 1",
+    "runs": [
+     {
+      "total_ms": 29.7,
+      "rows_scanned": 6,
+      "row_groups": null,
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     },
+     {
+      "total_ms": 39.800000000000004,
+      "rows_scanned": 3,
+      "row_groups": null,
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     },
+     {
+      "total_ms": 41.8,
+      "rows_scanned": 3,
+      "row_groups": null,
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     }
+    ]
+   },
+   "scan_count": null,
+   "agent_count": null
+  },
+  {
+   "shape": "first_rows",
+   "term": "currency",
+   "warm": {
+    "label": "currency / first_rows scan",
+    "statement": "SELECT e.ts, e.component, e.trace_id, left(e.message, 200) FROM \"huge\".\"tb_entry\" AS e WHERE regexp_matches(e.message, '(?i)(^|[^a-z0-9])currency([^a-z0-9]|$)') AND e.ts >= '2025-09-23 00:26:00'::timestamp AND e.ts < '2025-09-23 00:26:08'::timestamp ORDER BY e.ts LIMIT 20",
+    "runs": [
+     {
+      "total_ms": 495.0,
+      "rows_scanned": 6768640,
+      "row_groups": [
+       12,
+       3248
+      ],
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     },
+     {
+      "total_ms": 464.0,
+      "rows_scanned": 6768640,
+      "row_groups": [
+       12,
+       3248
+      ],
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     },
+     {
+      "total_ms": 461.0,
+      "rows_scanned": 6768640,
+      "row_groups": [
+       12,
+       3248
+      ],
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     }
+    ]
+   },
+   "agent": {
+    "label": "currency / first_rows agent",
+    "statement": "SELECT e.ts, e.component, e.trace_id, left(e.message, 200) FROM \"huge\".\"agent_idx_text_bench_f874da19\" AS e WHERE e.message @@ websearch_to_tsquery('currency') AND e.ts >= '2025-09-23 00:26:00'::timestamp AND e.ts < '2025-09-23 00:26:08'::timestamp ORDER BY e.ts LIMIT 20",
+    "runs": [
+     {
+      "total_ms": 493.0,
+      "rows_scanned": 2048,
+      "row_groups": null,
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     },
+     {
+      "total_ms": 484.0,
+      "rows_scanned": 13298,
+      "row_groups": null,
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     },
+     {
+      "total_ms": 507.0,
+      "rows_scanned": 15914,
+      "row_groups": null,
+      "http_in": 0,
+      "http_gets": 0,
+      "data_read": null
+     }
+    ]
+   },
+   "scan_count": null,
+   "agent_count": null
+  }
+ ],
+ "routed_tool": {
+  "tool": "count_by",
+  "call": "group_by='component', query='visa', inside the agent index",
+  "query_ms": [
+   967.4,
+   939.6,
+   967.8
+  ],
+  "wall_ms": [
+   1144.1102500539273,
+   1178.743125172332,
+   1220.913624856621
+  ],
+  "summary": "total 287,971 Log Entries in 2 groups",
+  "routed": true
+ },
+ "patterns": {
+  "ms": 2696.613624924794,
+  "entries": 4686470,
+  "distinct": 984298,
+  "keys": 3764,
+  "top": [
+   [
+    "info: cart.cartstore.ValkeyCartStore[<*>]",
+    670051,
+    1
+   ],
+   [
+    "GetCartAsync called with userId={userId}",
+    415270,
+    1
+   ],
+   [
+    "      GetCartAsync called with userId=<*>",
+    311292,
+    160568
+   ],
+   [
+    "      AddItemAsync called with userId=<*>, productId=<*>, quantity=<*>",
+    233550,
+    231520
+   ],
+   [
+    "AddItemAsync called with userId={userId}, productId={productId}, quantity={quantity}",
+    227457,
+    1
+   ],
+   [
+    "}",
+    134499,
+    1
+   ],
+   [
+    "    at new Promise (<anonymous>) {",
+    134499,
+    1
+   ],
+   [
+    "  code: <*>,",
+    134498,
+    2
+   ],
+   [
+    "  metadata: [Metadata]",
+    134497,
+    1
+   ],
+   [
+    "    at <unknown> (.next<*>)",
+    134491,
+    6
+   ]
+  ]
+ },
+ "runs": 3,
+ "slices": {
+  "scan_minute": 21,
+  "index_minute": 26
+ }
+}

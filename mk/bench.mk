@@ -7,3 +7,15 @@ BENCH_ARGS ?=
 
 bench-index: ## Agent index trade-off: build time vs query time saved; writes docs/results/index-tradeoff.md
 	$(UV) run python bench/index_tradeoff.py $(BENCH_ARGS)
+
+# The huge-datasets benchmark reads the remote text_bench file in a schema of its own (default huge),
+# never in the shared slm schema. `make huge-setup` (mk/data.mk) registers it there first if needed.
+HUGE_SCHEMA ?= huge
+
+.PHONY: bench-huge test-remote
+
+bench-huge: ## Huge datasets: 1B remote rows in place, slices, agent index; writes docs/results/huge-datasets.md
+	SLM_SCHEMA=$(HUGE_SCHEMA) $(UV) run python bench/huge_scale.py $(BENCH_ARGS)
+
+test-remote: ## Run the tests that read the public S3 text_bench file (marker remote; slow, needs network)
+	SLM_REMOTE_TESTS=1 $(UV) run pytest -m remote

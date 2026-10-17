@@ -25,3 +25,24 @@ def test_bench_index_runs_the_trade_off_benchmark_with_its_arguments() -> None:
     out = make("-n", "bench-index", "BENCH_ARGS=--runs 5")
 
     assert "bench/index_tradeoff.py --runs 5" in out
+
+
+def test_help_lists_bench_huge_and_test_remote() -> None:
+    out = make("help")
+
+    assert "bench-huge" in out
+    assert "test-remote" in out
+
+
+def test_bench_huge_runs_in_its_own_schema_never_slm() -> None:
+    out = make("-n", "bench-huge", "BENCH_ARGS=--runs 2")
+
+    assert "SLM_SCHEMA=huge" in out
+    assert "bench/huge_scale.py --runs 2" in out
+
+
+def test_test_remote_opts_in_to_the_s3_tests() -> None:
+    out = make("-n", "test-remote")
+
+    assert "SLM_REMOTE_TESTS=1" in out
+    assert "-m remote" in out

@@ -5,6 +5,7 @@ It never touches the raw tables in `public`, which hold the shared Base Corpus.
 
 import uuid
 from collections.abc import Iterator
+from pathlib import Path
 from urllib.error import URLError
 
 import psycopg
@@ -158,3 +159,29 @@ def test_leftover_staging_table_is_dropped_before_loading(database_url: str, scr
 
     assert table_names(database_url, scratch_schema) == ["bgl"]
     assert count(database_url, scratch_schema, "bgl") == 1
+
+
+def test_malformed_input_exits_2_and_keeps_the_old_table(
+    database_url: str,
+    scratch_schema: str,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    execute(
+        database_url,
+        sql.SQL("CREATE SCHEMA {}").format(sql.Identifier(scratch_schema)),
+        sql.SQL("CREATE TABLE {} AS SELECT g AS line_id FROM generate_series(1, 3) AS s(g)").format(
+            sql.Identifier(scratch_schema, "lh2_openstack")
+        ),
+    )
+    csv_path = tmp_path / "lh2" / "OpenStack" / "OpenStack_full.log_structured.csv"
+    csv_path.parent.mkdir(parents=True)
+    csv_path.write_text("LineId,Content,EventId,EventTemplate\n1,a,E1,t\n2,broken\n")
+    monkeypatch.setenv("SLM_DATA_DIR", str(tmp_path))
+
+    code = dev_loader.main(["lh2_openstack", "--schema", scratch_schema, "--replace"])
+
+    assert code == 2
+    assert "OpenStack_full.log_structured.csv line 3" in capsys.readouterr().err
+    assert count(database_url, scratch_schema, "lh2_openstack") == 3

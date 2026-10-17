@@ -197,12 +197,25 @@ def openstack_rows(paths: Sequence[Path]) -> Iterator[Row]:
                 yield parse_openstack_line(line_no, path.name, line)
 
 
+LH2_HEADER = ["LineId", "Content", "EventId", "EventTemplate"]
+
+
 def lh2_rows(path: Path) -> Iterator[Row]:
+    """Rows of a Loghub-2.0 *_structured.csv. A wrong header or a malformed row is a LoaderError."""
     csv.field_size_limit(10**9)
     with path.open(newline="", encoding="utf-8", errors="replace") as f:
         reader = csv.reader(f)
-        next(reader)
+        header = next(reader, None)
+        if header is None:
+            raise LoaderError(f"{path} is empty; expected a header {','.join(LH2_HEADER)}")
+        if header != LH2_HEADER:
+            raise LoaderError(f"{path} has header {','.join(header)}; expected {','.join(LH2_HEADER)}")
         for row in reader:
+            if len(row) != len(LH2_HEADER) or not row[0].isdigit():
+                raise LoaderError(
+                    f"{path} line {reader.line_num}: expected {len(LH2_HEADER)} fields with a numeric "
+                    f"LineId, got {len(row)} field(s)"
+                )
             yield (int(row[0]), row[1], row[2], row[3])
 
 

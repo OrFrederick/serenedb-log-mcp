@@ -236,6 +236,31 @@ def test_lh2_rows_read_the_structured_csv(tmp_path: Path) -> None:
     assert list(dev_loader.lh2_rows(csv_path)) == [(1, 'a "b" c', "E1", "a <*> c")]
 
 
+def test_lh2_empty_file_is_a_loader_error(tmp_path: Path) -> None:
+    csv_path = tmp_path / "empty.csv"
+    csv_path.write_text("")
+
+    with pytest.raises(dev_loader.LoaderError, match=r"empty\.csv.*empty"):
+        list(dev_loader.lh2_rows(csv_path))
+
+
+def test_lh2_unexpected_header_is_a_loader_error(tmp_path: Path) -> None:
+    csv_path = tmp_path / "other.csv"
+    csv_path.write_text("LineId,Date,Time,Content\n1,2005,12:00,x\n")
+
+    with pytest.raises(dev_loader.LoaderError, match=r"other\.csv.*LineId,Content,EventId,EventTemplate"):
+        list(dev_loader.lh2_rows(csv_path))
+
+
+@pytest.mark.parametrize("bad_row", ["2,only two", "x,a,E1,t", "3,a,E1,t,extra"])
+def test_lh2_malformed_row_is_a_loader_error_naming_the_line(tmp_path: Path, bad_row: str) -> None:
+    csv_path = tmp_path / "bad.csv"
+    csv_path.write_text(f"LineId,Content,EventId,EventTemplate\n1,a,E1,t\n{bad_row}\n")
+
+    with pytest.raises(dev_loader.LoaderError, match=r"bad\.csv line 3"):
+        list(dev_loader.lh2_rows(csv_path))
+
+
 def _sample(content: bytes) -> dev_loader.SampleFile:
     return dev_loader.SampleFile(
         "X_2k.log", "https://example.invalid/X_2k.log", hashlib.sha256(content).hexdigest()

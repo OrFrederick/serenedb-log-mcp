@@ -22,7 +22,7 @@ from aggregation_corpus import (
     T_TLB,
     U1,
 )
-from aggregation_tools import call, call_error, independent, row_dicts
+from aggregation_tools import call, call_error, independent, replay, row_dicts
 from retrieval_corpus import DST_MESSAGES, DST_TS
 
 pytestmark = pytest.mark.db
@@ -254,3 +254,34 @@ def test_the_evidence_holds_the_count_rows_and_facets_statements_on_the_index(co
     assert result["sql"][0].startswith("SELECT count(*) FROM")
     assert all("bgl_entry_idx" in statement for statement in result["sql"])
     assert result["params"][1][-1] == 20  # the LIMIT
+
+
+@pytest.mark.parametrize("client_binding", [False, True])
+@pytest.mark.parametrize(
+    ("dataset", "query", "time_from", "time_to"),
+    [
+        # BGL's range is a range of epoch_utc (DOUBLE), OpenStack's a range of ts (TIMESTAMP).
+        ("bgl", "steady", "2005-07-01", "2005-08-01"),
+        ("openstack", "instance", "2017-05-15", "2017-05-16T12:00:00"),
+    ],
+)
+def test_a_time_filtered_search_replays_from_the_evidence_ledger_as_stored(
+    corpus: str, dataset: str, query: str, time_from: str, time_to: str, client_binding: bool
+) -> None:
+    # #71: the ledger stores parameters as JSON, so an uncast ts_lt(%s) got an ISO string and failed.
+    result = call(
+        "search_logs",
+        role="engineer",
+        dataset=dataset,
+        query=query,
+        time_from=time_from,
+        time_to=time_to,
+        limit=5,
+    )
+
+    count, rows, facets = replay(result, client_binding=client_binding)
+
+    assert result["total_matches"] > result["returned"] == 5
+    assert count == [(result["total_matches"],)]
+    assert [row[0] for row in rows] == [row[0] for row in result["rows"]]
+    assert [row[2] for row in facets if row[0] == "all"] == [result["total_matches"]]

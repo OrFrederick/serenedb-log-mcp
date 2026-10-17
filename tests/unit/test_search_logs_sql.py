@@ -70,8 +70,8 @@ def test_the_count_reads_the_index_with_the_text_predicate_and_score_neutral_fil
     assert statement.text == (
         'SELECT count(*) FROM "slm"."bgl_entry_idx" AS e WHERE '
         'e."message" @@ websearch_to_tsquery(%s)'
-        ' AND e."epoch_utc" @@ ts_ge(%s)::score(NULL)'
-        ' AND e."epoch_utc" @@ ts_lt(%s)::score(NULL)'
+        ' AND e."epoch_utc" @@ ts_ge(%s::DOUBLE)::score(NULL)'
+        ' AND e."epoch_utc" @@ ts_lt(%s::DOUBLE)::score(NULL)'
         ' AND e."component" @@ ts_any(%s::VARCHAR[])::score(NULL)'
         ' AND e."level" @@ ts_any(%s::VARCHAR[])::score(NULL)'
         ' AND e."node" @@ ts_any(%s::VARCHAR[])::score(NULL)'
@@ -111,8 +111,8 @@ def test_openstack_filters_its_time_range_on_ts_which_is_utc() -> None:
 
     assert where.text == (
         'e."message" @@ websearch_to_tsquery(%s)'
-        ' AND e."ts" @@ ts_ge(%s)::score(NULL)'
-        ' AND e."ts" @@ ts_lt(%s)::score(NULL)'
+        ' AND e."ts" @@ ts_ge(%s::TIMESTAMP)::score(NULL)'
+        ' AND e."ts" @@ ts_lt(%s::TIMESTAMP)::score(NULL)'
     )
     assert where.params == ("x", START, END)
 

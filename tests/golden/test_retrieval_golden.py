@@ -21,7 +21,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 import pytest
-from aggregation_tools import call, row_dicts
+from aggregation_tools import call, replay, row_dicts
 
 from golden import Golden, words_regex
 from serenedb_log_mcp.config import get_settings
@@ -32,6 +32,8 @@ BGL_ROWS = 4_747_963
 OPENSTACK_ROWS = 207_820
 KERNDTLB = 152_734
 KERNDTLB_NODES = 541
+CIOD_FAILED_JULY = 578
+"""search_logs(bgl, query='ciod failed') in July 2005 (UTC; the same 578 on local ts)."""
 STORM_NODE = "R30-M0-N9-C:J16-U01"
 JULY = (datetime(2005, 7, 1), datetime(2005, 8, 1))
 """UTC; bound to the golden SQL as epoch_utc values (`JULY_EPOCHS`)."""
@@ -116,7 +118,7 @@ def test_search_logs_by_text_matches_a_whole_word_scan_of_the_base_table(golden_
         time_to="2005-08-01",
     )
 
-    golden.total(result, f"SELECT count(*) FROM {{bgl}} WHERE {where}", params)
+    assert golden.total(result, f"SELECT count(*) FROM {{bgl}} WHERE {where}", params) == CIOD_FAILED_JULY
     golden.rows(
         result,
         ["entry_id", "ts", "node"],
@@ -127,6 +129,29 @@ def test_search_logs_by_text_matches_a_whole_word_scan_of_the_base_table(golden_
     assert result["summary"]["top_components"] == dict(sorted(expected, key=lambda r: (-r[1], r[0]))[:5])
     assert all("**ciod" in r["message"].lower() for r in row_dicts(result))
     within_timeout(result)
+
+
+@pytest.mark.parametrize("client_binding", [False, True])
+def test_a_stored_time_filtered_search_replays_to_the_published_total(
+    golden_schema: str, client_binding: bool
+) -> None:
+    # #71: every statement of the Evidence, run as the Evidence Ledger stored it (JSON parameters).
+    result = call(
+        "search_logs",
+        role="engineer",
+        dataset="bgl",
+        query="ciod failed",
+        time_from="2005-07-01",
+        time_to="2005-08-01",
+        limit=5,
+    )
+
+    count, rows, facets = replay(result, client_binding=client_binding)
+
+    assert result["total_matches"] == CIOD_FAILED_JULY
+    assert count == [(CIOD_FAILED_JULY,)]
+    assert [row[0] for row in rows] == [row[0] for row in result["rows"]]
+    assert [row[2] for row in facets if row[0] == "all"] == [CIOD_FAILED_JULY]
 
 
 @pytest.mark.parametrize(

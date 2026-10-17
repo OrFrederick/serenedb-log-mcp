@@ -7,7 +7,9 @@ The API is deliberately narrow, so every tool speaks one dialect of the same fil
 - `text_match(column, query, mode)` returns the predicate on an indexed text column and its bound
   parameters;
 - `filter_any`, `filter_at_or_after` and `filter_before` are the score-neutral filters on the
-  verbatim-indexed columns, for statements that rank by relevance (T5's `search_logs`).
+  verbatim-indexed columns, for statements that rank by relevance (T5's `search_logs`). Every bound
+  carries an explicit cast, so a statement stored in the Evidence Ledger, whose parameters are JSON
+  (a TIMESTAMP becomes its ISO string), replays as stored (#71).
 
 Modes (plan section 2.6: a bare `@@ 'a b'` is OR, which is why only `any_words` uses it), each
 verified against the docs and SereneDB 26.10.1:
@@ -37,6 +39,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Sequence
+from datetime import datetime
 from typing import Any, Literal, get_args
 
 from psycopg import sql
@@ -157,11 +160,35 @@ def filter_any(column: sql.Composable, values: Sequence[Any]) -> tuple[sql.Compo
     return sql.SQL("{} @@ ts_any(%s::VARCHAR[])::score(NULL)").format(column), [listed]
 
 
-def filter_at_or_after(column: sql.Composable, value: Any) -> tuple[sql.Composed, list[Any]]:
+def filter_at_or_after(column: sql.Composable, value: datetime | float) -> tuple[sql.Composed, list[Any]]:
     """`column >= value` on an indexed column, without changing the relevance score."""
-    return sql.SQL("{} @@ ts_ge(%s)::score(NULL)").format(column), [value]
+    return _range("ts_ge", column, value)
 
 
-def filter_before(column: sql.Composable, value: Any) -> tuple[sql.Composed, list[Any]]:
+def filter_before(column: sql.Composable, value: datetime | float) -> tuple[sql.Composed, list[Any]]:
     """`column < value` on an indexed column, without changing the relevance score."""
-    return sql.SQL("{} @@ ts_lt(%s)::score(NULL)").format(column), [value]
+    return _range("ts_lt", column, value)
+
+
+def _range(function: str, column: sql.Composable, value: datetime | float) -> tuple[sql.Composed, list[Any]]:
+    """`column @@ <function>(%s::<type>)::score(NULL)`, the type that of the bound (`_bound_type`).
+
+    The cast is what makes a stored statement replay: a live call binds a real TIMESTAMP, but the
+    Evidence Ledger stores the parameter as an ISO string, which an uncast `ts_lt(%s)` refuses on
+    26.10.1 ("ts_lt bound type VARCHAR is incompatible with column type TIMESTAMP", #71). Measured
+    on the Base Corpus in both binding modes: the cast form matches the same Log Entries with the
+    same BM25 scores, live and with JSON round-tripped parameters.
+    """
+    template = "{} @@ " + function + "(%s::" + _bound_type(value) + ")::score(NULL)"
+    return sql.SQL(template).format(column), [value]
+
+
+def _bound_type(value: object) -> str:
+    """The SQL type of a range bound: TIMESTAMP for a datetime (ts), DOUBLE for a float (epoch_utc)."""
+    if isinstance(value, datetime):
+        return "TIMESTAMP"
+    if isinstance(value, float):
+        return "DOUBLE"
+    raise TypeError(
+        f"a range bound is a datetime or a float (clock.utc_bound), not {type(value).__name__} {value!r}"
+    )

@@ -9,7 +9,7 @@ matched) and the facets over every match. The SereneDB syntax was checked agains
 
 Time runs on UTC like count_by and trend (clock.py, #73): time inputs are read as UTC, and the time
 range filters `epoch_utc` for a Dataset whose ts is local time (BGL) and `ts` for one that logs UTC.
-`epoch_utc @@ ts_ge(<double>)::score(NULL)` was measured on 26.10.1 in both binding modes: on the
+`epoch_utc @@ ts_ge(%s::DOUBLE)::score(NULL)` was measured on 26.10.1 in both binding modes: on the
 Base Corpus it matches the same Log Entries as count_by's UTC range and leaves every BM25 score
 unchanged (578 'ciod failed' matches in July 2005 UTC), while a plain `epoch_utc >= %s` adds 2.0.
 first_seen and last_seen are UTC; the rows keep ts as logged, and a note says how it relates to UTC.

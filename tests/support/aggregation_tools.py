@@ -1,5 +1,5 @@
 """Helpers for the aggregation tests: call a tool through an in-process MCP client, read its rows,
-and run independent SQL against the same canonical tables."""
+run independent SQL against the same canonical tables, and replay a stored Evidence record."""
 
 from __future__ import annotations
 
@@ -11,6 +11,7 @@ from mcp import Client
 from mcp_types import CallToolResult
 from psycopg import sql
 
+from serenedb_log_mcp import ledger
 from serenedb_log_mcp.config import get_settings
 from serenedb_log_mcp.corpus.datasets import relation
 from serenedb_log_mcp.server import create_server
@@ -57,3 +58,17 @@ def independent(schema: str, query: str, params: list[Any] | None = None) -> lis
     )
     with psycopg.connect(get_settings().database_url, autocommit=True) as conn:
         return [tuple(row) for row in conn.execute(statement, params).fetchall()]
+
+
+def replay(result: dict[str, Any], *, client_binding: bool = False) -> list[list[tuple[Any, ...]]]:
+    """Every statement of the Evidence record `result` names, as the Evidence Ledger stored it: its
+    SQL text and its parameters after the JSON round trip (a TIMESTAMP is then an ISO string), run
+    with server-side or client-side binding. One list of rows per statement."""
+    record = ledger.get_ledger().get(result["evidence_id"])
+    assert record is not None, f"{result['evidence_id']} is not in the Evidence Ledger"
+    cursor_factory = psycopg.ClientCursor if client_binding else psycopg.Cursor
+    with psycopg.connect(get_settings().database_url, autocommit=True, cursor_factory=cursor_factory) as conn:
+        return [
+            [tuple(row) for row in conn.execute(statement, params).fetchall()]
+            for statement, params in zip(record["sql"], record["params"], strict=True)
+        ]

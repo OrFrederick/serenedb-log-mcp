@@ -181,7 +181,7 @@ Fifteen core tools (rows 1 to 14 and 6a) stay below the tool counts where select
 | `DATABASE_URL_ENGINEER`, `DATABASE_URL_TEAM_LEAD`, `DATABASE_URL_MANAGER` | unset (fall back to `DATABASE_URL`) | db layer (T2), roles and views (T22) |
 | `SLM_SCHEMA` | `slm` | derive step and resolver |
 | `SLM_DATA_DIR` | `./data` (gitignored) | fetch script, dev loader, pattern generator |
-| `SLM_QUERY_TIMEOUT_S` | `15` | db layer |
+| `SLM_QUERY_TIMEOUT_S` | `15` | db layer; when SereneDB does not stop a statement at the limit, a call can last up to 22 s longer before it ends with a timeout (#53) |
 | `SLM_CLIENT_BINDING` | `0` (psycopg default binding) | db layer |
 | `SLM_RECONNECT_WAIT_S` | `30` | db layer: how long it waits for `SELECT 1` after a lost connection (#53) |
 | `SLM_MAX_IDLE_CONNECTIONS` | `4` | db layer: idle connections kept per DSN; `0` opens one per call (#53) |

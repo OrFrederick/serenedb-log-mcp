@@ -40,7 +40,7 @@ import time
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from decimal import Decimal
-from typing import TYPE_CHECKING, Any, Protocol, TypeVar
+from typing import TYPE_CHECKING, Any, Protocol
 
 import psycopg
 from mcp.server.mcpserver.exceptions import ToolError
@@ -103,8 +103,6 @@ NARROW_THE_SCOPE = (
     "Narrow the Data Scope: a shorter time range, a Component, level or Pattern filter, or a coarser "
     "trend bucket."
 )
-
-_T = TypeVar("_T")
 
 
 @dataclass(frozen=True)
@@ -473,7 +471,8 @@ class _Statements[T]:
             raise _Abandoned
         if self._error is not None:
             raise self._error
-        assert self._value is not None, "the statement thread ended without a value or an error"
+        if self._value is None:  # survives python -O, unlike an assert
+            raise RuntimeError("the statement thread ended without a value or an error")
         return self._value[0]
 
     def abandon(self) -> bool:
@@ -616,7 +615,7 @@ class Database:
 
     # Retry --------------------------------------------------------------------------------------
 
-    def _run(self, work: Callable[[_Session], _T]) -> tuple[_T, _Session, list[str]]:
+    def _run[T](self, work: Callable[[_Session], T]) -> tuple[T, _Session, list[str]]:
         try:
             value, session = self._attempt(work)
         except _ConnectionLost:
@@ -679,7 +678,7 @@ class Database:
 
     # One attempt --------------------------------------------------------------------------------
 
-    def _attempt(self, work: Callable[[_Session], _T]) -> tuple[_T, _Session]:
+    def _attempt[T](self, work: Callable[[_Session], T]) -> tuple[T, _Session]:
         try:
             conn = self._acquire()
         except psycopg.Error as exc:

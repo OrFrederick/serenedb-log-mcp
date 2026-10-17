@@ -1,4 +1,5 @@
-"""Build the MCP server: name, instructions, the Role prompts and the auto-discovered tools."""
+"""Build the MCP server: name, instructions, the Role prompts, the auto-discovered tools and the
+MCP Apps visuals."""
 
 from __future__ import annotations
 
@@ -9,6 +10,7 @@ from serenedb_log_mcp.config import get_settings
 from serenedb_log_mcp.instructions import server_instructions
 from serenedb_log_mcp.roles.prompts import register_prompts
 from serenedb_log_mcp.tools import register_tools
+from serenedb_log_mcp.visuals import apps
 
 SERVER_NAME = "serenedb-log"
 
@@ -21,7 +23,11 @@ def create_server() -> MCPServer:
     """
     pin = get_settings().role
     server: MCPServer = MCPServer(
-        name=SERVER_NAME, version=__version__, instructions=server_instructions(pin)
+        name=SERVER_NAME,
+        version=__version__,
+        instructions=server_instructions(pin),
+        # MCP Apps (T23): serves the ui:// visuals that tools link through _meta.ui.resourceUri.
+        extensions=[apps()],
     )
     register_prompts(server, only=pin)
     register_tools(server)

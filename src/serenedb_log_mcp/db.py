@@ -6,19 +6,34 @@ What is true for every statement is written once here:
   `default_transaction_read_only`;
 - a `threading.Timer` calls `conn.cancel_safe()` after `SLM_QUERY_TIMEOUT_S`, because SereneDB
   accepts `statement_timeout` but does not enforce it. The cancel is not always honoured: on
-  26.09.1.3 a bound parameter inside a table function such as `generate_series` makes SereneDB
-  ignore it (measured in the #47 review), while 26.10.1 honoured every cancel, bound or literal, in
-  both binding modes (33 of 33 runs). So every result is also checked against the limit, and a
-  call that ran past it says so in `QueryResult.notes`;
+  26.09.1.3 a server-side bound parameter inside a table function such as `generate_series` makes
+  SereneDB ignore it (measured in the #47 review), which is why the layer binds client-side there,
+  and `trend`'s timestamp grid ignores it in both binding modes (#58 review), while 26.10.1
+  honoured every cancel, bound or literal, in both binding modes (33 of 33 runs). So every result
+  is also checked against the limit, and a call that ran past it says so in `QueryResult.notes`;
+- the call itself is bounded too: the statements run on a thread of their own, and the caller
+  stops waiting `CANCEL_GRACE_S` after the timer sent its cancel request or gave up on sending one.
+  A statement that is still running then ends the call with `QueryTimeout`; its thread closes the
+  connection once SereneDB returns, because closing it from another thread mid-statement would free
+  the libpq connection under it (see `_Statements`);
+- each `Database` counts the statements it abandoned that are still running on SereneDB, and while
+  `MAX_ABANDONED_STATEMENTS` of them run it refuses a new call at once with `DatabaseBusy`, so calls
+  that time out cannot pile up backends on SereneDB (#68);
 - only a closed or broken connection counts as lost: SereneDB reports ordinary IO errors (a
   missing `read_csv` file, an unreachable HTTP source) as SQLSTATE `08000` on a healthy session;
 - on a lost connection (SereneDB 26.10.1 SIGSEGVs intermittently and restarts in a few seconds) the
   layer waits until `SELECT 1` answers on a new connection, retries the statements once and says
   so in `QueryResult.notes`;
-- parameters are always bound, never formatted into the SQL;
+- what SereneDB sends as a WARNING, NOTICE or INFO while the statements run goes into
+  `QueryResult.notes`, so a server-side warning reaches the Evidence envelope;
+- parameters are always bound, never formatted into the SQL. The first connection to a DSN reads
+  `SELECT version()`: on SereneDB older than 26.10 the layer binds client-side with
+  `psycopg.ClientCursor`, so a cancel reaches a bound table-function parameter, and says so in
+  `QueryResult.notes`; on 26.10 and newer, and when the version names no SereneDB release, it keeps
+  psycopg's server-side binding. An explicit `SLM_CLIENT_BINDING` always wins (#60);
 - `numeric` results (for example `sum()` and SereneDB's `HUGEINT`) come back as `int` when they are
-  integral and as `float` otherwise, never as `Decimal`, so the Evidence envelope serialises them
-  as JSON numbers.
+  integral and as `float` otherwise, never as `Decimal`, in text and in binary format, so the
+  Evidence envelope serialises them as JSON numbers.
 
 The layer never builds an `Evidence`; tools hand its `QueryResult` to `toolkit.evidence_tool`.
 """
@@ -26,21 +41,30 @@ The layer never builds an `Evidence`; tools hand its `QueryResult` to `toolkit.e
 from __future__ import annotations
 
 import contextlib
+import contextvars
+import logging
 import re
 import threading
 import time
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from decimal import Decimal
-from typing import TYPE_CHECKING, Any, Protocol, TypeVar
+from typing import TYPE_CHECKING, Any, Protocol
 
 import psycopg
 from mcp.server.mcpserver.exceptions import ToolError
-from psycopg.abc import Buffer
+from psycopg.abc import AdaptContext, Buffer
 from psycopg.adapt import Loader
 from psycopg.conninfo import conninfo_to_dict
+from psycopg.pq import Format
+from psycopg.types.numeric import NumericBinaryLoader
 
-from serenedb_log_mcp.config import Role, get_settings
+from serenedb_log_mcp.config import (
+    DEFAULT_MAX_IDLE_CONNECTIONS,
+    DEFAULT_RECONNECT_WAIT_S,
+    Role,
+    get_settings,
+)
 from serenedb_log_mcp.toolkit import ToolContractError
 
 if TYPE_CHECKING:
@@ -48,10 +72,12 @@ if TYPE_CHECKING:
 
 __all__ = [
     "Database",
+    "DatabaseBusy",
     "DatabaseLayerError",
     "DatabaseMisconfigured",
     "DatabaseRestarted",
     "DatabaseUnavailable",
+    "IntOrFloatNumericBinaryLoader",
     "IntOrFloatNumericLoader",
     "QueryFailed",
     "QueryResult",
@@ -61,23 +87,50 @@ __all__ = [
     "get_database",
     "int_or_float",
     "open_connection",
+    "serenedb_version",
+    "set_connector",
 ]
+
+logger = logging.getLogger(__name__)
 
 CONNECT_TIMEOUT_S = 10
 """How long one connection attempt may take (libpq `connect_timeout`)."""
-RECONNECT_WAIT_S = 30.0
-"""How long the layer waits for `SELECT 1` after a lost connection. A restart took 2 to 3 s (#2)."""
 POLL_INTERVAL_S = 1.0
 """Pause between two `SELECT 1` attempts while SereneDB restarts."""
-MAX_IDLE_CONNECTIONS = 4
-"""Idle connections kept per DSN, so a call does not pay for a new connection each time."""
 
 CANCEL_ATTEMPTS = 3
 """How often the timer sends a cancel request that failed (for example psycopg's CancellationTimeout)."""
 CANCEL_RETRY_S = 1.0
 """Pause between two cancel requests."""
+CANCEL_TIMEOUT_S = 5.0
+"""How long one cancel request may take (psycopg's own default is 30 s)."""
+CANCEL_GRACE_S = 5.0
+"""How long the caller still waits for the statements once the timer has sent a cancel request or
+given up on sending one. 26.10.1 ended a cancelled statement within 1.4 s in every #47 run."""
+MAX_ABANDONED_STATEMENTS = 3
+"""How many abandoned statements may still run on SereneDB, per `Database`, before a new call is
+refused with `DatabaseBusy`. Each holds a backend and a connection until it ends by itself, and on
+26.09.1.3 `trend`'s timestamp grid ignores every cancel (#58 review), so there a `trend` call that
+is too wide is abandoned each time (#68)."""
 
-_T = TypeVar("_T")
+NOTED_SEVERITIES = frozenset({"WARNING", "NOTICE", "INFO"})
+"""Notice severities that reach `QueryResult.notes`; DEBUG and LOG are left out."""
+MAX_NOTICE_NOTES = 5
+"""Distinct notices listed per call; the rest are counted in one more note."""
+
+SERVER_VERSION_SQL = "SELECT version()"
+"""What the first connection to a DSN runs to choose the binding mode."""
+CLIENT_BINDING_BEFORE = (26, 10)
+"""SereneDB releases older than this bind client-side unless `SLM_CLIENT_BINDING` is set: on 26.09.1.3
+a bound parameter inside a table function such as `generate_series` makes SereneDB ignore a cancel
+with server-side binding but not with `ClientCursor` (#47 and #58 reviews), while 26.10.1 honoured
+every cancel in both modes (#47)."""
+_SERENEDB_VERSION_RE = re.compile(r"SereneDB v?(\d+(?:\.\d+)*)", re.IGNORECASE)
+
+NARROW_THE_SCOPE = (
+    "Narrow the Data Scope: a shorter time range, a Component, level or Pattern filter, or a coarser "
+    "trend bucket."
+)
 
 
 @dataclass(frozen=True)
@@ -158,6 +211,36 @@ class IntOrFloatNumericLoader(Loader):
         return int_or_float(Decimal(bytes(data).decode()))
 
 
+class IntOrFloatNumericBinaryLoader(Loader):
+    """Loads `numeric` in binary format as `int` or `float`, like `IntOrFloatNumericLoader`.
+
+    The layer reads text format, but a cursor that asks for binary (`binary=True`) on a connection
+    from `open_connection` must not bring `Decimal` back either. psycopg's own binary loader decodes
+    the value to a `Decimal` first.
+    """
+
+    format = Format.BINARY
+
+    def __init__(self, oid: int, context: AdaptContext | None = None) -> None:
+        super().__init__(oid, context)
+        self._decimal = NumericBinaryLoader(oid, context)
+
+    def load(self, data: Buffer) -> int | float:
+        return int_or_float(self._decimal.load(data))
+
+
+def serenedb_version(version: str) -> tuple[int, ...] | None:
+    """The SereneDB release named by `SELECT version()`, for example (26, 9, 1, 3); None if none is."""
+    release = _named_release(version)
+    return None if release is None else tuple(int(part) for part in release.split("."))
+
+
+def _named_release(version: str) -> str | None:
+    """The SereneDB release as `SELECT version()` writes it, for example '26.09.1.3'."""
+    match = _SERENEDB_VERSION_RE.search(version)
+    return None if match is None else match.group(1)
+
+
 # Errors ---------------------------------------------------------------------------------------------
 
 
@@ -166,7 +249,8 @@ class DatabaseLayerError(ToolError):
 
 
 class QueryTimeout(DatabaseLayerError):
-    """The statements ran longer than `SLM_QUERY_TIMEOUT_S` and were cancelled."""
+    """The statements ran longer than `SLM_QUERY_TIMEOUT_S` and were cancelled, or were still running
+    `CANCEL_GRACE_S` after the cancel request went out or failed."""
 
 
 class QueryFailed(DatabaseLayerError):
@@ -177,6 +261,11 @@ class QueryFailed(DatabaseLayerError):
         super().__init__(message)
         self.sqlstate = sqlstate
         self.sql = sql
+
+
+class DatabaseBusy(DatabaseLayerError):
+    """Too many statements this layer abandoned are still running on SereneDB; the call was refused
+    before it sent anything."""
 
 
 class DatabaseRestarted(DatabaseLayerError):
@@ -198,6 +287,9 @@ class CursorLike(Protocol):
     def fetchall(self) -> list[tuple[Any, ...]]: ...
 
 
+NoticeHandler = Callable[[psycopg.errors.Diagnostic], None]
+
+
 class ConnectionLike(Protocol):
     """The part of a psycopg connection the layer uses; tests pass fakes with the same shape."""
 
@@ -209,7 +301,11 @@ class ConnectionLike(Protocol):
 
     def execute(self, query: str, params: Sequence[Any] | None = None) -> CursorLike: ...
 
-    def cancel_safe(self) -> None: ...
+    def cancel_safe(self, *, timeout: float = 30.0) -> None: ...
+
+    def add_notice_handler(self, callback: NoticeHandler) -> None: ...
+
+    def remove_notice_handler(self, callback: NoticeHandler) -> None: ...
 
     def close(self) -> None: ...
 
@@ -222,9 +318,10 @@ def open_connection(dsn: str, *, client_binding: bool) -> psycopg.Connection[tup
     """A connection as the layer needs it.
 
     Autocommit, because the layer issues `BEGIN READ ONLY` and `ROLLBACK` itself and starts the
-    timeout only after the transaction began. Server-side binding by default, `ClientCursor` when
-    `client_binding` (`SLM_CLIENT_BINDING=1`); both bind every value. No automatic prepared
-    statements, which is the path the #2 measurements took. `numeric` loads as int or float.
+    timeout only after the transaction began. Server-side binding, or `ClientCursor` when
+    `client_binding` (`SLM_CLIENT_BINDING=1`, or SereneDB older than 26.10); both bind every value.
+    No automatic prepared statements, which is the path the #2 measurements took. `numeric` loads as
+    int or float, in text and in binary format.
     """
     conn = psycopg.connect(
         dsn,
@@ -234,6 +331,7 @@ def open_connection(dsn: str, *, client_binding: bool) -> psycopg.Connection[tup
         cursor_factory=psycopg.ClientCursor if client_binding else psycopg.Cursor,
     )
     conn.adapters.register_loader("numeric", IntOrFloatNumericLoader)
+    conn.adapters.register_loader("numeric", IntOrFloatNumericBinaryLoader)
     return conn
 
 
@@ -241,20 +339,34 @@ class _ConnectionLost(Exception):
     """Internal: the session ended under a statement; the caller waits and retries once."""
 
 
+class _Abandoned(Exception):
+    """Internal: the statements outlived the cancel and the grace period; the caller stopped waiting."""
+
+
 class _Session:
     """The statements of one attempt, with the time they took."""
 
-    def __init__(self, conn: ConnectionLike, deadline: _Deadline | None = None) -> None:
+    def __init__(
+        self,
+        conn: ConnectionLike,
+        deadline: _Deadline | None = None,
+        abandoned: threading.Event | None = None,
+    ) -> None:
         self._conn = conn
         self._deadline = deadline
+        self._abandoned = abandoned  # set when the caller stopped waiting for these statements
         self.sql: list[str] = []
         self.params: list[list[Any]] = []
         self.notes: list[str] = []
         self.running: str | None = None  # the statement in progress, named when it fails
         self.query_ms = 0.0
+        self._notices: list[str] = []
+        self._more_notices = 0
 
     def fetch(self, sql: str, params: Sequence[Any]) -> list[tuple[Any, ...]]:
         values = list(params)
+        if self._abandoned is not None and self._abandoned.is_set():
+            raise _Abandoned  # nobody waits for the result, so no further statement runs
         if self._deadline is not None and self._deadline.fired:
             # A cancel that reached the backend between two statements was dropped by the server,
             # so the next statement would run without a limit: stop here instead.
@@ -268,27 +380,54 @@ class _Session:
         self.params.append(values)
         return rows
 
+    def notice(self, diag: psycopg.errors.Diagnostic) -> None:
+        """The notice handler of this attempt: keep what SereneDB warns about, once each."""
+        severity = (diag.severity_nonlocalized or diag.severity or "").upper()
+        if severity not in NOTED_SEVERITIES:
+            return
+        message = _sentence(_compact(diag.message_primary or "", limit=300))
+        note = f"SereneDB sent this {severity} while the statements ran: {message}"
+        if note in self._notices:
+            return
+        if len(self._notices) < MAX_NOTICE_NOTES:
+            self._notices.append(note)
+        else:
+            self._more_notices += 1
+
+    def notice_notes(self) -> list[str]:
+        """The notices for `QueryResult.notes`, at most `MAX_NOTICE_NOTES` plus a count of the rest."""
+        if not self._more_notices:
+            return list(self._notices)
+        more = f"SereneDB sent {self._more_notices} more notices while the statements ran"
+        return [*self._notices, f"{more}; they are not listed."]
+
 
 class _Deadline:
     """The time limit of one attempt.
 
-    A timer cancels the statements after `timeout_s` and retries a cancel request that fails.
-    `stop()` ends it: once `stop()` has returned, no cancel request is in flight and none will be
-    sent, and `fired` says whether one was. A connection whose deadline fired is never reused, so a
-    cancel can never reach a later call on a pooled connection.
+    A timer cancels the statements after `timeout_s` and retries a cancel request that fails, each
+    request bounded by `CANCEL_TIMEOUT_S`. Once a request went out, or `CANCEL_ATTEMPTS` failed, the
+    timer has done all it can and calls `on_settled`; it does so also when a cancel raised something
+    unexpected or the timer thread died, so the caller is always woken. `stop()` ends it: once
+    `stop()` has returned, no cancel request is in flight and none will be sent, and `fired` says
+    whether one was. A connection whose deadline fired is never reused, so a cancel can never reach a
+    later call on a pooled connection.
     """
 
-    def __init__(self, conn: ConnectionLike, timeout_s: float) -> None:
+    def __init__(self, conn: ConnectionLike, timeout_s: float, on_settled: Callable[[], None]) -> None:
         self._conn = conn
         self.timeout_s = timeout_s
+        self._on_settled = on_settled
         self._lock = threading.Lock()  # held while a cancel request is decided and sent
         self._stopped = threading.Event()
         self._timer = threading.Timer(timeout_s, self._cancel)
         self._timer.daemon = True
+        self.started = False
         self.fired = False
         self.errors: list[str] = []
 
     def start(self) -> None:
+        self.started = True
         self._timer.start()
 
     def stop(self) -> None:
@@ -297,25 +436,148 @@ class _Deadline:
         self._timer.cancel()
 
     def _cancel(self) -> None:
-        for _ in range(CANCEL_ATTEMPTS):
-            with self._lock:
-                if self._stopped.is_set():
+        try:
+            for attempt in range(CANCEL_ATTEMPTS):
+                if attempt and self._stopped.wait(CANCEL_RETRY_S):
                     return
-                self.fired = True
+                with self._lock:
+                    if self._stopped.is_set():
+                        return
+                    self.fired = True
+                    try:
+                        self._conn.cancel_safe(timeout=CANCEL_TIMEOUT_S)
+                    except Exception as exc:  # psycopg's wait loop raises OSError and ValueError too
+                        self.errors.append(_first_line(exc))
+                        continue
+                break  # the request went out
+        finally:
+            self._on_settled()  # whatever happened here, the caller must not wait without a bound
+
+    @property
+    def why_it_ran_on(self) -> str:
+        """Why statements outlived the limit, for a note or an error message."""
+        if len(self.errors) >= CANCEL_ATTEMPTS:
+            return f"the cancel request failed ({self.errors[-1]})"
+        if self.fired:
+            return "SereneDB did not act on the cancel request"
+        if not self.started:
+            return "SereneDB did not answer BEGIN READ ONLY in time"
+        return "the time limit did not fire in time"
+
+
+def _cancel_window_s() -> float:
+    """The longest the timer takes to send a cancel request or give up on it."""
+    return CANCEL_ATTEMPTS * CANCEL_TIMEOUT_S + (CANCEL_ATTEMPTS - 1) * CANCEL_RETRY_S
+
+
+class _Statements[T]:
+    """The statements of one attempt, run on a thread of their own that owns the connection.
+
+    The caller waits for them, but only until `grace_s` after the deadline has done all it can (a
+    cancel request went out, or every one failed), and never longer than `grace_s` after the limit
+    plus the cancel window, which also bounds a `BEGIN READ ONLY` that hangs before the timer
+    starts. Then it gives up with `_Abandoned`, the session runs no further statement, and it leaves the
+    connection alone: psycopg's `close()` does not take the connection lock, so closing it from the
+    caller would free the libpq connection under the statement still waiting on it. The statement
+    thread closes the connection itself once the statement returns, so an abandoned connection is
+    never pooled. The price is that SereneDB may keep running the statement, holding that connection,
+    until it ends by itself; the layer cannot stop it once the cancel failed. `on_abandon` is called
+    when the caller stops waiting (it returns how many abandoned statements now run, kept in
+    `abandoned_running`) and `on_abandoned_end` once such a statement has returned, so the
+    `Database` can count them.
+    """
+
+    def __init__(
+        self,
+        conn: ConnectionLike,
+        work: Callable[[_Session], T],
+        timeout_s: float,
+        on_abandon: Callable[[], int] = lambda: 0,
+        on_abandoned_end: Callable[[], None] = lambda: None,
+    ):
+        self._conn = conn
+        self._work = work
+        self._on_abandon = on_abandon
+        self._on_abandoned_end = on_abandoned_end
+        self.abandoned_running = 0  # abandoned statements running once this one was abandoned
+        self._wake = threading.Event()  # the statements ended, or the deadline has done all it can
+        self._done = threading.Event()
+        self._lock = threading.Lock()  # decides who closes the connection: the caller or the thread
+        self._started = False
+        self._finished = False
+        self._abandoned = threading.Event()  # set under _lock when the caller stops waiting
+        self._value: tuple[T] | None = None  # a box, so that a work() returning None is told apart
+        self._error: BaseException | None = None
+        self.deadline = _Deadline(conn, timeout_s, self._wake.set)
+        # The session checks the deadline before each statement, on the statement thread: a cancel
+        # that reaches the backend between two statements is dropped, so the next one must not run.
+        self.session = _Session(conn, self.deadline, self._abandoned)
+
+    def start(self) -> None:
+        context = contextvars.copy_context()  # the statements run in the context of the call
+        thread = threading.Thread(
+            target=context.run, args=(self._run,), name="serenedb-statements", daemon=True
+        )
+        thread.start()
+        self._started = True
+
+    def result(self, grace_s: float) -> T:
+        """The value of `work`, or its exception; `_Abandoned` once the grace period ran out."""
+        # The deadline settles within the limit plus the cancel window, unless BEGIN hangs.
+        self._wake.wait(self.deadline.timeout_s + _cancel_window_s())
+        if not self._done.wait(grace_s) and self.abandon():
+            raise _Abandoned
+        if self._error is not None:
+            raise self._error
+        if self._value is None:  # survives python -O, unlike an assert
+            raise RuntimeError("the statement thread ended without a value or an error")
+        return self._value[0]
+
+    def abandon(self) -> bool:
+        """Leave the connection to the statement thread if it still runs; True when it does."""
+        with self._lock:
+            if self._started and not self._finished and not self._abandoned.is_set():
+                self._abandoned.set()
+                # Under the lock, so the thread cannot report the end before the start is counted.
+                self.abandoned_running = self._on_abandon()
+            return self._abandoned.is_set()
+
+    def _run(self) -> None:
+        on_notice = self.session.notice
+        try:
+            self._conn.add_notice_handler(on_notice)  # removed below, so a pooled connection keeps none
+            try:
+                self._conn.execute("BEGIN READ ONLY")
+                self.deadline.start()  # after BEGIN, so the limit covers only the statements
                 try:
-                    self._conn.cancel_safe()
-                except psycopg.Error as exc:
-                    self.errors.append(_first_line(exc))
-                else:
-                    return
-            if self._stopped.wait(CANCEL_RETRY_S):
-                return
+                    self._value = (self._work(self.session),)
+                finally:
+                    self.deadline.stop()
+            finally:
+                self._conn.remove_notice_handler(on_notice)
+        except BaseException as exc:  # handed to the caller, which raises it
+            self._error = exc
+        finally:
+            with self._lock:
+                self._finished = True
+                abandoned = self._abandoned.is_set()
+            if abandoned:
+                _close_quietly(self._conn)  # this thread owns it, and its statement has returned
+                self._on_abandoned_end()
+            self._done.set()
+            self._wake.set()
 
 
 class Database:
     """Runs fixed SQL templates against one DSN: read-only, with a timeout and one retry.
 
-    Thread-safe: each call takes its own connection from a small idle pool.
+    Thread-safe: each call takes its own connection from a small idle pool. `reconnect_wait_s` bounds
+    the wait for a restarting server (`SLM_RECONNECT_WAIT_S`) and `max_idle_connections` caps the idle
+    pool (`SLM_MAX_IDLE_CONNECTIONS`; 0 opens a new connection for every call). `client_binding`
+    (`SLM_CLIENT_BINDING`) forces `ClientCursor` (True) or server-side binding (False); None lets the
+    first connection read the server version and choose (see `CLIENT_BINDING_BEFORE`). While
+    `max_abandoned_statements` (at least 1) statements it abandoned still run on SereneDB, a new call
+    is refused with `DatabaseBusy`.
     """
 
     def __init__(
@@ -323,18 +585,35 @@ class Database:
         dsn: str,
         *,
         timeout_s: float = 15.0,
-        client_binding: bool = False,
-        reconnect_wait_s: float = RECONNECT_WAIT_S,
+        client_binding: bool | None = None,
+        reconnect_wait_s: float = DEFAULT_RECONNECT_WAIT_S,
+        max_idle_connections: int = DEFAULT_MAX_IDLE_CONNECTIONS,
         poll_interval_s: float = POLL_INTERVAL_S,
+        cancel_grace_s: float = CANCEL_GRACE_S,
+        max_abandoned_statements: int = MAX_ABANDONED_STATEMENTS,
         connect: Connector = open_connection,
         sleep: Callable[[float], None] = time.sleep,
         monotonic: Callable[[], float] = time.monotonic,
     ) -> None:
+        if max_abandoned_statements < 1:
+            raise ValueError(f"max_abandoned_statements must be at least 1, not {max_abandoned_statements}")
         self.dsn = dsn
         self.timeout_s = timeout_s
-        self.client_binding = client_binding
+        self.client_binding = client_binding  # as configured; None reads the server version
+        self._binding = client_binding  # the mode in effect, once known
+        self._binding_note = (
+            "Parameters were bound client-side (psycopg ClientCursor), as SLM_CLIENT_BINDING=1 asks."
+            if client_binding
+            else None
+        )
+        self._binding_lock = threading.Lock()  # held while the first connection reads the version
         self.reconnect_wait_s = reconnect_wait_s
+        self.max_idle_connections = max_idle_connections
         self.poll_interval_s = poll_interval_s
+        self.cancel_grace_s = cancel_grace_s
+        self.max_abandoned_statements = max_abandoned_statements
+        self._abandoned_running = 0  # statements abandoned after a timeout that still run on SereneDB
+        self._abandoned_lock = threading.Lock()
         self._connect = connect
         self._sleep = sleep
         self._monotonic = monotonic
@@ -408,19 +687,31 @@ class Database:
             notes=notes,
         )
 
+    @property
+    def uses_client_binding(self) -> bool | None:
+        """True when the layer binds with `ClientCursor`; None until the first connection chose."""
+        return self._binding
+
+    @property
+    def abandoned_statements(self) -> int:
+        """How many statements this layer abandoned after a timeout are still running on SereneDB."""
+        with self._abandoned_lock:
+            return self._abandoned_running
+
     def close(self) -> None:
         """Close the idle connections."""
         self._drop_idle()
 
     # Retry --------------------------------------------------------------------------------------
 
-    def _run(self, work: Callable[[_Session], _T]) -> tuple[_T, _Session, list[str]]:
+    def _run[T](self, work: Callable[[_Session], T]) -> tuple[T, _Session, list[str]]:
+        self._refuse_while_busy()
         try:
             value, session = self._attempt(work)
         except _ConnectionLost:
             pass  # wait for the restart below, then retry once
         else:
-            return value, session, session.notes
+            return value, session, self._with_binding_note(session.notes)
         waited = self._wait_until_ready()
         note = (
             "SereneDB closed the connection during this call, most likely because it restarted "
@@ -437,7 +728,32 @@ class Database:
                 f"{_first_line(cause or lost)} If this call sorted by relevance, call it again with "
                 "sort=time; otherwise call it again once more, or narrow the Data Scope."
             ) from cause
-        return value, session, [note, *session.notes]
+        return value, session, self._with_binding_note([note, *session.notes])
+
+    def _refuse_while_busy(self) -> None:
+        """Refuse the call while `max_abandoned_statements` abandoned statements still run."""
+        running = self.abandoned_statements
+        if running < self.max_abandoned_statements:
+            return
+        raise DatabaseBusy(
+            f"The call was not run: {running} statements of earlier calls are still running on "
+            f"SereneDB after they ran past the {self.timeout_s:g} s limit (SLM_QUERY_TIMEOUT_S) and "
+            "were not stopped by a cancel. Each holds a connection until it ends by itself, so the "
+            f"database layer refuses new calls while {self.max_abandoned_statements} of them run. "
+            f"Wait a minute and call the tool again. {NARROW_THE_SCOPE}"
+        )
+
+    def _abandon_started(self) -> int:
+        with self._abandoned_lock:
+            self._abandoned_running += 1
+            return self._abandoned_running
+
+    def _abandoned_ended(self) -> None:
+        with self._abandoned_lock:
+            self._abandoned_running -= 1
+
+    def _with_binding_note(self, notes: list[str]) -> list[str]:
+        return notes if self._binding_note is None else [*notes, self._binding_note]
 
     def _wait_until_ready(self) -> float:
         """Wait until `SELECT 1` answers on a new connection; bounded by `reconnect_wait_s`."""
@@ -447,7 +763,7 @@ class Database:
         while True:
             conn: ConnectionLike | None = None
             try:
-                conn = self._connect(self.dsn, client_binding=self.client_binding)
+                conn = self._open()
                 conn.execute("SELECT 1").fetchall()
             except psycopg.Error as exc:
                 if conn is not None:
@@ -477,20 +793,25 @@ class Database:
 
     # One attempt --------------------------------------------------------------------------------
 
-    def _attempt(self, work: Callable[[_Session], _T]) -> tuple[_T, _Session]:
+    def _attempt[T](self, work: Callable[[_Session], T]) -> tuple[T, _Session]:
         try:
             conn = self._acquire()
         except psycopg.Error as exc:
             raise _ConnectionLost from exc
-        deadline = _Deadline(conn, self.timeout_s)
-        session = _Session(conn, deadline)
+        statements = _Statements(conn, work, self.timeout_s, self._abandon_started, self._abandoned_ended)
+        session, deadline = statements.session, statements.deadline
         try:
-            conn.execute("BEGIN READ ONLY")
-            deadline.start()  # after BEGIN, so the limit covers only the statements
-            try:
-                value = work(session)
-            finally:
-                deadline.stop()
+            statements.start()
+            value = statements.result(self.cancel_grace_s)
+        except _Abandoned:
+            raise QueryTimeout(
+                f"The query ran longer than the {self.timeout_s:g} s limit (SLM_QUERY_TIMEOUT_S) and "
+                f"was not stopped, because {deadline.why_it_ran_on}. The database layer stopped "
+                f"waiting for it {self.cancel_grace_s:g} s later; the statement may still be running "
+                f"on SereneDB until it ends by itself. It is {statements.abandoned_running} of at most "
+                f"{self.max_abandoned_statements} such statements; at that many, the layer refuses new "
+                f"calls until one ends. {NARROW_THE_SCOPE}"
+            ) from None
         except psycopg.Error as exc:
             if _is_lost(conn):
                 _close_quietly(conn)
@@ -500,8 +821,10 @@ class Database:
                 raise QueryTimeout(_timeout_message(self.timeout_s)) from exc
             raise _rejected(exc, session.running) from exc
         except BaseException:
-            self._end(conn, discard=True)
+            if not statements.abandon():  # otherwise the statement thread closes the connection
+                self._end(conn, discard=True)
             raise
+        session.notes.extend(session.notice_notes())
         if (note := self._overrun_note(session, deadline)) is not None:
             session.notes.append(note)
         self._end(conn, discard=deadline.fired)
@@ -510,10 +833,13 @@ class Database:
     def _overrun_note(self, session: _Session, deadline: _Deadline) -> str | None:
         """A note when the statements finished although the time limit fired or was exceeded.
 
-        `cancel_safe()` is the only thing that enforces the limit, and it is not always honoured:
-        on 26.09.1.3 a bound parameter inside a table function such as `generate_series` makes
-        SereneDB ignore the cancel (measured by OrFrederick's Claude in the #47 review; 26.10.1
-        honoured every cancel, bound or literal). So every result is checked against the limit.
+        `cancel_safe()` is the only thing that stops a statement at the limit, and it is not always
+        honoured: on 26.09.1.3 a server-side bound parameter inside a table function such as
+        `generate_series` makes SereneDB ignore the cancel (measured by OrFrederick's Claude in the
+        #47 review), and `trend`'s timestamp grid ignores it with `ClientCursor` too (#58 review);
+        26.10.1 honoured every cancel, bound or literal. So every result that comes back is checked
+        against the limit; one that did not come back within `CANCEL_GRACE_S` ended the call with
+        `QueryTimeout` instead.
         """
         seconds = session.query_ms / 1000
         if not deadline.fired and seconds <= self.timeout_s:
@@ -524,16 +850,10 @@ class Database:
                 f"The statements finished just as the {limit} expired. The numbers are complete, "
                 "but a wider Data Scope may time out."
             )
-        if len(deadline.errors) >= CANCEL_ATTEMPTS:
-            why = f"the cancel request failed ({deadline.errors[-1]})"
-        elif deadline.fired:
-            why = "SereneDB did not act on the cancel request"
-        else:
-            why = "the time limit did not fire in time"
         return (
-            f"The statements ran {seconds:.1f} s, past the {limit}, because {why}. The numbers are "
-            "complete, but the call took longer than allowed: narrow the Data Scope (a shorter time "
-            "range or more filters) before the next call."
+            f"The statements ran {seconds:.1f} s, past the {limit}, because {deadline.why_it_ran_on}. "
+            "The numbers are complete, but the call took longer than allowed: narrow the Data Scope "
+            "(a shorter time range or more filters) before the next call."
         )
 
     def _end(self, conn: ConnectionLike, *, discard: bool) -> None:
@@ -556,13 +876,69 @@ class Database:
                 conn = self._idle.pop()
                 if not (conn.closed or conn.broken):
                     return conn
-        return self._connect(self.dsn, client_binding=self.client_binding)
+        return self._open()
+
+    def _open(self) -> ConnectionLike:
+        """A new connection in the layer's binding mode; the first one chooses the mode if unset."""
+        binding = self._binding
+        if binding is None:
+            with self._binding_lock:  # the other callers wait until the first connection chose
+                binding = self._binding
+                if binding is None:
+                    return self._open_and_choose_binding()
+        return self._connect(self.dsn, client_binding=binding)
+
+    def _open_and_choose_binding(self) -> ConnectionLike:
+        """Read `SELECT version()` on a server-side binding connection and choose the mode from it.
+
+        SereneDB older than `CLIENT_BINDING_BEFORE` gets `ClientCursor`: the probe connection is
+        closed and a client-side one opened in its place, once per DSN. Otherwise the probe is the
+        connection the call uses. A version that names no SereneDB release keeps server-side
+        binding and is logged once. A lost connection leaves the choice open for the next one.
+        """
+        conn = self._connect(self.dsn, client_binding=False)
+        text = ""
+        try:
+            rows = conn.execute(SERVER_VERSION_SQL).fetchall()
+        except psycopg.Error as exc:
+            if _is_lost(conn):
+                _close_quietly(conn)
+                raise  # the caller handles it like any lost connection
+            answer = f"failed: {_first_line(exc)}"
+        except BaseException:
+            _close_quietly(conn)
+            raise
+        else:
+            text = str(rows[0][0]) if rows and rows[0] else ""
+            answer = f"returned {text[:200]!r}"
+        version = serenedb_version(text)
+        if version is None:
+            logger.warning(
+                "The database layer could not read the SereneDB release at %s (%s %s), so it keeps "
+                "server-side binding. On SereneDB older than 26.10, set SLM_CLIENT_BINDING=1 so "
+                "that a cancel stops a bound table function.",
+                _safe_dsn(self.dsn),
+                SERVER_VERSION_SQL,
+                answer,
+            )
+        if version is None or version >= CLIENT_BINDING_BEFORE:
+            self._binding = False
+            return conn
+        release = _named_release(text)
+        # The note first: a caller that sees the mode without the lock must find its note too.
+        self._binding_note = (
+            f"Parameters were bound client-side (psycopg ClientCursor), because SereneDB {release} "
+            "is older than 26.10."
+        )
+        self._binding = True
+        _close_quietly(conn)
+        return self._connect(self.dsn, client_binding=True)
 
     def _release(self, conn: ConnectionLike) -> None:
         if conn.closed or conn.broken:
             return
         with self._lock:
-            if len(self._idle) < MAX_IDLE_CONNECTIONS:
+            if len(self._idle) < self.max_idle_connections:
                 self._idle.append(conn)
                 return
         _close_quietly(conn)
@@ -577,8 +953,7 @@ class Database:
 def _timeout_message(timeout_s: float) -> str:
     return (
         f"The query ran longer than the {timeout_s:g} s limit (SLM_QUERY_TIMEOUT_S) and was "
-        "cancelled. Narrow the Data Scope: a shorter time range, a Component, level or Pattern "
-        "filter, or a coarser trend bucket."
+        f"cancelled. {NARROW_THE_SCOPE}"
     )
 
 
@@ -591,6 +966,15 @@ def _rejected(exc: psycopg.Error, sql: str | None) -> QueryFailed:
             f"A value you passed cannot be sent to SereneDB: {_first_line(exc)} Remove the offending "
             f"characters from the value and call the tool again.{statement}",
             None,
+            sql,
+        )
+    if exc.sqlstate == "08000":
+        # SereneDB's IO error on a healthy connection: a missing read_csv file, an unreachable URL.
+        return QueryFailed(
+            f"SereneDB could not read an external source (08000): {_first_line(exc)} The file or URL "
+            "the query reads is missing or unreachable from the SereneDB server; check that it exists "
+            f"and that SereneDB can reach it. Your filters are not at fault.{statement}",
+            exc.sqlstate,
             sql,
         )
     if exc.sqlstate is None:
@@ -643,8 +1027,11 @@ def _close_quietly(conn: ConnectionLike) -> None:
 
 def _first_line(exc: BaseException) -> str:
     text = str(exc).strip()
-    line = text.splitlines()[0].strip() if text else type(exc).__name__
-    return line if line.endswith((".", "!", "?")) else f"{line}."
+    return _sentence(text.splitlines()[0].strip() if text else type(exc).__name__)
+
+
+def _sentence(text: str) -> str:
+    return text if text.endswith((".", "!", "?", "…")) else f"{text}."
 
 
 _SHOWN_DSN_KEYS = ("host", "hostaddr", "port", "dbname", "user")
@@ -678,8 +1065,28 @@ def _is_misconfigured(exc: psycopg.Error) -> bool:
 
 # Process-wide layers --------------------------------------------------------------------------------
 
-_databases: dict[tuple[str, float, bool], Database] = {}
+_databases: dict[tuple[str, float, bool | None, float, int], Database] = {}
 _databases_lock = threading.Lock()
+_connector: Connector = open_connection
+
+
+def set_connector(connect: Connector | None) -> Connector:
+    """Open the connections of every process-wide layer with `connect`; None restores `open_connection`.
+
+    Returns the connector that was in place, so a caller can put it back. The ledger replay (T13,
+    `export.replay`) wraps the real connection with it, so that every statement a tool issues runs
+    with the parameters the Evidence Ledger stored for it. The layers built so far are dropped with
+    their idle connections, so no connection opened the other way is reused afterwards.
+    """
+    global _connector
+    with _databases_lock:
+        layers = list(_databases.values())
+        _databases.clear()
+        previous = _connector
+        _connector = open_connection if connect is None else connect
+    for layer in layers:
+        layer.close()
+    return previous
 
 
 def get_database(role: Role | None = None) -> Database:
@@ -690,11 +1097,24 @@ def get_database(role: Role | None = None) -> Database:
     """
     settings = get_settings()
     dsn = settings.database_url if role is None else settings.database_url_for(role)
-    key = (dsn, settings.query_timeout_s, settings.client_binding)
+    key = (
+        dsn,
+        settings.query_timeout_s,
+        settings.client_binding,
+        settings.reconnect_wait_s,
+        settings.max_idle_connections,
+    )
     with _databases_lock:
         layer = _databases.get(key)
         if layer is None:
-            layer = Database(dsn, timeout_s=settings.query_timeout_s, client_binding=settings.client_binding)
+            layer = Database(
+                dsn,
+                timeout_s=settings.query_timeout_s,
+                client_binding=settings.client_binding,
+                reconnect_wait_s=settings.reconnect_wait_s,
+                max_idle_connections=settings.max_idle_connections,
+                connect=_connector,
+            )
             _databases[key] = layer
         return layer
 

@@ -47,7 +47,7 @@ def test_row_counts_match_the_raw_base_corpus(database_url: str, slm_schema: str
 
     assert bgl == 4_747_963
     assert os_ == 207_820
-    assert owners == 26
+    assert owners == 22
 
 
 def test_alert_lines_carry_their_category_as_pattern_key(database_url: str, slm_schema: str) -> None:
@@ -207,6 +207,21 @@ def test_every_component_of_the_base_corpus_has_a_team(database_url: str, slm_sc
     )
 
     assert unmapped == []
+
+
+def test_the_ownership_stub_lists_exactly_the_components_of_the_base_corpus(
+    database_url: str, slm_schema: str
+) -> None:
+    stale = fetch(
+        database_url,
+        slm_schema,
+        "SELECT o.dataset, o.component FROM {owners} o LEFT JOIN ("
+        "SELECT DISTINCT 'bgl' AS dataset, component FROM {bgl} "
+        "UNION SELECT DISTINCT 'openstack', component FROM {os}) e "
+        "ON o.dataset = e.dataset AND o.component = e.component WHERE e.component IS NULL ORDER BY 1, 2",
+    )
+
+    assert stale == []
 
 
 # ----------------------------------------------------------------- indexes

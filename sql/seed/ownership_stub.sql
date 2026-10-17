@@ -2,9 +2,8 @@
 -- Component to Team (docs/decisions.md); T25 replaces this file with it. Every Team here is
 -- fictional, chosen only so that Team-level answers can be built and tested before then.
 --
--- One row per Component of both Datasets in the Base Corpus. BGL also lists the four values the
--- dev loader reads from 318 mis-split kernel RAS lines ('0', 'a', 'iar', 'FATAL'), so that no
--- Component is unmapped.
+-- One row per Component of both Datasets in the Base Corpus (10 BGL, 12 OpenStack); a corpus
+-- test checks that the rows match the loaded Components exactly.
 CREATE OR REPLACE TABLE ${slm}.ownership AS
 SELECT
     CAST(dataset AS VARCHAR)   AS dataset,
@@ -12,10 +11,6 @@ SELECT
     CAST(team AS VARCHAR)      AS team
 FROM (VALUES
     ('bgl', 'KERNEL',     'Kernel Team'),
-    ('bgl', 'FATAL',      'Kernel Team'),
-    ('bgl', '0',          'Kernel Team'),
-    ('bgl', 'a',          'Kernel Team'),
-    ('bgl', 'iar',        'Kernel Team'),
     ('bgl', 'APP',        'Application Runtime Team'),
     ('bgl', 'DISCOVERY',  'Control System Team'),
     ('bgl', 'MMCS',       'Control System Team'),

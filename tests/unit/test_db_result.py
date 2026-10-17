@@ -1,9 +1,14 @@
 """`db.QueryResult`, `QueryResult.combine` and the numeric loader, without a database."""
 
+import math
 from decimal import Decimal
 
+import psycopg
 import pytest
+from psycopg.adapt import Loader
+from psycopg.types.numeric import DecimalBinaryDumper, DecimalDumper
 
+from serenedb_log_mcp import db
 from serenedb_log_mcp.db import QueryResult, int_or_float
 from serenedb_log_mcp.toolkit import QueryResultLike
 
@@ -87,3 +92,38 @@ def test_int_or_float_maps_special_values_to_float() -> None:
     nan = int_or_float(Decimal("NaN"))
     assert isinstance(nan, float)
     assert nan != nan
+
+
+NUMERIC_OID = psycopg.adapters.types["numeric"].oid
+NUMERIC_VALUES = [
+    (Decimal("5050.000"), 5050),  # SereneDB sends 5050::numeric with scale 3
+    (Decimal("12345678901234567890"), 12345678901234567890),
+    (Decimal("-7"), -7),
+    (Decimal("116.25"), 116.25),
+    (Decimal("0.1"), 0.1),
+    (Decimal("Infinity"), math.inf),
+]
+
+
+@pytest.mark.parametrize(("value", "expected"), NUMERIC_VALUES)
+@pytest.mark.parametrize("fmt", ["text", "binary"])
+def test_numeric_loads_as_int_or_float_in_both_formats(value: Decimal, expected: float, fmt: str) -> None:
+    dumper, loader_class = {
+        "text": (DecimalDumper(Decimal), db.IntOrFloatNumericLoader),
+        "binary": (DecimalBinaryDumper(Decimal), db.IntOrFloatNumericBinaryLoader),
+    }[fmt]
+    loader: Loader = loader_class(NUMERIC_OID)
+
+    loaded = loader.load(dumper.dump(value))
+
+    assert loaded == expected
+    assert type(loaded) is type(expected)
+
+
+def test_binary_numeric_nan_loads_as_a_float_nan() -> None:
+    data = DecimalBinaryDumper(Decimal).dump(Decimal("NaN"))
+
+    loaded = db.IntOrFloatNumericBinaryLoader(NUMERIC_OID).load(data)
+
+    assert isinstance(loaded, float)
+    assert math.isnan(loaded)

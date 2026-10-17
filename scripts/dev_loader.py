@@ -47,6 +47,7 @@ from __future__ import annotations
 import argparse
 import csv
 import hashlib
+import os
 import re
 import sys
 import time
@@ -344,24 +345,46 @@ def _download(url: str) -> bytes:
     return data
 
 
+def _file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1 << 20), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def _fetch_verified(sample: SampleFile, path: Path, fetch: Callable[[str], bytes]) -> None:
+    """Download `sample` and put it at `path`, or raise without touching what is already there."""
+    data = fetch(sample.url)
+    digest = hashlib.sha256(data).hexdigest()
+    if digest != sample.sha256:
+        raise LoaderError(f"{sample.url} has sha256 {digest}, expected {sample.sha256}; not saving it")
+    # The real name never carries unverified bytes: the download lands next to it and is moved in
+    # one step, so an interrupted run cannot leave half a file behind under the real name.
+    part = path.with_name(f"{path.name}.part")
+    part.write_bytes(data)
+    os.replace(part, path)
+
+
 def ensure_samples(
     directory: Path,
     samples: Sequence[SampleFile] = SAMPLES,
     fetch: Callable[[str], bytes] = _download,
 ) -> list[Path]:
-    """Return the local sample paths, downloading and checksum-verifying the missing ones."""
+    """Return the local sample paths, downloading the ones that are missing or do not match.
+
+    An existing file is hashed too: a download interrupted halfway leaves the right name and the
+    wrong bytes, and trusting the name loads a truncated corpus without a word.
+    """
     directory.mkdir(parents=True, exist_ok=True)
     paths = []
     for sample in samples:
         path = directory / sample.name
         if not path.exists():
-            data = fetch(sample.url)
-            digest = hashlib.sha256(data).hexdigest()
-            if digest != sample.sha256:
-                raise LoaderError(
-                    f"{sample.url} has sha256 {digest}, expected {sample.sha256}; not saving it"
-                )
-            path.write_bytes(data)
+            _fetch_verified(sample, path, fetch)
+        elif _file_sha256(path) != sample.sha256:
+            print(f"{path} has the wrong sha256; downloading it again", file=sys.stderr)
+            _fetch_verified(sample, path, fetch)
         paths.append(path)
     notice = directory / "LOGHUB_LICENSE.txt"
     if not notice.exists():
@@ -385,28 +408,22 @@ def copy_rows(
     target: sql.Identifier,
     columns: Sequence[str],
     rows: Iterable[Row],
-    batch: int = 200_000,
 ) -> int:
-    """COPY `rows` into `target` in batches; return the row count."""
+    """COPY `rows` into `target` as they are parsed; return the row count.
+
+    `copy.write_row` streams to the server, so the rows are never collected in Python first: the
+    loader's memory no longer grows with the batch size, and one COPY replaces the 24 of a BGL
+    load. Everything still lands in one transaction, which is what the staging-table swap in
+    `_load_table` relies on.
+    """
     column_list = sql.SQL(", ").join(sql.Identifier(name) for name in columns)
     statement = sql.SQL("COPY {} ({}) FROM STDIN").format(target, column_list)
     count = 0
-    buffer: list[Row] = []
-
-    def flush() -> None:
-        with conn.cursor() as cur, cur.copy(statement) as copy:
-            for row in buffer:
-                copy.write_row(row)
-        conn.commit()
-        buffer.clear()
-
-    for row in rows:
-        buffer.append(row)
-        count += 1
-        if len(buffer) >= batch:
-            flush()
-    if buffer:
-        flush()
+    with conn.cursor() as cur, cur.copy(statement) as copy:
+        for row in rows:
+            copy.write_row(row)
+            count += 1
+    conn.commit()
     return count
 
 

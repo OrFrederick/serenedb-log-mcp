@@ -9,7 +9,7 @@ import threading
 import time
 from collections.abc import Iterator
 from pathlib import Path
-from typing import IO, Any
+from typing import IO, Any, NoReturn
 
 import pytest
 
@@ -23,14 +23,29 @@ class StdioPeer:
     def __init__(self, proc: subprocess.Popen[str]) -> None:
         assert proc.stdin is not None
         assert proc.stdout is not None
+        assert proc.stderr is not None
         self.proc = proc
         self.stdin: IO[str] = proc.stdin
         self.lines: queue.Queue[str] = queue.Queue()
+        self.stderr_lines: list[str] = []
+        self._stderr_thread = threading.Thread(target=self._drain, args=(proc.stderr,), daemon=True)
         threading.Thread(target=self._pump, args=(proc.stdout,), daemon=True).start()
+        self._stderr_thread.start()
 
     def _pump(self, stdout: IO[str]) -> None:
         for line in stdout:
             self.lines.put(line)
+
+    def _drain(self, stderr: IO[str]) -> None:
+        # Read stderr continuously so the child never blocks on a full pipe.
+        for line in stderr:
+            self.stderr_lines.append(line)
+
+    def fail(self, reason: str) -> NoReturn:
+        if self.proc.poll() is not None:
+            self._stderr_thread.join(timeout=2)
+        stderr = "".join(self.stderr_lines).strip() or "<empty>"
+        pytest.fail(f"{reason}\n--- server stderr ---\n{stderr}")
 
     def send(self, message: dict[str, Any]) -> None:
         self.stdin.write(json.dumps(message) + "\n")
@@ -43,12 +58,12 @@ class StdioPeer:
                 line = self.lines.get(timeout=0.2)
             except queue.Empty:
                 if self.proc.poll() is not None:
-                    pytest.fail(f"server exited with code {self.proc.returncode} before answering")
+                    self.fail(f"server exited with code {self.proc.returncode} before answering")
                 continue
             message: dict[str, Any] = json.loads(line)
             if message.get("id") == request_id:
                 return message
-        pytest.fail(f"no response to request {request_id} within {TIMEOUT_S}s")
+        self.fail(f"no response to request {request_id} within {TIMEOUT_S}s")
 
 
 @pytest.fixture
@@ -60,7 +75,7 @@ def server() -> Iterator[StdioPeer]:
         [str(script), "--transport", "stdio"],
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
-        stderr=subprocess.DEVNULL,
+        stderr=subprocess.PIPE,
         text=True,
         env=env,
     )
@@ -98,3 +113,19 @@ def test_initialize_and_tools_list_over_stdio(server: StdioPeer) -> None:
 
     assert "error" not in tools, tools
     assert isinstance(tools["result"]["tools"], list)
+
+
+def test_a_crashing_server_reports_its_stderr() -> None:
+    crash = "import sys; sys.stderr.write('boom: bad config\\n'); sys.exit(3)"
+    peer = StdioPeer(
+        subprocess.Popen(
+            [sys.executable, "-c", crash],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+    )
+
+    with pytest.raises(pytest.fail.Exception, match=r"(?s)code 3.*boom: bad config"):
+        peer.response(1)

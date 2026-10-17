@@ -10,7 +10,7 @@ from __future__ import annotations
 import uuid
 from collections.abc import Iterator
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -54,7 +54,7 @@ def _lab_rows() -> list[tuple[Any, ...]]:
                 len(rows) + 1,
                 tag,
                 int(epoch),
-                datetime.utcfromtimestamp(local),
+                datetime.fromtimestamp(local, UTC).replace(tzinfo=None),
                 node,
                 "KERNEL",
                 "FATAL",
@@ -174,9 +174,7 @@ def _run_incident_step(database_url: str, lab: Lab) -> None:
 
 
 def test_the_incident_table_has_exactly_the_registered_columns(database_url: str, lab: Lab) -> None:
-    described = _fetch(
-        database_url, sql.SQL("DESCRIBE {}").format(sql.Identifier(lab.slm, "incident"))
-    )
+    described = _fetch(database_url, sql.SQL("DESCRIBE {}").format(sql.Identifier(lab.slm, "incident")))
 
     assert tuple(str(row[0]) for row in described) == INCIDENT_COLUMNS
 
@@ -232,9 +230,7 @@ def test_every_row_records_the_default_parameters(database_url: str, lab: Lab) -
 # ----------------------------------------------------------------- chaining
 
 
-def test_no_two_neighbours_of_an_incident_are_further_apart_than_the_gap(
-    database_url: str, lab: Lab
-) -> None:
+def test_no_two_neighbours_of_an_incident_are_further_apart_than_the_gap(database_url: str, lab: Lab) -> None:
     """An independent recompute: inside an Incident every gap is at most 300 s, and the gap that
     starts the next Incident of the same Pattern is longer than 300 s."""
     inside, between = _one(
@@ -249,13 +245,13 @@ def test_no_two_neighbours_of_an_incident_are_further_apart_than_the_gap(
         ).format(inc=sql.Identifier(lab.slm, "incident"), bgl=sql.Identifier(lab.slm, "bgl_entry")),
     )
 
-    assert inside is not None and inside <= GAP_S
-    assert between is not None and between > GAP_S
+    assert inside is not None
+    assert inside <= GAP_S
+    assert between is not None
+    assert between > GAP_S
 
 
-def test_the_fall_back_hour_splits_the_incident_because_the_gap_is_utc(
-    database_url: str, lab: Lab
-) -> None:
+def test_the_fall_back_hour_splits_the_incident_because_the_gap_is_utc(database_url: str, lab: Lab) -> None:
     # LABDST's two Log Entries carry one local time and two UTC seconds an hour apart. On `ts` the
     # gap is 0 s and they would be one Incident; the step must see 3,600 s and make two.
     incidents, local_times, utc_span = _one(
@@ -302,8 +298,7 @@ def test_a_burst_is_the_chain_on_one_source(database_url: str, lab: Lab) -> None
     entries, bursts, nodes, top_node, share = _one(
         database_url,
         sql.SQL(
-            "SELECT entries, bursts, nodes, top_node, top_node_share FROM {} "
-            "WHERE pattern_key = 'LABBURST'"
+            "SELECT entries, bursts, nodes, top_node, top_node_share FROM {} WHERE pattern_key = 'LABBURST'"
         ).format(sql.Identifier(lab.slm, "incident")),
     )
 
@@ -366,8 +361,9 @@ def test_the_shape_separates_a_single_node_storm_from_a_machine_wide_incident(
 ) -> None:
     assert _fetch(
         database_url,
-        sql.SQL("SELECT pattern_key, entries, nodes, midplanes, shape FROM {} ORDER BY shape, pattern_key")
-        .format(sql.Identifier(lab.slm, "incident")),
+        sql.SQL(
+            "SELECT pattern_key, entries, nodes, midplanes, shape FROM {} ORDER BY shape, pattern_key"
+        ).format(sql.Identifier(lab.slm, "incident")),
     ) == [
         ("LABWIDE", 64, 64, 64, "machine-wide"),
         ("LABMID", 2, 2, 2, "multi-midplane"),
@@ -375,6 +371,9 @@ def test_the_shape_separates_a_single_node_storm_from_a_machine_wide_incident(
         # 0 midplanes falls through to "one midplane". The full Base Corpus has no such Incident
         # (pinned in tests/corpus/test_incidents_corpus.py), so no sixth label is needed.
         ("LABNOTOPO", 2, 2, 0, "one midplane"),
+        # The fall-back hour splits LABDST into two, because the gap is taken on epoch_utc.
+        ("LABDST", 1, 1, 1, "single-node isolated"),
+        ("LABDST", 1, 1, 1, "single-node isolated"),
         ("LABGAP", 1, 1, 1, "single-node isolated"),
         ("LABGAP", 1, 1, 1, "single-node isolated"),
         ("LABISO", 1, 1, 1, "single-node isolated"),
@@ -423,9 +422,7 @@ def test_running_the_step_again_gives_an_identical_incident_table(database_url: 
     assert after == before
 
 
-def test_a_pattern_key_filled_by_t9_adds_incidents_without_a_code_change(
-    database_url: str, lab: Lab
-) -> None:
+def test_a_pattern_key_filled_by_t9_adds_incidents_without_a_code_change(database_url: str, lab: Lab) -> None:
     """Acceptance criterion 4, simulated: T9 fills `pattern_key` from `template_id` for the lines
     that have no alert category. The same step, unchanged, must then chain those too."""
     alerts_before = _fetch(
@@ -436,21 +433,25 @@ def test_a_pattern_key_filled_by_t9_adds_incidents_without_a_code_change(
     )
     with psycopg.connect(database_url, autocommit=True) as conn:
         conn.execute(
-            sql.SQL("UPDATE {} SET template_id = 'f00dcafe', pattern_key = 'f00dcafe' "
-                    "WHERE pattern_key IS NULL").format(sql.Identifier(lab.slm, "bgl_entry"))
+            sql.SQL(
+                "UPDATE {} SET template_id = 'f00dcafe', pattern_key = 'f00dcafe' WHERE pattern_key IS NULL"
+            ).format(sql.Identifier(lab.slm, "bgl_entry"))
         )
     try:
         _run_incident_step(database_url, lab)
 
         added = _fetch(
             database_url,
-            sql.SQL("SELECT incident_id, entries, nodes, shape FROM {} WHERE pattern_key = 'f00dcafe'")
-            .format(sql.Identifier(lab.slm, "incident")),
+            sql.SQL(
+                "SELECT incident_id, entries, nodes, shape FROM {} WHERE pattern_key = 'f00dcafe'"
+            ).format(sql.Identifier(lab.slm, "incident")),
         )
         kept = _fetch(
             database_url,
-            sql.SQL("SELECT pattern_key, incident_id, entries FROM {} WHERE pattern_key <> 'f00dcafe' "
-                    "ORDER BY 1, 2").format(sql.Identifier(lab.slm, "incident")),
+            sql.SQL(
+                "SELECT pattern_key, incident_id, entries FROM {} WHERE pattern_key <> 'f00dcafe' "
+                "ORDER BY 1, 2"
+            ).format(sql.Identifier(lab.slm, "incident")),
         )
 
         assert added == [(1, 5, 1, "single-node isolated")]

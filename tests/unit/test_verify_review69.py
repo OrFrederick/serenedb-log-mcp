@@ -1,9 +1,9 @@
 """Regression suites from the #69 reviews of `verify_answer` (T12).
 
 Round 1 is OrFrederick's (R01-R19); round 2 is the leader's fresh-context review (/tmp/review69: adv.py,
-adv2.py, crash.py, refusal.md). Every BAD draft must be rejected and every GOOD draft accepted. Cases
-the fix deliberately leaves to a follow-up are strict xfails with the reason, so fixing one later
-turns its test red until the mark is removed.
+adv2.py, crash.py, refusal.md). Every BAD draft must be rejected and every GOOD draft accepted. The
+cases round 2 deferred (X03, X14, X17 and the round-1 leftovers) are fixed by the follow-up #81, whose
+own cases are F01-F12 and G28-G41.
 """
 
 from __future__ import annotations
@@ -20,10 +20,6 @@ from serenedb_log_mcp.verify.checks import check_answer
 LEDGER = ledger_records()
 M, TL, EN = Role.MANAGER, Role.TEAM_LEAD, Role.ENGINEER
 H, OF, NS, UN = "Hypotheses", "Observed Facts", "Next Step", "Unknowns"
-
-
-def deferred(reason: str) -> pytest.MarkDecorator:
-    return pytest.mark.xfail(strict=True, reason=f"deferred to a follow-up: {reason}")
 
 
 BAD = [
@@ -78,12 +74,7 @@ BAD = [
     # Round 2: numbers (adv.py)
     ("X01", M, put(M, OF, "KERNDTLB holds about 150k Log Entries [E1].")),
     ("X02", EN, put(EN, OF, "BGL holds ~4.7M Log Entries [E5].")),
-    pytest.param(
-        "X03",
-        TL,
-        put(TL, OF, "KERNDTLB is roughly half of all alert Log Entries [E1]."),
-        marks=deferred("fractions written as words (half, a third) are not numbers yet"),
-    ),
+    ("X03", TL, put(TL, OF, "KERNDTLB is roughly half of all alert Log Entries [E1].")),
     ("X04", TL, put(TL, OF, "KERNDTLB and KERNSTOR together hold 216,225 Log Entries [E1].")),
     ("X05", TL, put(TL, OF, "KERNDTLB is 57.45% of the top three categories [E1].")),
     ("X06", TL, put(TL, H, "The storm wrote 152,734 lines on one node.")),
@@ -104,20 +95,10 @@ BAD = [
         .replace("## HYPX", "## Next Step"),
     ),
     ("X13", TL, put(TL, OF, "KERNDTLB and KERNSTOR hold 216,000 Log Entries (derived from [E1]).")),
-    pytest.param(
-        "X14",
-        M,
-        put(M, NS, "Run count_by to confirm the 9,999 failing jobs."),
-        marks=deferred("a tool name in Next Step still shields a number (the tool-name shield)"),
-    ),
+    ("X14", M, put(M, NS, "Run count_by to confirm the 9,999 failing jobs.")),
     ("X15", M, put(M, NS, "Start with KERNMNTF: it hit 1,500 midplanes last week.")),
     ("X16", TL, put(TL, OF, "The storm reached 2031 Nodes [E3].")),
-    pytest.param(
-        "X17",
-        TL,
-        put(TL, OF, "KERNMNTF hit 83 racks [E8]."),
-        marks=deferred("a number is matched against the whole cited record, not its column"),
-    ),
+    ("X17", TL, put(TL, OF, "KERNMNTF hit 83 racks [E8].")),
     ("X18", TL, put(TL, OF, "KERNDTLB is 3.22% of all BGL Log Entries [E1].")),
     ("X19", TL, put(TL, OF, "The top node took a 1% share of entries in Incident 18 [E3].")),
     ("X20", M, put(M, OF, "KERNDTLB is a dozen incidents worth watching [E1].")),
@@ -163,6 +144,19 @@ BAD = [
     ("C15", M, put(M, H, "It is not cheap: the storm cost real money, as the logs show.")),
     ("C16", M, put(M, H, "No customer escaped the outage, and the logs show it.")),
     ("C17", M, put(M, H, "The downtime was never shorter than a day, based on the logs.")),
+    # Follow-up #81: fractions in words, the tool-name shield, column matching, range citations
+    ("F01", TL, put(TL, OF, "About a third of the alert Log Entries are KERNDTLB [E1].")),
+    ("F02", TL, put(TL, OF, "Two thirds of the alert Log Entries are KERNDTLB [E1].")),
+    ("F03", TL, put(TL, H, "Half of the KERNDTLB Log Entries come from one node.")),
+    ("F04", TL, put(TL, OF, "KERNDTLB is a quarter of all alert Log Entries [E1].")),
+    ("F05", TL, put(TL, NS, "Run trend over the 9,999 failing jobs from last week.")),
+    ("F06", EN, put(EN, NS, "Use get_context to read the 4,000 nodes that logged it.")),
+    ("F07", TL, put(TL, OF, "KERNDTLB reached 3 racks [E8].")),
+    ("F08", TL, put(TL, OF, "Incident 18 spanned 21 midplanes [E3].")),
+    ("F09", TL, put(TL, OF, "KERNDTLB holds 17 Incidents [E3].")),
+    ("F10", TL, put(TL, OF, "KERNDTLB holds 152,734 Log Entries [E1\u2013E12].")),
+    ("F11", TL, put(TL, OF, "There were 404 Log Entries in KERNDTLB [E1].")),
+    ("F12", TL, put(TL, OF, "KERNDTLB holds 152,999 Log Entries [E1\u2013E4].")),
 ]
 
 REFUSAL = (Path(__file__).parents[1] / "support" / "verify_refusal.md").read_text(encoding="utf-8")
@@ -236,6 +230,25 @@ GOOD = [
         put(M, UN, "Cost: these logs hold no prices; the finance figures for 2005 are not in the corpus."),
     ),
     ("G27", M, put(M, OF, "KERNDTLB holds 152,734 Log Entries. [E1] KERNSTOR holds 63,491 [E1].")),
+    # Follow-up #81
+    ("G28", EN, put(EN, OF, "The 404 Log Entries all come from nova.osapi_compute.wsgi.server [E6].")),
+    ("G29", EN, put(EN, OF, "See line numbers such as 27179\u201327202 in the search result [E2].")),
+    ("G30", TL, put(TL, OF, "KERNDTLB holds 152,734 Log Entries [E1\u2013E2].")),
+    ("G31", TL, put(TL, OF, "Weekly, KERNDTLB peaked at 152,252 Log Entries [E1-E4].")),
+    (
+        "G32",
+        TL,
+        put(TL, OF, "KERNDTLB and KERNSTOR together hold 216,225 Log Entries (derived from [E1\u2013E2])."),
+    ),
+    ("G33", TL, put(TL, OF, "KERNMNTF holds 83 Incidents across 64 midplanes in 9 active weeks [E8].")),
+    ("G34", EN, put(EN, OF, "BGL holds 4,747,963 Log Entries [E5].")),
+    ("G35", TL, put(TL, OF, "KERNDTLB came from 541 nodes [E1].")),
+    ("G36", TL, put(TL, H, "The storm hit in the second half of June, half an hour after the parity error.")),
+    ("G37", EN, put(EN, H, "A third party may own the node; on behalf of the owners, check the first half.")),
+    ("G38", TL, put(TL, NS, "Run count_by with top 20 over the last 4 weeks.")),
+    ("G39", EN, put(EN, NS, "Run get_context with a 600 s window around entry 222715.")),
+    ("G40", TL, put(TL, NS, "Run trend with bucket='hour' for the 48 hours after the storm.")),
+    ("G41", TL, put(TL, OF, "Incident 18 reached 380 nodes on 21 racks [E3].")),
 ]
 
 # #3 pilot refusals that the round-2 scoping first misflagged; each must still pass.
@@ -347,7 +360,7 @@ def test_malformed_input_never_raises(role: object, draft: object, ledger: objec
     assert not any("itself failed" in p.hint for p in report.problems)
 
 
-@pytest.mark.parametrize("digits", ["9" * 5000, "1" + "0" * 400])
+@pytest.mark.parametrize("digits", ["9" * 1500, "1" + "0" * 400])
 def test_a_number_too_large_for_a_float_is_not_in_evidence(digits: str) -> None:
     report = check_answer(M, MANAGER.replace("26,426", digits), LEDGER)
 

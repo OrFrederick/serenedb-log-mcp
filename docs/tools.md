@@ -784,9 +784,11 @@ or time impact (cost, downtime) belongs in Unknowns or in a sentence saying the 
 establish it. For manager, customer and SLA terms too, no raw-line Evidence (search_logs,
 get_context) may be cited, and Unknowns must name cost, downtime and customer impact. Matching:
 a number must equal a value of the cited Evidence after thousands separators and k or M suffixes
-are read; a percentage may quote a stored fraction (100% for 1.0); a derived sum or difference
-must be exact and a derived share or ratio right to its printed precision. It runs no query and
-adds nothing to the Evidence Ledger.
+are read, and a number followed by a counted noun ("83 racks") a value of a field that may count
+it; a percentage may quote a stored fraction (100% for 1.0), and "half" or "a third" is a
+percentage too; a derived sum or difference must be exact and a derived share or ratio right to
+its printed precision. Drafts over 50,000 characters and sentences over 2,000 are reported, not
+checked. It runs no query and adds nothing to the Evidence Ledger.
 Inputs: role (the Role the answer is for), draft (the full answer text in Markdown).
 Outputs: ok (true when there is nothing to fix), role, summary (the verdict in one line),
 problems (each with kind, section, the offending text and a fix hint), checked_numbers (every

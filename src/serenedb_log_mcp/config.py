@@ -48,6 +48,9 @@ ROLES: tuple[Role, ...] = tuple(Role)
 
 DEFAULT_DATABASE_URL = "host=localhost port=7890 dbname=postgres user=postgres"
 SCHEMA_RE = re.compile(r"^[a-z_][a-z0-9_]*$")
+# The prefix of the per-Role DSN variables. Anything else behind it is a misconfiguration, because
+# `database_url_for` would silently fall back to the shared DATABASE_URL for that Role.
+ROLE_URL_PREFIX = "DATABASE_URL_"
 
 _TRUE = frozenset({"1", "true", "yes", "on"})
 _FALSE = frozenset({"0", "false", "no", "off"})
@@ -207,9 +210,10 @@ def load_settings(environ: Mapping[str, str] | None = None, **overrides: Any) ->
     values: dict[str, Any] = {}
     if (dsn := get("DATABASE_URL")) is not None:
         values["database_url"] = dsn
-    role_urls = {role: url for role in ROLES if (url := get(f"DATABASE_URL_{role.upper()}")) is not None}
+    role_urls = {role: url for role in ROLES if (url := get(f"{ROLE_URL_PREFIX}{role.upper()}")) is not None}
     if role_urls:
         values["role_database_urls"] = role_urls
+    _warn_about_unknown_role_urls(env)
     if (schema := get("SLM_SCHEMA")) is not None:
         values["slm_schema"] = schema
     if (raw_schema := get("SLM_RAW_SCHEMA")) is not None:
@@ -231,6 +235,28 @@ def load_settings(environ: Mapping[str, str] | None = None, **overrides: Any) ->
         return Settings(**values)
     except ValidationError as exc:
         raise ConfigError(_describe(exc, overrides)) from None
+
+
+def _warn_about_unknown_role_urls(env: Mapping[str, str]) -> None:
+    """Warn about every `DATABASE_URL_*` variable that is not a Role, naming the ones that work.
+
+    Such a variable is read by nothing, so the Role it was meant for keeps using the shared
+    DATABASE_URL. That is a silent access-scoping failure, so it is worth a line on stderr. The
+    warning names the variable but never its value, which can carry a password.
+    """
+    known = {f"{ROLE_URL_PREFIX}{role.upper()}" for role in ROLES}
+    unknown = sorted(
+        name
+        for name, value in env.items()
+        if name.startswith(ROLE_URL_PREFIX) and name not in known and value.strip()
+    )
+    for name in unknown:
+        logger.warning(
+            "%s is set but is not a per-Role DSN variable, so it is ignored and that Role keeps "
+            "using DATABASE_URL. The variables that are read are %s.",
+            name,
+            ", ".join(sorted(known)),
+        )
 
 
 def _describe(exc: ValidationError, overrides: Mapping[str, Any]) -> str:

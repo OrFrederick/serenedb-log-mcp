@@ -1,5 +1,6 @@
 """Settings come from the environment variables in plan section 2.5."""
 
+import logging
 from pathlib import Path
 
 import pytest
@@ -262,3 +263,52 @@ def test_safe_dsn_of_an_empty_dsn_says_so() -> None:
 def test_error_detail_is_the_first_line_or_the_class_name() -> None:
     assert error_detail(ValueError("one\ntwo")) == "one"
     assert error_detail(ValueError("")) == "ValueError"
+
+
+WARN_LOGGER = "serenedb_log_mcp.config"
+
+
+def test_an_unknown_database_url_variable_is_warned_about(caplog: pytest.LogCaptureFixture) -> None:
+    # A misspelled DATABASE_URL_LEAD was silently ignored before, which hides an access-scoping
+    # mistake: the Role keeps using the shared DATABASE_URL.
+    with caplog.at_level(logging.WARNING, logger=WARN_LOGGER):
+        settings = load_settings({"DATABASE_URL_LEAD": "host=h dbname=d"})
+
+    assert dict(settings.role_database_urls) == {}
+    assert "DATABASE_URL_LEAD" in caplog.text
+    assert "DATABASE_URL_ENGINEER" in caplog.text
+
+
+def test_a_role_variable_in_the_wrong_case_is_warned_about(caplog: pytest.LogCaptureFixture) -> None:
+    # Only the upper-case spelling is read, so the lower-case one is ignored just like a typo.
+    with caplog.at_level(logging.WARNING, logger=WARN_LOGGER):
+        settings = load_settings({"DATABASE_URL_engineer": "host=h dbname=d"})
+
+    assert dict(settings.role_database_urls) == {}
+    assert "DATABASE_URL_engineer" in caplog.text
+
+
+def test_the_known_variables_are_not_warned_about(caplog: pytest.LogCaptureFixture) -> None:
+    with caplog.at_level(logging.WARNING, logger=WARN_LOGGER):
+        settings = load_settings(
+            {"DATABASE_URL": "host=a dbname=d", "DATABASE_URL_MANAGER": "host=b dbname=d"}
+        )
+
+    assert settings.database_url_for("manager") == "host=b dbname=d"
+    assert caplog.text == ""
+
+
+def test_the_unknown_variable_warning_never_echoes_the_dsn(caplog: pytest.LogCaptureFixture) -> None:
+    with caplog.at_level(logging.WARNING, logger=WARN_LOGGER):
+        load_settings({"DATABASE_URL_LEAD": "host=h dbname=d password=hunter2"})
+
+    assert "hunter2" not in caplog.text
+    assert "host=h" not in caplog.text
+
+
+def test_an_empty_unknown_variable_is_not_warned_about(caplog: pytest.LogCaptureFixture) -> None:
+    # An unset variable arrives as the empty string in some shells; that is not a misconfiguration.
+    with caplog.at_level(logging.WARNING, logger=WARN_LOGGER):
+        load_settings({"DATABASE_URL_LEAD": "  "})
+
+    assert caplog.text == ""

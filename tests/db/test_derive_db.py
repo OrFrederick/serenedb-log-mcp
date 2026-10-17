@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import re
 import uuid
+from collections.abc import Iterator
+from dataclasses import dataclass
 from typing import Any, Protocol
 
 import psycopg
@@ -17,6 +19,12 @@ SYNTHETIC_BGL_ROWS = 11  # tests/db/conftest.py adds them to the 2,000-line BGL 
 
 
 class Schemas(Protocol):
+    raw: str
+    slm: str
+
+
+@dataclass(frozen=True)
+class SimpleSchemas:
     raw: str
     slm: str
 
@@ -319,13 +327,12 @@ def test_no_text_column_of_any_canonical_relation_contains_abnormal(
 ) -> None:
     columns = text_columns(database_url, derived_sample.slm)
     assert ("os_entry", "source_id") in columns
-    assert ("os_adapted", "source_id") in columns
     assert ("bgl_entry", "message") in columns
     hits = {}
     for table, column in columns:
         # BGL's own log text says "exited abnormally" (the MASABNORM alert lines); that is a Log
         # Entry, not a label. Every other match would be a leak of the OpenStack labels.
-        genuine = column == "message" and table in {"bgl_entry", "bgl_adapted"}
+        genuine = (table, column) == ("bgl_entry", "message")
         exempt = "AND lower({c}) NOT LIKE '%exited abnormally%'" if genuine else ""
         query = sql.SQL("SELECT count(*) FROM {t} WHERE lower({c}) LIKE '%abnormal%' " + exempt).format(
             t=sql.Identifier(derived_sample.slm, table), c=sql.Identifier(column)
@@ -350,13 +357,7 @@ def test_the_genuine_bgl_text_is_kept(database_url: str, derived_sample: Schemas
 
 
 def test_no_label_relation_or_file_name_column_exists(database_url: str, derived_sample: Schemas) -> None:
-    assert relations(database_url, derived_sample.slm) == [
-        "bgl_adapted",
-        "bgl_entry",
-        "os_adapted",
-        "os_entry",
-        "ownership",
-    ]
+    assert relations(database_url, derived_sample.slm) == ["bgl_entry", "os_entry", "ownership"]
     names = {column for _, column in text_columns(database_url, derived_sample.slm)}
     assert not names & {"source_file", "raw", "label", "anomaly", "is_anomaly"}
 
@@ -507,31 +508,94 @@ def test_numeric_and_time_columns_answer_range_filters(database_url: str, derive
 def test_the_dev_adapter_views_match_the_contract_in_order(
     database_url: str, derived_sample: Schemas
 ) -> None:
+    values = derive.variables(derived_sample.slm, derived_sample.raw, (26, 10, 1))
     with psycopg.connect(database_url, autocommit=True) as conn:
-        described = derive.relation_columns(conn, derived_sample.slm)
+        derive.run(conn, [derive.SQL_DIR / "adapters" / "dev.sql"], values)
+        found = derive.adapter_columns(conn)
 
-    found = {view: tuple(c for c, _ in described[view]) for view in ("bgl_adapted", "os_adapted")}
-    assert found == derive.ADAPTER_VIEWS
+    assert {view: tuple(columns) for view, columns in found.items()} == derive.ADAPTER_VIEWS
 
 
 def test_a_broken_adapter_view_stops_the_derive_step(database_url: str) -> None:
-    schema = f"scratch_t4_{uuid.uuid4().hex[:8]}"
-    try:
-        with psycopg.connect(database_url, autocommit=True) as conn:
-            conn.execute(sql.SQL("CREATE SCHEMA {}").format(sql.Identifier(schema)))
-            conn.execute(
-                sql.SQL("CREATE VIEW {} AS SELECT 1::BIGINT AS entry_id, 'x' AS source_file").format(
-                    sql.Identifier(schema, "bgl_adapted")
-                )
-            )
-            with pytest.raises(derive.DeriveError) as excinfo:
-                derive.check_adapter(conn, schema, "official")
-    finally:
-        with psycopg.connect(database_url, autocommit=True) as conn:
-            conn.execute(sql.SQL("DROP SCHEMA IF EXISTS {} CASCADE").format(sql.Identifier(schema)))
+    with psycopg.connect(database_url, autocommit=True) as conn:
+        conn.execute("CREATE TEMPORARY VIEW bgl_adapted AS SELECT 1::BIGINT AS entry_id, 'x' AS source_file")
+        with pytest.raises(derive.DeriveError) as excinfo:
+            derive.check_adapter(conn, "official")
 
     message = str(excinfo.value)
     assert "sql/adapters/official.sql breaks the adapter contract" in message
     assert "os_adapted is missing" in message
     assert "bgl_adapted lacks message" in message
     assert "bgl_adapted has extra column source_file" in message
+
+
+# ----------------------------------------------------------------- the raw tables stay replaceable
+
+
+def views(database_url: str, schema: str) -> list[str]:
+    return [
+        name
+        for (name,) in rows(
+            database_url,
+            "SELECT table_name FROM information_schema.tables WHERE table_schema = %s "
+            "AND table_type = 'VIEW' ORDER BY 1",
+            [schema],
+        )
+    ]
+
+
+def test_no_view_is_left_in_slm_schema_after_a_derive(database_url: str, derived_sample: Schemas) -> None:
+    assert views(database_url, derived_sample.slm) == []
+
+
+@pytest.fixture
+def small_raw(database_url: str, derived_sample: Schemas) -> Iterator[Schemas]:
+    """A 50-row copy of the sample raw tables and an empty target schema, both dropped afterwards."""
+    suffix = uuid.uuid4().hex[:8]
+    schemas = SimpleSchemas(raw=f"scratch_t4_{suffix}_raw", slm=f"scratch_t4_{suffix}")
+    try:
+        with psycopg.connect(database_url, autocommit=True) as conn:
+            conn.execute(sql.SQL("CREATE SCHEMA {}").format(sql.Identifier(schemas.raw)))
+            for table in ("bgl", "openstack"):
+                conn.execute(
+                    sql.SQL("CREATE TABLE {} AS SELECT * FROM {} ORDER BY line_no LIMIT 50").format(
+                        sql.Identifier(schemas.raw, table), sql.Identifier(derived_sample.raw, table)
+                    )
+                )
+        yield schemas
+    finally:
+        with psycopg.connect(database_url, autocommit=True) as conn:
+            for schema in (schemas.slm, schemas.raw):
+                conn.execute(sql.SQL("DROP SCHEMA IF EXISTS {} CASCADE").format(sql.Identifier(schema)))
+
+
+def test_the_raw_tables_can_be_swapped_after_a_derive(database_url: str, small_raw: Schemas) -> None:
+    assert derive.main(["--schema", small_raw.slm, "--raw-schema", small_raw.raw]) == 0
+
+    # The dev loader's atomic swap: copy into <table>__load, then DROP and RENAME in one transaction.
+    with psycopg.connect(database_url) as conn:
+        for table in ("bgl", "openstack"):
+            raw, load = sql.Identifier(small_raw.raw, table), sql.Identifier(small_raw.raw, f"{table}__load")
+            conn.execute(sql.SQL("CREATE TABLE {} AS SELECT * FROM {}").format(load, raw))
+            conn.execute(sql.SQL("DROP TABLE {}").format(raw))
+            conn.execute(sql.SQL("ALTER TABLE {} RENAME TO {}").format(load, sql.Identifier(table)))
+        conn.commit()
+
+    assert views(database_url, small_raw.slm) == []
+    assert derive.main(["--schema", small_raw.slm, "--raw-schema", small_raw.raw]) == 0
+
+
+def test_a_leftover_persistent_adapter_view_is_dropped(database_url: str, small_raw: Schemas) -> None:
+    # Derives before this fix left slm.bgl_adapted and slm.os_adapted behind.
+    with psycopg.connect(database_url, autocommit=True) as conn:
+        conn.execute(sql.SQL("CREATE SCHEMA {}").format(sql.Identifier(small_raw.slm)))
+        for view, table in (("bgl_adapted", "bgl"), ("os_adapted", "openstack")):
+            conn.execute(
+                sql.SQL("CREATE VIEW {} AS SELECT * FROM {}").format(
+                    sql.Identifier(small_raw.slm, view), sql.Identifier(small_raw.raw, table)
+                )
+            )
+
+    assert derive.main(["--schema", small_raw.slm, "--raw-schema", small_raw.raw]) == 0
+
+    assert views(database_url, small_raw.slm) == []

@@ -4,11 +4,13 @@
 -- arrived. Until then this file holds no statements, and `make derive ADAPTER=official` stops
 -- with a message instead of running. sql/adapters/dev.sql is the working example.
 --
--- The adapter is the only loader-specific SQL. It must create two views in ${slm} over the
--- loader's tables in ${raw}, with exactly these columns (names are binding; types as in dev.sql).
--- The derive steps (sql/derive/*.sql) read nothing else.
+-- The adapter is the only loader-specific SQL. It must create two TEMPORARY views over the
+-- loader's tables in ${raw} (CREATE OR REPLACE TEMPORARY VIEW <name> AS ...), with exactly these
+-- columns (names are binding; types as in dev.sql). The derive steps (sql/derive/*.sql) read
+-- them as temp.main.<name> and nothing else. They must be temporary: a persistent view would
+-- keep a dependency on the loader's tables and block every reload of them.
 --
--- ${slm}.bgl_adapted, one row per BGL Log Entry:
+-- TEMPORARY VIEW bgl_adapted, one row per BGL Log Entry:
 --   entry_id     BIGINT     unique per Log Entry and stable across re-runs of the derive step
 --   ts           TIMESTAMP  as logged: US Pacific local time, with daylight saving time
 --   epoch_utc    DOUBLE     UTC seconds including the logged fraction; every gap is computed on
@@ -19,7 +21,7 @@
 --   alert_tag    VARCHAR    the alert category (Oliner & Stearley); NULL for non-alert lines
 --   message      VARCHAR    the free-text part of the line
 --
--- ${slm}.os_adapted, one row per OpenStack Log Entry:
+-- TEMPORARY VIEW os_adapted, one row per OpenStack Log Entry:
 --   entry_id     BIGINT     unique per Log Entry and stable across re-runs
 --   ts           TIMESTAMP  as logged (taken as UTC)
 --   epoch_utc    DOUBLE     UTC seconds including the fraction

@@ -5,7 +5,8 @@ Usage (see `make help`):
     uv run python scripts/derive.py [--adapter dev|official] [--schema S] [--raw-schema R]
 
 Runs, in this order and inside SLM_SCHEMA:
-    1. sql/adapters/<adapter>.sql   the only loader-specific SQL: raw tables -> adapter views
+    1. sql/adapters/<adapter>.sql   the only loader-specific SQL: raw tables -> two temporary
+                                    adapter views, checked against ADAPTER_VIEWS
     2. sql/seed/*.sql               in name order: the stub Ownership Table (TODO(organiser))
     3. sql/derive/*.sql             in name order: canonical tables, ..., inverted indexes last
 
@@ -44,8 +45,10 @@ PLACEHOLDER_RE = re.compile(r"\$\{([a-z_]+)\}")
 VERSION_RE = re.compile(r"SereneDB v?(\d+(?:\.\d+)*)")
 
 
-# The contract between sql/adapters/<adapter>.sql and the derive steps: the views every adapter
-# creates in SLM_SCHEMA and their exact columns (documented in sql/adapters/official.sql).
+# The contract between sql/adapters/<adapter>.sql and the derive steps: the temporary views every
+# adapter creates (temp.main.<view>) and their exact columns (documented in
+# sql/adapters/official.sql). Temporary, so nothing outlives the derive session that depends on
+# the raw tables.
 ADAPTER_VIEWS: dict[str, tuple[str, ...]] = {
     "bgl_adapted": ("entry_id", "ts", "epoch_utc", "node", "component", "level", "alert_tag", "message"),
     "os_adapted": (
@@ -236,12 +239,30 @@ def relation_columns(conn: psycopg.Connection[Any], schema: str) -> dict[str, li
     }
 
 
-def check_adapter(conn: psycopg.Connection[Any], slm: str, adapter: str) -> None:
+def adapter_columns(conn: psycopg.Connection[Any]) -> dict[str, list[str]]:
+    """The columns of the adapter's temporary views (temp.main.<view>) that exist in this session."""
+    found: dict[str, list[str]] = {}
+    for view in ADAPTER_VIEWS:
+        try:
+            described = _rows(conn, f"DESCRIBE temp.main.{_quoted(view)}")
+        except psycopg.errors.UndefinedTable:
+            continue
+        found[view] = [str(row[0]) for row in described]
+    return found
+
+
+def check_adapter(conn: psycopg.Connection[Any], adapter: str) -> None:
     """Stop with a clear message when the adapter's views break the contract in ADAPTER_VIEWS."""
-    relations = relation_columns(conn, slm)
-    found = {view: [name for name, _ in relations[view]] for view in ADAPTER_VIEWS if view in relations}
-    if problems := adapter_problems(found):
+    if problems := adapter_problems(adapter_columns(conn)):
         raise DeriveError(f"sql/adapters/{adapter}.sql breaks the adapter contract: " + "; ".join(problems))
+
+
+def drop_adapter_views(conn: psycopg.Connection[Any], slm: str) -> None:
+    """Drop the adapter views: this session's temporary ones and persistent ones in `slm` that
+    derives before the views became temporary left behind (they block raw-table reloads)."""
+    for view in ADAPTER_VIEWS:
+        conn.execute(f"DROP VIEW IF EXISTS temp.main.{_quoted(view)}")
+        conn.execute(f"DROP VIEW IF EXISTS {_quoted(slm)}.{_quoted(view)}")
 
 
 def report(conn: psycopg.Connection[Any], slm: str) -> list[str]:
@@ -329,9 +350,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"SereneDB {'.'.join(map(str, version))}: deriving {raw} -> {slm} ({args.adapter})")
             conn.execute(f"CREATE SCHEMA IF NOT EXISTS {slm_q}")
             values = variables(slm, raw, version)
+            drop_adapter_views(conn, slm)
             run(conn, files[:1], values)
-            check_adapter(conn, slm, args.adapter)
+            check_adapter(conn, args.adapter)
             run(conn, files[1:], values)
+            drop_adapter_views(conn, slm)
             print(f"derive finished in {time.perf_counter() - started:.1f}s")
             for line in report(conn, slm):
                 print(line)

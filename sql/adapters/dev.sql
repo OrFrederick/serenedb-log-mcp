@@ -2,6 +2,10 @@
 -- derive steps read. This is the only SQL that knows the dev loader's table shapes; T25 writes
 -- sql/adapters/official.sql for the organisers' loader with the same views and columns.
 --
+-- The views are TEMPORARY: they live in temp.main and die with the derive session, even if it
+-- crashes. A persistent view would keep a dependency on the raw tables, and every later reload of
+-- them (DROP TABLE, or the loader's atomic swap) would fail with DependentObjectsStillExist.
+--
 -- Raw tables (scripts/dev_loader.py) in ${raw}:
 --   bgl(line_no, alert_tag, epoch, ts, node, component, level, message, raw)
 --   openstack(line_no, source_file, log_file, ts, pid, level, component, request_id,
@@ -11,7 +15,7 @@
 -- the UTC second. The two differ by a whole number of hours (25,200 s in PDT, 28,800 s in PST),
 -- so epoch_utc is the UTC second plus the logged fraction of a second. The raw '-' marks a
 -- non-alert line and becomes NULL.
-CREATE OR REPLACE VIEW ${slm}.bgl_adapted AS
+CREATE OR REPLACE TEMPORARY VIEW bgl_adapted AS
 SELECT
     line_no                                     AS entry_id,
     ts,
@@ -26,7 +30,7 @@ FROM ${raw}.bgl;
 -- OpenStack. The loader's source_file names carry the ground-truth label of each file, so they
 -- never leave this view: every file gets a neutral id, os-1, os-2, ..., in load order (the order
 -- of its first line). The files give ts without a zone; it is taken as UTC.
-CREATE OR REPLACE VIEW ${slm}.os_adapted AS
+CREATE OR REPLACE TEMPORARY VIEW os_adapted AS
 WITH files AS (
     SELECT
         source_file,

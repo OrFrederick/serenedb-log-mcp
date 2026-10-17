@@ -189,7 +189,7 @@ def test_the_official_adapter_is_a_todo_stub_that_lists_every_required_column() 
 
     assert "TODO(organiser)" in text
     for view, columns in derive.ADAPTER_VIEWS.items():
-        assert f"${{slm}}.{view}" in text
+        assert f"TEMPORARY VIEW {view}" in text
         for column in columns:
             assert re.search(rf"^--\s+{column}\s", text, re.MULTILINE), f"{view}.{column} is not listed"
 
@@ -223,3 +223,32 @@ def test_adapter_problems_name_missing_views_and_missing_or_extra_columns() -> N
     assert "os_adapted is missing" in problems
     assert "bgl_adapted lacks message" in problems
     assert "bgl_adapted has extra column source_file" in problems
+
+
+CREATE_VIEW_RE = re.compile(
+    r"\bCREATE\s+(?:OR\s+REPLACE\s+)?(TEMP(?:ORARY)?\s+)?VIEW\s+([\w.${}\"]+)", re.IGNORECASE
+)
+
+
+def test_the_dev_adapter_creates_only_temporary_views() -> None:
+    # A persistent view over the raw tables would block every reload of them (DROP TABLE fails
+    # with DependentObjectsStillExist); a temporary view dies with the derive session.
+    created = CREATE_VIEW_RE.findall((ROOT / "sql/adapters/dev.sql").read_text())
+
+    assert sorted(name for _, name in created) == sorted(derive.ADAPTER_VIEWS)
+    assert all(temporary for temporary, _ in created)
+
+
+def test_no_sql_file_creates_a_persistent_view() -> None:
+    for path in (ROOT / "sql").rglob("*.sql"):
+        text = derive.render(path.read_text(), derive.variables("slm", "public", (26, 10, 1)))
+        for statement in derive.split_statements(text):
+            for temporary, name in CREATE_VIEW_RE.findall(statement):
+                assert temporary, f"{path.name} creates the persistent view {name}"
+
+
+def test_the_derive_steps_read_the_adapter_views_from_the_temporary_schema() -> None:
+    text = (ROOT / "sql/derive/10_entries.sql").read_text()
+
+    for view in derive.ADAPTER_VIEWS:
+        assert f"FROM temp.main.{view}" in text

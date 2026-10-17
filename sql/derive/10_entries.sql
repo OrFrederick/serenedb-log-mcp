@@ -1,5 +1,6 @@
--- Canonical Log Entry tables (T4, plan section 2.2), built from the adapter views with the
--- derived columns every tool needs, so no tool runs a regex at query time (#2).
+-- Canonical Log Entry tables (T4, plan section 2.2), built from the adapter's temporary views
+-- (temp.main.bgl_adapted, temp.main.os_adapted) with the derived columns every tool needs, so no
+-- tool runs a regex at query time (#2).
 -- template_id and family_id stay NULL until the Pattern dictionary step (T9) fills them.
 -- pattern_key is the key Incidents are built on (#1): the alert category for BGL alert lines,
 -- NULL for non-alert lines and for OpenStack until T9 sets it to template_id.
@@ -24,7 +25,7 @@ SELECT
     CAST(NULL AS VARCHAR)                       AS template_id,
     CAST(NULL AS VARCHAR)                       AS family_id,
     alert_tag                                   AS pattern_key
-FROM ${slm}.bgl_adapted;
+FROM temp.main.bgl_adapted;
 
 -- OpenStack. API lines look like
 --   10.11.10.1 "GET /v2/<tenant>/servers/detail HTTP/1.1" status: 200 len: 1893 time: 0.2477829
@@ -45,7 +46,7 @@ WITH parsed AS (
             message, '"([A-Z]+) ([^ ?"]+)[^"]*" status: ([0-9]+) len: [0-9]+ time: ([0-9.]+)', 3), '') AS status,
         nullif(regexp_extract(
             message, '"([A-Z]+) ([^ ?"]+)[^"]*" status: ([0-9]+) len: [0-9]+ time: ([0-9.]+)', 4), '') AS seconds
-    FROM ${slm}.os_adapted
+    FROM temp.main.os_adapted
 )
 SELECT
     entry_id,

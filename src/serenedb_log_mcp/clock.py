@@ -10,6 +10,11 @@ less than it says. `epoch_utc` is unambiguous. The rule every tool that does tim
 - time inputs are read as UTC (an input with an offset is converted), and every time the tool
   computes is reported in UTC; the Data Scope says so in `time_zone` and `time_columns`.
 
+`count_by` and `trend` follow it (#65), `search_logs` too (#73: its time range is a range of
+`epoch_utc` on the inverted index, `utc_bound`), and `describe_corpus` states each Dataset's range in
+UTC. Rows of Log Entries keep `ts` as logged, and a note (`clock_note`) says how a logged `ts` turns
+into UTC.
+
 The Datasets' first and last Log Entries (`corpus.facts`, read on `ts`) are converted with the
 Dataset's `ts_zone`. In the repeated hour a logged time is ambiguous, so a first Log Entry takes the
 earlier instant and a last one the later: the range then always holds every Log Entry.
@@ -31,13 +36,16 @@ __all__ = [
     "time_column",
     "time_columns",
     "to_utc",
+    "utc_bound",
     "utc_input",
     "utc_range",
     "utc_time",
 ]
 
 UTC_ZONE = "UTC"
-"""The clock of every time the aggregation tools take and report."""
+"""The clock of every time the tools take and compute."""
+_EPOCH = datetime(1970, 1, 1)
+_MICROSECOND = timedelta(microseconds=1)
 
 
 def time_column(entry: Dataset) -> str:
@@ -60,6 +68,21 @@ def utc_time(rel: Relation, alias: str = "e") -> sql.Composable:
         return sql.SQL(".").join([sql.SQL(alias), rel.column("time")])
     epoch = sql.SQL(".").join([sql.SQL(alias), rel.column("epoch")])
     return sql.SQL("make_timestamp(CAST(round({} * 1000000) AS BIGINT))").format(epoch)
+
+
+def utc_bound(entry: Dataset, at: datetime) -> datetime | float:
+    """A naive UTC time as the value to compare `time_column(entry)` with: the time itself for `ts`,
+    its epoch seconds for `epoch_utc`.
+
+    The seconds are the microseconds since the epoch divided by 10**6, the double that every
+    `epoch_utc` of the Base Corpus equals (measured on 26.10.1: 0 of 4,955,783 differ), so a range
+    of `epoch_utc` holds exactly the Log Entries that `utc_time` puts in the same range. A bound
+    goes into a TSQUERY range (`fts.filter_at_or_after`), which SereneDB matches against a DOUBLE
+    column of the inverted index without changing the relevance score (measured, #73).
+    """
+    if not entry.ts_is_local:
+        return at
+    return ((at - _EPOCH) // _MICROSECOND) / 1_000_000
 
 
 def to_utc(entry: Dataset, logged: datetime, *, latest: bool = False) -> datetime:
@@ -99,24 +122,24 @@ def utc_input(name: str, value: str | None) -> tuple[str | None, str | None]:
     return converted, f"{name}={value!r} has an offset, so it was converted to UTC: {converted}."
 
 
-def clock_note(ranges: Mapping[str, tuple[datetime, datetime]]) -> str:
-    """The note that says every time is UTC and, per Dataset, which column the arithmetic ran on.
+def clock_note(ranges: Mapping[str, tuple[datetime, datetime]], *, lead: str, on_epoch: str | None) -> str:
+    """The note that says which times are UTC and, per Dataset, how its ts relates to UTC.
 
+    `lead` is the tool's sentence on its times (which are UTC, and how it reads time inputs).
     `ranges` maps each Dataset to its first and last Log Entry in UTC; for a Dataset that logs local
-    time the note gives the offset to add to a logged `ts`, with the UTC instants it changes at.
+    time the note says that what the tool computes on time (`on_epoch`, for example 'time range,
+    buckets and baselines'; None when it computes nothing on time) runs on epoch_utc, and gives the
+    offset to add to a logged `ts`, with the UTC instants it changes at.
     """
-    parts = [
-        "Every time here is UTC: time_from, time_to, the buckets, first_seen, last_seen and the "
-        "baseline periods, and time inputs are read as UTC (an input with an offset is converted)."
-    ]
+    parts = [lead]
     for name, (first, last) in ranges.items():
         entry = dataset(name)
         if not entry.ts_is_local:
             parts.append(f"{name}: {entry.time_note}")
             continue
+        runs = f" Its {on_epoch} run on epoch_utc too." if on_epoch else ""
         parts.append(
-            f"{name}: {entry.time_note} Its time range, buckets and baselines run on epoch_utc too. "
-            f"For a logged {name} ts, {_offsets(entry, first, last)}."
+            f"{name}: {entry.time_note}{runs} For a logged {name} ts, {_offsets(entry, first, last)}."
         )
     return " ".join(parts)
 

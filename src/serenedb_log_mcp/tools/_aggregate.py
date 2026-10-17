@@ -77,6 +77,13 @@ NO_MATCH_NOTE = (
     "No Log Entries matched this Data Scope. Widen the time range, drop a filter, or check the query "
     "words and filter values with describe_corpus."
 )
+AGGREGATION_CLOCK_LEAD = (
+    "Every time here is UTC: time_from, time_to, the buckets, first_seen, last_seen and the "
+    "baseline periods, and time inputs are read as UTC (an input with an offset is converted)."
+)
+"""The first sentence of the clock note (`clock.clock_note`) of count_by and trend."""
+AGGREGATION_ON_EPOCH = "time range, buckets and baselines"
+"""What count_by and trend compute on epoch_utc for a Dataset whose ts is local time."""
 
 # Tool parameters shared by count_by and trend -----------------------------------------------------------
 
@@ -87,21 +94,6 @@ QueryParam = Annotated[
         "put a phrase in double quotes, for example '\"data TLB error\"'. Omit it to count every Log "
         "Entry in the Data Scope.",
         max_length=fts.MAX_QUERY_CHARS,
-    ),
-]
-TimeFromParam = Annotated[
-    str | None,
-    Field(
-        description="Start of the time range, inclusive: ISO-8601 without a time zone, for example "
-        "'2005-07-01' or '2005-07-01T12:00:00', or a relative range such as 'last 7d' or 'last 24h', "
-        "which ends at the Dataset's last Log Entry, not today. Omit it to start at the first Log Entry."
-    ),
-]
-TimeToParam = Annotated[
-    str | None,
-    Field(
-        description="End of the time range, exclusive, ISO-8601 without a time zone. Omit it to end "
-        "after the last Log Entry, and always omit it with a relative time_from."
     ),
 ]
 UtcTimeFromParam = Annotated[
@@ -401,7 +393,12 @@ def prepare(
         alert_categories=alerts_,
     )
     scope = scope.model_copy(update={"time_zone": UTC_ZONE, "time_columns": time_columns(scope.datasets)})
-    notes = [*notes, *converted, clock_note({name: ranges[name] for name in scope.datasets})]
+    clock = clock_note(
+        {name: ranges[name] for name in scope.datasets},
+        lead=AGGREGATION_CLOCK_LEAD,
+        on_epoch=AGGREGATION_ON_EPOCH,
+    )
+    notes = [*notes, *converted, clock]
     start, end = time_bounds(scope)
     baseline = _baseline(baseline_from, baseline_to)
     filters = EntryFilters(
@@ -783,6 +780,8 @@ class Collected:
 
 
 __all__ = [
+    "AGGREGATION_CLOCK_LEAD",
+    "AGGREGATION_ON_EPOCH",
     "ALL",
     "BGL_ONLY_GROUPS",
     "GROUP_BYS",
@@ -808,8 +807,6 @@ __all__ = [
     "QueryParam",
     "Ranked",
     "SourcesParam",
-    "TimeFromParam",
-    "TimeToParam",
     "UtcTimeFromParam",
     "UtcTimeToParam",
     "baseline_of",

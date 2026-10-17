@@ -1,12 +1,13 @@
-"""`search_logs` SQL: one WHERE for the count, the rows and the facets; score-neutral filters; and
-never a BM25 sort with a second key (#2 round 2: a tie-break key after the score crashes SereneDB
-26.10.1 in 28 of 70 runs)."""
+"""`search_logs` SQL: one WHERE for the count, the rows and the facets; score-neutral filters; the
+time range on the UTC clock (#73: epoch_utc for BGL, whose ts is local time); and never a BM25 sort
+with a second key (#2 round 2: a tie-break key after the score crashes SereneDB 26.10.1 in 28 of 70
+runs)."""
 
 from __future__ import annotations
 
 import itertools
 import re
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -21,6 +22,10 @@ SETTINGS = load_settings({}, slm_schema="slm")
 BGL = relation("bgl", settings=SETTINGS)
 OS = relation("openstack", settings=SETTINGS)
 START, END = datetime(2005, 7, 1), datetime(2005, 8, 1)
+"""UTC, like every time input of search_logs (#73)."""
+START_EPOCH, END_EPOCH = 1_120_176_000.0, 1_122_854_400.0
+"""START and END as epoch_utc values: BGL's time range is a range of epoch_utc."""
+EPOCH_TIMESTAMP = 'make_timestamp(CAST(round(e."epoch_utc" * 1000000) AS BIGINT))'
 
 SRC_DIR = Path(__file__).parents[2] / "src"
 ORDER_BY = re.compile(r"ORDER\s+BY\s+(.+?)(?=\s+LIMIT\b|[\"')]|$)", re.IGNORECASE | re.MULTILINE)
@@ -65,8 +70,8 @@ def test_the_count_reads_the_index_with_the_text_predicate_and_score_neutral_fil
     assert statement.text == (
         'SELECT count(*) FROM "slm"."bgl_entry_idx" AS e WHERE '
         'e."message" @@ websearch_to_tsquery(%s)'
-        ' AND e."ts" @@ ts_ge(%s)::score(NULL)'
-        ' AND e."ts" @@ ts_lt(%s)::score(NULL)'
+        ' AND e."epoch_utc" @@ ts_ge(%s)::score(NULL)'
+        ' AND e."epoch_utc" @@ ts_lt(%s)::score(NULL)'
         ' AND e."component" @@ ts_any(%s::VARCHAR[])::score(NULL)'
         ' AND e."level" @@ ts_any(%s::VARCHAR[])::score(NULL)'
         ' AND e."node" @@ ts_any(%s::VARCHAR[])::score(NULL)'
@@ -76,8 +81,8 @@ def test_the_count_reads_the_index_with_the_text_predicate_and_score_neutral_fil
     )
     assert statement.params == (
         "ciod failed",
-        START,
-        END,
+        START_EPOCH,
+        END_EPOCH,
         ["APP"],
         ["FATAL"],
         ["R00-M0-N0-C:J02-U01"],
@@ -85,6 +90,40 @@ def test_the_count_reads_the_index_with_the_text_predicate_and_score_neutral_fil
         ["a0a0a0a0a0a0a001"],
         ["f0f0f0f0f0f0f0f0"],
     )
+
+
+def test_the_epoch_bounds_are_the_utc_times_in_seconds() -> None:
+    assert START.replace(tzinfo=UTC).timestamp() == START_EPOCH
+    assert END.replace(tzinfo=UTC).timestamp() == END_EPOCH
+
+
+def test_bgl_filters_its_time_range_on_epoch_utc_never_on_its_local_ts() -> None:
+    # BGL's ts is US Pacific local time; a ts range would select Log Entries 7 or 8 hours apart
+    # from count_by and trend, and cannot name either copy of the repeated fall-back hour (#73).
+    where = Search(BGL, text="x", start=START, end=END).where()
+
+    assert '"ts"' not in where.text
+    assert where.params == ("x", START_EPOCH, END_EPOCH)
+
+
+def test_openstack_filters_its_time_range_on_ts_which_is_utc() -> None:
+    where = Search(OS, text="x", start=START, end=END).where()
+
+    assert where.text == (
+        'e."message" @@ websearch_to_tsquery(%s)'
+        ' AND e."ts" @@ ts_ge(%s)::score(NULL)'
+        ' AND e."ts" @@ ts_lt(%s)::score(NULL)'
+    )
+    assert where.params == ("x", START, END)
+
+
+def test_first_and_last_seen_are_utc_for_bgl_and_openstack() -> None:
+    bgl = Search(BGL, text="x").facets_statement().text
+    openstack = Search(OS, text="x").facets_statement().text
+
+    assert f"{EPOCH_TIMESTAMP} AS ts" in bgl
+    assert 'e."ts"' not in bgl
+    assert 'e."ts" AS ts' in openstack
 
 
 def test_the_rows_and_the_facets_bind_the_same_filters_as_the_count() -> None:

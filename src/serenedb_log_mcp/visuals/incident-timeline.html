@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Incident timeline</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: var(--color-background-primary, #ffffff);
+    --bg-2: var(--color-background-secondary, #f4f4f2);
+    --text: var(--color-text-primary, #1f1f1d);
+    --text-2: var(--color-text-secondary, #5f5e5a);
+    --border: var(--color-border-secondary, #d9d8d3);
+    --danger: var(--color-text-danger, #b42318);
+    --font: var(--font-sans, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif);
+    --mono: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: var(--color-background-primary, #1c1c1a);
+      --bg-2: var(--color-background-secondary, #262624);
+      --text: var(--color-text-primary, #ececea);
+      --text-2: var(--color-text-secondary, #a5a49e);
+      --border: var(--color-border-secondary, #3a3a37);
+      --danger: var(--color-text-danger, #f97066);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: var(--color-background-primary, #1c1c1a);
+    --bg-2: var(--color-background-secondary, #262624);
+    --text: var(--color-text-primary, #ececea);
+    --text-2: var(--color-text-secondary, #a5a49e);
+    --border: var(--color-border-secondary, #3a3a37);
+    --danger: var(--color-text-danger, #f97066);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font: 13px/1.4 var(--font); }
+  main { padding: 12px 14px 10px; }
+  header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+  h1 { font-size: 14px; font-weight: 600; margin: 0; }
+  .cite { font-family: var(--mono); color: var(--text-2); }
+  .stats { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 8px 0 10px; }
+  .stat b { font-variant-numeric: tabular-nums; font-size: 15px; }
+  .stat span { color: var(--text-2); margin-left: 4px; }
+  .note { color: var(--text-2); margin: 6px 0 0; }
+  .error { color: var(--danger); }
+  svg { display: block; width: 100%; overflow: visible; }
+  svg text { fill: var(--text-2); font: 11px var(--font); }
+  svg .lane-label { fill: var(--text); font-family: var(--mono); }
+  svg .grid { stroke: var(--border); stroke-width: 1; }
+  svg .lane-bg { fill: var(--bg-2); }
+  svg rect.bar { stroke: var(--bg); stroke-width: 0.5; }
+  svg rect.bar:hover { stroke: var(--text); stroke-width: 1.5; }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 8px; color: var(--text-2); }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px;
+              vertical-align: -1px; }
+</style>
+</head>
+<body>
+<main id="app"><p class="note">Waiting for the list_incidents result.</p></main>
+<script>
+"use strict";
+
+// The Incident timeline of one list_incidents result (serenedb-log, T23).
+// Protocol: MCP Apps, ext-apps spec 2026-01-26, JSON-RPC 2.0 over postMessage with the host.
+// The view draws only what the Evidence envelope holds; every number comes from it unchanged.
+
+var PROTOCOL_VERSION = "2026-01-26";
+var SHAPE_COLORS = {
+  "single-node storm": "#d1495b",
+  "single-node isolated": "#edae49",
+  "one midplane": "#66a182",
+  "multi-midplane": "#00798c",
+  "machine-wide": "#6c4ab6"
+};
+var DEFAULT_COLOR = "#00798c";
+
+function parseTime(value) {
+  // Timestamps arrive as logged, without a zone; read and print them as UTC so they never shift.
+  if (value === null || value === undefined) return NaN;
+  var text = String(value).replace(" ", "T");
+  if (!/(Z|[+-]\d\d:?\d\d)$/.test(text)) text += "Z";
+  return Date.parse(text);
+}
+
+function formatTime(ms) {
+  return new Date(ms).toISOString().slice(0, 16).replace("T", " ");
+}
+
+// Pure: the drawing model of one tool result's structuredContent. Positions are fractions of the
+// time range of the listed Incidents; lanes are Patterns in order of first appearance.
+function timelineModel(envelope) {
+  if (!envelope || typeof envelope !== "object" || !Array.isArray(envelope.columns)) {
+    return { error: "This result carries no Evidence envelope." };
+  }
+  if (envelope.tool && envelope.tool !== "list_incidents") {
+    return { error: "This view draws list_incidents results, not " + envelope.tool + "." };
+  }
+  var columns = envelope.columns;
+  var at = function (name) { return columns.indexOf(name); };
+  var col = {
+    pattern_key: at("pattern_key"), incident_id: at("incident_id"), t0: at("t0"), t1: at("t1"),
+    duration_s: at("duration_s"), entries: at("entries"), shape: at("shape"),
+    nodes: at("nodes"), sources: at("sources")
+  };
+  var summary = envelope.summary || {};
+  var model = {
+    evidence_id: envelope.evidence_id || null,
+    datasets: (envelope.data_scope && envelope.data_scope.datasets) || [],
+    entries_total: summary.entries_total,
+    incidents_total: summary.incidents_total,
+    shown: (envelope.rows || []).length,
+    truncated: Boolean(envelope.truncated),
+    lanes: [],
+    bars: [],
+    t_min: null,
+    t_max: null
+  };
+  if (col.t0 < 0 || col.t1 < 0 || col.pattern_key < 0) {
+    if (model.shown) model.error = "The result has no pattern_key, t0 and t1 columns to draw.";
+    return model;
+  }
+  var rows = (envelope.rows || []).map(function (row) {
+    var start = parseTime(row[col.t0]);
+    var end = parseTime(row[col.t1]);
+    return { row: row, start: start, end: isNaN(end) ? start : Math.max(start, end) };
+  }).filter(function (item) { return !isNaN(item.start); });
+  rows.sort(function (a, b) { return a.start - b.start; });
+  if (!rows.length) return model;
+  var tMin = Math.min.apply(null, rows.map(function (r) { return r.start; }));
+  var tMax = Math.max.apply(null, rows.map(function (r) { return r.end; }));
+  var span = tMax > tMin ? tMax - tMin : 1;
+  model.t_min = tMin;
+  model.t_max = tMax;
+  var get = function (row, index) { return index >= 0 ? row[index] : null; };
+  rows.forEach(function (item) {
+    var row = item.row;
+    var key = String(get(row, col.pattern_key));
+    if (model.lanes.indexOf(key) < 0) model.lanes.push(key);
+    model.bars.push({
+      pattern_key: key,
+      lane: model.lanes.indexOf(key),
+      incident_id: get(row, col.incident_id),
+      t0: get(row, col.t0),
+      t1: get(row, col.t1),
+      duration_s: get(row, col.duration_s),
+      entries: get(row, col.entries),
+      spread: col.nodes >= 0 ? get(row, col.nodes) : get(row, col.sources),
+      spread_unit: col.nodes >= 0 ? "nodes" : "sources",
+      shape: get(row, col.shape),
+      start: (item.start - tMin) / span,
+      end: (item.end - tMin) / span
+    });
+  });
+  return model;
+}
+
+// ----------------------------------------------------------------- drawing
+
+var SVG_NS = "http://www.w3.org/2000/svg";
+
+function el(tag, attrs, text) {
+  var node = document.createElement(tag);
+  Object.keys(attrs || {}).forEach(function (k) { node.setAttribute(k, attrs[k]); });
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+function svgEl(tag, attrs, text) {
+  var node = document.createElementNS(SVG_NS, tag);
+  Object.keys(attrs || {}).forEach(function (k) { node.setAttribute(k, attrs[k]); });
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+function number(value) {
+  return typeof value === "number" ? value.toLocaleString("en-US") : (value === null || value === undefined ? "?" : String(value));
+}
+
+function stat(value, label) {
+  var box = el("div", { "class": "stat" });
+  box.appendChild(el("b", {}, number(value)));
+  box.appendChild(el("span", {}, label));
+  return box;
+}
+
+function render(model) {
+  var app = document.getElementById("app");
+  app.textContent = "";
+  var header = el("header");
+  header.appendChild(el("h1", {}, "Incident timeline" + (model.datasets && model.datasets.length ? " · " + model.datasets.join(", ") : "")));
+  if (model.evidence_id) header.appendChild(el("span", { "class": "cite" }, "[" + model.evidence_id + "]"));
+  app.appendChild(header);
+  if (model.error) {
+    app.appendChild(el("p", { "class": "error" }, model.error));
+    return;
+  }
+  // entries_total and incidents_total are different units: always shown together, labelled.
+  var stats = el("div", { "class": "stats" });
+  stats.appendChild(stat(model.incidents_total, "Incidents"));
+  stats.appendChild(stat(model.entries_total, "Log Entries"));
+  app.appendChild(stats);
+  if (!model.bars.length) {
+    app.appendChild(el("p", { "class": "note" }, "No Incident in this Data Scope."));
+    return;
+  }
+
+  var labelW = 132, laneH = 26, top = 4, axisH = 22, right = 8;
+  var width = Math.max(320, app.clientWidth || 600);
+  var plotW = width - labelW - right;
+  var height = top + model.lanes.length * laneH + axisH;
+  var svg = svgEl("svg", { viewBox: "0 0 " + width + " " + height, height: height, role: "img",
+    "aria-label": "Incident timeline, one lane per Pattern" });
+  model.lanes.forEach(function (lane, i) {
+    var y = top + i * laneH;
+    svg.appendChild(svgEl("rect", { "class": "lane-bg", x: labelW, y: y + 2, width: plotW, height: laneH - 4, rx: 3,
+      opacity: i % 2 ? 0.5 : 1 }));
+    var label = svgEl("text", { "class": "lane-label", x: labelW - 8, y: y + laneH / 2 + 4, "text-anchor": "end" },
+      lane.length > 18 ? lane.slice(0, 17) + "…" : lane);
+    label.appendChild(svgEl("title", {}, lane));
+    svg.appendChild(label);
+  });
+  var maxEntries = Math.max.apply(null, model.bars.map(function (b) { return Number(b.entries) || 1; }));
+  model.bars.forEach(function (bar) {
+    // Bar height grows with log(entries), so one storm and one quiet Incident read differently.
+    var share = Math.log10(1 + (Number(bar.entries) || 1)) / Math.log10(1 + maxEntries);
+    var h = 6 + share * (laneH - 12);
+    var x = labelW + bar.start * plotW;
+    var w = Math.max(3, (bar.end - bar.start) * plotW);
+    if (x + w > labelW + plotW) x = labelW + plotW - w;
+    var y = top + bar.lane * laneH + (laneH - h) / 2;
+    var rect = svgEl("rect", { "class": "bar", x: x, y: y, width: w, height: h, rx: 2,
+      fill: SHAPE_COLORS[bar.shape] || DEFAULT_COLOR });
+    rect.appendChild(svgEl("title", {}, [
+      bar.pattern_key + " · Incident " + bar.incident_id,
+      bar.t0 + " → " + bar.t1 + " (" + number(bar.duration_s) + " s)",
+      number(bar.entries) + " Log Entries · " + number(bar.spread) + " " + bar.spread_unit,
+      bar.shape ? "Shape: " + bar.shape : ""
+    ].filter(Boolean).join("\n")));
+    svg.appendChild(rect);
+  });
+  var axisY = top + model.lanes.length * laneH;
+  svg.appendChild(svgEl("line", { "class": "grid", x1: labelW, x2: labelW + plotW, y1: axisY, y2: axisY }));
+  [0, 0.5, 1].forEach(function (f) {
+    var x = labelW + f * plotW;
+    svg.appendChild(svgEl("line", { "class": "grid", x1: x, x2: x, y1: axisY, y2: axisY + 4 }));
+    svg.appendChild(svgEl("text", { x: x, y: axisY + 16, "text-anchor": f === 0 ? "start" : f === 1 ? "end" : "middle" },
+      formatTime(model.t_min + f * (model.t_max - model.t_min))));
+  });
+  app.appendChild(svg);
+
+  var shapes = [];
+  model.bars.forEach(function (b) { if (b.shape && shapes.indexOf(b.shape) < 0) shapes.push(b.shape); });
+  if (shapes.length) {
+    var legend = el("div", { "class": "legend" });
+    shapes.forEach(function (shape) {
+      var item = el("span");
+      item.appendChild(el("i", { style: "background:" + (SHAPE_COLORS[shape] || DEFAULT_COLOR) }));
+      item.appendChild(document.createTextNode(shape));
+      legend.appendChild(item);
+    });
+    app.appendChild(legend);
+  }
+  var note = "Showing " + number(model.shown) + " of " + number(model.incidents_total) +
+    " Incidents; the totals above cover all of them. Times as logged. Bar height grows with Log Entries.";
+  app.appendChild(el("p", { "class": "note" }, note));
+}
+
+// ----------------------------------------------------------------- the host bridge
+
+function startBridge() {
+  var nextId = 1;
+  var pending = {};
+  var lastModel = null;
+
+  function post(message) { window.parent.postMessage(message, "*"); }
+  function request(method, params) {
+    var id = nextId++;
+    post({ jsonrpc: "2.0", id: id, method: method, params: params });
+    return new Promise(function (resolve, reject) { pending[id] = { resolve: resolve, reject: reject }; });
+  }
+  function notify(method, params) { post({ jsonrpc: "2.0", method: method, params: params || {} }); }
+
+  function applyContext(context) {
+    if (!context) return;
+    if (context.theme) document.documentElement.setAttribute("data-theme", context.theme);
+    var variables = context.styles && context.styles.variables;
+    if (variables) {
+      Object.keys(variables).forEach(function (name) {
+        if (variables[name]) document.documentElement.style.setProperty(name, variables[name]);
+      });
+    }
+    if (lastModel) render(lastModel);
+  }
+
+  function showResult(params) {
+    if (params && params.isError) {
+      var text = (params.content && params.content[0] && params.content[0].text) || "The tool call failed.";
+      lastModel = { error: text };
+    } else {
+      var envelope = params && params.structuredContent;
+      if (!envelope && params && params.content && params.content[0] && params.content[0].text) {
+        try { envelope = JSON.parse(params.content[0].text); } catch (e) { envelope = null; }
+      }
+      lastModel = timelineModel(envelope);
+    }
+    render(lastModel);
+  }
+
+  window.addEventListener("message", function (event) {
+    if (event.source !== window.parent) return;
+    var data = event.data;
+    if (!data || data.jsonrpc !== "2.0") return;
+    if (data.id !== undefined && pending[data.id] && !data.method) {
+      var waiter = pending[data.id];
+      delete pending[data.id];
+      if (data.error) waiter.reject(new Error(data.error.message || "host error"));
+      else waiter.resolve(data.result);
+      return;
+    }
+    if (data.method === "ui/notifications/tool-result") showResult(data.params);
+    else if (data.method === "ui/notifications/host-context-changed") applyContext(data.params);
+    else if (data.method === "ui/notifications/tool-cancelled") render({ error: "The tool call was cancelled." });
+    else if (data.id !== undefined && (data.method === "ping" || data.method === "ui/resource-teardown")) {
+      post({ jsonrpc: "2.0", id: data.id, result: {} });
+    }
+  });
+
+  window.addEventListener("resize", function () { if (lastModel) render(lastModel); });
+
+  var lastSize = "";
+  var reportSize = function () {
+    // Measure the content, not the document: the document is never shorter than the iframe, so
+    // its height could grow with the host but never shrink back.
+    var box = document.getElementById("app").getBoundingClientRect();
+    var width = Math.ceil(box.width);
+    var height = Math.ceil(box.height);
+    var size = width + "x" + height;
+    if (size === lastSize) return;
+    lastSize = size;
+    notify("ui/notifications/size-changed", { width: width, height: height });
+  };
+
+  request("ui/initialize", {
+    appInfo: { name: "serenedb-log incident timeline", version: "1.0.0" },
+    appCapabilities: { availableDisplayModes: ["inline"] },
+    protocolVersion: PROTOCOL_VERSION
+  }).then(function (result) {
+    applyContext(result && result.hostContext);
+    notify("ui/notifications/initialized", {});
+    if (typeof ResizeObserver !== "undefined") new ResizeObserver(reportSize).observe(document.getElementById("app"));
+    reportSize();
+  }, function (error) {
+    render({ error: "The host did not complete ui/initialize: " + error.message });
+  });
+}
+
+if (typeof window !== "undefined" && window.parent && window.parent !== window) startBridge();
+</script>
+</body>
+</html>

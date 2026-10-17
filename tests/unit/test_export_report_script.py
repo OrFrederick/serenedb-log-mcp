@@ -35,7 +35,8 @@ def test_it_writes_the_markdown_the_tool_returns(files: tuple[Path, Path], tmp_p
     code = export_report.main([str(ledger), str(answers_file), "--role", "engineer", "--out", str(out)])
 
     assert code == 0
-    expected = render_investigation(Role.ENGINEER, TITLE, answers(), records(), incident_tools=False)
+    # The product server offers list_incidents and top_patterns (T27, T28), so the side-by-side check runs.
+    expected = render_investigation(Role.ENGINEER, TITLE, answers(), records(), incident_tools=True)
     assert out.read_text(encoding="utf-8") == expected.markdown
     assert ledger.read_bytes() == before
 

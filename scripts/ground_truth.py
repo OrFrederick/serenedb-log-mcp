@@ -2,7 +2,16 @@
 """Score our detections against the published ground truth; the only reader of the labels.
 
 Usage (DATABASE_URL, SLM_SCHEMA, SLM_DATA_DIR from the environment):
+    uv run python scripts/ground_truth.py bgl       [--output docs/results/ground-truth.md]
     uv run python scripts/ground_truth.py openstack [--output docs/results/ground-truth.md]
+
+`bgl` (T10): scores the default Incident table against Oliner & Stearley's published BG/L
+filtering result (DSN 2007), which is this Dataset's ground truth: 348,460 expert-tagged alerts
+reduce to 1,202 distinct failures, with per-category counts for the ten largest categories. It
+reports the total, the per-category agreement, the false positives at the same threshold, a
+threshold sweep that shows which gap reproduces the published total, and how long the Incident
+derive step takes. It also states plainly what the labels do and do not establish, because the
+BGL alert category is both the published label and the Pattern key the step chains on.
 
 `openstack` (T11): reads the OpenStack labels, raw/anomaly_labels.txt under SLM_DATA_DIR (the four
 instances with injected faults), calls `latency_stats` exactly as an agent would (metric 'spawn'
@@ -11,9 +20,10 @@ min_z thresholds, where each ranks, which flagged instance is not labelled (a Hy
 any Log Entry of a labelled instance is above INFO (so text search could find it), and how long the
 derive step and the calls take.
 
-The result goes into its own section of docs/results/ground-truth.md, between
-`<!-- BEGIN openstack -->` and `<!-- END openstack -->`; other sections of the file (T10's BGL
-result) are left as they are.
+Each result goes into its own section of docs/results/ground-truth.md, between
+`<!-- BEGIN bgl -->` and `<!-- END bgl -->` or `<!-- BEGIN openstack -->` and
+`<!-- END openstack -->`; the other sections of the file are left as they are, so the two
+subcommands can be run in either order.
 
 No tool, derive step or canonical table may read the labels (plan section 2.2); tests enforce it.
 """
@@ -24,7 +34,7 @@ import argparse
 import re
 import sys
 import time
-from collections.abc import Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -43,12 +53,14 @@ from serenedb_log_mcp.server import create_server
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_OUTPUT = ROOT / "docs" / "results" / "ground-truth.md"
-LABELS = Path("raw") / "anomaly_labels.txt"
+OPENSTACK_LABELS = Path("raw") / "anomaly_labels.txt"
 INSTANCE_STEP = ROOT / "sql" / "derive" / "60_os_instance.sql"
 INSTANCE_HEADER = "CREATE OR REPLACE TABLE ${slm}.os_instance AS"
-THRESHOLDS = (3.5, 5.0, 8.0)
-DEFAULT_MIN_Z = 5.0
-METRICS = ("spawn", "build")
+INCIDENT_STEP = ROOT / "sql" / "derive" / "30_incidents.sql"
+INCIDENT_HEADER = "CREATE OR REPLACE TABLE ${slm}.incident AS"
+OPENSTACK_THRESHOLDS = (3.5, 5.0, 8.0)
+OPENSTACK_DEFAULT_MIN_Z = 5.0
+OPENSTACK_METRICS = ("spawn", "build")
 ROWS = 50
 TOP = 6
 UUID_RE = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
@@ -156,7 +168,7 @@ def measure_metric(metric: str, labels: set[str]) -> MetricResult:
     """One latency_stats call per threshold; the flags are the tool's own (z >= min_z, unrounded)."""
     scores: list[Score] = []
     default: dict[str, Any] = {}
-    for threshold in THRESHOLDS:
+    for threshold in OPENSTACK_THRESHOLDS:
         evidence = call_latency_stats(
             role="engineer", metric=metric, group_by="instance", min_z=threshold, limit=ROWS
         )
@@ -168,7 +180,7 @@ def measure_metric(metric: str, labels: set[str]) -> MetricResult:
                 f"{threshold:g}, more than the {len(rows)} rows returned; the scores need more rows"
             )
         scores.append(score(ranked, labels, threshold))
-        if threshold == DEFAULT_MIN_Z:
+        if threshold == OPENSTACK_DEFAULT_MIN_Z:
             default = {"rows": rows, "summary": evidence["summary"], "query_ms": evidence["query_ms"]}
     return MetricResult(
         metric=metric,
@@ -214,6 +226,30 @@ def _ranks(score: Score) -> str:
     )
 
 
+def _cut_disclosure(scores: Sequence[Score]) -> str:
+    """Where the default min_z comes from, and what of the result depends on it."""
+    text = (
+        f"**The default cut is not blind.** The default min_z {OPENSTACK_DEFAULT_MIN_Z:g} was chosen by "
+        "research that had already seen the labels (#1, `sql_os_detect.sql`). "
+    )
+    thresholds = ", ".join(f"{s.min_z:g}" for s in scores)
+    if len({s.recall for s in scores}) == 1:
+        found, total = scores[0].recall
+        return text + (
+            f"Recall is {found} of {total} at all {len(scores)} thresholds reported ({thresholds}), so it "
+            "does not depend on the cut; precision does: "
+            + ", ".join(f"{s.true_positives}/{s.flagged} at {s.min_z:g}" for s in scores)
+            + "."
+        )
+    return text + (
+        "Recall depends on the cut: "
+        + ", ".join(f"{s.true_positives} of {s.labels} at {s.min_z:g}" for s in scores)
+        + "; precision: "
+        + ", ".join(f"{s.true_positives}/{s.flagged} at {s.min_z:g}" for s in scores)
+        + "."
+    )
+
+
 def render_openstack(
     *,
     labels: Sequence[str],
@@ -225,28 +261,32 @@ def render_openstack(
     generated: datetime,
 ) -> str:
     spawn = next(r for r in results if r.metric == "spawn")
-    default = next(s for s in spawn.scores if s.min_z == DEFAULT_MIN_Z)
+    default = next(s for s in spawn.scores if s.min_z == OPENSTACK_DEFAULT_MIN_Z)
     found, total = default.recall
     label_set = set(labels)
     lines = [
         "## OpenStack: slow spawns found by timing (T11)",
         "",
         f"Generated by `uv run python scripts/ground_truth.py openstack` on {generated:%Y-%m-%d %H:%M} UTC "
-        f"against schema `{schema}` ({version}). The labels, `{LABELS.as_posix()}` with {len(labels)} "
-        "instances, are read only by this script; the derive step and `latency_stats` never see them.",
+        f"against schema `{schema}` ({version}). The labels, `{OPENSTACK_LABELS.as_posix()}` with "
+        f"{len(labels)} instances, are read only by this script; the derive step and `latency_stats` "
+        "never see them.",
         "",
         f"**Result: {found} of {total}.** `latency_stats(metric='spawn', group_by='instance')` flags "
-        f"{default.flagged} instances at the default min_z {DEFAULT_MIN_Z:g}; {found} of them are labelled, "
-        f"ranked {_ranks(default)} by spawn time. The robust z-score is (spawn_s - median) / (1.4826 * MAD) "
+        f"{default.flagged} instances at the default min_z {OPENSTACK_DEFAULT_MIN_Z:g}; {found} of them are "
+        f"labelled, ranked {_ranks(default)} by spawn time. The robust z-score is "
+        "(spawn_s - median) / (1.4826 * MAD) "
         f"over {spawn.summary['reference_instances']:,} instances (median {spawn.summary['median_s']} s, "
         f"MAD {spawn.summary['mad_s']} s).",
+        "",
+        _cut_disclosure(spawn.scores),
         "",
         "| Metric | min_z | Flagged | Labelled and flagged | Precision | Ranks of the labelled instances |",
         "|---|---|---|---|---|---|",
     ]
     for result in results:
         for s in result.scores:
-            marker = " (default)" if s.min_z == DEFAULT_MIN_Z else ""
+            marker = " (default)" if s.min_z == OPENSTACK_DEFAULT_MIN_Z else ""
             lines.append(
                 f"| {result.metric} | {s.min_z:g}{marker} | {s.flagged} | {s.true_positives} of {s.labels} | "
                 f"{s.true_positives}/{s.flagged} | {_ranks(s)} |"
@@ -295,9 +335,405 @@ def render_openstack(
     return "\n".join(lines)
 
 
-def read_labels(settings: Settings) -> list[str]:
+# ----------------------------------------------------------------- BGL: the published counts (T10)
+
+# Oliner & Stearley's published BG/L filtering result, which is this Dataset's ground truth:
+# A. J. Oliner, J. Stearley, "What Supercomputers Say: A Study of Five System Logs", DSN 2007
+# (DOI 10.1109/DSN.2007.103). The table is reproduced as Table 2.1.2 of A. J. Oliner, "Using
+# Influence to Understand Complex Systems", Stanford 2011. Each row is (alert category, raw
+# alerts, distinct failures after filtering). The paper names the ten largest of the 41 BG/L
+# categories and aggregates the other 31, so the aggregate is scored as one row.
+PUBLISHED_BGL: tuple[tuple[str, int, int], ...] = (
+    ("KERNDTLB", 152_734, 37),
+    ("KERNSTOR", 63_491, 8),
+    ("APPSEV", 49_651, 138),
+    ("KERNMNTF", 31_531, 105),
+    ("KERNTERM", 23_338, 99),
+    ("KERNREC", 6_145, 9),
+    ("APPREAD", 5_983, 11),
+    ("KERNRTSP", 3_983, 260),
+    ("APPRES", 2_370, 13),
+    ("APPUNAV", 2_048, 3),
+)
+OTHERS = "31 Others"
+PUBLISHED_OTHERS = (OTHERS, 7_186, 519)
+PUBLISHED_TOTAL = ("BG/L", 348_460, 1_202)
+# The sweep: the paper's own stated threshold, the ends of the stable band of #1, and the default.
+BGL_THRESHOLDS = (5, 60, 300, 600)
+BGL_GAP_S = 300
+BGL_CATEGORIES = 41
+
+
+@dataclass(frozen=True)
+class CategoryScore:
+    """One published row against what the Incident table holds for it."""
+
+    category: str
+    published_alerts: int
+    measured_alerts: int
+    published_failures: int
+    measured_incidents: int
+
+    @property
+    def difference(self) -> int:
+        """Incidents beyond the published count; negative when we report fewer."""
+        return self.measured_incidents - self.published_failures
+
+    @property
+    def alerts_agree(self) -> bool:
+        """The raw alert count is the label itself, so it must match exactly."""
+        return self.published_alerts == self.measured_alerts
+
+
+@dataclass(frozen=True)
+class BglScore:
+    """The published rows, the aggregate and the total, scored at one threshold."""
+
+    threshold_s: int
+    rows: tuple[CategoryScore, ...]
+    total: CategoryScore
+
+    @property
+    def exact(self) -> int:
+        return sum(row.difference == 0 for row in self.rows)
+
+    @property
+    def false_positives(self) -> int:
+        """Incidents we report that the published counts do not: the per-row excess."""
+        return sum(row.difference for row in self.rows if row.difference > 0)
+
+    @property
+    def missed(self) -> int:
+        """Published failures we do not split out: the per-row shortfall, as a positive count."""
+        return -sum(row.difference for row in self.rows if row.difference < 0)
+
+    @property
+    def label_mismatches(self) -> list[str]:
+        return [row.category for row in (*self.rows, self.total) if not row.alerts_agree]
+
+
+def score_bgl(measured: Mapping[str, tuple[int, int]], threshold_s: int) -> BglScore:
+    """Score `measured` (alert category -> (Log Entries, Incidents)) against the published table.
+
+    The 31 categories the paper does not name are summed into one aggregate row, which is how the
+    paper reports them. A category the paper names but the corpus does not hold is an error: it
+    would mean the Dataset is not the one the paper studied.
+    """
+    missing = [category for category, _, _ in PUBLISHED_BGL if category not in measured]
+    if missing:
+        raise GroundTruthError(
+            "the corpus holds no Log Entry for the published alert categories "
+            + ", ".join(missing)
+            + "; is this the BGL Dataset of Oliner & Stearley?"
+        )
+    named = {category for category, _, _ in PUBLISHED_BGL}
+    rows = [
+        CategoryScore(category, alerts, measured[category][0], failures, measured[category][1])
+        for category, alerts, failures in PUBLISHED_BGL
+    ]
+    others = [value for key, value in measured.items() if key not in named]
+    rows.append(
+        CategoryScore(
+            OTHERS,
+            PUBLISHED_OTHERS[1],
+            sum(alerts for alerts, _ in others),
+            PUBLISHED_OTHERS[2],
+            sum(incidents for _, incidents in others),
+        )
+    )
+    total = CategoryScore(
+        PUBLISHED_TOTAL[0],
+        PUBLISHED_TOTAL[1],
+        sum(alerts for alerts, _ in measured.values()),
+        PUBLISHED_TOTAL[2],
+        sum(incidents for _, incidents in measured.values()),
+    )
+    return BglScore(threshold_s=threshold_s, rows=tuple(rows), total=total)
+
+
+def measured_bgl(conn: psycopg.Connection[Any]) -> dict[str, tuple[int, int]]:
+    """Per BGL alert category: its Log Entries, and its Incidents in the default table.
+
+    The Log Entries come from the entry table and the Incidents from the Incident table, so the
+    two sides of every published row are counted independently. Only the alert categories are
+    read: since T9 the table also holds the template-keyed Patterns of the non-alert Log Entries,
+    and those have no published ground truth.
+    """
+    bgl = relation("bgl")
+    alerts = {
+        str(row[0]): int(row[1])
+        for row in conn.execute(
+            sql.SQL("SELECT alert_tag, count(*) FROM {} WHERE alert_tag IS NOT NULL GROUP BY 1").format(
+                bgl.table
+            )
+        ).fetchall()
+    }
+    incidents = {
+        str(row[0]): int(row[1])
+        for row in conn.execute(
+            sql.SQL(
+                "SELECT pattern_key, count(*) FROM {inc} WHERE dataset = 'bgl' AND pattern_key IN "
+                "(SELECT DISTINCT alert_tag FROM {bgl} WHERE alert_tag IS NOT NULL) GROUP BY 1"
+            ).format(inc=bgl.incidents_table, bgl=bgl.table)
+        ).fetchall()
+    }
+    if set(alerts) != set(incidents):
+        raise GroundTruthError(
+            "the Incident table does not cover every alert category: "
+            f"{sorted(set(alerts) ^ set(incidents))}. Run `make derive`."
+        )
+    return {category: (count, incidents[category]) for category, count in alerts.items()}
+
+
+def sweep_bgl(conn: psycopg.Connection[Any], thresholds: Sequence[int]) -> dict[int, BglScore]:
+    """Score the same chaining at each threshold, recomputed from the Log Entries.
+
+    This does not read the Incident table: it chains the alert Log Entries at each threshold, so
+    the sweep shows what the published total would have been at another gap. At the default gap it
+    must agree with the table, which `run_bgl` checks.
+    """
+    bgl = relation("bgl")
+    alerts = {
+        str(row[0]): int(row[1])
+        for row in conn.execute(
+            sql.SQL("SELECT alert_tag, count(*) FROM {} WHERE alert_tag IS NOT NULL GROUP BY 1").format(
+                bgl.table
+            )
+        ).fetchall()
+    }
+    scores: dict[int, BglScore] = {}
+    for threshold in thresholds:
+        chains = {
+            str(row[0]): int(row[1])
+            for row in conn.execute(
+                sql.SQL(
+                    "SELECT alert_tag, count(*) FILTER (WHERE previous IS NULL OR "
+                    "epoch_utc - previous > %s) FROM (SELECT alert_tag, epoch_utc, "
+                    "lag(epoch_utc) OVER (PARTITION BY alert_tag ORDER BY epoch_utc, entry_id) AS previous "
+                    "FROM {} WHERE alert_tag IS NOT NULL) x GROUP BY 1"
+                ).format(bgl.table),
+                [threshold],
+            ).fetchall()
+        }
+        scores[threshold] = score_bgl(
+            {category: (count, chains[category]) for category, count in alerts.items()}, threshold
+        )
+    return scores
+
+
+def local_time_chains(conn: psycopg.Connection[Any], threshold_s: int) -> tuple[int, int]:
+    """The alert chain count at `threshold_s` taken on `epoch_utc` and on the local `ts`.
+
+    BGL `ts` is US Pacific local time with daylight saving time, so a gap taken on it is an hour
+    short at the fall-back. The two numbers say whether this check can tell the difference.
+    """
+    bgl = relation("bgl")
+    row = conn.execute(
+        sql.SQL(
+            "SELECT count(*) FILTER (WHERE utc_previous IS NULL OR epoch_utc - utc_previous > %s), "
+            "count(*) FILTER (WHERE local_previous IS NULL OR epoch_us(ts) / 1e6 - local_previous > %s) "
+            "FROM (SELECT epoch_utc, ts, "
+            "lag(epoch_utc) OVER (PARTITION BY alert_tag ORDER BY epoch_utc, entry_id) AS utc_previous, "
+            "lag(epoch_us(ts) / 1e6) OVER (PARTITION BY alert_tag ORDER BY epoch_us(ts), entry_id) "
+            "AS local_previous FROM {} WHERE alert_tag IS NOT NULL) x"
+        ).format(bgl.table),
+        [threshold_s, threshold_s],
+    ).fetchone()
+    if row is None:
+        raise GroundTruthError("the chain counts came back empty")
+    return int(row[0]), int(row[1])
+
+
+def incident_seconds(conn: psycopg.Connection[Any], schema: str) -> float:
+    """How long the Incident derive step takes, rebuilt into a temporary table.
+
+    Nothing shared changes, so this is safe to run against an instance other people read.
+    """
+    text = INCIDENT_STEP.read_text()
+    if INCIDENT_HEADER not in text:
+        raise GroundTruthError(f"{INCIDENT_STEP.name} no longer starts its table with {INCIDENT_HEADER!r}")
+    timing = text.replace(INCIDENT_HEADER, "CREATE OR REPLACE TEMPORARY TABLE incident_timing AS")
+    row = conn.execute("SELECT version()").fetchone()
+    version = derive.serenedb_version(str(row[0]) if row else "")
+    statements = derive.split_statements(derive.render(timing, derive.variables(schema, "public", version)))
+    started = time.perf_counter()
+    for statement in statements:
+        conn.execute(statement)
+    seconds = time.perf_counter() - started
+    conn.execute("DROP TABLE IF EXISTS temp.main.incident_timing")
+    return seconds
+
+
+def render_bgl(
+    *,
+    score: BglScore,
+    sweep: Mapping[int, BglScore],
+    utc_chains: int,
+    local_chains: int,
+    shapes: Sequence[tuple[str, int]],
+    headline: tuple[int, int, str, str],
+    derive_s: float,
+    table_incidents: int,
+    schema: str,
+    version: str,
+    generated: datetime,
+) -> str:
+    """The BGL section of docs/results/ground-truth.md."""
+    entries, nodes, node, day = headline
+    kerndtlb = next(failures for category, _, failures in PUBLISHED_BGL if category == "KERNDTLB")
+    lines = [
+        "## BGL: the published failure counts reproduced (T10)",
+        "",
+        f"Generated by `uv run python scripts/ground_truth.py bgl` on {generated:%Y-%m-%d %H:%M} UTC "
+        f"against schema `{schema}` ({version}).",
+        "",
+        f"**Result: {score.total.measured_incidents:,} of {score.total.published_failures:,} distinct "
+        f"failures, {score.exact} of {len(score.rows)} published per-category counts exact, "
+        f"{score.false_positives} false positives and {score.missed} missed at the same threshold.** "
+        "A false positive here is an Incident we report that the published count for that category "
+        "does not; a miss is a published failure we do not split out.",
+        "",
+        f"Oliner & Stearley filtered BG/L's {score.total.published_alerts:,} expert-tagged alerts down "
+        f"to {score.total.published_failures:,} distinct failures. Chaining the same alerts per "
+        f"category at `gap_s = {score.threshold_s}` with `merge_scope = all`, on the UTC epoch column, "
+        f"gives {score.total.measured_incidents:,} Incidents. The query is the derive step "
+        "`sql/derive/30_incidents.sql`; this script reads its table.",
+        "",
+        "| Alert category | Published alerts | Our Log Entries | Published failures | Our Incidents "
+        "| Difference |",
+        "|---|---|---|---|---|---|",
+    ]
+    for row in (*score.rows, score.total):
+        emphasis = "**" if row.category == PUBLISHED_TOTAL[0] else ""
+        lines.append(
+            f"| {emphasis}{row.category}{emphasis} | {row.published_alerts:,} | {row.measured_alerts:,} "
+            f"| {row.published_failures:,} | {row.measured_incidents:,} | {row.difference:+d} |"
+        )
+    lines += [
+        "",
+        "**What the labels establish.** Every raw alert count matches exactly, so this is the Dataset "
+        "the paper studied and our Pattern key is the paper's alert category. The chaining then "
+        f"reproduces the published total exactly and {score.exact} of the {len(score.rows)} published "
+        "per-category counts.",
+        "",
+        "**What they do not establish.** Three limits, and they matter:",
+        "",
+        f"1. `gap_s = {BGL_GAP_S}` was chosen because it reproduces the published total (#1). The total "
+        "is therefore a fitted number, not an independent one. Only the per-category breakdown is "
+        "independent, because no constant was tuned on it: the paper publishes one aggregate count and "
+        f"ten per-category counts, and the {BGL_GAP_S} s was fitted on the aggregate alone.",
+        "2. The BGL alert category is both the published label and the Pattern key the derive step "
+        "chains on, so this check scores the filtering, not alert detection. It says nothing about "
+        "whether we could find these alerts in an unlabelled log. The OpenStack section of this file "
+        "is the check that runs without labels.",
+        f"3. The paper's text states T = 5 s, which gives {sweep[5].total.measured_incidents:,} "
+        f"Incidents, {sweep[5].total.difference:+,} against its own published total. That T = "
+        f"{BGL_GAP_S} s is the intended value is our inference, and the README must say so.",
+        "",
+        "**Threshold sweep.** Only the default gap reproduces the published total.",
+        "",
+        "| gap_s | Incidents | Against the published 1,202 | Per-category exact | False positives |",
+        "|---|---|---|---|---|",
+    ]
+    for threshold in sorted(sweep):
+        swept = sweep[threshold]
+        marker = " (default)" if threshold == BGL_GAP_S else ""
+        lines.append(
+            f"| {threshold}{marker} | {swept.total.measured_incidents:,} | "
+            f"{swept.total.difference:+d} | {swept.exact} of {len(swept.rows)} | "
+            f"{swept.false_positives} |"
+        )
+    lines += [
+        "",
+        f"**This check does not test the time zone.** At {BGL_GAP_S} s the alert categories chain into "
+        f"{utc_chains:,} Incidents on the UTC column and {local_chains:,} on the local `ts`, so the "
+        "published count cannot tell the two apart. The difference shows only over all "
+        "4,747,963 BGL Log Entries, where the same chaining gives 8,149 chains on UTC and 8,148 on "
+        "`ts`, because the 3,718.57 s gap before 2005-10-30 01:20:02.690798 PST looks like 118.57 s in "
+        "local time. That single chain is pinned by `tests/corpus/test_canonical_corpus.py`, which is "
+        "where the time-zone handling is checked.",
+        "",
+        f"**The Manager trap.** The largest Incident of the corpus has {entries:,} Log Entries on "
+        f"{nodes} node ({node}) on {day}: a Shape of single-node storm. Counting Log Entries makes "
+        "KERNDTLB the worst problem in the Dataset by a wide margin; counting Incidents shows one node "
+        f"shouting, and the category still holds the published {kerndtlb} Incidents.",
+        "",
+        "**Shape of the 1,202 Incidents.** "
+        + ", ".join(f"{count:,} {shape}" for shape, count in shapes)
+        + ".",
+        "",
+        f"**Timings.** The Incident derive step took {derive_s:.1f} s on the full corpus, rebuilt into "
+        "a temporary table so that this script changes nothing shared; a persistent rebuild measures "
+        "the same within noise. The number moves with the load on the instance, so compare runs, not "
+        f"absolutes. It builds {table_incidents:,} Incidents in total: the "
+        f"{score.total.measured_incidents:,} alert ones scored above, and the rest from the "
+        "template-keyed Patterns T9 assigns to the non-alert Log Entries, which have no published "
+        "ground truth.",
+    ]
+    return "\n".join(lines)
+
+
+def run_bgl(output: Path) -> str:
+    settings = load_settings()
+    set_settings(settings)
+    with psycopg.connect(settings.database_url, autocommit=True) as conn:
+        score = score_bgl(measured_bgl(conn), BGL_GAP_S)
+        sweep = sweep_bgl(conn, BGL_THRESHOLDS)
+        if sweep[BGL_GAP_S].total.measured_incidents != score.total.measured_incidents:
+            raise GroundTruthError(
+                f"the Incident table holds {score.total.measured_incidents} alert Incidents but "
+                f"chaining the Log Entries at {BGL_GAP_S} s gives "
+                f"{sweep[BGL_GAP_S].total.measured_incidents}; the table is stale, run `make derive`"
+            )
+        utc_chains, local_chains = local_time_chains(conn, BGL_GAP_S)
+        bgl = relation("bgl")
+        shapes = [
+            (str(row[0]), int(row[1]))
+            for row in conn.execute(
+                sql.SQL(
+                    "SELECT shape, count(*) FROM {inc} WHERE pattern_key IN "
+                    "(SELECT DISTINCT alert_tag FROM {bgl} WHERE alert_tag IS NOT NULL) "
+                    "GROUP BY 1 ORDER BY 2 DESC, 1"
+                ).format(inc=bgl.incidents_table, bgl=bgl.table)
+            ).fetchall()
+        ]
+        top = conn.execute(
+            sql.SQL(
+                "SELECT entries, nodes, top_node, CAST(t0 AS DATE) FROM {} WHERE dataset = 'bgl' "
+                "ORDER BY entries DESC, pattern_key LIMIT 1"
+            ).format(bgl.incidents_table)
+        ).fetchone()
+        if top is None:
+            raise GroundTruthError("the Incident table is empty; run `make derive`")
+        (table_incidents,) = conn.execute(
+            sql.SQL("SELECT count(*) FROM {} WHERE dataset = 'bgl'").format(bgl.incidents_table)
+        ).fetchone() or (0,)
+        seconds = incident_seconds(conn, settings.slm_schema)
+        row = conn.execute("SELECT version()").fetchone()
+    version = str(row[0]) if row else "unknown version"
+    match = re.search(r"SereneDB [0-9.]+", version)
+    body = render_bgl(
+        score=score,
+        sweep=sweep,
+        utc_chains=utc_chains,
+        local_chains=local_chains,
+        shapes=shapes,
+        headline=(int(top[0]), int(top[1]), str(top[2]), str(top[3])),
+        derive_s=seconds,
+        table_incidents=int(table_incidents),
+        schema=settings.slm_schema,
+        version=match.group(0) if match else version,
+        generated=datetime.now(UTC),
+    )
+    existing = output.read_text() if output.is_file() else TITLE
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(replace_section(existing, "bgl", body))
+    return body
+
+
+def read_openstack_labels(settings: Settings) -> list[str]:
     """The labelled OpenStack instances from SLM_DATA_DIR; the one place that opens the label file."""
-    label_path = settings.data_dir / LABELS
+    label_path = settings.data_dir / OPENSTACK_LABELS
     if not label_path.is_file():
         raise GroundTruthError(f"{label_path} is missing; run `make fetch-data` or set SLM_DATA_DIR")
     return parse_labels(label_path.read_text())
@@ -306,8 +742,8 @@ def read_labels(settings: Settings) -> list[str]:
 def run_openstack(output: Path) -> str:
     settings = load_settings()
     set_settings(settings)
-    labels = read_labels(settings)
-    results = [measure_metric(metric, set(labels)) for metric in METRICS]
+    labels = read_openstack_labels(settings)
+    results = [measure_metric(metric, set(labels)) for metric in OPENSTACK_METRICS]
     with psycopg.connect(settings.database_url, autocommit=True) as conn:
         entries = label_entries(conn, labels)
         seconds = derive_seconds(conn, settings.slm_schema)
@@ -329,13 +765,17 @@ def run_openstack(output: Path) -> str:
     return body
 
 
+RUNNERS: dict[str, Callable[[Path], str]] = {"bgl": run_bgl, "openstack": run_openstack}
+"""Each Dataset's ground-truth run: it writes its section of the output file and returns the body."""
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="ground_truth.py", description=__doc__.splitlines()[0])
-    parser.add_argument("dataset", choices=["openstack"], help="which ground truth to score")
+    parser.add_argument("dataset", choices=sorted(RUNNERS), help="which ground truth to score")
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT, help="the Markdown results file")
     args = parser.parse_args(argv)
     try:
-        body = run_openstack(args.output)
+        body = RUNNERS[args.dataset](args.output)
     except (GroundTruthError, ConfigError, psycopg.Error, OSError) as exc:
         print(f"ground_truth: {exc}", file=sys.stderr)
         return 2

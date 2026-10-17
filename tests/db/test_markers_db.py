@@ -10,6 +10,7 @@ from pathlib import Path
 import psycopg
 import pytest
 from psycopg import sql
+from psycopg.conninfo import conninfo_to_dict, make_conninfo
 
 ROOT_CONFTEST = Path(__file__).parents[1] / "conftest.py"
 
@@ -163,3 +164,75 @@ def test_the_corpus_verdict_is_cached_per_schema_not_per_session(
     # The second test changed the schema, so it must get its own verdict, not the first one's.
     assert "slm_no_schema_a.bgl" in skips[0]
     assert "slm_no_schema_b.bgl" in skips[1]
+
+
+@pytest.fixture
+def no_connect_privilege(database_url: str) -> Iterator[str]:
+    """A DSN for a real database that the role in it may not connect to; both dropped afterwards.
+
+    Own database and own role, so the shared `postgres` database and PUBLIC keep their grants. The
+    role gets a password, because a server that asks for one refuses a password-less role before it
+    ever checks CONNECT: that is the credentials case, not this one.
+    """
+    suffix = uuid.uuid4().hex[:8]
+    database = f"scratch_gate_{suffix}"
+    role = f"scratch_gate_{suffix}_role"
+    secret = f"pw_{uuid.uuid4().hex}"
+    with psycopg.connect(database_url, autocommit=True) as conn:
+        conn.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(database)))
+        conn.execute(sql.SQL("REVOKE CONNECT ON DATABASE {} FROM PUBLIC").format(sql.Identifier(database)))
+        conn.execute(
+            sql.SQL("CREATE ROLE {} LOGIN PASSWORD {}").format(sql.Identifier(role), sql.Literal(secret))
+        )
+    parts = conninfo_to_dict(database_url)
+    yield make_conninfo("", **{**parts, "dbname": database, "user": role, "password": secret})
+    with psycopg.connect(database_url, autocommit=True) as conn:
+        conn.execute(sql.SQL("DROP DATABASE IF EXISTS {}").format(sql.Identifier(database)))
+        conn.execute(sql.SQL("DROP ROLE IF EXISTS {}").format(sql.Identifier(role)))
+
+
+def _other_dbname(database_url: str, dbname: str) -> str:
+    parts = conninfo_to_dict(database_url)
+    return make_conninfo("", **{**parts, "dbname": dbname})
+
+
+def _other_user(database_url: str, user: str) -> str:
+    parts = conninfo_to_dict(database_url)
+    parts.pop("password", None)
+    return make_conninfo("", **{**parts, "user": user})
+
+
+def test_a_wrong_database_name_is_told_from_an_absent_server(
+    suite: pytest.Pytester, monkeypatch: pytest.MonkeyPatch, database_url: str
+) -> None:
+    monkeypatch.setenv("DATABASE_URL", _other_dbname(database_url, "slm_no_such_database"))
+
+    result = suite.runpytest("-rs")
+
+    result.assert_outcomes(passed=1, skipped=2)
+    result.stdout.fnmatch_lines(["SKIPPED*has no database of that name*`dbname` in DATABASE_URL*"])
+
+
+def test_a_user_that_does_not_exist_is_a_credentials_problem(
+    suite: pytest.Pytester, monkeypatch: pytest.MonkeyPatch, database_url: str
+) -> None:
+    monkeypatch.setenv("DATABASE_URL", _other_user(database_url, "slm_no_such_role"))
+
+    result = suite.runpytest("-rs")
+
+    result.assert_outcomes(passed=1, skipped=2)
+    result.stdout.fnmatch_lines(["SKIPPED*refused the credentials*`user` and `password`*"])
+
+
+def test_a_role_without_connect_privilege_is_told_from_bad_credentials(
+    suite: pytest.Pytester, monkeypatch: pytest.MonkeyPatch, no_connect_privilege: str
+) -> None:
+    monkeypatch.setenv("DATABASE_URL", no_connect_privilege)
+
+    result = suite.runpytest("-rs")
+
+    result.assert_outcomes(passed=1, skipped=2)
+    result.stdout.fnmatch_lines(["SKIPPED*refused the connection for lack of privileges*needs CONNECT*"])
+    secret = conninfo_to_dict(no_connect_privilege)["password"]
+    assert isinstance(secret, str)
+    assert secret not in result.stdout.str()

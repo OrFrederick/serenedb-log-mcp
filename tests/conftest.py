@@ -16,13 +16,14 @@ from __future__ import annotations
 
 import functools
 import os
+import re
 from pathlib import Path
 
 import psycopg
 import pytest
 from psycopg import sql
 
-from serenedb_log_mcp.config import error_detail, load_settings, safe_dsn
+from serenedb_log_mcp.config import load_settings, safe_dsn
 
 # The corpus gate only checks that the raw tables exist and are clearly the full corpus, not a
 # 2k sample. The exact golden numbers (4,747,963 and 207,820 rows) live in the corpus tests, so a
@@ -89,6 +90,63 @@ def database_url() -> str:
     return load_settings().database_url
 
 
+# Why a connection failed, in the order the patterns are tried: a privilege refusal mentions the
+# database too, so it has to be matched before the wrong-name case. Measured against SereneDB
+# 26.09.1.3: every one of these arrives as a psycopg.OperationalError with no sqlstate at all, so
+# the libpq text is the only thing that tells them apart. `_connect_problem` keeps the sqlstate
+# whenever there is one, which is the case for a statement that is refused after connecting.
+_CONNECT_PROBLEMS: tuple[tuple[re.Pattern[str], str, str], ...] = (
+    (
+        re.compile(r"permission denied for database|CONNECT privilege", re.IGNORECASE),
+        "SereneDB at {dsn} refused the connection for lack of privileges",
+        "The role needs CONNECT on that database; grant it, or name another role in DATABASE_URL.",
+    ),
+    (
+        re.compile(r'database ".*" (?:does not exist|is not accessible)', re.IGNORECASE),
+        "SereneDB at {dsn} has no database of that name",
+        "Check `dbname` in DATABASE_URL; `make db-up` serves `postgres`.",
+    ),
+    (
+        re.compile(
+            r'password authentication failed|no password supplied|role ".*" does not exist'
+            r"|pg_hba\.conf|authentication method",
+            re.IGNORECASE,
+        ),
+        "SereneDB at {dsn} refused the credentials",
+        "Check `user` and `password` in DATABASE_URL (or DATABASE_URL_<ROLE>); "
+        "`make db-up` starts a server with trust auth.",
+    ),
+    (
+        re.compile(
+            r"connection refused|could not connect to server|no route to host|not known"
+            r"|nodename nor servname|timeout expired|operation timed out",
+            re.IGNORECASE,
+        ),
+        "SereneDB not reachable at {dsn}: nothing is listening there",
+        "Start one with `make db-up` or point DATABASE_URL at a running instance.",
+    ),
+)
+
+
+def _connect_problem(dsn: str, exc: psycopg.Error) -> str:
+    """One skip reason that says which of the usual causes it was, with the sqlstate if there is one.
+
+    The whole libpq message is kept on one line, because the cause is sometimes only in the DETAIL
+    line (a missing CONNECT privilege says so there). It never carries the password: libpq names
+    the host, the port and the user, and `safe_dsn` redacts the DSN itself.
+    """
+    message = " ".join(str(exc).split()) or type(exc).__name__
+    detail = f"{message} sqlstate={exc.sqlstate}" if exc.sqlstate else message
+    target = safe_dsn(dsn)
+    for pattern, headline, hint in _CONNECT_PROBLEMS:
+        if pattern.search(message):
+            return f"{headline.format(dsn=target)} ({detail}). {hint}"
+    return (
+        f"SereneDB not reachable at {target} ({detail}). "
+        "Start one with `make db-up` or point DATABASE_URL at a running instance."
+    )
+
+
 @functools.cache
 def _db_problem(dsn: str) -> str | None:
     """Can we connect to `dsn` and run `SELECT 1`? Cached per DSN, so a changed DSN is retried."""
@@ -96,10 +154,7 @@ def _db_problem(dsn: str) -> str | None:
         with psycopg.connect(dsn, connect_timeout=CONNECT_TIMEOUT_S, autocommit=True) as conn:
             conn.execute("SELECT 1")
     except psycopg.Error as exc:
-        return (
-            f"SereneDB not reachable at {safe_dsn(dsn)} ({error_detail(exc)}). "
-            "Start one with `make db-up` or point DATABASE_URL at a running instance."
-        )
+        return _connect_problem(dsn, exc)
     return None
 
 

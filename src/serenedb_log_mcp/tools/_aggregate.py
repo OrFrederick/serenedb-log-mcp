@@ -239,8 +239,11 @@ class Part:
         entries = self.rel.index if self.filters.query else self.rel.table
         if self.group_by != "team":
             return q("{} AS e", entries)
+        # One Team per (dataset, component): a repeated Ownership row would otherwise count a Log
+        # Entry twice. A Component with two Teams goes to the first by name.
         return q(
-            "{} AS e LEFT JOIN {} AS o ON o.dataset = {} AND o.component = {}",
+            "{} AS e LEFT JOIN (SELECT dataset, component, min(team) AS team FROM {} "
+            "GROUP BY dataset, component) AS o ON o.dataset = {} AND o.component = {}",
             entries,
             self.rel.ownership_table,
             literal(self.dataset),

@@ -15,6 +15,9 @@ BGL, 2005-06-01 (Wednesday) to 2005-07-31 12:00 (Sunday); whole Monday weeks 200
 - MMCS: 3 MMCS INFO lines on node 'NULL' (no rack) on 2005-06-02, no Pattern;
 - NEWCOMP: 2 NEWCOMP INFO lines on NODE_A on 2005-07-30, a Component the Ownership Table lacks.
 
+The Ownership Table repeats APP's row and gives MMCS two Teams, so a join that does not guard
+against duplicate (dataset, component) rows would count those Log Entries twice.
+
 OpenStack, 2017-05-14 20:00 to 2017-05-16 20:00:05:
 - 24 nova.compute.manager INFO lines, hourly on 2017-05-15, instances U1 and U2 alternating;
 - 6 nova.osapi_compute.wsgi.server INFO lines from 2017-05-14 20:00, every 10 min, no instance;
@@ -64,7 +67,9 @@ OS_TOTAL = OS_COMPUTE_INFO + OS_API + OS_ERRORS
 OWNERSHIP = (
     ("bgl", "KERNEL", "Kernel Team"),
     ("bgl", "APP", "App Team"),
+    ("bgl", "APP", "App Team"),  # an exact duplicate row
     ("bgl", "MMCS", "Control Team"),
+    ("bgl", "MMCS", "Ops Team"),  # a second Team for one Component
     ("openstack", "nova.compute.manager", "Compute Team"),
     ("openstack", "nova.osapi_compute.wsgi.server", "API Team"),
 )

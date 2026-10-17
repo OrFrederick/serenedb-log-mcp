@@ -8,8 +8,10 @@ from __future__ import annotations
 
 import pytest
 from aggregation_corpus import (
+    APPSEV,
     BGL_TOTAL,
     F_DRIFT,
+    MMCS,
     NEWCOMP,
     NODE_A,
     NODE_B,
@@ -76,6 +78,11 @@ def test_team_joins_the_ownership_table_and_shows_unmapped_components(corpus: st
     teams = {(r["dataset"], r["team"]): r["count"] for r in row_dicts(result)}
     assert teams[("bgl", "Kernel Team")] == STEADY + STORM
     assert teams[("bgl", "(unmapped)")] == NEWCOMP
+    # Duplicate Ownership rows count once; a Component with two Teams goes to the first by name.
+    assert teams[("bgl", "App Team")] == APPSEV
+    assert teams[("bgl", "Control Team")] == MMCS
+    assert ("bgl", "Ops Team") not in teams
+    assert sum(teams.values()) == result["summary"]["total"] == BGL_TOTAL + OS_TOTAL
     assert teams[("openstack", "API Team")] == OS_API
     assert any("Ownership Table" in note for note in result["notes"])
 

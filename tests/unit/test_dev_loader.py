@@ -5,10 +5,14 @@ The log lines below are synthetic, written in the BGL and OpenStack formats of L
 """
 
 import hashlib
+import os
+from collections.abc import Iterator
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 import pytest
+from psycopg import sql
 
 import dev_loader
 
@@ -335,3 +339,159 @@ def test_schema_must_be_a_plain_identifier(capsys: pytest.CaptureFixture[str]) -
 
     assert exit_info.value.code == 2
     assert "--schema" in capsys.readouterr().err
+
+
+def test_ensure_samples_replaces_an_existing_file_with_the_wrong_bytes(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    # A download interrupted halfway leaves the right name and the wrong bytes, and was trusted.
+    sample = _sample(b"expected\n")
+    (tmp_path / "X_2k.log").write_bytes(b"trunca")
+    calls: list[str] = []
+
+    def fetch(url: str) -> bytes:
+        calls.append(url)
+        return b"expected\n"
+
+    paths = dev_loader.ensure_samples(tmp_path, [sample], fetch)
+
+    assert paths[0].read_bytes() == b"expected\n"
+    assert calls == [sample.url]
+    assert "wrong sha256" in capsys.readouterr().err
+
+
+def test_ensure_samples_does_not_refetch_a_file_that_matches(tmp_path: Path) -> None:
+    sample = _sample(b"expected\n")
+    (tmp_path / "X_2k.log").write_bytes(b"expected\n")
+
+    def fetch(url: str) -> bytes:
+        raise AssertionError("an existing file with the right sha256 must not be downloaded again")
+
+    assert dev_loader.ensure_samples(tmp_path, [sample], fetch) == [tmp_path / "X_2k.log"]
+
+
+def test_ensure_samples_leaves_no_part_file_behind(tmp_path: Path) -> None:
+    sample = _sample(b"expected\n")
+
+    dev_loader.ensure_samples(tmp_path, [sample], lambda url: b"expected\n")
+
+    assert [p.name for p in sorted(tmp_path.iterdir())] == ["LOGHUB_LICENSE.txt", "X_2k.log"]
+
+
+def test_ensure_samples_writes_the_download_through_a_part_file(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # The real name must never carry unverified bytes, so the download lands in X_2k.log.part and
+    # is moved into place with os.replace, which is atomic within one filesystem.
+    sample = _sample(b"expected\n")
+    moves: list[tuple[str, str]] = []
+    real_replace = os.replace
+
+    def spy(src: Any, dst: Any) -> None:
+        moves.append((Path(src).name, Path(dst).name))
+        real_replace(src, dst)
+
+    monkeypatch.setattr(dev_loader.os, "replace", spy)
+
+    dev_loader.ensure_samples(tmp_path, [sample], lambda url: b"expected\n")
+
+    assert moves == [("X_2k.log.part", "X_2k.log")]
+
+
+def test_ensure_samples_keeps_an_existing_file_when_the_download_is_rejected(tmp_path: Path) -> None:
+    sample = _sample(b"expected\n")
+    (tmp_path / "X_2k.log").write_bytes(b"older\n")
+
+    with pytest.raises(dev_loader.LoaderError, match="sha256"):
+        dev_loader.ensure_samples(tmp_path, [sample], lambda url: b"tampered\n")
+
+    assert (tmp_path / "X_2k.log").read_bytes() == b"older\n"
+    assert not (tmp_path / "X_2k.log.part").exists()
+
+
+class FakeCopy:
+    """Records every row written through it, as psycopg's copy object would receive them."""
+
+    def __init__(self, events: list[tuple[str, object]]) -> None:
+        self.events = events
+
+    def __enter__(self) -> "FakeCopy":
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        return None
+
+    def write_row(self, row: tuple[Any, ...]) -> None:
+        self.events.append(("write", row[0]))
+
+
+class FakeCursor:
+    def __init__(self, events: list[tuple[str, object]]) -> None:
+        self.events = events
+
+    def __enter__(self) -> "FakeCursor":
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        return None
+
+    def copy(self, statement: object) -> FakeCopy:
+        self.events.append(("copy", None))
+        return FakeCopy(self.events)
+
+
+class FakeConnection:
+    def __init__(self, events: list[tuple[str, object]]) -> None:
+        self.events = events
+
+    def cursor(self) -> FakeCursor:
+        return FakeCursor(self.events)
+
+    def commit(self) -> None:
+        self.events.append(("commit", None))
+
+
+def test_copy_rows_writes_each_row_as_it_is_parsed() -> None:
+    # No Python buffer: parsing row n+1 must happen after row n has gone to the server, otherwise
+    # the loader's memory grows with the batch size (a few hundred MB on BGL).
+    events: list[tuple[str, object]] = []
+
+    def rows() -> Iterator[tuple[int]]:
+        for i in range(4):
+            events.append(("parse", i))
+            yield (i,)
+
+    count = dev_loader.copy_rows(
+        FakeConnection(events),  # type: ignore[arg-type]
+        sql.Identifier("s", "t"),
+        ["line_no"],
+        rows(),
+    )
+
+    assert count == 4
+    assert events == [
+        ("copy", None),
+        ("parse", 0),
+        ("write", 0),
+        ("parse", 1),
+        ("write", 1),
+        ("parse", 2),
+        ("write", 2),
+        ("parse", 3),
+        ("write", 3),
+        ("commit", None),
+    ]
+
+
+def test_copy_rows_of_an_empty_source_still_opens_one_copy() -> None:
+    events: list[tuple[str, object]] = []
+
+    count = dev_loader.copy_rows(
+        FakeConnection(events),  # type: ignore[arg-type]
+        sql.Identifier("s", "t"),
+        ["line_no"],
+        iter(()),
+    )
+
+    assert count == 0
+    assert events == [("copy", None), ("commit", None)]

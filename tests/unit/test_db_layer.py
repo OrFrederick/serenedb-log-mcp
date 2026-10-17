@@ -26,6 +26,7 @@ from serenedb_log_mcp.db import (
     QueryFailed,
     QueryTimeout,
 )
+from serenedb_log_mcp.toolkit import ToolContractError
 
 COUNT_SQL = "SELECT count(*) FROM t WHERE a = %s"
 ROWS_SQL = "SELECT a, b FROM t WHERE a = %s ORDER BY b LIMIT %s"
@@ -108,6 +109,9 @@ class FakeConnection:
         if query == "SELECT stubborn()":
             time.sleep(0.2)  # finishes although the timer fired: the cancel arrived too late
             return FakeCursor([(1,)])
+        if query == "SELECT * FROM read_csv('missing.csv')":
+            # SereneDB reports IO errors as SQLSTATE 08000 on a healthy connection.
+            raise psycopg.errors.ConnectionException('No files found that match the pattern "missing.csv"')
         if query == "SELECT * FROM missing":
             raise psycopg.errors.UndefinedTable('relation "missing" does not exist\nLINE 1: ...')
         if query == "SELECT 'FAT%' LIMIT %s":
@@ -206,14 +210,23 @@ def test_fetch_limited_rejects_a_row_query_that_ignores_the_limit() -> None:
     server = FakeServer(lambda sql, params: [(3,)] if sql.startswith("SELECT count(*)") else ROWS)
     unlimited = "SELECT a, ts_highlight(b, %s) FROM t WHERE a = %s"
 
-    with pytest.raises(ValueError, match="limit=2"):
+    with pytest.raises(ToolContractError, match="limit=2"):
         database(server).fetch_limited(COUNT_SQL, unlimited, [1], 2, rows_params=["q", 1])
 
 
 @pytest.mark.parametrize("limit", [0, -1])
 def test_fetch_limited_rejects_a_limit_below_one(limit: int) -> None:
-    with pytest.raises(ValueError, match="limit"):
+    with pytest.raises(ToolContractError, match="limit"):
         database(FakeServer(table_responder(1, ROWS))).fetch_limited(COUNT_SQL, ROWS_SQL, [1], limit)
+
+
+def test_a_count_query_with_the_wrong_shape_is_a_contract_error_that_shows_no_rows() -> None:
+    server = FakeServer(lambda sql, params: [("secret log line", 1)])
+
+    with pytest.raises(ToolContractError) as caught:
+        database(server).fetch_limited(COUNT_SQL, ROWS_SQL, [1], 5)
+
+    assert "secret log line" not in str(caught.value)
 
 
 def test_statements_without_parameters_are_sent_without_a_parameter_list() -> None:
@@ -300,6 +313,22 @@ def test_a_second_lost_connection_raises_a_tool_error_that_suggests_sort_time() 
     message = str(caught.value)
     assert "restarted" in message
     assert "sort=time" in message
+    assert "server closed the connection unexpectedly" in message
+    assert isinstance(caught.value.__cause__, psycopg.OperationalError)
+
+
+def test_an_08000_error_on_a_live_connection_is_a_failed_statement_not_a_restart() -> None:
+    server = FakeServer(table_responder(3, ROWS))
+    layer = database(server)
+
+    with pytest.raises(QueryFailed) as caught:
+        layer.fetch_all("SELECT * FROM read_csv('missing.csv')")
+
+    assert caught.value.sqlstate == "08000"
+    assert 'No files found that match the pattern "missing.csv"' in str(caught.value)
+    assert server.executed().count("SELECT * FROM read_csv('missing.csv')") == 1
+    assert layer.fetch_all("SELECT a FROM t").total == 3
+    assert len(server.connections) == 1
 
 
 def test_the_wait_for_a_restart_is_bounded() -> None:
@@ -436,7 +465,7 @@ def test_a_time_limit_that_could_not_be_enforced_is_noted(monkeypatch: pytest.Mo
     assert result.rows == [(1,)]
     assert server.cancel_failures_left == 99 - db.CANCEL_ATTEMPTS
     assert len(result.notes) == 1
-    assert "could not be enforced" in result.notes[0]
+    assert "the cancel request failed" in result.notes[0]
     assert "cancellation timeout expired" in result.notes[0]
 
 
@@ -463,15 +492,47 @@ def test_a_connection_whose_cancel_came_too_late_is_not_reused() -> None:
     assert len(server.connections) == 2
 
 
-def test_a_statement_that_finishes_after_the_timer_fired_carries_a_note() -> None:
+def test_a_statement_that_ignored_the_cancel_carries_an_overrun_note() -> None:
     server = FakeServer(table_responder(3, ROWS))
 
     result = database(server, timeout_s=0.02).fetch_all("SELECT stubborn()")
 
     assert result.rows == [(1,)]
     assert len(result.notes) == 1
-    assert "0.02 s" in result.notes[0]
-    assert "complete" in result.notes[0]
+    note = result.notes[0]
+    assert "past the 0.02 s limit" in note
+    assert "did not act on the cancel request" in note
+    assert "complete" in note
+    assert "narrow the Data Scope" in note
+
+
+def test_a_statement_that_ran_past_the_limit_is_noted_even_if_the_timer_never_fired(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(threading, "Timer", ManualTimer)  # never fires
+
+    result = database(FakeServer(table_responder(3, ROWS)), timeout_s=0.02).fetch_all("SELECT stubborn()")
+
+    assert len(result.notes) == 1
+    assert "past the 0.02 s limit" in result.notes[0]
+
+
+def test_a_statement_that_finished_as_the_limit_fired_is_noted(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(threading, "Timer", ManualTimer)
+    ManualTimer.instances.clear()
+
+    def respond(sql: str, params: Sequence[Any] | None) -> list[tuple[Any, ...]]:
+        timer = ManualTimer.instances[-1]
+        timer.fire_and_pause()
+        timer.proceed.set()
+        assert timer.thread is not None
+        timer.thread.join(5)  # the cancel went out while the statement was still running
+        return [(1,)]
+
+    result = database(FakeServer(respond), timeout_s=15).fetch_all("SELECT a FROM t")
+
+    assert len(result.notes) == 1
+    assert "finished just as the 15 s limit" in result.notes[0]
 
 
 @pytest.mark.filterwarnings("error::pytest.PytestUnhandledThreadExceptionWarning")

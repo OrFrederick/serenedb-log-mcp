@@ -13,7 +13,7 @@ the `describe_corpus` cache, and binds the resolved values in its own SQL.
 
 Every input error is a `ScopeError`, a `ToolError` whose text tells the agent how to fix the call.
 A tool that fails to pass `corpus_end` for a relative time has a bug, not a bad input, and gets a
-`ValueError` instead.
+`toolkit.ToolContractError` instead.
 """
 
 from __future__ import annotations
@@ -28,6 +28,7 @@ from typing import Any
 from mcp.server.mcpserver.exceptions import ToolError
 
 from serenedb_log_mcp.evidence import DataScope, ScopeFilters
+from serenedb_log_mcp.toolkit import ToolContractError
 
 __all__ = [
     "FAMILY_ID_RE",
@@ -270,7 +271,7 @@ def _relative(value: str, datasets: Sequence[str], corpus_end: Mapping[str, date
     ends = {name: corpus_end[name] for name in names if corpus_end and name in corpus_end}
     if not ends or len(ends) != len(names):
         missing = [name for name in names if name not in ends] or ["the Datasets in scope"]
-        raise ValueError(
+        raise ToolContractError(
             f"resolving {value!r} needs corpus_end, the last timestamp of {', '.join(missing)}; the "
             "tool must pass it (from describe_corpus or the corpus registry)"
         )

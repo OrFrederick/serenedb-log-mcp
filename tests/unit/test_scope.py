@@ -19,6 +19,7 @@ from serenedb_log_mcp.scope import (
     validate_family_id,
     validate_pattern_ids,
 )
+from serenedb_log_mcp.toolkit import ToolContractError
 
 COMPONENTS = ["KERNEL", "APP", "MMCS", "LINKCARD", "DISCOVERY", "MONITOR", "HARDWARE", "BGLMASTER"]
 BGL_END = datetime(2006, 1, 4, 8, 0, 5, 233639)
@@ -219,7 +220,7 @@ def test_time_to_cannot_be_relative() -> None:
 
 
 def test_a_relative_time_needs_the_corpus_end_from_the_tool() -> None:
-    with pytest.raises(ValueError, match="corpus_end"):
+    with pytest.raises(ToolContractError, match="corpus_end"):
         resolve_time("last 7d", None, datasets=["bgl"])
 
 

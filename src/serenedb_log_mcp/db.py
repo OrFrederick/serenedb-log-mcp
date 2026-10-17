@@ -34,9 +34,10 @@ from psycopg.adapt import Loader
 from psycopg.conninfo import conninfo_to_dict
 
 from serenedb_log_mcp.config import Role, get_settings
+from serenedb_log_mcp.toolkit import ToolContractError
 
 if TYPE_CHECKING:
-    from serenedb_log_mcp.toolkit import QueryResultLike
+    from serenedb_log_mcp.toolkit import QueryResultLike  # only for the static conformance check
 
 __all__ = [
     "Database",
@@ -63,9 +64,6 @@ POLL_INTERVAL_S = 1.0
 MAX_IDLE_CONNECTIONS = 4
 """Idle connections kept per DSN, so a call does not pay for a new connection each time."""
 
-# SQLSTATEs outside class 08 (connection exception, checked by prefix in `_is_lost`) that also mean
-# the server ended the session: admin shutdown, crash shutdown, "cannot connect now" (starting up).
-_LOST_SQLSTATES = frozenset({"57P01", "57P02", "57P03"})
 CANCEL_ATTEMPTS = 3
 """How often the timer sends a cancel request that failed (for example psycopg's CancellationTimeout)."""
 CANCEL_RETRY_S = 1.0
@@ -333,8 +331,9 @@ class Database:
         `count_sql` must return one row with one integer. `rows_sql` runs with `params` plus
         `limit` appended, so its last placeholder is the LIMIT; pass `rows_params` when the row
         query binds other values. A row query that returns more than `limit` rows is a template
-        bug and raises ValueError. The row query is skipped when the total is 0. Both statements
-        run in one read-only transaction, so the total and the rows come from one snapshot.
+        bug and raises `toolkit.ToolContractError`, as does a `limit` below 1. The row query is
+        skipped when the total is 0. Both statements run in one read-only transaction, so the total
+        and the rows come from one snapshot.
 
         A literal `%` must be written `%%` in every statement that binds parameters, and
         `rows_sql` always binds at least `limit`. Only a statement run with no parameters at all
@@ -342,7 +341,7 @@ class Database:
         both statements is therefore safest with `%%`, or with the pattern bound as a parameter.
         """
         if limit < 1:
-            raise ValueError(f"limit must be at least 1, not {limit}")
+            raise ToolContractError(f"fetch_limited needs a limit of at least 1, not {limit}.")
         bound_rows = [*params, limit] if rows_params is None else list(rows_params)
 
         def work(session: _Session) -> tuple[int, list[tuple[Any, ...]]]:
@@ -352,9 +351,9 @@ class Database:
 
         (total, rows), session, notes = self._run(work)
         if len(rows) > limit:
-            raise ValueError(
-                f"rows_sql returned {len(rows)} rows for limit={limit}; its LIMIT must bind the limit "
-                f"(the last parameter, or the one in rows_params): {rows_sql}"
+            raise ToolContractError(
+                f"The row query returned {len(rows)} rows for limit={limit}; its LIMIT must bind the "
+                f"limit (the last parameter, or the one in rows_params): {rows_sql}"
             )
         return QueryResult(
             total=total,
@@ -404,13 +403,14 @@ class Database:
         )
         try:
             value, session = self._attempt(work)
-        except _ConnectionLost:
+        except _ConnectionLost as lost:
+            cause = lost.__cause__
             raise DatabaseRestarted(
                 "SereneDB closed the connection again when the statements were retried, so it "
-                "restarted twice during this call (SereneDB 26.10.1 crashes intermittently). If "
-                "this call sorted by relevance, call it again with sort=time; otherwise call it "
-                "again once more, or narrow the Data Scope."
-            ) from None
+                "restarted twice during this call (SereneDB 26.10.1 crashes intermittently): "
+                f"{_first_line(cause or lost)} If this call sorted by relevance, call it again with "
+                "sort=time; otherwise call it again once more, or narrow the Data Scope."
+            ) from cause
         return value, session, [note, *session.notes]
 
     def _wait_until_ready(self) -> float:
@@ -460,7 +460,7 @@ class Database:
             finally:
                 deadline.stop()
         except psycopg.Error as exc:
-            if _is_lost(exc, conn):
+            if _is_lost(conn):
                 _close_quietly(conn)
                 raise _ConnectionLost from exc
             self._end(conn, discard=deadline.fired)
@@ -474,22 +474,38 @@ class Database:
         except BaseException:
             self._end(conn, discard=True)
             raise
-        if deadline.fired:
-            session.notes.append(self._late_note(deadline))
+        if (note := self._overrun_note(session, deadline)) is not None:
+            session.notes.append(note)
         self._end(conn, discard=deadline.fired)
         return value, session
 
-    def _late_note(self, deadline: _Deadline) -> str:
-        """The note for statements that finished although their time limit fired."""
+    def _overrun_note(self, session: _Session, deadline: _Deadline) -> str | None:
+        """A note when the statements finished although the time limit fired or was exceeded.
+
+        `cancel_safe()` is the only thing that enforces the limit, and it is not always honoured:
+        on 26.09.1.3 a bound parameter inside a table function such as `generate_series` makes
+        SereneDB ignore the cancel (measured by OrFrederick's Claude in the #47 review; 26.10.1
+        honoured every cancel, bound or literal). So every result is checked against the limit.
+        """
+        seconds = session.query_ms / 1000
+        if not deadline.fired and seconds <= self.timeout_s:
+            return None
         limit = f"{self.timeout_s:g} s limit (SLM_QUERY_TIMEOUT_S)"
-        if deadline.errors and len(deadline.errors) >= CANCEL_ATTEMPTS:
+        if seconds <= self.timeout_s:
             return (
-                f"The {limit} could not be enforced: the cancel request failed "
-                f"({deadline.errors[-1]}). The numbers are complete, but SereneDB may be unhealthy."
+                f"The statements finished just as the {limit} expired. The numbers are complete, "
+                "but a wider Data Scope may time out."
             )
+        if len(deadline.errors) >= CANCEL_ATTEMPTS:
+            why = f"the cancel request failed ({deadline.errors[-1]})"
+        elif deadline.fired:
+            why = "SereneDB did not act on the cancel request"
+        else:
+            why = "the time limit did not fire in time"
         return (
-            f"The statements finished just as the {limit} expired. The numbers are complete, but "
-            "a wider Data Scope may time out."
+            f"The statements ran {seconds:.1f} s, past the {limit}, because {why}. The numbers are "
+            "complete, but the call took longer than allowed: narrow the Data Scope (a shorter time "
+            "range or more filters) before the next call."
         )
 
     def _end(self, conn: ConnectionLike, *, discard: bool) -> None:
@@ -550,18 +566,21 @@ def _rejected(exc: psycopg.Error) -> QueryFailed:
 
 def _count(rows: list[tuple[Any, ...]], sql: str) -> int:
     if len(rows) != 1 or len(rows[0]) != 1 or not isinstance(rows[0][0], int):
-        raise ValueError(f"count_sql must return one row with one integer, got {rows[:2]!r}: {sql}")
+        # Never echo the rows: they can hold Log Entry text, and error text skips the Role hook.
+        shape = f"{len(rows)} rows of {len(rows[0]) if rows else 0} values"
+        raise ToolContractError(f"The count query must return one row with one integer, not {shape}: {sql}")
     return int(rows[0][0])
 
 
-def _is_lost(exc: psycopg.Error, conn: ConnectionLike) -> bool:
-    """Did the session end under the statement (crash, restart, network), not the statement fail?"""
-    if isinstance(exc, psycopg.errors.QueryCanceled):
-        return False
-    if conn.closed or conn.broken:
-        return True
-    state = exc.sqlstate or ""
-    return state.startswith("08") or state in _LOST_SQLSTATES
+def _is_lost(conn: ConnectionLike) -> bool:
+    """Did the session end under the statement (crash, restart, network), not the statement fail?
+
+    Only the connection's own state decides. The SQLSTATE cannot: SereneDB reports ordinary IO
+    errors (a missing `read_csv` file, an unreachable HTTP source, ATTACH of a missing database) as
+    class 08 (`08000`) on a healthy connection, and a crash or a terminated backend leaves the
+    connection `broken` (measured on 26.09.1.3 and 26.10.1).
+    """
+    return conn.closed or conn.broken
 
 
 def _close_quietly(conn: ConnectionLike) -> None:

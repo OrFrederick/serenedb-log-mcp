@@ -186,6 +186,36 @@ def test_a_slow_query_is_cancelled_and_the_next_query_succeeds(database_url: str
         layer.close()
 
 
+def test_a_bound_slow_query_is_never_returned_silently(database_url: str) -> None:
+    """26.09.1.3 ignores a cancel when a table function takes a bound parameter; 26.10.1 honours it.
+
+    Either way the call must not look healthy: it raises QueryTimeout, or its result says that the
+    statements ran past the limit.
+    """
+    layer = Database(database_url, timeout_s=0.5)
+    try:
+        try:
+            result = layer.fetch_all("SELECT sum(i * i) FROM generate_series(1, %s) g(i)", [1_000_000_000])
+        except QueryTimeout:
+            return
+        assert any("past the 0.5 s limit" in note for note in result.notes), result.notes
+    finally:
+        layer.close()
+
+
+# Statement errors -------------------------------------------------------------------------------------
+
+
+def test_an_io_error_is_a_failed_statement_not_a_restart(layer: Database) -> None:
+    """SereneDB reports a missing read_csv file as SQLSTATE 08000 on a healthy connection."""
+    with pytest.raises(QueryFailed) as caught:
+        layer.fetch_all("SELECT * FROM read_csv('/nonexistent/scratch_t2/missing.csv')")
+
+    assert caught.value.sqlstate == "08000"
+    assert "missing.csv" in str(caught.value)
+    assert layer.fetch_all("SELECT 1").notes == []
+
+
 # Binding ----------------------------------------------------------------------------------------------
 
 

@@ -12,13 +12,18 @@ import time
 import uuid
 from collections.abc import Iterator
 
+import anyio
 import psycopg
 import pytest
+from mcp.server.mcpserver import MCPServer
+from mcp_types import CallToolResult
 from psycopg import sql
 
-from serenedb_log_mcp import db
-from serenedb_log_mcp.config import Role
+from serenedb_log_mcp import config, db, ledger
+from serenedb_log_mcp.config import Role, load_settings
 from serenedb_log_mcp.db import Database, QueryFailed, QueryTimeout
+from serenedb_log_mcp.evidence import DataScope, RoleParam
+from serenedb_log_mcp.toolkit import ToolOutcome, evidence_tool
 
 pytestmark = pytest.mark.db
 
@@ -163,6 +168,20 @@ def test_numeric_results_come_back_as_int_or_float(layer: Database, scratch: str
     assert type(window.rows[0][0]) is int
 
 
+def test_binary_numeric_results_come_back_as_int_or_float(database_url: str) -> None:
+    """The layer reads text format, but a connection from open_connection converts binary too."""
+    with db.open_connection(database_url, client_binding=False) as conn:
+        row = conn.execute(
+            "SELECT 5050::numeric, 1.5::numeric, sum(i), 12345678901234567890::HUGEINT "
+            "FROM generate_series(1, 100) g(i)",
+            binary=True,
+        ).fetchone()
+
+    assert row is not None
+    assert row == (5050, 1.5, 5050, 12345678901234567890)
+    assert [type(value) for value in row] == [int, float, int, int]
+
+
 # Timeout ----------------------------------------------------------------------------------------------
 
 
@@ -203,6 +222,50 @@ def test_a_bound_slow_query_is_never_returned_silently(database_url: str) -> Non
         layer.close()
 
 
+@pytest.mark.parametrize(
+    "cancel_error",
+    [
+        psycopg.errors.CancellationTimeout("cancellation timeout expired"),
+        OSError(9, "Bad file descriptor"),  # psycopg's selectors loop raises OSError, not psycopg.Error
+    ],
+    ids=["cancellation-timeout", "os-error"],
+)
+def test_a_statement_whose_cancel_fails_is_abandoned_and_closed_by_its_own_thread(
+    cancel_error: Exception, database_url: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Every cancel request fails, so the call ends after the grace period; the statement runs on."""
+    monkeypatch.setattr(db, "CANCEL_RETRY_S", 0.05)
+    opened: list[psycopg.Connection[tuple[object, ...]]] = []
+
+    def refuse_cancels(dsn: str, *, client_binding: bool) -> psycopg.Connection[tuple[object, ...]]:
+        conn = db.open_connection(dsn, client_binding=client_binding)
+
+        def cancel_safe(*, timeout: float = 30.0) -> None:
+            raise cancel_error
+
+        conn.cancel_safe = cancel_safe  # type: ignore[method-assign]
+        opened.append(conn)
+        return conn
+
+    layer = Database(database_url, timeout_s=0.5, cancel_grace_s=0.5, connect=refuse_cancels)
+    try:
+        started = time.monotonic()
+        with pytest.raises(QueryTimeout, match="the cancel request failed"):
+            layer.fetch_all("SELECT sleep_ms(8000)")
+        elapsed = time.monotonic() - started
+
+        abandoned = opened[0]
+        assert elapsed < 5.0  # long before sleep_ms returns
+        assert not abandoned.closed
+        assert layer.fetch_all("SELECT 1").rows == [(1,)]  # on a new connection
+        give_up = time.monotonic() + 20
+        while not abandoned.closed and time.monotonic() < give_up:
+            time.sleep(0.1)
+        assert abandoned.closed  # by the statement thread, once SereneDB returned
+    finally:
+        layer.close()
+
+
 # Statement errors -------------------------------------------------------------------------------------
 
 
@@ -214,6 +277,36 @@ def test_an_io_error_is_a_failed_statement_not_a_restart(layer: Database) -> Non
     assert caught.value.sqlstate == "08000"
     assert "missing.csv" in str(caught.value)
     assert layer.fetch_all("SELECT 1").notes == []
+
+
+# Notices ----------------------------------------------------------------------------------------------
+
+
+def test_a_server_warning_reaches_the_evidence_envelope(
+    layer: Database, database_url: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """SereneDB warns that it accepts statement_timeout without enforcing it (26.10.1).
+
+    `set_config(..., true)` changes the setting for this read-only transaction only, and the layer
+    rolls the transaction back.
+    """
+    monkeypatch.setattr(config, "_active", load_settings({"DATABASE_URL": database_url}))
+    monkeypatch.setattr(ledger, "_active", None)  # an in-memory Evidence Ledger, whatever LEDGER_PATH says
+    server = MCPServer(name="notices")
+
+    @evidence_tool(server, title="Warns")
+    def warns(role: RoleParam) -> ToolOutcome:
+        """Run a statement SereneDB warns about. Inputs: role. Outputs: the envelope."""
+        result = layer.fetch_all("SELECT set_config('statement_timeout', '1000', true) AS setting")
+        return ToolOutcome(result=result, scope=DataScope(datasets=["bgl"]), columns=["setting"])
+
+    result = anyio.run(lambda: server.call_tool("warns", {"role": "engineer"}))
+
+    assert isinstance(result, CallToolResult)
+    assert result.structured_content is not None
+    notes = result.structured_content["notes"]
+    warnings = [note for note in notes if note.startswith("SereneDB sent this WARNING")]
+    assert any("statement_timeout" in note for note in warnings), notes
 
 
 # Binding ----------------------------------------------------------------------------------------------

@@ -22,6 +22,8 @@ def test_defaults_when_environment_is_empty() -> None:
     assert s.ledger_path is None
     assert s.export_dir == Path("exports")
     assert s.pattern_tier1 is True
+    assert s.reconnect_wait_s == 30.0
+    assert s.max_idle_connections == 4
     assert s.role is None
 
 
@@ -39,6 +41,8 @@ def test_reads_every_variable_from_the_environment() -> None:
         "LEDGER_PATH": "/tmp/ledger.jsonl",
         "SLM_EXPORT_DIR": "/tmp/exports",
         "SLM_PATTERN_TIER1": "0",
+        "SLM_RECONNECT_WAIT_S": "45",
+        "SLM_MAX_IDLE_CONNECTIONS": "2",
     }
 
     s = load_settings(env)
@@ -55,6 +59,8 @@ def test_reads_every_variable_from_the_environment() -> None:
     assert s.ledger_path == Path("/tmp/ledger.jsonl")
     assert s.export_dir == Path("/tmp/exports")
     assert s.pattern_tier1 is False
+    assert s.reconnect_wait_s == 45.0
+    assert s.max_idle_connections == 2
 
 
 def test_role_database_url_falls_back_to_database_url() -> None:
@@ -100,6 +106,22 @@ def test_schemas_must_be_plain_lowercase_identifiers(variable: str, value: str) 
 def test_query_timeout_must_be_a_positive_number(value: str) -> None:
     with pytest.raises(ConfigError, match="SLM_QUERY_TIMEOUT_S"):
         load_settings({"SLM_QUERY_TIMEOUT_S": value})
+
+
+@pytest.mark.parametrize("value", ["abc", "0", "-1", "nan", "inf"])
+def test_reconnect_wait_must_be_a_finite_positive_number(value: str) -> None:
+    with pytest.raises(ConfigError, match="SLM_RECONNECT_WAIT_S"):
+        load_settings({"SLM_RECONNECT_WAIT_S": value})
+
+
+def test_zero_idle_connections_turns_the_pool_off() -> None:
+    assert load_settings({"SLM_MAX_IDLE_CONNECTIONS": "0"}).max_idle_connections == 0
+
+
+@pytest.mark.parametrize("value", ["abc", "-1", "2.5", "1e3"])
+def test_max_idle_connections_must_be_a_whole_number_of_at_least_zero(value: str) -> None:
+    with pytest.raises(ConfigError, match="SLM_MAX_IDLE_CONNECTIONS"):
+        load_settings({"SLM_MAX_IDLE_CONNECTIONS": value})
 
 
 def test_role_pin_is_an_override_not_an_environment_variable() -> None:
@@ -154,6 +176,9 @@ def test_unknown_settings_fields_are_rejected() -> None:
         {"query_timeout_s": 0},
         {"query_timeout_s": float("nan")},
         {"query_timeout_s": float("inf")},
+        {"reconnect_wait_s": 0},
+        {"reconnect_wait_s": float("nan")},
+        {"max_idle_connections": -1},
     ],
 )
 def test_settings_validate_fields_however_they_are_built(fields: dict[str, object]) -> None:

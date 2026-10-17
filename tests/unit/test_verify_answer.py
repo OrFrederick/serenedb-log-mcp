@@ -218,3 +218,14 @@ def test_verify_answer_honours_the_role_pin(server: MCPServer) -> None:
 
     assert result.is_error is True
     assert "--role manager" in result.content[0].text
+
+
+def test_the_description_states_the_matching_rules_and_the_team_lead_terms() -> None:
+    tool = next(t for t in anyio.run(create_server().list_tools) if t.name == "verify_answer")
+
+    assert tool.description is not None
+    description = " ".join(tool.description.split())
+    assert "printed precision" in description  # derived shares; sums are exact
+    assert "thousands separators" in description
+    assert "team_lead" in description
+    assert "money or time impact" in description

@@ -6,6 +6,9 @@ those tools (T27, T28) do not exist yet and the checks match them by tool name.
 
 The numbers follow the KERNDTLB story of the worked investigation (#5): 152,734 Log Entries in the
 category, 152,182 of them in one single-node Incident.
+
+It is shared test support, not a fixture of one test module: the eval's L2 grader (T17, #29) checks
+answers with the same `verify.checks`, so its tests should build on these records rather than a copy.
 """
 
 from __future__ import annotations

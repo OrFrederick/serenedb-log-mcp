@@ -111,7 +111,7 @@ class Problem(BaseModel):
         description="What is wrong: unknown_evidence, no_citation, uncited_number, number_not_in_evidence, "
         "rounded_number, range, unmarked_derivation, derived_mismatch, missing_section, empty_section, "
         "section_order, incident_count_without_incident_evidence, log_entries_without_incidents, "
-        "manager_raw_line_evidence, manager_not_measured_claim or missing_unknown."
+        "manager_raw_line_evidence, not_measured_claim, missing_unknown or checker_error."
     )
     section: str = Field(description="The answer section the problem is in, for example 'Observed Facts'.")
     text: str = Field(description="The offending text: the sentence, table row or section concerned.")
@@ -185,6 +185,7 @@ _DERIVED = re.compile(
     r"derived\s+from\s+(?P<ids>\[E[0-9]+(?:\s*[,;]\s*E[0-9]+)*\](?:\s*(?:,|;|and|&)?\s*\[E[0-9]+(?:\s*[,;]\s*E[0-9]+)*\])*)",
     re.I,
 )
+_NEW_ITEM = re.compile(r"^\s*(?:[-*+\u2022]|[0-9]{1,3}[.)])\s+")
 _LIST_MARKER = re.compile(r"^\s*(?:>\s*)*(?:[-*+\u2022]\s+|[0-9]+[.)]\s+)?")
 _FENCE = re.compile(r"^\s*(?:```|~~~)")
 _TABLE_ROW = re.compile(r"^\s*\|.*\|\s*$")
@@ -204,14 +205,19 @@ _ID_MASKS: tuple[re.Pattern[str], ...] = tuple(
         (r"\bR[0-9]{2}(?:-[A-Za-z0-9:]+)*", 0),  # BGL locations: R30-M0-N9-C:J16-U01, R63-M0, R76
         (
             r"\b[0-9]{4}[-./][0-9]{2}[-./][0-9]{2}(?:[-T ][0-9]{2}[:.][0-9]{2}(?:[:.][0-9]{2}(?:\.[0-9]+)?)?"
-            r"(?:Z|[+-][0-9]{2}:?[0-9]{2})?)?",
+            r"(?:Z|[+-][0-9]{2}:?[0-9]{2})?)?(?:/[0-9]{1,2}\b)?",
             0,
         ),
         (r"\b(?:19|20)[0-9]{2}-(?:0[1-9]|1[0-2])\b", 0),  # year and month: 2005-06
         (r"\b(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])\b", 0),  # month and day: 06-11, 12-14
         (r"\b[0-9]{1,2}:[0-9]{2}(?::[0-9]{2}(?:\.[0-9]+)?)?\b", 0),
-        (rf"\b[0-9]{{1,2}}(?:st|nd|rd|th)?\s+{_MONTH}(?:,?\s+[0-9]{{4}})?", 0),
+        (
+            rf"\b[0-9]{{1,2}}(?:st|nd|rd|th)?(?:\s*(?:,|and|or|&|\u2013|\u2014|-|to)\s*[0-9]{{1,2}}(?:st|nd|rd|th)?)*"
+            rf",?\s+{_MONTH}(?:,?\s+[0-9]{{4}})?",
+            0,
+        ),
         (rf"\b{_MONTH}\s+[0-9]{{1,2}}(?:st|nd|rd|th)?(?:,?\s+[0-9]{{4}})?\b", 0),
+        (rf"\b{_MONTH}\s+(?:19|20)[0-9]{{2}}\b", 0),  # month and year: June 2005
         (r"\b0x[0-9a-fA-F]+\b", 0),
         (r"\b(?=[0-9a-f]*[a-f])(?=[0-9a-f]*[0-9])[0-9a-f]{8,}\b", 0),  # hex ids such as template ids
         (r"\b[0-9]+(?:\.[0-9]+){2,}(?::[0-9]+)?\b", 0),  # IP addresses, versions
@@ -225,8 +231,8 @@ _CLAIM_MASKS: tuple[re.Pattern[str], ...] = tuple(
     for pattern, flags in (
         (r"`[^`\n]*[A-Za-z_=(][^`\n]*`", 0),  # inline code with letters: SQL, calls, arguments
         (
-            r"\b(?:lines?|line_no|line\s+numbers?|entry_id|entry|pid)\s*[:#=]?\s*[0-9][0-9,]*"
-            r"(?:\s*(?:\u2013|\u2014|-|to)\s*[0-9][0-9,]*)?",
+            r"\b(?:lines?|line_no|line\s+numbers?|entry_id|entry|pid|jobs?|job_id)\s*[:#=]?\s*[0-9][0-9,]*"
+            r"(?:\s*(?:\u2013|\u2014|-|to|and|or)\s*[0-9][0-9,]*)*",
             re.I,
         ),
         (
@@ -237,55 +243,108 @@ _CLAIM_MASKS: tuple[re.Pattern[str], ...] = tuple(
         (r"\b[1-5][0-9]{2}(?:s\b|(?=\s+(?:responses?|errors?|status(?:es)?|codes?)\b))", re.I),
         (r"\blen\s*[:=]?\s*[0-9]+", re.I),
         (r"\b[0-9]+(?:st|nd|rd|th)\b", 0),
-        (
-            r"(?<![0-9,.])(?:19[89][0-9]|20[0-3][0-9])(?![0-9,]|\.[0-9])"
-            r"(?!\s+(?i:log\s+entr|entries|lines|incidents?|nodes|events|times|groups|requests|errors))",
-            0,
-        ),
     )
 )
 """What reads as a number in prose but is not a measurement: line and entry numbers, HTTP status
-codes, ordinals, bare years and code. Evidence text keeps these: "status: 503" in a row is the
-value a draft may quote as "returned 503"."""
+codes, ordinals and code; bare years are masked separately (`_mask_years`). Evidence text keeps
+these: "status: 503" in a row is the value a draft may quote as "returned 503"."""
 
-# Amounts the Manager must never state; for the Manager they are a not-measured claim, not a number.
-_MANAGER_AMOUNTS = re.compile(
-    r"[$\u20ac\u00a3]\s?[0-9][0-9,.]*(?:\s?(?:[kKmM]\b|thousand|million|billion))?"
-    r"|\b[0-9][0-9,.]*\s?(?:[kKmM]\s?)?(?:USD|EUR|GBP|dollars?|euros?)\b"
-    r"|\b[0-9][0-9,.]*\s*(?:hours?|hrs?|minutes?|mins?|days?|h)\s+(?:of\s+)?(?:downtime|outages?|unavailability)\b"
-    r"|\b[0-9][0-9,.]*\s+(?:customers|users|clients|tenants)\s+(?:were\s+|was\s+)?(?:affected|impacted|hit)\b"
-    r"|\b[0-9][0-9,.]*\s*%\s+(?:availability|uptime)\b",
-    re.I,
+# What the logs do not measure (challenge brief: the Manager must not invent financial loss, downtime or
+# customer impact; T7's Team Lead playbook: "Avoid: ... money or time impact"). An amount is always a
+# claim; a bare term is a claim unless its clause defers it or says the logs cannot establish it.
+_QTY = (
+    r"(?:[0-9][0-9,.]*|an?|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|several|(?<!how\s)many|"
+    r"a\s+few|few)"
 )
-_NOT_MEASURED_TERMS = re.compile(
+_SPAN = r"(?:hours?|hrs?|h|minutes?|mins?|days?|weeks?|seconds?|secs?)"
+_ABOUT = r"(?:about\s+|around\s+|nearly\s+|almost\s+|over\s+|roughly\s+|some\s+)?"
+_MONEY_AMOUNTS = (
+    r"[$\u20ac\u00a3]\s?[0-9][0-9,.]*(?:\s?(?:[kKmM]\b|bn\b|thousand|million|billion))?"
+    r"|\b[0-9][0-9,.]*\s?(?:[kKmM]\s?|bn\s?)?(?:(?-i:USD|EUR|GBP|CHF)|dollars?|euros?|pounds?)\b"
+    r"|\b(?-i:USD|EUR|GBP|CHF)\s?[0-9][0-9,.]*(?:\s?(?:[kKmM]\b|bn\b|thousand|million|billion))?"
+)
+_DOWNTIME_AMOUNTS = (
+    rf"\b{_QTY}\s*-?\s*{_SPAN}\s+(?:of\s+)?(?:downtime|outages?|unavailability|recovery|disruption|degradation)\b"
+    rf"|\b(?:unavailable|down|offline|degraded)\s+for\s+{_ABOUT}{_QTY}\s*-?\s*{_SPAN}\b"
+    rf"|\btook\s+{_ABOUT}{_QTY}\s*-?\s*{_SPAN}\s+to\s+(?:recover|restore|come\s+back|be\s+restored)\b"
+    r"|\b[0-9][0-9.]*\s*%\s+(?:availability|uptime)\b"
+)
+_CUSTOMER_AMOUNTS = (
+    rf"\b{_QTY}\s+(?:customers|users|clients|tenants)\s+(?:were\s+|was\s+)?(?:affected|impacted|hit)\b"
+)
+_MONEY_TERMS = (
     r"\b(?:costs?|costly|costing|money|monetary|financial(?:ly)?|revenue|profits?|dollars?|euros?|prices?|"
-    r"pricing|billing|invoices?|penalt(?:y|ies)|downtime|outages?|uptime|availability(?!\s+zones?)|"
-    r"customers?|end[- ]users?|users?\s+(?:were\s+|was\s+)?(?:affected|impacted)|"
-    r"user[- ](?:impact|facing)|business\s+impact|(?-i:SLAs?|SLOs?)|service[- ]levels?)\b|[$\u20ac\u00a3]",
+    r"pricing|billing|invoices?|penalt(?:y|ies)|(?-i:USD|EUR|GBP|CHF))\b|[$\u20ac\u00a3]"
+)
+_DOWNTIME_TERMS = (
+    r"\b(?:downtime|outages?|uptime|availability(?!\s+zones?)|unavailab\w*|"
+    r"(?:was|were|went|is|are|been|being)\s+down(?!\s+(?:to|by|from|in|over|after|sharply|slightly|steadily|[0-9]))|"
+    r"(?:was|were|is|are|been|became|got)\s+(?:\w+\s+)?degraded)\b"
+)
+_CUSTOMER_TERMS = (
+    r"\b(?:customers?|end[- ]users?|users?\s+(?:were\s+|was\s+)?(?:affected|impacted)|"
+    r"user[- ](?:impact|facing)|"
+    r"business\s+impact)\b"
+)
+_SLA_TERMS = r"\b(?:(?-i:SLAs?|SLOs?)|service[- ]levels?)\b"
+
+
+@dataclass(frozen=True)
+class _ClaimRule:
+    amounts: re.Pattern[str]
+    terms: re.Pattern[str]
+    hint: str
+
+
+def _union(*patterns: str) -> re.Pattern[str]:
+    return re.compile("|".join(f"(?:{p})" for p in patterns), re.I)
+
+
+_CLAIM_RULES: Mapping[Role, _ClaimRule] = {
+    Role.MANAGER: _ClaimRule(
+        _union(_MONEY_AMOUNTS, _DOWNTIME_AMOUNTS, _CUSTOMER_AMOUNTS),
+        _union(_MONEY_TERMS, _DOWNTIME_TERMS, _CUSTOMER_TERMS, _SLA_TERMS),
+        "These logs do not measure cost, money, downtime, customer impact or SLAs, so a Manager answer never "
+        "states or estimates them. Name them in Unknowns as not measured by these logs, or say here that the "
+        "logs cannot establish them, and give the measured alternative (Log Entries, Incidents, affected "
+        "Components and Teams, active weeks) with [E<n>].",
+    ),
+    Role.TEAM_LEAD: _ClaimRule(
+        _union(_MONEY_AMOUNTS, _DOWNTIME_AMOUNTS),
+        _union(_MONEY_TERMS, _DOWNTIME_TERMS),
+        "A Team Lead answer states no money or time impact (cost, downtime, outages): these logs do not "
+        "measure them. Say what the logs measure instead (Log Entries, Incidents, Spread, the trend) with "
+        "[E<n>], and name the impact in Unknowns if it matters.",
+    ),
+}
+"""The not-measured claims each Role must not make. The Engineer has none."""
+
+_CLAUSE_BREAK = re.compile(  # independent clauses only: a list ("A, B, and C") or a colon stays whole
+    r"\s*;\s+|\s+[\u2014\u2013-]\s+|,\s*(?=which\b)|,?\s+but\s+|"
+    r",\s*(?:and|so|yet)\s+(?=(?:i|we|you|they|it|he|she|the|this|that|these|those|our|its|their)\b)",
     re.I,
 )
-_NEGATION = re.compile(
-    r"\b(?:not|no|cannot|can\s?not|never|neither|nor|unable|without|none)\b|n't\b",
-    re.I,
-)
+_NEGATION = re.compile(r"\b(?:not|no|cannot|can\s?not|never|neither|nor|unable|without|none)\b|n't\b", re.I)
 _EPISTEMIC = re.compile(
-    r"\b(?:logs?|data|evidence|measur\w*|record\w*|tell|establish\w*|show\w*|say|know\w*|giv\w*|give|"
-    r"estimat\w*|quantif\w*|track\w*|report\w*|answer\w*|count\w*|figures?|sources?|metrics?|captur\w*|"
-    r"contain\w*|hold\w*|includ\w*|visible|available|determin\w*|infer\w*|claim\w*|state|assess\w*|"
-    r"comput\w*|calculat\w*|label\w*|rank\w*|priorit\w*|weigh\w*|based)\b",
-    re.I,
-)
-_LIMITATION = re.compile(
-    r"\b(?:unknown|not[ _]measured|proxy|proxies|elsewhere|"
-    r"outside\s+(?:of\s+)?(?:these|the|this|our)\s+(?:logs?|data|corpus|datasets?)|"
-    r"beyond\s+(?:what\s+)?(?:these|the)\s+logs|separate\s+(?:system|source|tool|dataset)s?|"
-    r"other\s+(?:systems|sources|tools)|would\s+(?:need|have\s+to|require)|need(?:s|ed)?|requires?|required|"
-    r"only\s+way|whether|if\s+you|ask(?:s|ed|ing)?|request(?:s|ed)?|send|share|provide|point\s+me|"
-    r"records?|tickets?|monitoring|post-?mortems?|finance\s+team)\b"
-    r"|^\W*(?:get|check|ask|collect|pull|request|confirm|send|obtain|gather|compare)\b",
+    r"\b(?:logs?|data|evidence|measur\w*|record\w*|tell|establish\w*|show\w*|say|know\w*|giv\w*|"
+    r"estimat\w*|quantif\w*|track\w*|report\w*|count\w*|figures?|metrics?|captur\w*|determin\w*|infer\w*|"
+    r"claim\w*|assess\w*|comput\w*|calculat\w*|label\w*|rank\w*|priorit\w*|weigh\w*|based|visible)\b",
     re.I,
 )
 _HEDGE = re.compile(r"\b(?:could|might|may)\b", re.I)
+_DEFERRAL = re.compile(
+    r"\b(?:unknown|not[ _]measured|proxy|proxies|elsewhere|"
+    r"outside\s+(?:of\s+)?(?:these|the|this|our)\s+(?:logs?|data|corpus|datasets?)|"
+    r"beyond\s+(?:what\s+)?(?:these|the)\s+logs|separate\s+(?:system|source|tool|dataset)s?|"
+    r"other\s+(?:systems|sources|tools)|(?:would|you'?d|we'?d|i'?d|they'?d)\s+(?:need|have\s+to|require)|"
+    r"only\s+way\s+to\s+(?:estimate|get|know|measure|tell|establish|quantify)|"
+    r"ask\s+(?:[\w-]+\s+){0,8}?(?:for|to|whether|about)|request\s+(?:[\w-]+\s+){0,6}?(?:from|for)|"
+    r"if\s+you\s+(?:can|could|have|share|send|tell))\b"
+    r"|(?:^|,)\s*(?:ask|request|obtain|collect|pull|gather|get|send|check|confirm)\b",
+    re.I,
+)
+"""Phrases that defer a figure to other data. Bare words such as share, record or need are not on it
+(#69 review): they are a Manager answer's everyday vocabulary and switched the guard off."""
 _QUOTED = re.compile(r'"[^"\n]*"|\u201c[^\u201d\n]*\u201d|`[^`\n]*`')
 _REQUIRED_UNKNOWNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     (NOT_MEASURED[0], re.compile(r"\b(?:cost|financial|money|monetary|revenue|price|billing)", re.I)),
@@ -310,7 +369,25 @@ _APPROXIMATE = re.compile(
 _RANGE_JOIN = re.compile(r"^\s*(?:[\u2013\u2014-]|to|until)\s*~?\s*$", re.I)
 _BETWEEN = re.compile(r"\b(?:between|from)\s*~?\s*$", re.I)
 _AND = re.compile(r"^\s*(?:and|to)\s*~?\s*$", re.I)
-_INCIDENT_AFTER = re.compile(r"^\s+(?:(?!not\b|no\b|never\b)[A-Za-z-]+\s+){0,2}incidents?\b", re.I)
+_SPREAD_NOUNS = r"(?:incidents?|nodes?|node\s+cards?|midplanes?|racks?|hosts?|instances?)"
+_COUNTED_AFTER = re.compile(rf"^\s+(?:(?!not\b|no\b|never\b)[A-Za-z-]+\s+){{0,2}}{_SPREAD_NOUNS}\b", re.I)
+_COUNTED_COLUMN = re.compile(rf"\b{_SPREAD_NOUNS}\b", re.I)
+_SELECTION_BEFORE = re.compile(r"\b(?:top|first|last|next)\s+$", re.I)
+"""Small numbers that count Incidents or Spread (nodes, midplanes, racks) are measurements, not "the top
+3": the #1 side-by-side rule rests on them (#69 review)."""
+_PARAMETER_BEFORE = re.compile(r"[A-Za-z_][A-Za-z0-9_]*\s*[=:]\s*~?$")
+_TOOL_NAME = re.compile(
+    r"\b(?:describe_corpus|search_logs|get_context|count_by|trend|list_patterns|search_patterns|top_patterns|"
+    r"list_incidents|latency_stats|find_precursors|get_evidence|export_investigation)\b"
+)
+_MEASURED_AFTER = re.compile(
+    r"^\s*(?:[A-Za-z-]+\s+){0,2}?(?:log\s+entr\w*|entries|lines|incidents?|nodes?|node\s+cards?|midplanes?|"
+    r"racks?|hosts?|instances?|sources?|components?|teams?|patterns?|requests?|errors?|events?|groups?|"
+    r"categories)\b",
+    re.I,
+)
+"""Next Step holds suggested parameters, which need no Evidence: a `name=value` or `name: value` pair, or
+a number in a sentence that names a tool, unless a measured noun follows it (#69 review)."""
 _INCIDENT_COUNT = re.compile(
     r"(?<![0-9A-Za-z_.])[0-9][0-9,]*(?:\.[0-9]+)?\s+(?:(?!not\b|no\b|never\b)[A-Za-z-]+\s+){0,2}incidents?\b"
     r"|\bincidents?\s*[:=]\s*[0-9]",
@@ -389,6 +466,7 @@ def _parse(draft: str) -> _Parsed:
         if _FENCE.match(line):
             in_fence = not in_fence
             parsed.content.setdefault(section, []).append(line)
+            body.append((section, ""))  # a code block ends the paragraph around it
             continue
         if in_fence:
             parsed.content.setdefault(section, []).append(line)
@@ -403,6 +481,7 @@ def _parse(draft: str) -> _Parsed:
                 body.append((section, rest))
             continue
         if found is not None:  # the current section named again inline: "**Hypothesis:** ..."
+            body.append((section, ""))
             line = found[1]
         if line.strip():
             parsed.content.setdefault(section, []).append(line)
@@ -412,35 +491,54 @@ def _parse(draft: str) -> _Parsed:
 
 
 def _units(body: list[tuple[str, str]]) -> list[_Unit]:
+    """Sentences and table rows, with the lines of a Markdown paragraph joined first.
+
+    In Markdown a single newline inside a paragraph is not a break, so a sentence hard-wrapped over two
+    lines is one sentence and keeps the citation at its end (#69 review). A blank line, a heading, a
+    code fence, a table row or a new list item ends the paragraph.
+    """
     units: list[_Unit] = []
+    paragraph: list[str] = []
+    where = PREAMBLE
+
+    def flush() -> None:
+        if paragraph:
+            for sentence in _sentences(" ".join(paragraph)):
+                units.append(_Unit(where, sentence, _cites(sentence), _derived(sentence)))
+            paragraph.clear()
+
     i = 0
     while i < len(body):
         section, line = body[i]
         if _TABLE_ROW.match(line):
+            flush()
             i = _table(body, i, units)
             continue
+        if not line.strip() or section != where or _NEW_ITEM.match(line):
+            flush()
         if line.strip():
-            text = _LIST_MARKER.sub("", line, count=1)
-            sentences = _sentences(text)
-            if sentences and units and units[-1].section == section and _only_citations(text):
-                units[-1].cites.extend(_cites(text))  # "[E1]" on its own line under a paragraph
-            else:
-                for sentence in sentences:
-                    units.append(_Unit(section, sentence, _cites(sentence), _derived(sentence)))
+            paragraph.append(_LIST_MARKER.sub("", line, count=1).strip())
+            where = section
         i += 1
+    flush()
     return units
 
 
-def _only_citations(text: str) -> bool:
-    return bool(_CITE.search(text)) and bool(_ONLY_CITATIONS.match(_CITE.sub("", text)))
-
-
 def _neighbour(lines: Iterator[tuple[str, str]], section: str) -> str:
-    """The nearest non-blank line in `lines`, if it is in `section`; a caption never crosses a heading."""
+    """The paragraph next to a table in `lines` (nearest first), if it is in `section`.
+
+    A caption never crosses a heading, and a caption hard-wrapped over two lines is read whole.
+    """
+    found: list[str] = []
     for where, line in lines:
-        if line.strip():
-            return line if where == section else ""
-    return ""
+        if where != section or _TABLE_ROW.match(line):
+            break
+        if not line.strip():
+            if found:
+                break
+            continue
+        found.append(line)
+    return " ".join(found)
 
 
 def _table(body: list[tuple[str, str]], start: int, units: list[_Unit]) -> int:
@@ -459,8 +557,7 @@ def _table(body: list[tuple[str, str]], start: int, units: list[_Unit]) -> int:
     header = _split_cells(rows[0]) if has_header else None
     inherited = _cites(rows[0]) if has_header else []
     if not inherited:
-        above = _neighbour(reversed(body[:start]), section)
-        inherited = _cites(above) if not _TABLE_ROW.match(above) else []
+        inherited = _cites(_neighbour(reversed(body[:start]), section))
     if not inherited:
         below = _neighbour(iter(body[end:]), section)
         if _cites(below) and not numbers_in(below):
@@ -504,27 +601,129 @@ class Number:
         return not self.decimals and not self.percent and self.multiplier == 1 and self.value <= SMALL_INT
 
 
-def _mask(text: str, *, manager: bool = False, evidence: bool = False) -> str:
+_YEAR = re.compile(r"(?<![0-9,.])(?:19[89][0-9]|20[0-3][0-9])(?![0-9]|[,.][0-9])")
+_YEAR_CONTEXT = re.compile(
+    r"(?:\b(?:early|late|mid|since|during|until|till|before|after|years?)|(?:19|20)[0-9]{2}\s*[\u2013\u2014-])"
+    r"\s*-?\s*$",
+    re.I,
+)
+_NEXT_WORD = re.compile(r"\s+([A-Za-z][A-Za-z-]*)")
+_YEAR_FOLLOWERS = frozenset(
+    [
+        "to",
+        "and",
+        "or",
+        "until",
+        "till",
+        "through",
+        "thru",
+        "onwards",
+        "onward",
+        "when",
+        "where",
+        "while",
+        "with",
+        "was",
+        "were",
+        "is",
+        "are",
+        "had",
+        "has",
+        "have",
+        "saw",
+        "at",
+        "on",
+        "in",
+        "by",
+        "but",
+        "for",
+        "the",
+        "a",
+        "an",
+        "as",
+        "after",
+        "before",
+        "that",
+        "which",
+        "so",
+        "then",
+        "data",
+        "logs",
+        "log",
+        "corpus",
+        "dataset",
+    ]
+)
+"""Words that may follow a year ("from 2005 to 2006", "in 2005 the storm", "the 2005 data")."""
+_COUNTED_WORDS = frozenset(
+    [
+        "log",
+        "entries",
+        "entry",
+        "lines",
+        "incident",
+        "incidents",
+        "component",
+        "components",
+        "team",
+        "teams",
+        "pattern",
+        "patterns",
+        "burst",
+        "bursts",
+        "episode",
+        "episodes",
+    ]
+)
+"""Capitalised glossary nouns that make a four-digit number a count ("2005 Log Entries")."""
+
+
+def _mask_years(masked: str) -> str:
+    """Mask four-digit numbers between 1980 and 2039 that read as years, not as counts.
+
+    A year is followed by punctuation, a date word or a capitalised name ("in 2005 KERNDTLB peaked");
+    a number followed by any other lowercase noun, or by a glossary noun, is a count ("2024 midplanes",
+    "2019 sources", "2005 Log Entries"). A whitelist of count nouns cannot be completed (#69 review).
+    """
+
+    def year_or_count(match: re.Match[str]) -> str:
+        if _YEAR_CONTEXT.search(masked[: match.start()]):
+            return " " * len(match.group(0))
+        following = _NEXT_WORD.match(masked, match.end())
+        if following is not None:
+            word = following.group(1)
+            if word.lower() in _COUNTED_WORDS or (word[0].islower() and word not in _YEAR_FOLLOWERS):
+                return match.group(0)
+        return " " * len(match.group(0))
+
+    return _YEAR.sub(year_or_count, masked)
+
+
+def _mask(text: str, *, role: Role | None = None, evidence: bool = False) -> str:
     masked = text
     patterns: Sequence[re.Pattern[str]] = _ID_MASKS if evidence else (*_ID_MASKS, *_CLAIM_MASKS)
-    if manager:
-        patterns = (*patterns, _MANAGER_AMOUNTS)
+    rule = _CLAIM_RULES.get(role) if role is not None else None
+    if rule is not None:
+        patterns = (*patterns, rule.amounts)
     for pattern in patterns:
         masked = pattern.sub(lambda m: " " * len(m.group(0)), masked)
+    if not evidence:
+        masked = _mask_years(masked)
     # Ordered-list markers and Markdown headings at the start of a line.
     return re.sub(
         r"(?m)^(\s*(?:#{1,6}\s*)?)([0-9]+[.)])(?=\s)", lambda m: m.group(1) + " " * len(m.group(2)), masked
     )
 
 
-def numbers_in(text: str, *, manager: bool = False, evidence: bool = False) -> list[Number]:
+def numbers_in(text: str, *, role: Role | str | None = None, evidence: bool = False) -> list[Number]:
     """The numbers in `text` that make measured claims, in order (identifiers, dates and code masked).
 
-    With `manager`, amounts of money, downtime and affected customers are left out too, because for
-    the Manager they are a not-measured claim rather than a number to look up. With `evidence`, only
+    With a `role` that may not state money, downtime or customer impact (manager, team_lead), such
+    amounts are left out too: for that Role they are a not-measured claim, not a number to look up. With
+    `evidence`, only
     identifiers, dates and times are masked, so status codes and sizes in Evidence text still count.
     """
-    masked = _mask(text, manager=manager, evidence=evidence)
+    masked = _mask(text, role=None if role is None else Role(role), evidence=evidence)
     found: list[Number] = []
     for match in _NUMBER.finditer(masked):
         raw = match.group("num")
@@ -716,7 +915,17 @@ def check_answer(
     side-by-side check is skipped with a note. It never raises on a bad draft: an unexpected failure
     of the checker itself comes back as a `checker_error` problem.
     """
-    role = Role(role)
+    try:
+        role = Role(role)
+    except ValueError:
+        roles = ", ".join(r.value for r in Role)
+        problem = Problem(
+            kind="checker_error",
+            section=PREAMBLE,
+            text=f"role={role!r}",
+            hint=f"role={role!r} is not a Role, so the draft was not checked. Pass one of: {roles}.",
+        )
+        return AnswerReport(ok=False, problems=[problem], checked_numbers=[], cited_evidence=[], notes=[])
     try:
         return _check(role, draft, ledger, incident_tools)
     except Exception as exc:  # the agent must always get an answer it can act on
@@ -744,6 +953,7 @@ def _check(role: Role, draft: str, ledger: Iterable[Mapping[str, Any]], incident
     _check_incident_counts(ctx, parsed)
     if role in (Role.TEAM_LEAD, Role.MANAGER):
         _check_side_by_side(ctx, parsed)
+    _check_not_measured(ctx, parsed)
     if role is Role.MANAGER:
         _check_manager(ctx, parsed)
     cited = list(dict.fromkeys(i for unit in parsed.units for i in unit.cites))
@@ -833,21 +1043,19 @@ def _unknown_hint(ctx: _Context, evidence_id: str) -> str:
 
 
 def _check_numbers(ctx: _Context, parsed: _Parsed) -> None:
-    manager = ctx.role is Role.MANAGER
     for unit in parsed.units:
-        numbers = numbers_in(unit.text, manager=manager)
+        numbers = numbers_in(unit.text, role=ctx.role)
         if not numbers:
             continue
-        masked = _mask(unit.text, manager=manager)
+        masked = _mask(unit.text, role=ctx.role)
         ranges = _ranges(numbers, masked)
         unknown_only = bool(unit.cites) and not ctx.known(unit.cites)
         reported_ranges: set[int] = set()
         for index, number in enumerate(numbers):
-            incident_count = bool(_INCIDENT_AFTER.match(masked[number.end :]))
-            if number.small and not incident_count:
+            if number.small and not _counts_spread(unit, number, masked):
                 continue
             if not unit.cites:
-                if unit.section != "Next Step":
+                if unit.section != "Next Step" or not _is_parameter(unit.text, masked, number):
                     _uncited(ctx, unit, number)
                 continue
             if unknown_only:
@@ -858,6 +1066,25 @@ def _check_numbers(ctx: _Context, parsed: _Parsed) -> None:
             status = _ground(ctx, unit, number, span, numbers, masked)
             if span is not None and status == "range":
                 reported_ranges.add(span[0])
+
+
+def _counts_spread(unit: _Unit, number: Number, masked: str) -> bool:
+    """Whether a small number counts Incidents or Spread, in prose or in a column named after them."""
+    if _SELECTION_BEFORE.search(masked[: number.start]):
+        return False
+    if _COUNTED_AFTER.match(masked[number.end :]):
+        return True
+    if unit.header is None:
+        return False
+    column = unit.text[: number.start].count("|") - 1
+    return 0 <= column < len(unit.header) and bool(_COUNTED_COLUMN.search(unit.header[column]))
+
+
+def _is_parameter(text: str, masked: str, number: Number) -> bool:
+    if _PARAMETER_BEFORE.search(masked[: number.start]):
+        return True
+    call = _TOOL_NAME.search(text) or "`" in text or re.search(r"[A-Za-z_]\s*=\s*\S", text)
+    return bool(call) and not _MEASURED_AFTER.match(masked[number.end :])
 
 
 def _ranges(numbers: list[Number], masked: str) -> dict[int, tuple[int, int]]:
@@ -1087,7 +1314,7 @@ def _check_incident_counts(ctx: _Context, parsed: _Parsed) -> None:
 def _check_side_by_side(ctx: _Context, parsed: _Parsed) -> None:
     def counts_log_entries(unit: _Unit) -> bool:
         known = ctx.known(unit.cites)
-        if not known or not any(not n.small for n in numbers_in(unit.text, manager=ctx.role is Role.MANAGER)):
+        if not known or not any(not n.small for n in numbers_in(unit.text, role=ctx.role)):
             return False
         return any(ctx.tool(i) in LOG_ENTRY_TOOLS for i in known) or bool(_LOG_ENTRY_WORDS.search(unit.text))
 
@@ -1137,18 +1364,6 @@ def _check_manager(ctx: _Context, parsed: _Parsed) -> None:
                 "answer uses measured frequency and affected Components only: count the same filter with "
                 "count_by (or trend) and cite that result instead.",
             )
-    for unit in parsed.units:
-        if unit.section == "Unknowns" or not _claims_not_measured(unit.text):
-            continue
-        ctx.add(
-            "manager_not_measured_claim",
-            unit.section,
-            unit.text,
-            "These logs do not measure cost, money, downtime, customer impact or SLAs, so a Manager answer "
-            "never states or estimates them. Name them in Unknowns as not measured by these logs, or say "
-            "here that the logs cannot establish them, and give the measured alternative (Log Entries, "
-            "Incidents, affected Components and Teams, active weeks) with [E<n>].",
-        )
     unknowns = " ".join(parsed.content.get("Unknowns", []))
     if not unknowns.strip():
         return  # missing_section or empty_section already asks for it
@@ -1162,22 +1377,42 @@ def _check_manager(ctx: _Context, parsed: _Parsed) -> None:
             )
 
 
-def _claims_not_measured(text: str) -> bool:
-    """Whether a sentence states cost, downtime, customer impact or SLAs as if the logs measured them.
+def _check_not_measured(ctx: _Context, parsed: _Parsed) -> None:
+    """Money, downtime, customer or SLA claims outside Unknowns; the Team Lead only money and time."""
+    rule = _CLAIM_RULES.get(ctx.role)
+    if rule is None:
+        return
+    for unit in parsed.units:
+        if unit.section == "Unknowns":
+            continue
+        claim = _not_measured_claim(unit.text, rule)
+        if claim is not None:
+            ctx.add("not_measured_claim", unit.section, unit.text, f"'{claim.strip()}': {rule.hint}")
 
-    An amount (money, hours of downtime, affected customers) always is. A term alone is not when the
-    sentence says what the logs cannot establish ("these logs do not measure downtime"), points to
-    where the figure would come from ("ask finance for billing records"), or is hedged and negated
-    ("a burst, and not an outage"). A quoted search term is a mention, not a claim.
+
+def _not_measured_claim(text: str, rule: _ClaimRule) -> str | None:
+    """The phrase that states money, downtime, customer impact or SLAs as measured, if there is one.
+
+    An amount ("EUR 240,000", "unavailable for 6 hours", "took 6 hours to recover") always does. A term
+    alone does unless its own clause defers the figure to other data ("ask finance for the billing
+    records", "tracked outside these logs", "you'd need the SLA definitions") or says the logs cannot
+    establish it (a negation with a word about measuring or knowing, or with a hedge: "these logs do not
+    measure downtime", "a burst, and not an outage"). The clause is the window, so a disclaimer in one
+    clause does not excuse a claim in another ("The outage cost us money, which the logs do not show").
+    A quoted search term is a mention, not a claim.
     """
-    plain = _QUOTED.sub(" ", text.replace("\u2019", "'"))
-    if _MANAGER_AMOUNTS.search(plain):
-        return True
-    if not _NOT_MEASURED_TERMS.search(plain):
-        return False
-    if _LIMITATION.search(plain):
-        return False
-    return not (_NEGATION.search(plain) and (_EPISTEMIC.search(plain) or _HEDGE.search(plain)))
+    plain = _QUOTED.sub(lambda m: " " * len(m.group(0)), text.replace("\u2019", "'"))
+    amount = rule.amounts.search(plain)
+    if amount is not None:
+        return amount.group(0)
+    for clause in _CLAUSE_BREAK.split(plain):
+        term = rule.terms.search(clause)
+        if term is None or _DEFERRAL.search(clause):
+            continue
+        if _NEGATION.search(clause) and (_EPISTEMIC.search(clause) or _HEDGE.search(clause)):
+            continue
+        return term.group(0)
+    return None
 
 
 # Helpers for graders -----------------------------------------------------------------------------------

@@ -67,11 +67,14 @@ def register(server: MCPServer) -> None:
         and the number recomputes from those records; that the sections Observed Facts, Hypotheses,
         Unknowns and Next Step are all there, in that order; and that a count called Incidents cites
         list_incidents or top_patterns Evidence. For team_lead and manager, Log Entry counts must stand
-        next to Incident and Spread Evidence (once list_incidents or top_patterns is offered). For
-        manager, no raw-line Evidence (search_logs, get_context) may be cited, cost, money, downtime,
-        customer and SLA terms belong in Unknowns or in a sentence saying the logs cannot establish them,
-        and Unknowns must name cost, downtime and customer impact. It runs no query and adds nothing to
-        the Evidence Ledger.
+        next to Incident and Spread Evidence (once list_incidents or top_patterns is offered), and money
+        or time impact (cost, downtime) belongs in Unknowns or in a sentence saying the logs cannot
+        establish it. For manager, customer and SLA terms too, no raw-line Evidence (search_logs,
+        get_context) may be cited, and Unknowns must name cost, downtime and customer impact. Matching:
+        a number must equal a value of the cited Evidence after thousands separators and k or M suffixes
+        are read; a percentage may quote a stored fraction (100% for 1.0); a derived sum or difference
+        must be exact and a derived share or ratio right to its printed precision. It runs no query and
+        adds nothing to the Evidence Ledger.
         Inputs: role (the Role the answer is for), draft (the full answer text in Markdown).
         Outputs: ok (true when there is nothing to fix), role, summary (the verdict in one line),
         problems (each with kind, section, the offending text and a fix hint), checked_numbers (every

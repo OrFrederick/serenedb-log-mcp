@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import random
 import string
+import textwrap
 
 import pytest
 from verify_ledger import ledger_records
@@ -320,7 +321,7 @@ def test_other_roles_may_cite_raw_line_evidence() -> None:
 def test_the_manager_claiming_what_the_logs_do_not_measure_is_rejected(claim: str) -> None:
     draft = replace(MANAGER, "## Hypotheses\n", f"## Hypotheses\n- {claim}\n")
 
-    assert "Unknowns" in only(check(Role.MANAGER, draft), "manager_not_measured_claim")
+    assert "Unknowns" in only(check(Role.MANAGER, draft), "not_measured_claim")
 
 
 @pytest.mark.parametrize(
@@ -478,6 +479,10 @@ def test_grouped_citations_are_read_as_one_citation_each() -> None:
         "Instance 3edec1e4-9678-4a3a-a21b-a145a4ee5e61 logged on 14 May and on June 3 [E6].",
         "SereneDB 26.10.1 ran it in the `count_by(top=25)` call on nova.api.v21 [E6].",
         "Template a0a0a0a0a0a0a001 (0x00004ed8) is the 2nd most common in 2005 [E1].",
+        # #3 pilot answers the review round's stricter year and Next Step rules first flagged by mistake.
+        "Jobs 65640 and 65641 failed together, and lines 201395 and 201396 delete the files [E2].",
+        "It peaked on 5, 11 and 14 June 2005, again on 11\u201314 June and on 2005-06-13/14 [E2].",
+        "The corpus only holds 2005\u2013early 2006 entries [E2].",
     ],
 )
 def test_identifiers_dates_and_times_are_not_measured_numbers(fact: str) -> None:
@@ -627,3 +632,221 @@ def test_a_table_does_not_inherit_citations_across_a_section_heading() -> None:
     )  # the line above the heading cites [E1], but it belongs to Hypotheses, not to this table
 
     assert "uncited_number" in kinds(check(Role.TEAM_LEAD, draft))
+
+
+# Review round 1 (#69) ---------------------------------------------------------------------------------
+
+
+def hard_wrap(draft: str, width: int = 60) -> str:
+    """`draft` with every prose line wrapped at `width`, list items continued with an indent."""
+    out = []
+    for line in draft.splitlines():
+        if not line.strip() or line.lstrip().startswith(("|", "#")):
+            out.append(line)
+            continue
+        marker = line[: len(line) - len(line.lstrip("-0123456789. "))]
+        indent = " " * len(marker) if marker.strip() else ""
+        out.append(textwrap.fill(line, width, subsequent_indent=indent, break_long_words=False))
+    return "\n".join(out)
+
+
+@pytest.mark.parametrize("role", list(Role))
+def test_a_hard_wrapped_correct_answer_passes(role: Role) -> None:
+    wrapped = hard_wrap(GOOD[role])
+    assert wrapped.count("\n") > GOOD[role].count("\n")  # the wrap really split sentences
+
+    report = check(role, wrapped)
+
+    assert report.ok, [p.model_dump() for p in report.problems]
+
+
+def test_a_sentence_wrapped_inside_a_paragraph_keeps_its_citation() -> None:
+    draft = replace(
+        TEAM_LEAD,
+        "Data Scope: BGL, whole Dataset, alert categories [E1].",
+        "Data Scope: BGL, whole Dataset. KERNDTLB holds 152,734 Log Entries, 43.83% of the 348,460\n"
+        "matching entries [E1].",
+    )
+
+    assert check(Role.TEAM_LEAD, draft).ok
+
+
+def test_a_blank_line_or_a_new_list_item_still_ends_the_sentence() -> None:
+    paragraph = replace(
+        TEAM_LEAD, "Data Scope: BGL, whole Dataset, alert categories [E1].", "KERNSTOR has 63,491\n\n[E1]."
+    )
+    bullet = replace(
+        TEAM_LEAD,
+        "- The top 3 categories",
+        "- KERNSTOR has 63,491\n- Cited at last [E1].\n- The top 3 categories",
+    )
+
+    assert "uncited_number" in kinds(check(Role.TEAM_LEAD, paragraph))
+    assert "uncited_number" in kinds(check(Role.TEAM_LEAD, bullet))
+
+
+@pytest.mark.parametrize(
+    "claim",
+    [
+        "The outage required 6 hours of recovery and hit paying customers.",
+        "Its 43.83% share [E1] cost us real money.",
+        "The outage record shows the service was down all afternoon.",
+        "Three tickets say customers were affected by the downtime.",
+        "We need to tell customers that this outage hit them.",
+        "Provide the board with the EUR 240,000 loss figure.",
+        "Downtime cost us dearly, and we should share that with finance.",
+        "This is costly: ask yourself how many customers left.",
+        "The storm caused an outage; whether that is acceptable is a business call.",
+        "The outage cost us money, which the logs do not show.",
+        "The outage cost us money, and the logs do not show it.",
+        "Replacing the node would save USD 1.2M a year.",
+        "The cluster was unavailable for 6 hours.",
+        "The cluster was unavailable for six hours.",
+        "The rack was down for 6 hours.",
+        "It took 6 hours to recover.",
+        "The service was degraded for most of the afternoon.",
+    ],
+)
+def test_planted_manager_violations_are_rejected(claim: str) -> None:
+    draft = replace(MANAGER, "## Hypotheses\n", f"## Hypotheses\n- {claim}\n")
+
+    assert "not_measured_claim" in kinds(check(Role.MANAGER, draft))
+
+
+@pytest.mark.parametrize(
+    "refusal",
+    [
+        "For a cost figure, ask operations or finance for the outage window, affected jobs and staff hours.",
+        "I ranked them by volume and severity, not by business impact.",
+        "Get cost estimates and an impact assessment from the owning teams before committing budget.",
+        "Those are the only way to estimate a cost.",
+        "For a real SLA number, you'd need the SLA definitions and service-level records from the owning "
+        "team.",
+        "A high-volume day could be a burst of repeated messages and not an outage.",
+        "None of them is labelled as an outage.",
+        "Send me the SLA definition and its source, and I'll check whether the logs can support it.",
+        'A search for "outage" found nothing.',
+        # #3 pilot answers that an over-eager clause split flagged (lists, colons, "because", "how many").
+        "It would not measure SLA compliance, because that needs a defined threshold, such as availability.",
+        "The logs can't tell you either number: what it cost or how many hours customers were down.",
+        "The logs can't tell us what June 2005 cost or how many hours of downtime customers saw.",
+        "Ask the team that owns the BGL system for its incident records (start and end times, affected "
+        "services, and any cost or SLA-credit figures).",
+        "KERNDTLB Log Entries went down to 30 per week [E4].",
+    ],
+)
+def test_requests_for_other_data_and_negated_mentions_still_pass(refusal: str) -> None:
+    draft = replace(MANAGER, "## Hypotheses\n", f"## Hypotheses\n- {refusal}\n")
+
+    report = check(Role.MANAGER, draft)
+    assert report.ok, [p.model_dump() for p in report.problems]
+
+
+def test_a_currency_first_amount_in_the_next_step_is_rejected() -> None:
+    draft = replace(
+        MANAGER,
+        "## Next Step\n",
+        "## Next Step\nApprove EUR 240,000 of budget to replace the failing node.\n",
+    )
+
+    found = only(check(Role.MANAGER, draft), "not_measured_claim")
+    assert "EUR 240,000" in found
+
+
+@pytest.mark.parametrize(
+    "claim",
+    ["The KERNDTLB storm cost about $40,000 in lost compute.", "The storm caused 6 hours of downtime."],
+)
+def test_the_team_lead_states_no_money_or_time_impact(claim: str) -> None:
+    # T7's Team Lead playbook: "Avoid: ... money or time impact" (deferred from #63, nit 4).
+    draft = replace(TEAM_LEAD, "## Hypotheses\n", f"## Hypotheses\n- {claim}\n")
+
+    assert "not_measured_claim" in kinds(check(Role.TEAM_LEAD, draft))
+
+
+def test_the_engineer_is_not_held_to_the_not_measured_terms() -> None:
+    draft = replace(
+        ENGINEER, "## Hypotheses\n", "## Hypotheses\n- The storm may have caused downtime for users.\n"
+    )
+
+    assert check(Role.ENGINEER, draft).ok
+
+
+@pytest.mark.parametrize(
+    ("fact", "number"),
+    [("The storm touched 2024 midplanes [E3].", "2024"), ("KERNSTOR came from 2019 sources [E1].", "2019")],
+)
+def test_a_count_that_looks_like_a_year_is_still_checked(fact: str, number: str) -> None:
+    draft = replace(ENGINEER, "## Hypotheses", f"- {fact}\n\n## Hypotheses")
+
+    assert number in only(check(Role.ENGINEER, draft), "number_not_in_evidence")
+
+
+@pytest.mark.parametrize(
+    "fact",
+    [
+        "In 2005 KERNDTLB peaked on one node [E2].",
+        "The data runs from 2005 to 2006 [E2].",
+        "Nothing like it was logged since 2005, or in June 2005 [E2].",
+        "Between 2005 and 2006 the node logged it daily [E2].",
+    ],
+)
+def test_years_in_date_context_are_still_not_numbers(fact: str) -> None:
+    draft = replace(ENGINEER, "## Hypotheses", f"- {fact}\n\n## Hypotheses")
+
+    assert check(Role.ENGINEER, draft).ok, [p.model_dump() for p in check(Role.ENGINEER, draft).problems]
+
+
+def test_a_measurement_in_the_next_step_is_checked() -> None:
+    draft = replace(
+        MANAGER, "## Next Step\n", "## Next Step\n- Investigate the 9,999 KERNMC Log Entries first.\n"
+    )
+
+    assert "9,999" in only(check(Role.MANAGER, draft), "uncited_number")
+
+
+@pytest.mark.parametrize(
+    "step",
+    [
+        "Re-run list_incidents with gap_s: 600.",
+        "Call `count_by(top=40)` next.",
+        "Check the top 3 nodes first.",
+        "Search `data storage interrupt` with `start=2005-06-13T17:36:00`, using a higher limit (up to 50).",
+    ],
+)
+def test_parameters_in_the_next_step_stay_exempt(step: str) -> None:
+    draft = replace(ENGINEER, "## Next Step\n", f"## Next Step\n- {step}\n")
+
+    assert check(Role.ENGINEER, draft).ok
+
+
+@pytest.mark.parametrize("fact", ["The storm hit 7 midplanes [E3].", "The storm hit 5 nodes [E3]."])
+def test_a_small_spread_number_is_checked(fact: str) -> None:
+    draft = replace(TEAM_LEAD, "- Weekly,", f"- {fact}\n- Weekly,")
+
+    assert only(check(Role.TEAM_LEAD, draft), "number_not_in_evidence")
+
+
+def test_a_small_number_in_a_spread_or_incident_column_is_checked() -> None:
+    draft = replace(
+        TEAM_LEAD,
+        "- Weekly,",
+        "\n| Incident | Nodes | Midplanes |\n|---|---|---|\n| 17 | 1 | 7 |\n\nSource: [E3]\n\n- Weekly,",
+    )
+
+    assert "7" in only(check(Role.TEAM_LEAD, draft), "number_not_in_evidence")
+
+
+def test_an_unknown_role_comes_back_as_a_problem_not_an_exception() -> None:
+    report = check_answer("boss", TEAM_LEAD, LEDGER)
+
+    assert not report.ok
+    assert "team_lead" in only(report, "checker_error")
+
+
+def test_a_count_after_an_entry_id_is_still_checked() -> None:
+    draft = replace(
+        ENGINEER, "entry 222715 is the first one shown [E2]", "entry 222715, 26,999 more follow [E2]"
+    )
+
+    assert "26,999" in only(check(Role.ENGINEER, draft), "number_not_in_evidence")

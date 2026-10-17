@@ -11,6 +11,9 @@ sessions can therefore share one ledger, which is what the eval harness (one led
 complete. That is the fix for the #3 pilot bug, where `count_by` wrote the ledger before it had
 attached `groups_total` and a true number then looked ungrounded.
 
+The lock has two halves: a `threading.Lock` for the tool calls the SDK runs in parallel worker
+threads inside one server process, and the advisory file lock for other server processes.
+
 `fcntl` is POSIX-only, which covers the supported platforms (macOS for development, Linux in CI).
 """
 
@@ -19,6 +22,7 @@ from __future__ import annotations
 import fcntl
 import json
 import re
+import threading
 from collections.abc import Callable, Iterator, Mapping
 from contextlib import contextmanager
 from pathlib import Path
@@ -62,6 +66,7 @@ class Ledger:
 
     def __init__(self, path: Path | None = None) -> None:
         self.path = path
+        self._lock = threading.Lock()
         self._records: list[LedgerRecord] = []
         # Load at startup, so a broken LEDGER_PATH fails now and not in the middle of an answer.
         self.loaded = len(self._read()) if path is not None and path.exists() else 0
@@ -73,29 +78,30 @@ class Ledger:
         Nothing is written and no id is consumed when the body raises, so the ids of the stored
         Evidence stay gap-free.
         """
-        if self.path is None:
-            slot = LedgerSlot(_next_id(self._records), self._records.append)
-            yield slot
-            _require_stored(slot)
-            return
-
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        # Mode "a+" creates the file and appends every write at the end, whatever we read first.
-        with self.path.open("a+", encoding="utf-8") as handle:
-            fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
-            try:
-                handle.seek(0)
-                written = self._parse(handle.read())
-
-                def write(record: LedgerRecord) -> None:
-                    handle.write(json.dumps(record, ensure_ascii=False, default=str) + "\n")
-                    handle.flush()
-
-                slot = LedgerSlot(_next_id(written), write)
+        with self._lock:
+            if self.path is None:
+                slot = LedgerSlot(_next_id(self._records), self._records.append)
                 yield slot
                 _require_stored(slot)
-            finally:
-                fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+                return
+
+            self.path.parent.mkdir(parents=True, exist_ok=True)
+            # Mode "a+" creates the file and appends every write at the end, whatever we read first.
+            with self.path.open("a+", encoding="utf-8") as handle:
+                fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+                try:
+                    handle.seek(0)
+                    written = self._parse(handle.read())
+
+                    def write(record: LedgerRecord) -> None:
+                        handle.write(json.dumps(record, ensure_ascii=False, default=str) + "\n")
+                        handle.flush()
+
+                    slot = LedgerSlot(_next_id(written), write)
+                    yield slot
+                    _require_stored(slot)
+                finally:
+                    fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
 
     def all(self) -> list[LedgerRecord]:
         """Every stored record in call order, read from the file when there is one."""

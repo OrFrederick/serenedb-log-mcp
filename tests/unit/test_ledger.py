@@ -2,6 +2,7 @@
 
 import fcntl
 import json
+import sys
 import threading
 from pathlib import Path
 from typing import Any
@@ -195,3 +196,29 @@ def test_an_append_waits_for_a_lock_another_process_holds(tmp_path: Path) -> Non
     waiting.join(timeout=5)
     assert finished.is_set()
     assert ledger.get("E1") is not None
+
+
+@pytest.mark.parametrize("on_disk", [False, True])
+def test_parallel_tool_calls_in_one_process_get_unique_gap_free_ids(tmp_path: Path, on_disk: bool) -> None:
+    # The MCP SDK runs synchronous tools in worker threads, so two calls can reach the ledger at
+    # the same time inside one server process.
+    ledger = Ledger(tmp_path / "ledger.jsonl" if on_disk else None)
+    threads = 8
+    per_thread = 25
+    switch_interval = sys.getswitchinterval()
+    sys.setswitchinterval(1e-7)  # make a lost update likely rather than rare
+    try:
+        workers = [
+            threading.Thread(target=lambda: [store(ledger) for _ in range(per_thread)])
+            for _ in range(threads)
+        ]
+        for worker in workers:
+            worker.start()
+        for worker in workers:
+            worker.join(timeout=30)
+    finally:
+        sys.setswitchinterval(switch_interval)
+
+    ids = [record["evidence_id"] for record in ledger.all()]
+    assert len(ids) == threads * per_thread
+    assert sorted(ids, key=lambda id_: int(id_[1:])) == [f"E{n}" for n in range(1, len(ids) + 1)]

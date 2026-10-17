@@ -1,0 +1,41 @@
+-- TODO(organiser): adapter for the organisers' loader (T25).
+--
+-- The organisers supply the official loader and schema (docs/decisions.md); they have not
+-- arrived. Until then this file holds no statements, and `make derive ADAPTER=official` stops
+-- with a message instead of running. sql/adapters/dev.sql is the working example.
+--
+-- The adapter is the only loader-specific SQL. It must create two TEMPORARY tables from the
+-- loader's tables in ${raw} (CREATE OR REPLACE TEMPORARY TABLE <name> AS SELECT ...), with exactly
+-- these columns and types (names and types are binding; scripts/derive.py checks both against
+-- ADAPTER_TABLES). The derive steps (sql/derive/*.sql) read them as temp.main.<name> and nothing
+-- else. Not views: a persistent view blocks every reload of the loader's tables, and a temporary
+-- view over a table cannot be read on SereneDB 26.09.1.3.
+--
+-- TEMPORARY TABLE bgl_adapted, one row per BGL Log Entry:
+--   entry_id     BIGINT     unique per Log Entry and stable across re-runs of the derive step
+--   ts           TIMESTAMP  as logged: US Pacific local time, with daylight saving time
+--   epoch_utc    DOUBLE     UTC seconds including the logged fraction; every gap is computed on
+--                           it (#1). The dev adapter adds the fraction of ts to the raw UTC epoch.
+--   node         VARCHAR    as logged, for example R30-M0-N9-C:J16-U01
+--   component    VARCHAR    as logged, for example KERNEL
+--   level        VARCHAR    as logged, for example FATAL
+--   alert_tag    VARCHAR    the alert category (Oliner & Stearley); NULL for non-alert lines
+--   message      VARCHAR    the free-text part of the line
+--
+-- TEMPORARY TABLE os_adapted, one row per OpenStack Log Entry:
+--   entry_id     BIGINT     unique per Log Entry and stable across re-runs
+--   ts           TIMESTAMP  as logged (taken as UTC)
+--   epoch_utc    DOUBLE     UTC seconds including the fraction
+--   source_id    VARCHAR    a neutral id per source file: os-1, os-2, ... in load order. Never the
+--                           file name: the file names carry the ground-truth label, and no
+--                           canonical column may expose it (plan section 2.2).
+--   log_file     VARCHAR    the service log file named on the line, for example nova-api.log.1...
+--   pid          BIGINT
+--   component    VARCHAR    for example nova.compute.manager
+--   level        VARCHAR    for example INFO
+--   request_id   VARCHAR    req-<uuid>, NULL when the line has none
+--   instance_id  VARCHAR    the UUID in "[instance: <uuid>]", NULL when the line has none
+--   message      VARCHAR    the free-text part of the line
+--
+-- Also for T25: replace sql/seed/ownership_stub.sql with the organisers' Ownership Table, and
+-- re-pin the golden numbers where their line counts differ from the dev loader's.

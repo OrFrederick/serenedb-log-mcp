@@ -45,8 +45,14 @@ def count(database_url: str, schema: str, table: str) -> int:
 
 
 @pytest.mark.usefixtures("samples_present")
-def test_sample_mode_loads_both_datasets(database_url: str, scratch_schema: str) -> None:
+def test_sample_mode_loads_both_datasets(
+    database_url: str, scratch_schema: str, capsys: pytest.CaptureFixture[str]
+) -> None:
     assert dev_loader.main(["--sample", "--schema", scratch_schema]) == 0
+
+    out = capsys.readouterr().out
+    assert f"{scratch_schema}.bgl: 2000 rows" in out
+    assert "(unparsed 0, NULL ts 0, NULL message" in out
 
     assert count(database_url, scratch_schema, "bgl") == SAMPLE_ROWS
     assert count(database_url, scratch_schema, "openstack") == SAMPLE_ROWS

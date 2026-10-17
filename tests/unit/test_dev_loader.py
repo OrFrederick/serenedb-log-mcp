@@ -105,10 +105,118 @@ def test_openstack_instance_line_without_request() -> None:
     assert row[9] == "[instance: b9000564-fe1a-409b-b8cc-1e88b294cd1d] Instance spawned successfully."
 
 
-def test_openstack_unparsed_line_keeps_raw_text() -> None:
+def test_openstack_unparsed_line_keeps_raw_text_only() -> None:
+    # message stays NULL: the raw line (with its timestamp and pid prefix) is only in raw.
     row = dev_loader.parse_openstack_line(2, "x.log", "garbage")
 
-    assert row == (2, "x.log", None, None, None, None, None, None, None, "garbage", "garbage")
+    assert row == (2, "x.log", None, None, None, None, None, None, None, None, "garbage")
+
+
+def test_openstack_line_with_an_empty_message_still_parses() -> None:
+    line = (
+        "nova-compute.log.1.2017-05-16_13:55:31 2017-05-16 03:19:45.356 2931 ERROR oslo_service.periodic_task"
+    )
+
+    row = dev_loader.parse_openstack_line(4, "openstack_normal1.log", line)
+
+    assert row == (
+        4,
+        "openstack_normal1.log",
+        "nova-compute.log.1.2017-05-16_13:55:31",
+        datetime(2017, 5, 16, 3, 19, 45, 356000),
+        2931,
+        "ERROR",
+        "oslo_service.periodic_task",
+        None,
+        None,
+        None,
+        line,
+    )
+
+
+BGL_NO_NODE_REPEAT = (
+    "- 1119415930 2005.06.21 - 2005-06-21-21.52.10.214285 RAS KERNEL FATAL "
+    "Kill job 20251 timed out. Block freed."
+)
+BGL_GARBLED_NODE_REPEAT = (
+    "- 1133447861 2005.12.01 - 2005-12-01-06.37.41.417709 time for a single instance of a correctable ddr. "
+    "RAS KERNEL INFO 0 microseconds spent in the rbs signal handler during 0 calls."
+)
+
+
+def test_bgl_line_without_the_node_repeat_field_is_re_split() -> None:
+    row = dev_loader.parse_bgl_line(5, BGL_NO_NODE_REPEAT)
+
+    assert row == (
+        5,
+        "-",
+        1119415930,
+        datetime(2005, 6, 21, 21, 52, 10, 214285),
+        "-",
+        "KERNEL",
+        "FATAL",
+        "Kill job 20251 timed out. Block freed.",
+        BGL_NO_NODE_REPEAT,
+    )
+
+
+def test_bgl_line_with_text_in_the_node_repeat_field_is_re_split() -> None:
+    row = dev_loader.parse_bgl_line(6, BGL_GARBLED_NODE_REPEAT)
+
+    assert row[5:8] == ("KERNEL", "INFO", "0 microseconds spent in the rbs signal handler during 0 calls.")
+
+
+def test_bgl_null_event_type_is_accepted() -> None:
+    line = BGL_PLAIN.replace(" RAS KERNEL INFO ", " NULL DISCOVERY WARNING ")
+
+    assert dev_loader.parse_bgl_line(1, line)[5:7] == ("DISCOVERY", "WARNING")
+
+
+def test_bgl_line_that_ends_at_the_level_has_no_message() -> None:
+    line = BGL_PLAIN.split(" instruction")[0]
+
+    row = dev_loader.parse_bgl_line(1, line)
+
+    assert row[5:8] == ("KERNEL", "INFO", None)
+
+
+def test_bgl_unknown_severity_is_never_loaded_as_a_level() -> None:
+    line = BGL_PLAIN.replace(" RAS KERNEL INFO ", " RAS KERNEL BOGUS ")
+
+    row = dev_loader.parse_bgl_line(1, line)
+
+    assert row[5:8] == (None, None, None)
+    assert row[8] == line
+
+
+def test_parse_stats_count_what_needs_a_second_look() -> None:
+    stats = dev_loader.ParseStats()
+    rows = [
+        dev_loader.parse_bgl_line(1, BGL_PLAIN),
+        dev_loader.parse_bgl_line(2, BGL_PLAIN.split(" instruction")[0]),
+        dev_loader.parse_bgl_line(3, BGL_PLAIN.replace(" RAS KERNEL INFO ", " RAS KERNEL BOGUS ")),
+        dev_loader.parse_bgl_line(4, "- x"),
+        dev_loader.parse_bgl_line(5, BGL_PLAIN + "\x00"),
+    ]
+
+    assert list(stats.track("bgl", rows)) == rows
+    assert (stats.rows, stats.unparsed, stats.null_ts, stats.null_message, stats.nul_rewritten) == (
+        5,
+        2,
+        1,
+        3,
+        1,
+    )
+    assert stats.summary() == "unparsed 2, NULL ts 1, NULL message 3, unknown level 0, NUL rewritten 1"
+
+
+def test_parse_stats_flag_unknown_openstack_levels() -> None:
+    stats = dev_loader.ParseStats()
+    rows = [dev_loader.parse_openstack_line(1, "a.log", OS_API.replace(" INFO ", " NOTICE "))]
+
+    list(stats.track("openstack", rows))
+
+    assert stats.unknown_level == 1
 
 
 def test_openstack_rows_number_lines_across_files(tmp_path: Path) -> None:

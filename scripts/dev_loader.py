@@ -73,8 +73,16 @@ class LoaderError(Exception):
 
 BGL_TS_FORMAT = "%Y-%m-%d-%H.%M.%S.%f"
 OS_TS_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
-OS_RE = re.compile(r"^(\S+) (\S+ \S+) (\d+) (\S+) (\S+) (?:\[(req-[0-9a-f-]+)[^\]]*\]|\[-\])? ?(.*)$")
+# The message group is optional: a few OpenStack lines end right after the Component.
+OS_RE = re.compile(r"^(\S+) (\S+ \S+) (\d+) (\S+) (\S+)(?: (?:\[(req-[0-9a-f-]+)[^\]]*\]|\[-\])? ?(.*))?$")
 INSTANCE_RE = re.compile(r"\[instance: ([0-9a-f-]{36})\]")
+OS_LEVELS = frozenset({"DEBUG", "INFO", "AUDIT", "WARNING", "ERROR", "CRITICAL", "TRACE"})
+
+BGL_LEVELS = frozenset({"INFO", "WARNING", "SEVERE", "ERROR", "FATAL", "FAILURE"})
+# What follows the BGL timestamp: the node repeat (one token, but missing or garbled on a few
+# hundred lines), the event type (RAS or NULL), the Component, the severity and the message.
+# Anchoring on a known severity re-splits those lines instead of shifting every field by one.
+BGL_TAIL_RE = re.compile(r"^(?:(.*?) )?(?:RAS|NULL) (\S+) (" + "|".join(sorted(BGL_LEVELS)) + r")(?: (.*))?$")
 
 
 def _clean(line: str) -> str:
@@ -83,9 +91,13 @@ def _clean(line: str) -> str:
 
 
 def parse_bgl_line(line_no: int, line: str) -> Row:
-    """One BGL line -> (line_no, alert_tag, epoch, ts, node, component, level, message, raw)."""
+    """One BGL line -> (line_no, alert_tag, epoch, ts, node, component, level, message, raw).
+
+    component, level and message stay NULL when no known severity can be found, rather than
+    loading a word of the message as a level.
+    """
     raw = _clean(line)
-    p = raw.split(" ", 9)
+    p = raw.split(" ", 5)
 
     def field(k: int) -> str | None:
         return p[k] if len(p) > k else None
@@ -97,22 +109,26 @@ def parse_bgl_line(line_no: int, line: str) -> Row:
         except ValueError:
             ts = None
     epoch = int(p[1]) if len(p) > 1 and p[1].isdigit() else None
-    return (line_no, field(0), epoch, ts, field(3), field(7), field(8), field(9), raw)
+    component = level = message = None
+    if len(p) > 5 and (m := BGL_TAIL_RE.match(p[5])):
+        component, level, message = m.group(2), m.group(3), m.group(4)
+    return (line_no, field(0), epoch, ts, field(3), component, level, message, raw)
 
 
 def parse_openstack_line(line_no: int, source_file: str, line: str) -> Row:
     """One OpenStack line -> (line_no, source_file, log_file, ts, pid, level, component,
-    request_id, instance_id, message, raw)."""
+    request_id, instance_id, message, raw). An unparsed line keeps only line_no, source_file
+    and raw."""
     raw = _clean(line)
     m = OS_RE.match(raw)
     if not m:
-        return (line_no, source_file, None, None, None, None, None, None, None, raw, raw)
+        return (line_no, source_file, None, None, None, None, None, None, None, None, raw)
     log_file, stamp, pid, level, component, request_id, message = m.groups()
     try:
         ts = datetime.strptime(stamp, OS_TS_FORMAT)
     except ValueError:
         ts = None
-    instance = INSTANCE_RE.search(message)
+    instance = INSTANCE_RE.search(message) if message else None
     return (
         line_no,
         source_file,
@@ -126,6 +142,44 @@ def parse_openstack_line(line_no: int, source_file: str, line: str) -> Row:
         message,
         raw,
     )
+
+
+# Row positions per table: ts, level, message, raw, and the column that is NULL when unparsed.
+_LAYOUT = {"bgl": (3, 6, 7, 8, 6), "openstack": (3, 5, 9, 10, 2)}
+_KNOWN_LEVELS = {"bgl": BGL_LEVELS, "openstack": OS_LEVELS}
+
+
+@dataclass
+class ParseStats:
+    """Counters printed next to each loaded log table, so a parser regression is visible."""
+
+    rows: int = 0
+    unparsed: int = 0
+    null_ts: int = 0
+    null_message: int = 0
+    unknown_level: int = 0
+    nul_rewritten: int = 0
+
+    def track(self, table: str, rows: Iterable[Row]) -> Iterator[Row]:
+        """Pass `rows` through unchanged while counting them."""
+        layout = _LAYOUT.get(table)
+        for row in rows:
+            self.rows += 1
+            if layout is not None:
+                ts_i, level_i, message_i, raw_i, parsed_i = layout
+                self.unparsed += row[parsed_i] is None
+                self.null_ts += row[ts_i] is None
+                self.null_message += row[message_i] is None
+                level = row[level_i]
+                self.unknown_level += level is not None and level not in _KNOWN_LEVELS[table]
+                self.nul_rewritten += "\\x00" in row[raw_i]
+            yield row
+
+    def summary(self) -> str:
+        return (
+            f"unparsed {self.unparsed}, NULL ts {self.null_ts}, NULL message {self.null_message}, "
+            f"unknown level {self.unknown_level}, NUL rewritten {self.nul_rewritten}"
+        )
 
 
 def bgl_rows(path: Path) -> Iterator[Row]:
@@ -393,13 +447,16 @@ def _load_table(conn: psycopg.Connection[Any], schema: str, source: Source) -> N
     conn.execute(sql.SQL("CREATE TABLE {} ({})").format(staging, columns))
     conn.commit()
     started = time.monotonic()
-    count = copy_rows(conn, staging, [name for name, _ in COLUMNS[source.table]], source.rows())
+    stats = ParseStats()
+    rows = stats.track(source.table, source.rows())
+    count = copy_rows(conn, staging, [name for name, _ in COLUMNS[source.table]], rows)
     # Schema changes are transactional on SereneDB 26.10.1 and 26.09.1.3 (checked in the PR #12
     # review): the DROP and RENAME commit as one unit, and a rollback restores the old table.
     conn.execute(sql.SQL("DROP TABLE IF EXISTS {}").format(target))
     conn.execute(sql.SQL("ALTER TABLE {} RENAME TO {}").format(staging, sql.Identifier(source.table)))
     conn.commit()
-    print(f"{schema}.{source.table}: {count} rows in {time.monotonic() - started:.1f}s", flush=True)
+    parse = f" ({stats.summary()})" if source.table in _LAYOUT else ""
+    print(f"{schema}.{source.table}: {count} rows in {time.monotonic() - started:.1f}s{parse}", flush=True)
 
 
 # ----------------------------------------------------------------- command line

@@ -7,7 +7,7 @@ from typing import Any
 
 import anyio
 import pytest
-from mcp.server.mcpserver import MCPServer
+from mcp.server.mcpserver import Context, MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
 from mcp_types import CallToolResult
 from sample_tool import SAMPLE_ROWS, SAMPLE_SQL, FakeQueryResult, register_sample_tools, sample_outcome
@@ -142,6 +142,24 @@ def test_only_the_tools_own_parameters_can_reach_the_recorded_arguments() -> Non
 
     assert recorded == {"query": "ciod failed", "limit": 20}
     assert set(recorded) <= {"query", "limit"}
+
+
+def test_the_sdk_context_parameter_is_not_a_recorded_argument() -> None:
+    # The SDK injects its Context into a parameter annotated with it, and leaves that parameter out
+    # of the input schema. It is not something the caller passed, and it serialises as {}, so
+    # recording it would put a parameter in the Evidence that no replay can set.
+    server = MCPServer(name="t")
+
+    @evidence_tool(server, title="With context")
+    def with_context(role: RoleParam, ctx: Context, limit: int = 5) -> ToolOutcome:
+        """Take the SDK context. Inputs: role, limit. Outputs: the envelope."""
+        assert isinstance(ctx, Context)
+        return sample_outcome()
+
+    result = anyio.run(lambda: server.call_tool("with_context", {"role": "engineer", "limit": 5}))
+    assert isinstance(result, CallToolResult)
+
+    assert envelope(result)["arguments"] == {"limit": 5}
 
 
 def test_an_evidence_record_written_before_arguments_existed_still_validates() -> None:

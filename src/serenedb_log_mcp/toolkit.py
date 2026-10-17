@@ -28,6 +28,7 @@ from typing import Annotated, Any, Protocol, get_args, get_origin, runtime_check
 
 from mcp.server.mcpserver import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
+from mcp.server.mcpserver.utilities.context_injection import find_context_parameter
 from mcp_types import CallToolResult, TextContent, ToolAnnotations
 from pydantic import BaseModel, ValidationError
 
@@ -265,12 +266,14 @@ def evidence_tool(
     def register(function: ToolFunction) -> Callable[..., CallToolResult]:
         signature = _tool_signature(function)
         tool_name = name or function.__name__
+        # The same call the SDK makes to decide which parameter it injects its Context into.
+        injected = find_context_parameter(function)
 
         @functools.wraps(function)
         def produce_evidence(*args: Any, **kwargs: Any) -> Evidence:
             bound = _bind(signature, tool_name, args, kwargs)
             role = _role_of(bound)
-            arguments = _recorded_arguments(bound)
+            arguments = _recorded_arguments(bound, injected)
             outcome = function(*args, **kwargs)
             return apply_role_hook(_store(tool_name, role, arguments, outcome), role)
 
@@ -334,16 +337,21 @@ def _role_of(bound: inspect.BoundArguments) -> Role:
         raise ToolError(f"role={value!r} is not a Role. Pass one of: {roles}.") from exc
 
 
-def _recorded_arguments(bound: inspect.BoundArguments) -> dict[str, Any]:
-    """The call's parameters for the Evidence: everything the tool ran with, without `role`.
+def _recorded_arguments(bound: inspect.BoundArguments, injected: str | None) -> dict[str, Any]:
+    """The call's parameters for the Evidence: what the tool ran with, minus what the caller cannot set.
 
     The SDK validates the call against the input schema before the tool runs, so a default the
-    caller left out is bound too and this is the call as it ran, which is what a replay needs. The
-    keys can only be parameters the tool declares, which are search terms, Dataset names, time
+    caller left out is bound too and this is the call as it ran, which is what a replay needs. Two
+    parameters are left out because they are not call parameters: `role`, which is a field of its
+    own and selects the connection, and the one the SDK injects its `Context` into, which it also
+    keeps out of the input schema, so no replay could set it.
+
+    The keys can only be parameters the tool declares, which are search terms, Dataset names, time
     ranges, Pattern ids and limits; credentials live in `DATABASE_URL` and `DATABASE_URL_<ROLE>` in
     the environment and are never tool parameters, so nothing secret can reach this field.
     """
-    return {name: value for name, value in bound.arguments.items() if name != ROLE_PARAMETER}
+    skipped = {ROLE_PARAMETER, injected}
+    return {name: value for name, value in bound.arguments.items() if name not in skipped}
 
 
 def _reject_other_role(role: Role) -> None:

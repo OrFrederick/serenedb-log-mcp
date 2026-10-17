@@ -56,11 +56,14 @@ def step_sql() -> str:
     return "\n".join(derive.split_statements(STEP.read_text()))
 
 
-def test_the_incident_step_runs_after_the_entries_and_before_the_indexes() -> None:
+def test_the_incident_step_runs_after_the_patterns_and_before_the_indexes() -> None:
+    # It must run after T9's Pattern step, because that step is what fills `pattern_key` for the
+    # Log Entries that carry no alert category (acceptance criterion 4).
     names = [path.name for path in derive.steps("dev") if path.parent.name == "derive"]
 
     assert "30_incidents.sql" in names
     assert names.index("10_entries.sql") < names.index("30_incidents.sql")
+    assert names.index("20_patterns.sql") < names.index("30_incidents.sql")
     assert names.index("30_incidents.sql") < names.index("90_indexes.sql")
 
 

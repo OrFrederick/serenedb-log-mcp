@@ -88,14 +88,20 @@ def _lab_rows() -> list[tuple[Any, ...]]:
     # Node names that carry no topology at all, so the Incident reports 0 midplanes.
     add("LABNOTOPO", 0, "NULL")
     add("LABNOTOPO", 10, "UNKNOWN_LOCATION")
-    # Non-alert lines: no pattern_key, so no Incident until T9 fills it from the template id.
+    # Non-alert lines. They carry no alert category, so T9's Pattern dictionary gives them a
+    # template id, and the step chains them on that: one more Incident, with no code change.
     for i in range(5):
         add("-", 10 * i, PAIR_B)
     return rows
 
 
 LAB_ROWS = _lab_rows()
-LAB_INCIDENTS = 10
+# The Incidents of the alert categories, which is what the LAB* cases above are about, and the one
+# Incident the five non-alert Log Entries form once T9 has keyed them.
+LAB_ALERT_INCIDENTS = 10
+LAB_NON_ALERT_ENTRIES = 5
+# The Incidents of the BGL alert categories: `pattern_key` is the category, not a template id.
+ALERTS = "pattern_key IN (SELECT DISTINCT alert_tag FROM {bgl} WHERE alert_tag IS NOT NULL)"
 
 
 @dataclass(frozen=True)
@@ -193,18 +199,19 @@ def test_the_incident_id_and_the_counts_are_integers(database_url: str, lab: Lab
 
 
 def test_every_keyed_log_entry_belongs_to_exactly_one_incident(database_url: str, lab: Lab) -> None:
-    incidents, in_incidents, keyed, unkeyed = _one(
+    alert_incidents, in_incidents, keyed, unkeyed = _one(
         database_url,
         sql.SQL(
-            "SELECT (SELECT count(*) FROM {inc}), (SELECT sum(entries) FROM {inc}), "
+            "SELECT (SELECT count(*) FROM {inc} WHERE " + ALERTS + "), "
+            "(SELECT sum(entries) FROM {inc}), "
             "(SELECT count(*) FROM {bgl} WHERE pattern_key IS NOT NULL), "
             "(SELECT count(*) FROM {bgl} WHERE pattern_key IS NULL)"
         ).format(inc=sql.Identifier(lab.slm, "incident"), bgl=sql.Identifier(lab.slm, "bgl_entry")),
     )
 
-    assert incidents == LAB_INCIDENTS
+    assert alert_incidents == LAB_ALERT_INCIDENTS
     assert in_incidents == keyed
-    assert unkeyed == 5
+    assert unkeyed == 0
 
 
 def test_dataset_pattern_and_incident_id_identify_one_incident(database_url: str, lab: Lab) -> None:
@@ -215,7 +222,7 @@ def test_dataset_pattern_and_incident_id_identify_one_incident(database_url: str
         ),
     )
 
-    assert rows == keys == LAB_INCIDENTS
+    assert rows == keys == LAB_ALERT_INCIDENTS + 1
 
 
 def test_every_row_records_the_default_parameters(database_url: str, lab: Lab) -> None:
@@ -362,14 +369,18 @@ def test_the_shape_separates_a_single_node_storm_from_a_machine_wide_incident(
     assert _fetch(
         database_url,
         sql.SQL(
-            "SELECT pattern_key, entries, nodes, midplanes, shape FROM {} ORDER BY shape, pattern_key"
-        ).format(sql.Identifier(lab.slm, "incident")),
+            "SELECT pattern_key, entries, nodes, midplanes, shape FROM {inc} WHERE " + ALERTS + " "
+            "ORDER BY shape, pattern_key"
+        ).format(inc=sql.Identifier(lab.slm, "incident"), bgl=sql.Identifier(lab.slm, "bgl_entry")),
     ) == [
         ("LABWIDE", 64, 64, 64, "machine-wide"),
         ("LABMID", 2, 2, 2, "multi-midplane"),
         ("LABBURST", 3, 2, 1, "one midplane"),
-        # 0 midplanes falls through to "one midplane". The full Base Corpus has no such Incident
-        # (pinned in tests/corpus/test_incidents_corpus.py), so no sixth label is needed.
+        # 0 midplanes falls through to "one midplane". LABNOTOPO is the only case that reaches it,
+        # and it only does so because the lab gives it two node names without topology. On the full
+        # Base Corpus every such Incident has one node name and is labelled single-node, so the
+        # fall-through never claims an unknown Spread (pinned in
+        # tests/corpus/test_incidents_corpus.py), and no sixth Shape label is needed.
         ("LABNOTOPO", 2, 2, 0, "one midplane"),
         # The fall-back hour splits LABDST into two, because the gap is taken on epoch_utc.
         ("LABDST", 1, 1, 1, "single-node isolated"),
@@ -422,40 +433,54 @@ def test_running_the_step_again_gives_an_identical_incident_table(database_url: 
     assert after == before
 
 
-def test_a_pattern_key_filled_by_t9_adds_incidents_without_a_code_change(database_url: str, lab: Lab) -> None:
-    """Acceptance criterion 4, simulated: T9 fills `pattern_key` from `template_id` for the lines
-    that have no alert category. The same step, unchanged, must then chain those too."""
-    alerts_before = _fetch(
+def test_the_pattern_key_t9_fills_adds_incidents_without_a_code_change(database_url: str, lab: Lab) -> None:
+    """Acceptance criterion 4, for real now that T9 has merged.
+
+    T9's Pattern dictionary gives the five lab Log Entries that have no alert category a template
+    id and sets `pattern_key` to it. The step reads `pattern_key` and nothing else, so the same
+    SQL, unchanged, chains them into one more Incident: 5 Log Entries 10 s apart on one node. The
+    Incidents of the alert categories are untouched.
+    """
+    alert_rows = _fetch(
         database_url,
-        sql.SQL("SELECT pattern_key, incident_id, entries FROM {} ORDER BY 1, 2").format(
-            sql.Identifier(lab.slm, "incident")
-        ),
+        sql.SQL(
+            "SELECT pattern_key, incident_id, entries FROM {inc} WHERE " + ALERTS + " ORDER BY 1, 2"
+        ).format(inc=sql.Identifier(lab.slm, "incident"), bgl=sql.Identifier(lab.slm, "bgl_entry")),
     )
+    template_rows = _fetch(
+        database_url,
+        sql.SQL(
+            "SELECT i.incident_id, i.entries, i.nodes, i.shape, i.pattern_key = e.template_id "
+            "FROM {inc} i JOIN {bgl} e ON e.pattern_key = i.pattern_key "
+            "WHERE NOT (i." + ALERTS + ") GROUP BY ALL"
+        ).format(inc=sql.Identifier(lab.slm, "incident"), bgl=sql.Identifier(lab.slm, "bgl_entry")),
+    )
+
+    assert len(alert_rows) == LAB_ALERT_INCIDENTS
+    # One Incident, keyed by the template id T9 assigned, holding every non-alert Log Entry.
+    assert template_rows == [(1, LAB_NON_ALERT_ENTRIES, 1, "single-node isolated", True)]
+
+
+def test_the_step_never_reads_the_alert_category_itself(database_url: str, lab: Lab) -> None:
+    """The step must not know about alert categories, or acceptance criterion 4 would need a code
+    change for every new Pattern source. Setting `pattern_key` to something that is neither an
+    alert category nor a template id must still produce Incidents."""
     with psycopg.connect(database_url, autocommit=True) as conn:
         conn.execute(
-            sql.SQL(
-                "UPDATE {} SET template_id = 'f00dcafe', pattern_key = 'f00dcafe' WHERE pattern_key IS NULL"
-            ).format(sql.Identifier(lab.slm, "bgl_entry"))
+            sql.SQL("UPDATE {} SET pattern_key = 'not-a-category' WHERE alert_tag = 'LABISO'").format(
+                sql.Identifier(lab.slm, "bgl_entry")
+            )
         )
     try:
         _run_incident_step(database_url, lab)
 
-        added = _fetch(
+        assert _fetch(
             database_url,
-            sql.SQL(
-                "SELECT incident_id, entries, nodes, shape FROM {} WHERE pattern_key = 'f00dcafe'"
-            ).format(sql.Identifier(lab.slm, "incident")),
-        )
-        kept = _fetch(
-            database_url,
-            sql.SQL(
-                "SELECT pattern_key, incident_id, entries FROM {} WHERE pattern_key <> 'f00dcafe' "
-                "ORDER BY 1, 2"
-            ).format(sql.Identifier(lab.slm, "incident")),
-        )
-
-        assert added == [(1, 5, 1, "single-node isolated")]
-        assert kept == alerts_before
+            sql.SQL("SELECT incident_id, entries, nodes, shape FROM {} WHERE pattern_key = %s").format(
+                sql.Identifier(lab.slm, "incident")
+            ),
+            ["not-a-category"],
+        ) == [(1, 1, 1, "single-node isolated")]
     finally:
         # Put the lab back, so the module's other tests see the derived state.
         assert derive.main(["--schema", lab.slm, "--raw-schema", lab.raw]) == 0

@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import hashlib
 import io
-import os
 import tarfile
 import zipfile
 from collections.abc import Callable
@@ -19,6 +18,7 @@ import pytest
 import dev_loader
 import fetch_data
 from fetch_data import Archive, FetchError, Member
+from serenedb_log_mcp.config import load_settings
 
 
 def zip_bytes(files: dict[str, bytes]) -> bytes:
@@ -155,8 +155,8 @@ def test_a_download_with_the_wrong_checksum_is_rejected(
     assert not fetch_data.archive_path(tmp_path, spec).exists()
 
 
-def test_a_corrupt_cached_archive_is_downloaded_again(
-    tmp_path: Path, zip_case: tuple[Archive, FakeDownload]
+def test_a_corrupt_cached_archive_is_downloaded_again_and_says_why(
+    tmp_path: Path, zip_case: tuple[Archive, FakeDownload], capsys: pytest.CaptureFixture[str]
 ) -> None:
     spec, download = zip_case
     archive = fetch_data.archive_path(tmp_path, spec)
@@ -167,6 +167,7 @@ def test_a_corrupt_cached_archive_is_downloaded_again(
 
     assert download.calls == [spec.url]
     assert (tmp_path / "lh2/BGL/BGL_full.log").read_bytes() == LOG
+    assert f"size 9 bytes, expected {spec.size:,}" in capsys.readouterr().out
 
 
 def test_tar_gz_archives_are_extracted(tmp_path: Path) -> None:
@@ -213,16 +214,37 @@ def test_a_member_whose_size_differs_from_the_spec_is_an_error(tmp_path: Path) -
     assert not (tmp_path / "raw/BGL.log").exists()
 
 
+def test_a_corrupt_archive_that_matches_its_checksum_is_a_fetch_error(tmp_path: Path) -> None:
+    payload = zip_bytes({"BGL.log": LOG})[:-30]  # truncated: Zenodo-verified size and md5, unreadable
+    spec = spec_for("BGL.zip", payload, {"BGL.log": (LOG, "raw/BGL.log")})
+
+    with pytest.raises(FetchError, match=r"cannot read raw/BGL\.log from .*BGL\.zip"):
+        fetch_data.fetch([spec], tmp_path, FakeDownload({spec.url: payload}))
+
+    assert not (tmp_path / "raw/BGL.log").exists()
+
+
+def test_a_corrupt_tar_archive_is_a_fetch_error(tmp_path: Path) -> None:
+    payload = tar_gz_bytes({"anomaly_labels.txt": CSV})[:20]
+    spec = spec_for("OpenStack.tar.gz", payload, {"anomaly_labels.txt": (CSV, "raw/anomaly_labels.txt")})
+
+    with pytest.raises(FetchError, match="cannot read"):
+        fetch_data.fetch([spec], tmp_path, FakeDownload({spec.url: payload}))
+
+
 def test_check_reports_missing_files_without_downloading(
     tmp_path: Path, zip_case: tuple[Archive, FakeDownload]
 ) -> None:
     spec, download = zip_case
 
-    missing = fetch_data.check([spec], tmp_path)
+    (tmp_path / "lh2/BGL").mkdir(parents=True)
+    (tmp_path / "lh2/BGL/BGL_full.log").write_bytes(b"short")
 
-    assert [str(path.relative_to(tmp_path)) for path in missing] == [
-        "lh2/BGL/BGL_full.log",
-        "lh2/BGL/BGL_full.log_structured.csv",
+    problems = fetch_data.check([spec], tmp_path)
+
+    assert [(str(path.relative_to(tmp_path)), problem) for path, problem in problems] == [
+        ("lh2/BGL/BGL_full.log", f"size 5 bytes, expected {len(LOG):,}"),
+        ("lh2/BGL/BGL_full.log_structured.csv", "missing"),
     ]
     assert download.calls == []
 
@@ -249,9 +271,14 @@ def test_main_check_fails_when_files_are_missing(
     monkeypatch.setenv("SLM_DATA_DIR", str(tmp_path))
     monkeypatch.setattr(fetch_data, "ARCHIVES", (spec,))
 
+    (tmp_path / "lh2/BGL").mkdir(parents=True)
+    (tmp_path / "lh2/BGL/BGL_full.log").write_bytes(b"short")
+
     assert fetch_data.main(["--check"], download=download) == 1
 
-    assert "lh2/BGL/BGL_full.log" in capsys.readouterr().out
+    out = capsys.readouterr().out
+    assert "lh2/BGL/BGL_full.log: size 5 bytes" in out
+    assert "lh2/BGL/BGL_full.log_structured.csv: missing" in out
     assert download.calls == []
 
 
@@ -292,6 +319,7 @@ def test_every_file_the_dev_loader_reads_is_fetched(tmp_path: Path) -> None:
     fetched = {tmp_path / m.dest for a in fetch_data.ARCHIVES for m in a.members}
     needed = {f for source in dev_loader.full_sources(tmp_path, dev_loader.TABLES) for f in source.files}
 
+    assert needed
     assert needed <= fetched
     assert tmp_path / "raw/anomaly_labels.txt" in fetched
 
@@ -300,18 +328,21 @@ def never_download(url: str, target: Path) -> None:
     raise AssertionError(f"tried to download {url}")
 
 
-def real_data_dir() -> Path | None:
-    value = os.environ.get("SLM_DATA_DIR", "").strip()
-    if not value:
-        return None
-    path = Path(value)
-    return path if all((path / m.dest).exists() for a in fetch_data.ARCHIVES for m in a.members) else None
+def real_data_problem() -> str | None:
+    """Why SLM_DATA_DIR (or its default) cannot serve the real-data test, or None if it can."""
+    data_dir = load_settings().data_dir
+    if not data_dir.is_dir():
+        return f"{data_dir} does not exist; set SLM_DATA_DIR to a fetched corpus"
+    problems = fetch_data.check(fetch_data.ARCHIVES, data_dir)
+    if len(problems) == sum(len(a.members) for a in fetch_data.ARCHIVES):
+        return f"{data_dir} holds none of the corpus files; run `make fetch-data` or set SLM_DATA_DIR"
+    return None
 
 
-@pytest.mark.skipif(real_data_dir() is None, reason="SLM_DATA_DIR does not hold the fetched corpus")
-def test_an_already_fetched_data_dir_is_left_alone() -> None:
-    data_dir = real_data_dir()
-    assert data_dir is not None
+@pytest.mark.skipif(real_data_problem() is not None, reason=str(real_data_problem()))
+def test_an_already_fetched_data_dir_is_complete_and_left_alone() -> None:
+    # Runs whenever the data dir holds any corpus file, so a partial or damaged fetch fails here.
+    data_dir = load_settings().data_dir
     download: Callable[[str, Path], None] = never_download
 
     assert fetch_data.check(fetch_data.ARCHIVES, data_dir) == []

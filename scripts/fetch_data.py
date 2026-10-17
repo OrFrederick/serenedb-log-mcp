@@ -34,6 +34,7 @@ import sys
 import tarfile
 import urllib.request
 import zipfile
+import zlib
 from collections.abc import Callable, Iterator, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -43,6 +44,8 @@ from typing import IO
 from serenedb_log_mcp.config import ConfigError, load_settings
 
 CHUNK = 1 << 20
+# What a damaged archive raises while it is read.
+UNREADABLE = (zipfile.BadZipFile, tarfile.TarError, EOFError, zlib.error)
 
 
 class FetchError(Exception):
@@ -151,8 +154,12 @@ def archive_path(data_dir: Path, archive: Archive) -> Path:
     return data_dir / "archives" / archive.record / archive.name
 
 
-def _has_size(path: Path, size: int) -> bool:
-    return path.is_file() and path.stat().st_size == size
+def _file_problem(path: Path, size: int) -> str | None:
+    """Why `path` is not the expected file: "missing" or its wrong size; None when it is fine."""
+    if not path.is_file():
+        return "missing"
+    actual = path.stat().st_size
+    return None if actual == size else f"size {actual:,} bytes, expected {size:,}"
 
 
 def _md5(path: Path) -> str:
@@ -164,28 +171,31 @@ def _md5(path: Path) -> str:
 
 
 def _archive_problem(path: Path, archive: Archive) -> str | None:
-    if not path.is_file():
-        return "missing"
-    size = path.stat().st_size
-    if size != archive.size:
-        return f"size {size:,} bytes, expected {archive.size:,}"
+    if problem := _file_problem(path, archive.size):
+        return problem
     digest = _md5(path)
     if digest != archive.md5:
         return f"md5 {digest}, expected {archive.md5}"
     return None
 
 
-def check(archives: Sequence[Archive], data_dir: Path) -> list[Path]:
-    """The files under `data_dir` that are missing or have the wrong size."""
+def check(archives: Sequence[Archive], data_dir: Path) -> list[tuple[Path, str]]:
+    """The files under `data_dir` that are missing or have the wrong size, with the problem."""
     return [
-        data_dir / m.dest for a in archives for m in a.members if not _has_size(data_dir / m.dest, m.size)
+        (data_dir / m.dest, problem)
+        for a in archives
+        for m in a.members
+        if (problem := _file_problem(data_dir / m.dest, m.size))
     ]
 
 
 def _ensure_archive(archive: Archive, data_dir: Path, download: Download) -> Path:
     path = archive_path(data_dir, archive)
-    if _archive_problem(path, archive) is None:
+    problem = _archive_problem(path, archive)
+    if problem is None:
         return path
+    if problem != "missing":
+        print(f"cached  {path}: {problem}; downloading it again", flush=True)
     path.parent.mkdir(parents=True, exist_ok=True)
     partial = path.with_name(path.name + ".part")
     print(f"downloading {archive.url} ({archive.size:,} bytes)", flush=True)
@@ -202,11 +212,20 @@ def _ensure_archive(archive: Archive, data_dir: Path, download: Download) -> Pat
 @contextmanager
 def _open_member(path: Path, name: str) -> Iterator[IO[bytes]]:
     if zipfile.is_zipfile(path):
-        with zipfile.ZipFile(path) as zipped, zipped.open(name) as member:
-            yield member
+        with zipfile.ZipFile(path) as zipped:
+            try:
+                info = zipped.getinfo(name)
+            except KeyError:
+                raise FetchError(f"{path} has no file {name}") from None
+            with zipped.open(info) as member:
+                yield member
         return
     with tarfile.open(path) as tarred:
-        extracted = tarred.extractfile(name)
+        try:
+            entry = tarred.getmember(name)
+        except KeyError:
+            raise FetchError(f"{path} has no file {name}") from None
+        extracted = tarred.extractfile(entry)
         if extracted is None:
             raise FetchError(f"{path} has no regular file {name}")
         with extracted:
@@ -218,14 +237,14 @@ def _extract(path: Path, member: Member, data_dir: Path) -> None:
     target.parent.mkdir(parents=True, exist_ok=True)
     partial = target.with_name(target.name + ".part")
     try:
-        with _open_member(path, member.path) as source, partial.open("wb") as out:
-            shutil.copyfileobj(source, out, CHUNK)
-        size = partial.stat().st_size
-        if size != member.size:
-            raise FetchError(f"{member.dest} extracted with {size:,} bytes, expected {member.size:,}")
+        try:
+            with _open_member(path, member.path) as source, partial.open("wb") as out:
+                shutil.copyfileobj(source, out, CHUNK)
+        except UNREADABLE as exc:
+            raise FetchError(f"cannot read {member.dest} from {path}: {type(exc).__name__}: {exc}") from exc
+        if problem := _file_problem(partial, member.size):
+            raise FetchError(f"{member.dest} extracted with {problem}")
         partial.replace(target)
-    except KeyError:
-        raise FetchError(f"{path} has no file {member.path}") from None
     finally:
         partial.unlink(missing_ok=True)
 
@@ -233,7 +252,7 @@ def _extract(path: Path, member: Member, data_dir: Path) -> None:
 def fetch(archives: Sequence[Archive], data_dir: Path, download: Download = http_download) -> None:
     """Make every member of `archives` present under `data_dir` with its expected size."""
     for archive in archives:
-        stale = [m for m in archive.members if not _has_size(data_dir / m.dest, m.size)]
+        stale = [m for m in archive.members if _file_problem(data_dir / m.dest, m.size)]
         if not stale:
             print(f"ok      {archive.record}/{archive.name}: {len(archive.members)} files", flush=True)
             continue
@@ -258,10 +277,10 @@ def main(argv: Sequence[str] | None = None, *, download: Download = http_downloa
     try:
         data_dir = load_settings().data_dir
         if args.check:
-            missing = check(ARCHIVES, data_dir)
-            for path in missing:
-                print(f"missing {path}")
-            return 1 if missing else 0
+            problems = check(ARCHIVES, data_dir)
+            for path, problem in problems:
+                print(f"{path}: {problem}")
+            return 1 if problems else 0
         fetch(ARCHIVES, data_dir, download)
     except (FetchError, ConfigError, OSError) as exc:
         print(f"fetch_data: {exc}", file=sys.stderr)

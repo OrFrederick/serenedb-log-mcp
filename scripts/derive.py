@@ -43,7 +43,7 @@ SQL_DIR = Path(__file__).resolve().parent.parent / "sql"
 SPLIT_TEXT_SINCE = (26, 10, 1)
 CONNECT_TIMEOUT_S = 10
 ENTRY_INDEXES = {"bgl_entry": "bgl_entry_idx", "os_entry": "os_entry_idx"}
-PLACEHOLDER_RE = re.compile(r"\$\{([a-z_]+)\}")
+PLACEHOLDER_RE = re.compile(r"\$\{([A-Za-z0-9_]+)\}")
 VERSION_RE = re.compile(r"SereneDB v?(\d+(?:\.\d+)*)")
 
 

@@ -63,6 +63,12 @@ def test_an_unknown_placeholder_is_an_error() -> None:
         derive.render("SELECT ${nope}", {"slm": '"slm"'})
 
 
+@pytest.mark.parametrize("placeholder", ["${SLM}", "${slm2}", "${Raw_Schema}"])
+def test_placeholders_with_capitals_or_digits_are_checked_too(placeholder: str) -> None:
+    with pytest.raises(DeriveError, match="unknown placeholder"):
+        derive.render(f"SELECT * FROM {placeholder}.t", {"slm": '"slm"'})
+
+
 def test_variables_quote_the_schemas_and_pick_the_dictionary_ddl() -> None:
     values = derive.variables("slm_t4", "public", (26, 10, 1))
 

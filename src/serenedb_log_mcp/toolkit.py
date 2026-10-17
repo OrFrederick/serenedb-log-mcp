@@ -198,7 +198,7 @@ def role_tool(
 
         @functools.wraps(function)
         def tool(*args: Any, **kwargs: Any) -> CallToolResult:
-            role = _role_of(signature, tool_name, args, kwargs)
+            role = _role_of(_bind(signature, tool_name, args, kwargs))
             _reject_other_role(role)
             try:
                 payload = function(*args, **kwargs)
@@ -250,8 +250,11 @@ def evidence_tool(
 
         @functools.wraps(function)
         def produce_evidence(*args: Any, **kwargs: Any) -> Evidence:
-            role = _role_of(signature, tool_name, args, kwargs)
-            return apply_role_hook(_store(tool_name, role, function(*args, **kwargs)), role)
+            bound = _bind(signature, tool_name, args, kwargs)
+            role = _role_of(bound)
+            arguments = _recorded_arguments(bound)
+            outcome = function(*args, **kwargs)
+            return apply_role_hook(_store(tool_name, role, arguments, outcome), role)
 
         return role_tool(server, title=title, output_model=Evidence, name=tool_name, annotations=annotations)(
             produce_evidence
@@ -295,17 +298,34 @@ def _annotated_type(annotation: Any) -> Any:
     return get_args(annotation)[0] if get_origin(annotation) is Annotated else annotation
 
 
-def _role_of(signature: inspect.Signature, tool: str, args: tuple[Any, ...], kwargs: dict[str, Any]) -> Role:
+def _bind(
+    signature: inspect.Signature, tool: str, args: tuple[Any, ...], kwargs: dict[str, Any]
+) -> inspect.BoundArguments:
     try:
-        bound = signature.bind(*args, **kwargs)
+        return signature.bind(*args, **kwargs)
     except TypeError as exc:
         raise ToolError(f"{tool} was called with the wrong arguments: {exc}.") from exc
+
+
+def _role_of(bound: inspect.BoundArguments) -> Role:
     value = bound.arguments[ROLE_PARAMETER]
     try:
         return Role(value)
     except ValueError as exc:
         roles = ", ".join(role.value for role in Role)
         raise ToolError(f"role={value!r} is not a Role. Pass one of: {roles}.") from exc
+
+
+def _recorded_arguments(bound: inspect.BoundArguments) -> dict[str, Any]:
+    """The call's parameters for the Evidence: everything the tool ran with, without `role`.
+
+    The SDK validates the call against the input schema before the tool runs, so a default the
+    caller left out is bound too and this is the call as it ran, which is what a replay needs. The
+    keys can only be parameters the tool declares, which are search terms, Dataset names, time
+    ranges, Pattern ids and limits; credentials live in `DATABASE_URL` and `DATABASE_URL_<ROLE>` in
+    the environment and are never tool parameters, so nothing secret can reach this field.
+    """
+    return {name: value for name, value in bound.arguments.items() if name != ROLE_PARAMETER}
 
 
 def _reject_other_role(role: Role) -> None:
@@ -318,7 +338,7 @@ def _reject_other_role(role: Role) -> None:
         )
 
 
-def _store(tool: str, role: Role, outcome: ToolOutcome) -> Evidence:
+def _store(tool: str, role: Role, arguments: dict[str, Any], outcome: ToolOutcome) -> Evidence:
     """Build the envelope and append it to the Evidence Ledger, complete, under its reserved id."""
     source = outcome.result
     rows = [list(row) for row in (source.rows if outcome.rows is None else outcome.rows)]
@@ -336,6 +356,7 @@ def _store(tool: str, role: Role, outcome: ToolOutcome) -> Evidence:
             evidence_id=slot.evidence_id,
             tool=tool,
             role=role,
+            arguments=arguments,
             sql=[_as_it_ran(statement) for statement in source.sql],
             params=[list(values) for values in source.params],
             data_scope=outcome.scope,

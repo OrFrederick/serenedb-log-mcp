@@ -123,6 +123,12 @@ class Evidence(BaseModel):
     )
     tool: str = Field(description="The tool that produced this Evidence.")
     role: Role = Field(description="The Role this call was made for.")
+    arguments: dict[str, Any] = Field(
+        default_factory=dict,
+        description="The parameters this tool ran with, including the defaults that applied, "
+        "without role. Together with tool it is the call that produced this result, so it can be "
+        "repeated or reported.",
+    )
     sql: list[str] = Field(
         default_factory=list,
         description="The SQL statements that actually ran, in order, with %s where parameters were "

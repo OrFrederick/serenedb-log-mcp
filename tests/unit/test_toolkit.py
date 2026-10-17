@@ -104,6 +104,61 @@ def test_the_envelope_carries_the_query_the_scope_and_the_counts(server: MCPServ
     assert data["summary"]["entries_total"] == 265_876
 
 
+def test_the_envelope_records_the_arguments_the_tool_was_called_with(server: MCPServer) -> None:
+    # T13 renders the tool calls with their parameters, and a replay needs things like the sort
+    # mode, so the wrapper records the bound arguments instead of each tool copying them itself.
+    # The SDK validates the input against the schema first, so a default the caller left out is
+    # bound too and the record is the call as it ran.
+    data = envelope(sample_count(server, groups=2))
+
+    assert data["arguments"] == {"groups": 2, "fail": False}
+    assert get_ledger().get("E1")["arguments"] == {"groups": 2, "fail": False}
+
+
+def test_the_recorded_arguments_never_include_the_role(server: MCPServer) -> None:
+    # The Role is already a field of its own, and it selects the connection, so it is not a filter.
+    data = envelope(sample_count(server, role="manager", groups=1))
+
+    assert data["role"] == "manager"
+    assert "role" not in data["arguments"]
+
+
+def test_only_the_tools_own_parameters_can_reach_the_recorded_arguments() -> None:
+    # The guard against a secret landing in the Evidence: the keys can only be parameters the tool
+    # declares, which are search terms, Dataset names, time ranges and limits. Credentials live in
+    # DATABASE_URL and DATABASE_URL_<ROLE> in the environment and are never tool parameters.
+    server = MCPServer(name="t")
+
+    @evidence_tool(server, title="Many parameters")
+    def parameterised(role: RoleParam, query: str = "", limit: int = 20) -> ToolOutcome:
+        """Take two parameters. Inputs: role, query, limit. Outputs: the envelope."""
+        return sample_outcome()
+
+    result = anyio.run(
+        lambda: server.call_tool("parameterised", {"role": "engineer", "query": "ciod failed"})
+    )
+    assert isinstance(result, CallToolResult)
+    recorded = envelope(result)["arguments"]
+
+    assert recorded == {"query": "ciod failed", "limit": 20}
+    assert set(recorded) <= {"query", "limit"}
+
+
+def test_an_evidence_record_written_before_arguments_existed_still_validates() -> None:
+    stored = {
+        "evidence_id": "E1",
+        "tool": "count_by",
+        "role": "team_lead",
+        "data_scope": {"datasets": ["bgl"]},
+        "total_matches": 1,
+        "returned": 1,
+        "truncated": False,
+        "query_ms": 1.0,
+    }
+
+    assert Evidence.model_validate(stored).arguments == {}
+
+
 def test_one_text_block_mirrors_the_structured_content(server: MCPServer) -> None:
     result = sample_count(server)
 

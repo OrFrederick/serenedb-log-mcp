@@ -1,0 +1,172 @@
+{
+  "mcp_version": "2.3.0",
+  "modes": [
+    {
+      "mode": "auto",
+      "tools": [
+        "get_fixture_summary"
+      ],
+      "prompts": [
+        "engineer",
+        "team_lead",
+        "manager"
+      ],
+      "output_schema_present": true,
+      "valid_call": {
+        "evidence_id": "E1",
+        "source_kind": "offline_fixture",
+        "query_sql": null,
+        "parameters": {
+          "component": "keystonemiddleware.auth_token",
+          "limit": 1
+        },
+        "data_scope": "OpenStack raw archive; all three log files; no deduplication",
+        "metrics": {
+          "matching_entries": 6
+        },
+        "rows": [
+          {
+            "component": "keystonemiddleware.auth_token",
+            "level": "ERROR",
+            "count": 2,
+            "days": {
+              "2017-05-16": 1,
+              "2017-05-17": 1
+            }
+          }
+        ],
+        "total_groups": 3,
+        "returned_count": 1,
+        "truncated": true
+      },
+      "invalid_limit_is_error": true,
+      "missing_component_is_error": true,
+      "server_execution_count": 1,
+      "elapsed_ms": 62.77
+    },
+    {
+      "mode": "legacy",
+      "tools": [
+        "get_fixture_summary"
+      ],
+      "prompts": [
+        "engineer",
+        "team_lead",
+        "manager"
+      ],
+      "output_schema_present": true,
+      "valid_call": {
+        "evidence_id": "E1",
+        "source_kind": "offline_fixture",
+        "query_sql": null,
+        "parameters": {
+          "component": "keystonemiddleware.auth_token",
+          "limit": 1
+        },
+        "data_scope": "OpenStack raw archive; all three log files; no deduplication",
+        "metrics": {
+          "matching_entries": 6
+        },
+        "rows": [
+          {
+            "component": "keystonemiddleware.auth_token",
+            "level": "ERROR",
+            "count": 2,
+            "days": {
+              "2017-05-16": 1,
+              "2017-05-17": 1
+            }
+          }
+        ],
+        "total_groups": 3,
+        "returned_count": 1,
+        "truncated": true
+      },
+      "invalid_limit_is_error": true,
+      "missing_component_is_error": true,
+      "server_execution_count": 1,
+      "elapsed_ms": 8.14
+    },
+    {
+      "mode": "2026-07-28",
+      "tools": [
+        "get_fixture_summary"
+      ],
+      "prompts": [
+        "engineer",
+        "team_lead",
+        "manager"
+      ],
+      "output_schema_present": true,
+      "valid_call": {
+        "evidence_id": "E1",
+        "source_kind": "offline_fixture",
+        "query_sql": null,
+        "parameters": {
+          "component": "keystonemiddleware.auth_token",
+          "limit": 1
+        },
+        "data_scope": "OpenStack raw archive; all three log files; no deduplication",
+        "metrics": {
+          "matching_entries": 6
+        },
+        "rows": [
+          {
+            "component": "keystonemiddleware.auth_token",
+            "level": "ERROR",
+            "count": 2,
+            "days": {
+              "2017-05-16": 1,
+              "2017-05-17": 1
+            }
+          }
+        ],
+        "total_groups": 3,
+        "returned_count": 1,
+        "truncated": true
+      },
+      "invalid_limit_is_error": true,
+      "missing_component_is_error": true,
+      "server_execution_count": 1,
+      "elapsed_ms": 3.4
+    }
+  ],
+  "grader_positive_cases": 1,
+  "mutants_rejected": {
+    "wrong_value": [
+      "citation_value_mismatch",
+      "wrong_value"
+    ],
+    "dangling_id": [
+      "unresolved_citation:E999"
+    ],
+    "same_number_wrong_metric": [
+      "wrong_metric_or_scope"
+    ],
+    "wrong_scope": [
+      "wrong_metric_or_scope"
+    ],
+    "missing_section": [
+      "missing_section:Unknowns"
+    ],
+    "invented_financial_loss": [
+      "unsupported_impact"
+    ],
+    "dangling_text_citation": [
+      "unresolved_text_citation:E20"
+    ]
+  },
+  "residual_failure": {
+    "text": "Observed Facts: 6 matching Log Entries [E1]. Unknowns: cost and downtime are unknown. We experienced 9 incidents.",
+    "grader_errors": [],
+    "mitigation": "render measured prose from typed validated claims or add semantic claim extraction plus human review"
+  },
+  "model_calls": 0,
+  "database_queries": 0,
+  "not_measured": [
+    "Claude tool selection",
+    "Claude answer quality",
+    "SereneDB SQL correctness",
+    "Desktop prompt UI compatibility"
+  ]
+}

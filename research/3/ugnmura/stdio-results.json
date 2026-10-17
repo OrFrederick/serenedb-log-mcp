@@ -1,0 +1,25 @@
+{
+  "mcp_version": "2.3.0",
+  "results": [
+    {
+      "mode": "legacy",
+      "actual_subprocess": true,
+      "tool_count": 1,
+      "prompt_count": 3,
+      "matching_entries": 6,
+      "truncated": true,
+      "elapsed_ms": 689.06
+    },
+    {
+      "mode": "2026-07-28",
+      "actual_subprocess": true,
+      "tool_count": 1,
+      "prompt_count": 3,
+      "matching_entries": 6,
+      "truncated": true,
+      "elapsed_ms": 468.49
+    }
+  ],
+  "model_calls": 0,
+  "database_queries": 0
+}

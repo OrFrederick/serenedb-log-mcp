@@ -1,0 +1,37 @@
+# Proposed live adapter configuration, NOT run: credentials and final server pending.
+# Pin promptfoo 0.124.1 and its SDK dependency with npm package-lock.json at implementation.
+# Pre-render {{role_prompt}} using the product's actual prompts/get, not a second copy.
+description: SereneDB Role and tool selection smoke
+prompts:
+  - '{{role_prompt}}\n{{question}}'
+providers:
+  - id: anthropic:claude-agent-sdk
+    config:
+      model: '{{env.CLAUDE_EVAL_MODEL}}'
+      tools: []
+      setting_sources: []
+      strict_mcp_config: true
+      mcp:
+        servers:
+          - name: logsearch
+            command: uv
+            args: [run, python, -m, YOUR_ACTUAL_SERVER_MODULE]
+      append_allowed_tools: ['mcp__logsearch__*']
+      permission_mode: dontAsk
+      max_turns: 12
+      max_budget_usd: 0.50
+      cache_mcp: false
+      # API key required by default. Keep credentials only in CI secrets.
+evaluateOptions:
+  maxConcurrency: 1
+# An implementation adapter expands questions.json, retrieves the selected MCP
+# prompt, and joins metadata.toolCalls to the per-run server Evidence Ledger.
+tests:
+  - vars:
+      role_prompt: 'Engineer Role prompt retrieved from prompts/get'
+      question: 'Investigate the OpenStack token-validation failure.'
+    assert:
+      - type: javascript
+        value: |
+          const calls = context.providerResponse?.metadata?.toolCalls || [];
+          return calls.some(c => c.name.startsWith('mcp__logsearch__') && !c.is_error);

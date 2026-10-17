@@ -27,6 +27,7 @@ from typing import Annotated, Any, Protocol, get_args, get_origin, runtime_check
 from mcp.server.mcpserver import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
 from mcp_types import CallToolResult, TextContent, ToolAnnotations
+from pydantic import BaseModel
 
 from serenedb_log_mcp.config import get_settings
 from serenedb_log_mcp.evidence import DataScope, Evidence, Role
@@ -140,21 +141,26 @@ def apply_role_hook(evidence: Evidence) -> Evidence:
     return _role_hook(evidence)
 
 
-def evidence_tool(
+def role_tool(
     server: MCPServer,
     *,
     title: str,
+    output_model: type[BaseModel],
     name: str | None = None,
     annotations: ToolAnnotations = READ_ONLY,
-) -> Callable[[ToolFunction], Callable[..., CallToolResult]]:
-    """Register a query function as an Evidence tool on `server`.
+) -> Callable[[Callable[..., BaseModel]], Callable[..., CallToolResult]]:
+    """Register a Role-aware tool on `server`: the registration, the `--role` pin and ToolError.
 
     The function takes `role: RoleParam` plus its own parameters, which become the input schema,
-    and returns a `ToolOutcome`. Its docstring is the tool description the agent reads, so it must
-    state the purpose, the inputs and the outputs.
+    and returns an instance of `output_model`, which becomes the output schema, the
+    `structuredContent` and the text block. Its docstring is the tool description the agent reads,
+    so it must state the purpose, the inputs and the outputs.
+
+    `evidence_tool` is this plus the Evidence envelope and the ledger; tools that return no
+    Evidence, such as `get_evidence` and T7's `get_role_brief`, use it directly.
     """
 
-    def register(function: ToolFunction) -> Callable[..., CallToolResult]:
+    def register(function: Callable[..., BaseModel]) -> Callable[..., CallToolResult]:
         signature = _tool_signature(function)
         tool_name = name or function.__name__
 
@@ -163,20 +169,20 @@ def evidence_tool(
             role = _role_of(signature, tool_name, args, kwargs)
             _reject_other_role(role)
             try:
-                evidence = _store(tool_name, role, function(*args, **kwargs))
+                payload = function(*args, **kwargs)
             except ToolError:
                 raise
             except LedgerError as exc:
                 raise ToolError(
-                    f"The query ran, but its Evidence could not be stored: {exc}. Check that "
+                    f"The Evidence Ledger could not be read or written: {exc}. Check that "
                     "LEDGER_PATH is writable, or unset it to keep the Evidence Ledger in memory."
                 ) from exc
             except Exception as exc:
                 raise ToolError(f"{_detail(exc)} {RETRY_HINT}") from exc
-            return _as_result(apply_role_hook(evidence))
+            return _as_result(payload)
 
         tool.__signature__ = signature.replace(  # type: ignore[attr-defined]
-            return_annotation=Annotated[CallToolResult, Evidence]
+            return_annotation=Annotated[CallToolResult, output_model]
         )
         server.add_tool(
             tool, name=tool_name, title=title, annotations=annotations, meta=dict(ALWAYS_LOAD_META)
@@ -186,7 +192,37 @@ def evidence_tool(
     return register
 
 
-def _tool_signature(function: ToolFunction) -> inspect.Signature:
+def evidence_tool(
+    server: MCPServer,
+    *,
+    title: str,
+    name: str | None = None,
+    annotations: ToolAnnotations = READ_ONLY,
+) -> Callable[[ToolFunction], Callable[..., CallToolResult]]:
+    """Register a query function as an Evidence tool on `server`.
+
+    The function takes `role: RoleParam` plus its own parameters and returns a `ToolOutcome`. The
+    wrapper builds the Evidence envelope from it, appends the finished record to the Evidence
+    Ledger and returns it shaped for the Role.
+    """
+
+    def register(function: ToolFunction) -> Callable[..., CallToolResult]:
+        signature = _tool_signature(function)
+        tool_name = name or function.__name__
+
+        @functools.wraps(function)
+        def produce_evidence(*args: Any, **kwargs: Any) -> Evidence:
+            role = _role_of(signature, tool_name, args, kwargs)
+            return apply_role_hook(_store(tool_name, role, function(*args, **kwargs)))
+
+        return role_tool(server, title=title, output_model=Evidence, name=tool_name, annotations=annotations)(
+            produce_evidence
+        )
+
+    return register
+
+
+def _tool_signature(function: Callable[..., Any]) -> inspect.Signature:
     """The tool's signature, with the contract on `role` and the description enforced."""
     where = getattr(function, "__name__", repr(function))
     try:
@@ -299,9 +335,9 @@ def _detail(exc: Exception) -> str:
     return text if text.endswith((".", "!", "?")) else f"{text}."
 
 
-def _as_result(evidence: Evidence) -> CallToolResult:
-    """The envelope as structuredContent, mirrored in one text block for other clients."""
-    data = evidence.model_dump(mode="json")
+def _as_result(payload: BaseModel) -> CallToolResult:
+    """The payload as structuredContent, mirrored in one text block for other clients."""
+    data = payload.model_dump(mode="json")
     return CallToolResult(
         content=[TextContent(type="text", text=json.dumps(data, ensure_ascii=False))],
         structured_content=data,

@@ -6,6 +6,8 @@ SQL on the same tables, so the tool cannot pass by agreeing with itself.
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
+
 import pytest
 from aggregation_corpus import (
     APPSEV,
@@ -65,8 +67,9 @@ def test_each_group_has_share_sources_and_first_and_last_seen(corpus: str) -> No
     assert kernel["count"] == STEADY + STORM
     assert kernel["share_pct"] == round(100 * (STEADY + STORM) / (BGL_TOTAL + OS_TOTAL), 2)
     assert kernel["distinct_sources"] == 2  # NODE_A and NODE_B
-    assert kernel["first_seen"] == "2005-06-01T10:00:00"
-    assert kernel["last_seen"] == "2005-07-31T14:00:00"
+    # UTC: BGL's ts is US Pacific local time, 10:00 and 14:00 PDT here (#65).
+    assert kernel["first_seen"] == "2005-06-01T17:00:00"
+    assert kernel["last_seen"] == "2005-07-31T21:00:00"
     # OpenStack sources are instances; the API lines carry none.
     assert rows["nova.osapi_compute.wsgi.server"]["distinct_sources"] == 0
     assert rows["nova.compute.manager"]["distinct_sources"] == 2
@@ -274,10 +277,14 @@ def test_relative_time_resolves_against_the_dataset_end(corpus: str) -> None:
 
     scope = result["data_scope"]
     assert scope["time_input"] == "last 7d"
-    assert scope["time_to"] == "2005-07-31T14:00:01"
-    expected = independent(corpus, "SELECT count(*) FROM {bgl} WHERE ts >= TIMESTAMP '2005-07-24 14:00:01'")[
-        0
-    ][0]
+    # The last BGL Log Entry is 2005-07-31 14:00 PDT, 21:00 UTC; relative times are UTC too (#65).
+    assert scope["time_to"] == "2005-07-31T21:00:01"
+    assert scope["time_zone"] == "UTC"
+    expected = independent(
+        corpus,
+        "SELECT count(*) FROM {bgl} WHERE epoch_utc >= %s",
+        [datetime(2005, 7, 24, 21, 0, 1, tzinfo=UTC).timestamp()],
+    )[0][0]
     assert row_dicts(result)[0]["count"] == expected
     assert row_dicts(result)[0]["prev_period"] is not None
 

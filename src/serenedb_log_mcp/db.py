@@ -6,10 +6,11 @@ What is true for every statement is written once here:
   `default_transaction_read_only`;
 - a `threading.Timer` calls `conn.cancel_safe()` after `SLM_QUERY_TIMEOUT_S`, because SereneDB
   accepts `statement_timeout` but does not enforce it. The cancel is not always honoured: on
-  26.09.1.3 a bound parameter inside a table function such as `generate_series` makes SereneDB
-  ignore it (measured in the #47 review), while 26.10.1 honoured every cancel, bound or literal, in
-  both binding modes (33 of 33 runs). So every result is also checked against the limit, and a
-  call that ran past it says so in `QueryResult.notes`;
+  26.09.1.3 a server-side bound parameter inside a table function such as `generate_series` makes
+  SereneDB ignore it (measured in the #47 review), which is why the layer binds client-side there,
+  and `trend`'s timestamp grid ignores it in both binding modes (#58 review), while 26.10.1
+  honoured every cancel, bound or literal, in both binding modes (33 of 33 runs). So every result
+  is also checked against the limit, and a call that ran past it says so in `QueryResult.notes`;
 - the call itself is bounded too: the statements run on a thread of their own, and the caller
   stops waiting `CANCEL_GRACE_S` after the timer sent its cancel request or gave up on sending one.
   A statement that is still running then ends the call with `QueryTimeout`; its thread closes the
@@ -22,7 +23,11 @@ What is true for every statement is written once here:
   so in `QueryResult.notes`;
 - what SereneDB sends as a WARNING, NOTICE or INFO while the statements run goes into
   `QueryResult.notes`, so a server-side warning reaches the Evidence envelope;
-- parameters are always bound, never formatted into the SQL;
+- parameters are always bound, never formatted into the SQL. The first connection to a DSN reads
+  `SELECT version()`: on SereneDB older than 26.10 the layer binds client-side with
+  `psycopg.ClientCursor`, so a cancel reaches a bound table-function parameter, and says so in
+  `QueryResult.notes`; on 26.10 and newer, and when the version names no SereneDB release, it keeps
+  psycopg's server-side binding. An explicit `SLM_CLIENT_BINDING` always wins (#60);
 - `numeric` results (for example `sum()` and SereneDB's `HUGEINT`) come back as `int` when they are
   integral and as `float` otherwise, never as `Decimal`, in text and in binary format, so the
   Evidence envelope serialises them as JSON numbers.
@@ -34,6 +39,7 @@ from __future__ import annotations
 
 import contextlib
 import contextvars
+import logging
 import re
 import threading
 import time
@@ -77,7 +83,10 @@ __all__ = [
     "get_database",
     "int_or_float",
     "open_connection",
+    "serenedb_version",
 ]
+
+logger = logging.getLogger(__name__)
 
 CONNECT_TIMEOUT_S = 10
 """How long one connection attempt may take (libpq `connect_timeout`)."""
@@ -98,6 +107,15 @@ NOTED_SEVERITIES = frozenset({"WARNING", "NOTICE", "INFO"})
 """Notice severities that reach `QueryResult.notes`; DEBUG and LOG are left out."""
 MAX_NOTICE_NOTES = 5
 """Distinct notices listed per call; the rest are counted in one more note."""
+
+SERVER_VERSION_SQL = "SELECT version()"
+"""What the first connection to a DSN runs to choose the binding mode."""
+CLIENT_BINDING_BEFORE = (26, 10)
+"""SereneDB releases older than this bind client-side unless `SLM_CLIENT_BINDING` is set: on 26.09.1.3
+a bound parameter inside a table function such as `generate_series` makes SereneDB ignore a cancel
+with server-side binding but not with `ClientCursor` (#47 and #58 reviews), while 26.10.1 honoured
+every cancel in both modes (#47)."""
+_SERENEDB_VERSION_RE = re.compile(r"SereneDB v?(\d+(?:\.\d+)*)", re.IGNORECASE)
 
 NARROW_THE_SCOPE = (
     "Narrow the Data Scope: a shorter time range, a Component, level or Pattern filter, or a coarser "
@@ -201,6 +219,18 @@ class IntOrFloatNumericBinaryLoader(Loader):
         return int_or_float(self._decimal.load(data))
 
 
+def serenedb_version(version: str) -> tuple[int, ...] | None:
+    """The SereneDB release named by `SELECT version()`, for example (26, 9, 1, 3); None if none is."""
+    release = _named_release(version)
+    return None if release is None else tuple(int(part) for part in release.split("."))
+
+
+def _named_release(version: str) -> str | None:
+    """The SereneDB release as `SELECT version()` writes it, for example '26.09.1.3'."""
+    match = _SERENEDB_VERSION_RE.search(version)
+    return None if match is None else match.group(1)
+
+
 # Errors ---------------------------------------------------------------------------------------------
 
 
@@ -273,10 +303,10 @@ def open_connection(dsn: str, *, client_binding: bool) -> psycopg.Connection[tup
     """A connection as the layer needs it.
 
     Autocommit, because the layer issues `BEGIN READ ONLY` and `ROLLBACK` itself and starts the
-    timeout only after the transaction began. Server-side binding by default, `ClientCursor` when
-    `client_binding` (`SLM_CLIENT_BINDING=1`); both bind every value. No automatic prepared
-    statements, which is the path the #2 measurements took. `numeric` loads as int or float, in
-    text and in binary format.
+    timeout only after the transaction began. Server-side binding, or `ClientCursor` when
+    `client_binding` (`SLM_CLIENT_BINDING=1`, or SereneDB older than 26.10); both bind every value.
+    No automatic prepared statements, which is the path the #2 measurements took. `numeric` loads as
+    int or float, in text and in binary format.
     """
     conn = psycopg.connect(
         dsn,
@@ -512,7 +542,9 @@ class Database:
 
     Thread-safe: each call takes its own connection from a small idle pool. `reconnect_wait_s` bounds
     the wait for a restarting server (`SLM_RECONNECT_WAIT_S`) and `max_idle_connections` caps the idle
-    pool (`SLM_MAX_IDLE_CONNECTIONS`; 0 opens a new connection for every call).
+    pool (`SLM_MAX_IDLE_CONNECTIONS`; 0 opens a new connection for every call). `client_binding`
+    (`SLM_CLIENT_BINDING`) forces `ClientCursor` (True) or server-side binding (False); None lets the
+    first connection read the server version and choose (see `CLIENT_BINDING_BEFORE`).
     """
 
     def __init__(
@@ -520,7 +552,7 @@ class Database:
         dsn: str,
         *,
         timeout_s: float = 15.0,
-        client_binding: bool = False,
+        client_binding: bool | None = None,
         reconnect_wait_s: float = DEFAULT_RECONNECT_WAIT_S,
         max_idle_connections: int = DEFAULT_MAX_IDLE_CONNECTIONS,
         poll_interval_s: float = POLL_INTERVAL_S,
@@ -531,7 +563,14 @@ class Database:
     ) -> None:
         self.dsn = dsn
         self.timeout_s = timeout_s
-        self.client_binding = client_binding
+        self.client_binding = client_binding  # as configured; None reads the server version
+        self._binding = client_binding  # the mode in effect, once known
+        self._binding_note = (
+            "Parameters were bound client-side (psycopg ClientCursor), as SLM_CLIENT_BINDING=1 asks."
+            if client_binding
+            else None
+        )
+        self._binding_lock = threading.Lock()  # held while the first connection reads the version
         self.reconnect_wait_s = reconnect_wait_s
         self.max_idle_connections = max_idle_connections
         self.poll_interval_s = poll_interval_s
@@ -609,6 +648,11 @@ class Database:
             notes=notes,
         )
 
+    @property
+    def uses_client_binding(self) -> bool | None:
+        """True when the layer binds with `ClientCursor`; None until the first connection chose."""
+        return self._binding
+
     def close(self) -> None:
         """Close the idle connections."""
         self._drop_idle()
@@ -621,7 +665,7 @@ class Database:
         except _ConnectionLost:
             pass  # wait for the restart below, then retry once
         else:
-            return value, session, session.notes
+            return value, session, self._with_binding_note(session.notes)
         waited = self._wait_until_ready()
         note = (
             "SereneDB closed the connection during this call, most likely because it restarted "
@@ -638,7 +682,10 @@ class Database:
                 f"{_first_line(cause or lost)} If this call sorted by relevance, call it again with "
                 "sort=time; otherwise call it again once more, or narrow the Data Scope."
             ) from cause
-        return value, session, [note, *session.notes]
+        return value, session, self._with_binding_note([note, *session.notes])
+
+    def _with_binding_note(self, notes: list[str]) -> list[str]:
+        return notes if self._binding_note is None else [*notes, self._binding_note]
 
     def _wait_until_ready(self) -> float:
         """Wait until `SELECT 1` answers on a new connection; bounded by `reconnect_wait_s`."""
@@ -648,7 +695,7 @@ class Database:
         while True:
             conn: ConnectionLike | None = None
             try:
-                conn = self._connect(self.dsn, client_binding=self.client_binding)
+                conn = self._open()
                 conn.execute("SELECT 1").fetchall()
             except psycopg.Error as exc:
                 if conn is not None:
@@ -717,11 +764,12 @@ class Database:
         """A note when the statements finished although the time limit fired or was exceeded.
 
         `cancel_safe()` is the only thing that stops a statement at the limit, and it is not always
-        honoured: on 26.09.1.3 a bound parameter inside a table function such as `generate_series`
-        makes SereneDB ignore the cancel (measured by OrFrederick's Claude in the #47 review;
-        26.10.1 honoured every cancel, bound or literal). So every result that comes back is
-        checked against the limit; one that did not come back within `CANCEL_GRACE_S` ended the
-        call with `QueryTimeout` instead.
+        honoured: on 26.09.1.3 a server-side bound parameter inside a table function such as
+        `generate_series` makes SereneDB ignore the cancel (measured by OrFrederick's Claude in the
+        #47 review), and `trend`'s timestamp grid ignores it with `ClientCursor` too (#58 review);
+        26.10.1 honoured every cancel, bound or literal. So every result that comes back is checked
+        against the limit; one that did not come back within `CANCEL_GRACE_S` ended the call with
+        `QueryTimeout` instead.
         """
         seconds = session.query_ms / 1000
         if not deadline.fired and seconds <= self.timeout_s:
@@ -758,7 +806,63 @@ class Database:
                 conn = self._idle.pop()
                 if not (conn.closed or conn.broken):
                     return conn
-        return self._connect(self.dsn, client_binding=self.client_binding)
+        return self._open()
+
+    def _open(self) -> ConnectionLike:
+        """A new connection in the layer's binding mode; the first one chooses the mode if unset."""
+        binding = self._binding
+        if binding is None:
+            with self._binding_lock:  # the other callers wait until the first connection chose
+                binding = self._binding
+                if binding is None:
+                    return self._open_and_choose_binding()
+        return self._connect(self.dsn, client_binding=binding)
+
+    def _open_and_choose_binding(self) -> ConnectionLike:
+        """Read `SELECT version()` on a server-side binding connection and choose the mode from it.
+
+        SereneDB older than `CLIENT_BINDING_BEFORE` gets `ClientCursor`: the probe connection is
+        closed and a client-side one opened in its place, once per DSN. Otherwise the probe is the
+        connection the call uses. A version that names no SereneDB release keeps server-side
+        binding and is logged once. A lost connection leaves the choice open for the next one.
+        """
+        conn = self._connect(self.dsn, client_binding=False)
+        text = ""
+        try:
+            rows = conn.execute(SERVER_VERSION_SQL).fetchall()
+        except psycopg.Error as exc:
+            if _is_lost(conn):
+                _close_quietly(conn)
+                raise  # the caller handles it like any lost connection
+            answer = f"failed: {_first_line(exc)}"
+        except BaseException:
+            _close_quietly(conn)
+            raise
+        else:
+            text = str(rows[0][0]) if rows and rows[0] else ""
+            answer = f"returned {text[:200]!r}"
+        version = serenedb_version(text)
+        if version is None:
+            logger.warning(
+                "The database layer could not read the SereneDB release at %s (%s %s), so it keeps "
+                "server-side binding. On SereneDB older than 26.10, set SLM_CLIENT_BINDING=1 so "
+                "that a cancel stops a bound table function.",
+                _safe_dsn(self.dsn),
+                SERVER_VERSION_SQL,
+                answer,
+            )
+        if version is None or version >= CLIENT_BINDING_BEFORE:
+            self._binding = False
+            return conn
+        release = _named_release(text)
+        # The note first: a caller that sees the mode without the lock must find its note too.
+        self._binding_note = (
+            f"Parameters were bound client-side (psycopg ClientCursor), because SereneDB {release} "
+            "is older than 26.10."
+        )
+        self._binding = True
+        _close_quietly(conn)
+        return self._connect(self.dsn, client_binding=True)
 
     def _release(self, conn: ConnectionLike) -> None:
         if conn.closed or conn.broken:
@@ -882,7 +986,7 @@ def _is_misconfigured(exc: psycopg.Error) -> bool:
 
 # Process-wide layers --------------------------------------------------------------------------------
 
-_databases: dict[tuple[str, float, bool, float, int], Database] = {}
+_databases: dict[tuple[str, float, bool | None, float, int], Database] = {}
 _databases_lock = threading.Lock()
 
 

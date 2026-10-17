@@ -13,6 +13,7 @@ Every tool takes a required `role` (`engineer`, `team_lead` or `manager`), which
 | [`count_by`](#count_by) | Count Log Entries by one dimension, with baselines | [Evidence](#output-evidence) |
 | [`describe_corpus`](#describe_corpus) | Describe the Datasets: size, time range, Components, Teams | [Evidence](#output-evidence) |
 | [`export_investigation`](#export_investigation) | Export the investigation as a Markdown report | InvestigationExport |
+| [`find_patterns`](#find_patterns) | Find Patterns by meaning (local vectors, optional; fused with BM25) | [Evidence](#output-evidence) |
 | [`find_precursors`](#find_precursors) | Patterns that precede a target Pattern, with support and lift | [Evidence](#output-evidence) |
 | [`get_context`](#get_context) | Log Entries just before and after one entry | [Evidence](#output-evidence) |
 | [`get_evidence`](#get_evidence) | Get stored Evidence by id | [Evidence](#output-evidence) |
@@ -273,6 +274,55 @@ Outputs: role, title, markdown (the report), size_chars and size_bytes (its size
 | `size_bytes` | integer | yes | Length of markdown in UTF-8 bytes. |
 | `evidence_ids` | list of string | yes | The Evidence ids shown in full in the report, in ledger order. |
 | `notes` | list of string | yes | What to know about the report: cited or requested Evidence ids the ledger does not hold, and a hint when the report is too long to read in a tool result. |
+
+## `find_patterns`
+
+**Find Patterns by meaning (local vectors, optional; fused with BM25)**
+
+Annotations: read-only, idempotent, closed world, `anthropic/alwaysLoad` (Claude Code loads it without ToolSearch).
+
+Description, as the agent reads it:
+
+```text
+Find Patterns of one Dataset by meaning: cosine similarity of local text embeddings.
+
+Optional: it needs the vectors extra (fastembed, no API key) and `make embed-patterns`;
+without them it fails with the setup steps. It differs from the other catalogue tools:
+list_patterns returns the whole catalogue to read and choose from (the first choice, and
+the most accurate), search_patterns matches words (BM25, stemming, synonyms) and finds
+nothing when no word matches, and find_patterns ranks every Pattern by meaning, so a
+paraphrase with no shared word still finds candidates. It always returns its top Patterns,
+related or not: read each template_text and keep only the ids that are direct evidence
+(similarity does not separate related from unrelated), then pass them as pattern_ids to
+count_by, trend and search_logs; if none is, state that as an Unknown.
+Inputs: role, dataset, text (the problem in plain words), top (default 10, at most 50) and
+mode ('hybrid' default, or 'semantic').
+Outputs: the Evidence envelope, whose rows hold the list_patterns columns (template_id,
+component, level, entries, first_seen, last_seen, family_id, template_text) plus score (the
+fused RRF score, or the similarity in mode 'semantic'), similarity (cosine, -1 to 1),
+vector_rank and lexical_rank (null without a word match), best first; summary holds
+patterns_total, lexical_matches, patterns_without_vector, model, mode, words, synonyms and
+ignored_words; total_matches counts the ranked Patterns.
+```
+
+### Inputs
+
+| Name | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `role` | one of `engineer`, `team_lead`, `manager` | yes |  | Who is asking: 'engineer' investigates one failure and needs example Log Entries and nearby events; 'team_lead' needs recurring problems with counts and trends per Component and Team, and receives at most 3 sample Log Entries from a search; 'manager' needs measured frequency and affected Components only, and receives no raw Log Entries (totals and facets, no rows). Every result carries the answer_frame for this Role; get_role_brief(role) has the full playbook. |
+| `dataset` | one of `bgl`, `openstack` | yes |  | 'bgl' or 'openstack': one catalogue per call. |
+| `text` | string | yes |  | The problem in plain words, for example 'RAM errors' or 'VM could not boot'. It is embedded as a whole, so a paraphrase finds Patterns that share no word with it. |
+| `top` | integer | no | `10` | How many of the best Patterns to return (default 10, at most 50); patterns_total counts every ranked Pattern. |
+| `mode` | one of `hybrid`, `semantic` | no | `"hybrid"` | 'hybrid' (default): the vector ranking fused with search_patterns' BM25 ranking (stemming and synonyms) by Reciprocal Rank Fusion; 'semantic': the vector ranking alone, score = similarity. |
+
+### Limits
+
+- `text`: at most 500 characters
+- `top`: 1 to 50
+
+### Output
+
+`structuredContent` is the [Evidence](#output-evidence) object; the description says what its rows and summary hold for this tool.
 
 ## `find_precursors`
 
@@ -986,7 +1036,7 @@ number checked, with its status and the Evidence ids that hold it), cited_eviden
 
 ## Output: Evidence
 
-Returned by `create_index`, `drop_index`, `count_by`, `describe_corpus`, `find_precursors`, `get_context`, `get_evidence`, `latency_stats`, `list_incidents`, `list_patterns`, `search_logs`, `search_patterns`, `top_patterns`, `trend`.
+Returned by `create_index`, `drop_index`, `count_by`, `describe_corpus`, `find_patterns`, `find_precursors`, `get_context`, `get_evidence`, `latency_stats`, `list_incidents`, `list_patterns`, `search_logs`, `search_patterns`, `top_patterns`, `trend`.
 
 The result of one executed tool call: its query, parameters, Data Scope, counts and rows. Cite it as `[E<n>]` next to every number taken from it. `total_matches` and `truncated` say whether the rows are the whole answer or a sample; a sample is never a frequency.
 

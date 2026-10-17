@@ -55,6 +55,8 @@ __all__ = [
     "row_chars",
     "search_statement",
     "shape_text",
+    "vector_literal",
+    "vector_statement",
 ]
 
 COLUMNS = (
@@ -273,6 +275,16 @@ def search_statement(rel: Relation, words: Sequence[str], synonyms: Sequence[str
     """
     if not words:
         raise ValueError("search_statement needs at least one word")
+    return q(
+        "WITH {},\n{}\nSELECT " + _SHOWN.format(p="c.") + ", h.score\n"
+        "FROM hits AS h JOIN catalogue AS c ON c.template_id = h.template_id",
+        _hits_cte(rel, words, synonyms),
+        _catalogue_cte(rel, rel.dataset.name),
+    )
+
+
+def _hits_cte(rel: Relation, words: Sequence[str], synonyms: Sequence[str]) -> Q:
+    """`search_statement`'s BM25 matches as the CTE `hits` (template_id, score), unsorted."""
     text = sql.SQL("p.{}").format(sql.Identifier("template_text"))
     match = q("{} @@ {}", text, bound(" ".join(words)))
     if synonyms:
@@ -280,13 +292,71 @@ def search_statement(rel: Relation, words: Sequence[str], synonyms: Sequence[str
         match = q("({} OR {} @@ ({} ^ {}))", match, text, bound(" ".join(synonyms), "::TSQUERY"), weight)
     dataset, params = fts.filter_any(sql.SQL("p.{}").format(sql.Identifier("dataset")), [rel.dataset.name])
     return q(
-        "WITH hits AS (\n    SELECT p.template_id, BM25(p.tableoid) AS score\n    FROM {} AS p\n"
-        "    WHERE {} AND {}\n),\n{}\nSELECT " + _SHOWN.format(p="c.") + ", h.score\n"
-        "FROM hits AS h JOIN catalogue AS c ON c.template_id = h.template_id",
+        "hits AS (\n    SELECT p.template_id, BM25(p.tableoid) AS score\n    FROM {} AS p\n"
+        "    WHERE {} AND {}\n)",
         rel.patterns_index,
         Q(dataset, tuple(params)),
         match,
-        _catalogue_cte(rel, rel.dataset.name),
+    )
+
+
+VECTOR_DIGITS = 4
+"""Decimals kept of each query vector component. The vector is a bound parameter, so the Evidence
+Ledger stores it for replay and every result shows it; four decimals keep it near 3k characters
+and change a cosine distance by less than 0.001."""
+
+
+def vector_literal(vector: Sequence[float]) -> str:
+    """A query vector as the compact text SereneDB casts to FLOAT[N]: '[0.0123,-0.0456,...]'.
+
+    ValueError for a NaN or infinite component: SereneDB accepts them and returns a distance of 2
+    for every Pattern, a wrong ranking rather than an error.
+    """
+    values = [float(v) for v in vector]
+    if not all(math.isfinite(v) for v in values):
+        raise ValueError("the query vector has a NaN or infinite component")
+    return "[" + ",".join(f"{round(v, VECTOR_DIGITS):g}" for v in values) + "]"
+
+
+def vector_statement(
+    rel: Relation,
+    vector: str,
+    model: str,
+    dimensions: int,
+    words: Sequence[str] = (),
+    synonyms: Sequence[str] = (),
+) -> Q:
+    """Every Pattern of `rel`'s Dataset in COLUMNS order plus its cosine `distance` to the query
+    `vector` (a `vector_literal`; NULL for a Pattern without a vector of `model`) and, when `words`
+    are given, its BM25 `score` (NULL without a lexical match), unsorted: the one statement behind
+    find_patterns (T26).
+
+    The statement is driven by the catalogue, so a Pattern that has a word match but no vector (one
+    added by a derive after the last `make embed-patterns`) still comes back. The distance is an
+    exact scan of the Dataset's vectors of `model` (a few hundred rows); the BM25 side is
+    `search_statement`'s. There is no ORDER BY, for the reason given there: the caller ranks both
+    sides and fuses them itself.
+    """
+    vec = q(
+        "vec AS (\n    SELECT template_id, emb <=> {} AS distance\n    FROM {}\n"
+        "    WHERE dataset = {} AND model = {}\n)",
+        bound(vector, f"::FLOAT[{int(dimensions)}]"),
+        rel.pattern_vectors_table,
+        bound(rel.dataset.name),
+        bound(model),
+    )
+    ctes = [vec, _catalogue_cte(rel, rel.dataset.name)]
+    score, join = Q(sql.SQL("NULL")), Q(sql.SQL(""))
+    if words:
+        ctes.insert(1, _hits_cte(rel, words, synonyms))
+        score = Q(sql.SQL("h.score"))
+        join = Q(sql.SQL("\nLEFT JOIN hits AS h ON h.template_id = c.template_id"))
+    return q(
+        "WITH {}\nSELECT " + _SHOWN.format(p="c.") + ", v.distance, {} AS score\n"
+        "FROM catalogue AS c LEFT JOIN vec AS v ON v.template_id = c.template_id{}",
+        joined(",\n", ctes),
+        score,
+        join,
     )
 
 

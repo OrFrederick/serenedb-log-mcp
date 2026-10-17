@@ -96,6 +96,20 @@ def test_a_second_derive_gives_identical_row_counts(database_url: str, derived_s
     assert matches > 0
 
 
+def test_a_second_derive_keeps_the_pattern_vectors(database_url: str, derived_sample: Schemas) -> None:
+    # derived_sample embedded the Patterns (find_patterns, T26); 25_pattern_vectors only creates the
+    # table when it is missing, and template ids are content hashes, so the vectors stay valid.
+    vectors = q(
+        "SELECT count(*), count(DISTINCT template_id) FROM {t}", derived_sample, t="slm.pattern_vector"
+    )
+    before = one(database_url, vectors)
+
+    assert derive.main(["--schema", derived_sample.slm, "--raw-schema", derived_sample.raw]) == 0
+
+    assert before[0] > 0
+    assert one(database_url, vectors) == before
+
+
 def test_derive_prints_the_topology_report(
     derived_sample: Schemas, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -374,7 +388,8 @@ def test_the_genuine_bgl_text_is_kept(database_url: str, derived_sample: Schemas
 
 def test_no_label_relation_or_file_name_column_exists(database_url: str, derived_sample: Schemas) -> None:
     # os_instance: the OpenStack instance phases (T11), computed from timing only. incident: the
-    # default Incident table (T10), built from the Pattern key and the UTC gaps only.
+    # default Incident table (T10), built from the Pattern key and the UTC gaps only. pattern_vector:
+    # the template text embeddings of find_patterns (T26).
     assert relations(database_url, derived_sample.slm) == [
         "bgl_entry",
         "incident",
@@ -383,6 +398,7 @@ def test_no_label_relation_or_file_name_column_exists(database_url: str, derived
         "ownership",
         "pattern",
         "pattern_dict",
+        "pattern_vector",
     ]
     names = {column for _, column in text_columns(database_url, derived_sample.slm)}
     assert not names & {"source_file", "raw", "label", "anomaly", "is_anomaly"}

@@ -124,6 +124,8 @@ Builds everything the tools read, inside `SLM_SCHEMA` (default `slm`): the canon
 
 Patterns come in two tiers: Tier 1 matches the Loghub-2.0 templates and needs the files from step 3; `SLM_PATTERN_TIER1=0 make derive` uses only the generic masks (Tier 2) and needs no Loghub-2.0 files.
 
+Optional, for `find_patterns` (semantic Pattern search, T26): `uv sync --extra vectors`, then `make embed-patterns`. It embeds the Pattern catalogue locally with fastembed (no API key; the first run downloads a model of about 90 MB into `FASTEMBED_CACHE_PATH`, default `~/.cache/serenedb-log-mcp/fastembed`) and stores the vectors in SereneDB in about 7 s. Run it again after a derive that changed the Patterns. Without it every other tool works, and `find_patterns` answers with these setup steps. A schema derived before `find_patterns` existed needs no new derive: `make embed-patterns` and `make access` both create the (empty) `pattern_vector` table first.
+
 If you use [access control per Role](#access-control-per-role), run `make access` again after every `make derive`.
 
 ### Quick variant: the 2,000-line samples
@@ -150,7 +152,7 @@ The repository's [`.mcp.json`](.mcp.json) registers `serenedb-log` (stdio, `uv r
 claude
 ```
 
-Interactive Claude Code asks once whether to trust the project's MCP servers; approve them. `/mcp` then lists `serenedb-log` as connected with 17 tools. Claude Code passes its environment to the server, so export `DATABASE_URL`, `SLM_SCHEMA` and the other variables before you start `claude` if you changed them.
+Interactive Claude Code asks once whether to trust the project's MCP servers; approve them. `/mcp` then lists `serenedb-log` as connected with 18 tools. Claude Code passes its environment to the server, so export `DATABASE_URL`, `SLM_SCHEMA` and the other variables before you start `claude` if you changed them.
 
 To use the server from any directory, register it in your user scope and give uv the absolute path of the checkout (without `--scope user` it is registered for the current directory only):
 
@@ -167,7 +169,7 @@ claude -p "List the exact names of the serenedb-log tools, one per line. Do not 
   --mcp-config .mcp.json --strict-mcp-config
 ```
 
-It should print 17 names, from `mcp__serenedb-log__count_by` to `mcp__serenedb-log__verify_answer` (the [Tools](#tools) table). Then a question that calls a tool:
+It should print 18 names, from `mcp__serenedb-log__count_by` to `mcp__serenedb-log__verify_answer` (the [Tools](#tools) table). Then a question that calls a tool:
 
 ```bash
 claude -p "As the engineer: how many BGL Log Entries are there? Cite the Evidence." \
@@ -229,7 +231,7 @@ Claude calls `describe_corpus` first, then searches and counts. Each answer cite
 
 ## Tools
 
-17 tools. Every tool takes a required `role` and returns its result in `structuredContent`. [docs/tools.md](docs/tools.md) documents each tool's description, inputs, limits and output fields; it is generated from the live registry with `make docs`, and a test fails when it is stale.
+18 tools. Every tool takes a required `role` and returns its result in `structuredContent`. [docs/tools.md](docs/tools.md) documents each tool's description, inputs, limits and output fields; it is generated from the live registry with `make docs`, and a test fails when it is stale.
 
 | Tool | Purpose | Limits |
 |---|---|---|
@@ -240,6 +242,7 @@ Claude calls `describe_corpus` first, then searches and counts. Each answer cite
 | `trend` | Zero-filled counts per time bucket, optionally one series per group, with baselines and Pattern Family hand-offs. | at most 5 series and 400 buckets |
 | `list_patterns` | The Pattern catalogue of a Dataset (template text, counts, Component); Claude reads it to choose Pattern ids for a concept. | paged |
 | `search_patterns` | Lexical fallback over the catalogue: BM25 with stemming plus a committed synonym map. | see [docs/tools.md](docs/tools.md) |
+| `find_patterns` | Optional semantic Pattern search: local fastembed vectors fused with `search_patterns`' BM25 ranking, for questions phrased in other words than the templates. Needs `uv sync --extra vectors` and `make embed-patterns`; otherwise it answers with those setup steps. | top 10, at most 50 |
 | `top_patterns` | Patterns ranked by Log Entries (Pareto view), Incidents, sources, recency or `priority`, with Chronic, New and wording-drift flags. `sort='priority'` is the Manager ranking: the equal-weight mean of percentile ranks of Incidents, Spread, active weeks, 28-day Incident trend and recency, with the top 5 per Dataset shown as a band, not an order. | 20 per Dataset by default, at most 50 |
 | `list_incidents` | Incidents with Spread and Shape next to the Log Entry counts; other gaps and per-source chaining at query time; `similar_to` finds the earlier Incidents most like one (exact Jaccard of Pattern sets, then Component, then Spread). | 20 by default, at most 100 |
 | `find_precursors` | Patterns that precede a target Pattern's Incidents within a window, on the same source by default, with support, lift against a probe baseline and delays. Every row is a Hypothesis; when nothing passes `min_support` and `min_lift`, it says "no consistent precursor found". | 20 by default, at most 50 |
@@ -253,7 +256,6 @@ Claude calls `describe_corpus` first, then searches and counts. Each answer cite
 
 Messages in rows are cut to 240 characters. Query text is always a bound parameter; there is no free-form SQL tool.
 
-<!-- TODO(#38): add the `find_patterns` row here once T26 merges, then regenerate docs/tools.md (`make docs`) and update the tool count (17) above and in Connect Claude. -->
 
 ## Self-verifying answers and reproducible reports
 
@@ -270,7 +272,7 @@ Messages in rows are cut to 240 characters. Query text is always a bound paramet
 
 ## Agent-managed index
 
-Claude can build an index for the slice it is drilling into and drop it afterwards. `create_index(role, dataset, time_from, time_to)` runs `CREATE INDEX ... USING inverted (...) WHERE ts >= ... AND ts < ...` and `VACUUM (REFRESH_TABLE)` on a separate, short-lived write connection (`DATABASE_URL`, never a per-Role login), checks that the index holds exactly the slice, and reports `build_ms`. Slices are given in UTC like every Data Scope. Every later full-text call, such as `search_logs`, `count_by` or `trend`, whose Data Scope lies inside the slice reads the agent index automatically and names it in its notes and `data_scope.agent_indexes`; the counts are the same as from the full index, only the time changes. At most one agent index exists per Dataset, a slice holds at most 1,000,000 Log Entries, and `drop_index` refuses every index it did not build.
+Claude can build an index for the slice it is drilling into and drop it afterwards. `create_index(role, dataset, time_from, time_to)` runs `CREATE INDEX ... USING inverted (...) WHERE epoch_utc >= ... AND epoch_utc < ...` (on `ts` for a Dataset logged in UTC) and `VACUUM (REFRESH_TABLE)` on a separate, short-lived write connection (`DATABASE_URL`, never a per-Role login), checks that the index holds exactly the slice, and reports `build_ms`. Slices are given in UTC like every Data Scope. Every later full-text call, such as `search_logs`, `count_by` or `trend`, whose Data Scope lies inside the slice reads the agent index automatically and names it in its notes and `data_scope.agent_indexes`; the counts are the same as from the full index, only the time changes. At most one agent index exists per Dataset, a slice holds at most 1,000,000 Log Entries, and `drop_index` refuses every index it did not build.
 
 `make bench-index` measures the trade-off and writes [docs/results/index-tradeoff.md](docs/results/index-tradeoff.md); the numbers are in [Results](#results).
 
@@ -308,6 +310,7 @@ Every number here is copied from the file cited next to it; the files say how th
 - **Log Entries against Incidents** ([docs/results/ground-truth.md](docs/results/ground-truth.md)). The largest Incident of the corpus has 152,182 Log Entries on 1 node (R30-M0-N9-C:J16-U01) on 2005-06-11, a single-node storm. The KERNDTLB category has 152,734 Log Entries and 37 Incidents. The 1,202 alert Incidents split into 720 single-node isolated, 226 multi-midplane, 136 machine-wide, 119 one midplane and 1 single-node storm.
 - **OpenStack: slow spawns found by timing** ([docs/results/ground-truth.md](docs/results/ground-truth.md)). `latency_stats(metric='spawn', group_by='instance')` finds **4 of 4** labelled anomalous instances, ranked 1 to 4. It flags 5 at the default min_z 5 (precision 4/5); the fifth, `d7d68893-...`, is reported as a Hypothesis. Recall is 4 of 4 at min_z 3.5, 5 and 8, but the default cut was chosen with the labels in view. None of the labelled instances' Log Entries is above INFO, so text search alone would not find them.
 - **Pattern dictionary** ([docs/results/patterns.md](docs/results/patterns.md)). The SQL Pattern assignment agrees with the Loghub-2.0 labels on 99.99991% of BGL lines (4,631,257 of 4,631,261) and on 100% of OpenStack lines (207,632), with 465 BGL and 73 OpenStack Patterns. The derive up to the indexes took 14.3 s.
+- **Semantic Pattern search** ([docs/results/find-patterns.md](docs/results/find-patterns.md)). the optional `find_patterns` (local vectors fused with BM25) beats the lexical `search_patterns` on #7's 124 labelled questions by +0.055 recall@10 (95% CI [+0.016, +0.096]) and +0.071 MRR, but the intervals are optimistic: the embedded text, model and mode were chosen on the same questions (untuned: +0.028 recall@10), and there is no multiple-testing correction. Vectors alone gain nothing significant. Reading the catalogue with `list_patterns` stays the first choice.
 - **Agent index trade-off** ([docs/results/index-tradeoff.md](docs/results/index-tradeoff.md)). On a BGL slice of 310,868 Log Entries, `create_index` took 426.4 ms until usable. Mean server time per full-text query was 12.4 ms without an inverted index, 21.7 ms with the Dataset's full index and 6.3 ms with the agent index. The build repays itself after 70 queries against a scan and after 28 against the full index; grouped counts by source pay off fastest (7 queries). Through the tools, `count_by(group_by='node', query='lustre mount failed')` took 468.6 ms without and 145.9 ms with the agent index, with identical numbers. Fetching example rows saved nothing. These are timings on a shared instance: compare the modes within the report, not across hosts.
 - **Access control** ([docs/access-control.md](docs/access-control.md)). On the full Base Corpus `make access` took 14.1 s and all 18 of its checks passed; each Role's login returned the same counts, and the Manager's text calls were refused.
 - **Eval (pending)** ([docs/results/eval.md](docs/results/eval.md)). The L1 (tool choice) and L2 (grounding) harness is built and tested offline, but no model run is recorded yet: a run calls a real model and costs money, and the maintainer will run it. With the Base Corpus in `SLM_SCHEMA` and Claude Code logged in:
@@ -325,7 +328,7 @@ Search and analytics run in the same engine and often in the same statement: `co
 | Feature | Where we use it | Docs |
 |---|---|---|
 | Inverted index (`CREATE INDEX ... USING inverted`) over every canonical column | `sql/derive/90_indexes.sql`; every search and every filtered count reads it | [Inverted index](https://serenedb.com/docs/sql/indexes/inverted), [syntax](https://serenedb.com/docs/sql/statements/create_index/inverted) |
-| Partial inverted index (`... WHERE ts >= ... AND ts < ...`) | agent indexes from `create_index` (`src/serenedb_log_mcp/index_admin.py`) | [CREATE INDEX (inverted)](https://serenedb.com/docs/sql/statements/create_index/inverted) |
+| Partial inverted index (`... WHERE epoch_utc >= ... AND epoch_utc < ...`; `ts` for a Dataset logged in UTC) | agent indexes from `create_index` (`src/serenedb_log_mcp/index_admin.py`) | [CREATE INDEX (inverted)](https://serenedb.com/docs/sql/statements/create_index/inverted) |
 | Text search dictionary `split_text(case := 'lower')` with frequency, position, offset and norm | the `log_text` dictionary on `message` | [CREATE TEXT SEARCH DICTIONARY](https://serenedb.com/docs/sql/statements/create_text_search_dictionary), [split_text](https://serenedb.com/docs/sql/functions/search/tokenizers/split_text) |
 | `@@` with `websearch_to_tsquery` (all words, the default), `phraseto_tsquery` (phrase), a bare string (any words) and `ts_levenshtein` (fuzzy) | `search_logs`, and the `query` filter of `count_by`, `trend`, `top_patterns` and `list_incidents` (`src/serenedb_log_mcp/fts.py`) | [websearch_to_tsquery](https://serenedb.com/docs/sql/functions/search/full-text#websearch_to_tsquery), [phraseto_tsquery](https://serenedb.com/docs/sql/functions/search/full-text#phraseto_tsquery), [ts_levenshtein](https://serenedb.com/docs/sql/functions/search/full-text#ts_levenshtein) |
 | BM25 relevance, `BM25(idx.tableoid)` | `search_logs(sort='relevance')`, `search_patterns` | [BM25](https://serenedb.com/docs/sql/functions/search/scoring#bm25) |
@@ -334,6 +337,7 @@ Search and analytics run in the same engine and often in the same statement: `co
 | `VACUUM (REFRESH_TABLE)` | publishes the eventually consistent index after the derive and after `create_index` | [VACUUM](https://serenedb.com/docs/sql/statements/vacuum#refreshing--refresh_), [index lifecycle](https://serenedb.com/docs/sql/indexes/inverted#lifecycle) |
 | `time_bucket`, gap-filled with `generate_series` | `trend`, the weekly baselines, `latency_stats` buckets | [time_bucket](https://serenedb.com/docs/sql/functions/timestamp#time_bucketbucket_width-timestamp-offset) |
 | Window functions (`lag`, `row_number() OVER`, `sum() OVER (PARTITION BY ...)`) | Incident chaining in `sql/derive/30_incidents.sql` and at query time, the top-N plus `(other)` row of `count_by`, the percentile ranks of `top_patterns`, the Pattern dictionary | [Window functions](https://serenedb.com/docs/sql/functions/window_functions) |
+| Vector columns (`FLOAT[384]`) and cosine distance `<=>`, in one statement with BM25 | the optional `find_patterns`: Pattern vectors in `pattern_vector`, an exact scan fused with the catalogue's BM25 matches | [Vector functions](https://serenedb.com/docs/sql/functions/vector), [vector search](https://serenedb.com/docs/sql/indexes/inverted/vector-search) |
 | Macros (`CREATE OR REPLACE MACRO`) | the Pattern masks and the Tier 1 template chains, stored in `SLM_SCHEMA` | [CREATE MACRO](https://serenedb.com/docs/sql/statements/create_macro) |
 | `regexp_full_match` (RE2) | Tier 1 Pattern assignment, in one SQL step over distinct messages | [regexp_full_match](https://serenedb.com/docs/sql/functions/regular_expressions#regexp_full_matchstring-regex-options) |
 | `quantile_cont`, `median` | latency percentiles and the robust z-scores of Phase-Duration Anomalies | [Statistical aggregates](https://serenedb.com/docs/sql/functions/aggregates#statistical-aggregates) |
@@ -387,12 +391,13 @@ All settings come from the environment; `uv run serenedb-log-mcp --help` lists t
 | `SLM_RAW_SCHEMA` | `public` | schema of the loader's raw tables |
 | `SLM_DATA_DIR` | `./data` | downloaded files |
 | `SLM_QUERY_TIMEOUT_S` | `15` | client-side query timeout in seconds |
-| `SLM_CLIENT_BINDING` | `0` | `1` binds parameters on the client (`psycopg.ClientCursor`) on any SereneDB version |
+| `SLM_CLIENT_BINDING` | unset (by server version) | `1` binds parameters on the client (`psycopg.ClientCursor`) on any version, `0` forces server-side binding; unset binds on the client only below SereneDB 26.10 |
 | `SLM_RECONNECT_WAIT_S` | `30` | how long to wait for SereneDB after a lost connection before the one retry |
 | `SLM_MAX_IDLE_CONNECTIONS` | `4` | idle connections kept per pool |
 | `LEDGER_PATH` | unset (in memory) | JSONL file of the Evidence Ledger |
 | `SLM_EXPORT_DIR` | `./exports` | where `scripts/export_report.py` writes reports |
 | `SLM_PATTERN_TIER1` | `1` | `0` derives Patterns without the Loghub-2.0 files |
+| `FASTEMBED_CACHE_PATH` | `~/.cache/serenedb-log-mcp/fastembed` | model cache of the optional `find_patterns` (`make embed-patterns` fills it) |
 
 ## Development
 

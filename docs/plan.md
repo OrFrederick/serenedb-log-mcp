@@ -146,7 +146,7 @@ The server is registered as `serenedb-log`, so Claude Code shows tools as `mcp__
 | 15 | `create_index` | Stretch, not read-only: build an inverted index over a time slice and report the build time. | T19 |
 | 16 | `drop_index` | Stretch, not read-only: remove an agent-created index. | T19 |
 | 17 | `get_trace` | Stretch: the spans, Log Entries and metrics of one OTel trace. | T21 |
-| 18 | `find_patterns` | Stretch, OTel only: semantic Pattern search with `fastembed` vectors stored in SereneDB, fused with BM25 and synonyms. | T26 |
+| 18 | `find_patterns` | Stretch, optional: semantic Pattern search over the Base Corpus catalogue with `fastembed` vectors stored in SereneDB, fused with BM25 and synonyms (scope changed for #38). | T26 |
 
 Fifteen core tools (rows 1 to 14 and 6a) stay below the tool counts where selection is reported to degrade (#2). The overlap risk among `list_patterns`, `search_patterns` and `top_patterns` is measured by the L1 eval (T17); see open points.
 
@@ -698,13 +698,14 @@ Rules for using the order: each Claude works down the list within its own ticket
 
 ### T26: Stretch: `find_patterns` with `fastembed` vectors for the OTel track
 - **Owner:** N. **Area:** huge-datasets track (stretch). **Blocked by:** T14, T20. **Links:** #7 Decision proposal, #6 (about 13k g10 keys from 100M OTel rows), `docs/decisions.md` round 2 ("vector search only if it needs no external embedding key").
-- **Goal:** where the Pattern catalogue no longer fits in context (OTel slices with thousands of keys), let Claude find Patterns semantically, using SereneDB's vector search with query embeddings that need no API key. This is also the SereneDB vector and hybrid showcase. It starts only after the core and the index-benchmark track are done.
+- **Goal (after the scope change below):** let Claude find Patterns of the Base Corpus catalogue by meaning, as an optional complement to `search_patterns`, using SereneDB vector columns with query embeddings that need no API key. This is also the SereneDB vector and hybrid showcase.
 - **Acceptance criteria:**
-  - [ ] Template vectors for an OTel slice's Patterns are computed with `fastembed` (pure pip, no key) and stored in SereneDB; the model download is a documented one-time step, and the tool is disabled with a clear `ToolError` when the optional dependency is missing.
-  - [ ] `find_patterns(role, dataset, text, top)` ranks Patterns with exact `<=>` search fused by RRF with BM25 plus synonyms in one statement, and returns the same columns as `list_patterns` with scores.
-  - [ ] It is registered only for Datasets whose catalogue exceeds the `list_patterns` page budget; for BGL and OpenStack the description points to `list_patterns`.
-  - [ ] A short recall check on a handful of labelled OTel queries goes to `docs/results/huge-datasets.md`, labelled as indicative until a human labels fresh queries (#7).
+  - [x] Template vectors for the BGL and OpenStack Patterns are computed with `fastembed` (pure pip, no key) by `make embed-patterns` and stored in SereneDB (`pattern_vector`); the model download is a documented one-time step, and every call is a clear `ToolError` with the setup steps when the optional dependency, the model or the vectors are missing.
+  - [x] `find_patterns(role, dataset, text, top, mode)` returns, in one statement, the exact `<=>` distances and the BM25-plus-synonyms scores of `search_patterns`; the tool fuses them by RRF and returns the `list_patterns` columns with scores.
+  - [x] The description says how it differs from `list_patterns` (the first choice) and `search_patterns`.
+  - [x] A recall check on #7's labelled questions goes to `docs/results/find-patterns.md`, labelled as indicative (selection on the same questions) until a human labels fresh queries (#7).
 - **Reuse:** `research/7-OrFrederick:research/7/OrFrederick/embed.py`, `eval_retrieval.py`, `ivf_vs_exact.py`; `research/7-NoNaim95:research/7/NoNaim95/experiments/r7e_vec_sql.py`, `r7e_hybrid_check.py`.
+- **Scope change (maintainer, #38):** the OTel track (#33) and the huge-datasets work (#32) were dropped, so T26 covers the Base Corpus catalogue instead: `find_patterns` is registered for BGL and OpenStack, complements `search_patterns`, and its recall check is `docs/results/find-patterns.md` (#7's 124 labelled questions). Vectors are computed by `make embed-patterns` and stored in `pattern_vector`; the statement returns cosine distances and BM25 scores, and the tool fuses them by RRF. Deviations from the original criteria: the tool is always registered (an install without the extra gets the `ToolError`, so `tools/list` is the same everywhere), and the fusion runs in Python rather than SQL (a BM25 sort with a tie-break key crashes SereneDB 26.10.1, #2).
 
 ### T27: `list_incidents` tool and OpenStack Request Failure Incidents
 - **Owner:** N. **Area:** data and tools. **Blocked by:** T2, T3, T9, T10. **Links:** #1 consolidated Decision proposal, #2 (`list_incidents` parameters), #7 (catalogue-first chain).

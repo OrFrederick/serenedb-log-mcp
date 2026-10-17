@@ -241,6 +241,7 @@ TOOL_CALLS: dict[str, CallSpec] = {
     "find_precursors": lambda role, granted: {"dataset": "bgl", "target_pattern": a_pattern_key(granted)},
     "list_patterns": lambda role, granted: {"dataset": "bgl"},
     "search_patterns": lambda role, granted: {"dataset": "bgl", "query": "error"},
+    "find_patterns": lambda role, granted: {"dataset": "bgl", "text": "error"},
     "top_patterns": lambda role, granted: {"dataset": "bgl"},
     "verify_answer": lambda role, granted: {"draft": "## Observed Facts\n- No number here."},
     "export_investigation": lambda role, granted: {

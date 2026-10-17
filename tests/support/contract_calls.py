@@ -125,6 +125,11 @@ REPRESENTATIVE_CALLS: Mapping[str, list[dict[str, Any]]] = {
     "get_role_brief": [{}],
     "verify_answer": [{"draft": SAMPLE_DRAFT}],
     "search_patterns": [{"dataset": "bgl", "query": "error"}, {"dataset": "openstack", "query": "instance"}],
+    # The db fixtures embed the samples' Patterns with tests/support/fake_embedder.py.
+    "find_patterns": [
+        {"dataset": "bgl", "text": "error"},
+        {"dataset": "openstack", "text": "instance", "mode": "semantic"},
+    ],
     # MASABNORM is an alert category of the samples (see search_logs above).
     "find_precursors": [{"dataset": "bgl", "target_pattern": "MASABNORM", "min_support": 1}],
     "export_investigation": [

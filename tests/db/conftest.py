@@ -18,12 +18,14 @@ from datetime import datetime
 
 import psycopg
 import pytest
+from fake_embedder import FakeEmbedder
 from optional_data import derive_with_tier1
 from psycopg import sql
 from sample_files import samples_or_skip
 
 import derive
 import dev_loader
+import embed_patterns
 
 # Synthetic BGL rows (line_no, alert_tag, epoch, ts, node, component, level, message). The epoch is
 # UTC; ts is US Pacific local time. The two 2005-10-30 01:30:00.5 rows have the same local time,
@@ -117,6 +119,8 @@ def derived_sample(database_url: str) -> Iterator[Schemas]:
         with pytest.MonkeyPatch.context() as mp:
             mp.setenv("SLM_PATTERN_TIER1", "1" if derive_with_tier1() else "0")
             assert derive.main(["--schema", schemas.slm, "--raw-schema", schemas.raw]) == 0
+        # The Pattern vectors of find_patterns, from the fake embedder the tests query with.
+        assert embed_patterns.main(["--schema", schemas.slm], embedder=FakeEmbedder()) == 0
         yield schemas
     finally:
         _drop(database_url, schemas.slm, schemas.raw)

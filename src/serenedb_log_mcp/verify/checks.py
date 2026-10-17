@@ -511,7 +511,7 @@ _CODE_CALL = re.compile(r"`[^`\n]*[A-Za-z_=(][^`\n]*`")
 _PARAMETER_BEFORE = re.compile(r"[A-Za-z_][A-Za-z0-9_]*\s*[=:]\s*~?$")
 _TOOL_NAME = re.compile(
     r"\b(?:describe_corpus|search_logs|get_context|count_by|trend|list_patterns|search_patterns|top_patterns|"
-    r"list_incidents|latency_stats|find_precursors|get_evidence|export_investigation)\b"
+    r"find_patterns|list_incidents|latency_stats|find_precursors|get_evidence|export_investigation)\b"
 )
 _PARAMETER_WORD = re.compile(
     r"\b(?:top|limit|before|after|window(?:_s)?|gap(?:_s)?|buckets?|weeks|min_z|rise_factor)"

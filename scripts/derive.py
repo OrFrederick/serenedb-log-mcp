@@ -457,12 +457,30 @@ def report(conn: psycopg.Connection[Any], slm: str) -> list[str]:
         if not unmapped
         else "WARNING: Components without a Team: " + ", ".join(f"{d}/{c}" for d, c in unmapped)
     )
+    lines.append(vector_line(conn, slm))
     # Where the Teams come from, so a complete mapping is not read as the organisers' mapping.
     sources = _rows(conn, f"SELECT team_source, count(*) FROM {s}.ownership GROUP BY 1 ORDER BY 1")
     lines.append("Ownership Table team_source: " + ", ".join(f"{src} {count:,}" for src, count in sources))
     if any(src == OWNERSHIP_STUB_SOURCE for src, _ in sources):
         lines.append(f"NOTE: {OWNERSHIP_NOTE}")
     return lines
+
+
+def vector_line(conn: psycopg.Connection[Any], slm: str) -> str:
+    """How many Pattern vectors find_patterns has (T26); they come from `make embed-patterns`."""
+    exists = _rows(
+        conn,
+        "SELECT count(*) FROM information_schema.tables WHERE table_schema = %s AND table_name = %s",
+        [slm, "pattern_vector"],
+    )[0][0]
+    if not exists:
+        return f"{slm}.pattern_vector is missing; the step 25_pattern_vectors creates it"
+    vectors, models = _rows(
+        conn, f"SELECT count(*), count(DISTINCT model) FROM {_quoted(slm)}.pattern_vector"
+    )[0]
+    if not vectors:
+        return f"{slm}.pattern_vector is empty: find_patterns (optional) needs `make embed-patterns`"
+    return f"{slm}.pattern_vector: {vectors:,} Pattern vectors of {models} model(s)"
 
 
 def result_problems(conn: psycopg.Connection[Any], slm: str) -> list[str]:

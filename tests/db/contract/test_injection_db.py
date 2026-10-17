@@ -79,9 +79,10 @@ def matched_nothing(record: dict[str, Any]) -> bool:
     return any(record["summary"].get(key) == 0 for key in MATCHED_COUNTS)
 
 
-ANY_WORD_TOOLS = frozenset({"search_patterns"})
-"""Tools that rank by any of the query's words (T14), so an injection string may match on its own
-words ('select', 'version'); for them the check is that exactly those words were searched."""
+ANY_WORD_TOOLS = frozenset({"search_patterns", "find_patterns"})
+"""Tools that rank by any of the query's words (T14) or rank every Pattern by similarity (T26), so an
+injection string may match on its own words ('select', 'version'); for them the check is that
+exactly those words were searched."""
 
 
 def verdict(outcome: Outcome, name: str = "", value: str = "") -> str | None:

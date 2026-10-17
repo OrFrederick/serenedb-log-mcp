@@ -314,8 +314,9 @@ def _trend(prepared: Prepared, bucket: str, top: int) -> ToolOutcome:
 
     rows = [[label, *(columns[k][i] for k in keys)] for i, label in enumerate(labels)]
     series_total = sum(sum(columns[k]) for k in keys)
-    total = ranked.total if ranked is not None and ranked.groups else series_total
-    groups_total = ranked.groups_total if ranked is not None and ranked.groups else len(keys)
+    # Grouped: the ranking counted every group, shown or not. Ungrouped: the one series is everything.
+    total = ranked.total if ranked is not None else series_total
+    groups_total = ranked.groups_total if ranked is not None else 1
     entries = []
     for k in keys:
         values = columns[k]

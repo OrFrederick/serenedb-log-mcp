@@ -178,3 +178,14 @@ def test_the_evidence_says_counts_are_log_entries_and_ts_is_local_time(corpus: s
     assert any("Log Entries, not Incidents" in note for note in result["notes"])
     assert any("US Pacific" in note for note in result["notes"])
     assert len(result["sql"]) == len(result["params"])
+
+
+def test_a_grouped_trend_without_matches_is_one_zero_series_and_zero_groups(corpus: str) -> None:
+    result = call(
+        "trend", role="engineer", dataset="bgl", bucket="week", group_by="component", query="zebra unicorn"
+    )
+
+    assert result["columns"] == ["bucket", "(all)"]
+    assert sum(column(result, "(all)")) == 0
+    assert (result["summary"]["total"], result["summary"]["groups_total"]) == (0, 0)
+    assert any("No Log Entries matched" in note for note in result["notes"])

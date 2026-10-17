@@ -11,6 +11,7 @@ from serenedb_log_mcp.baseline import (
     MIN_WEEKS,
     UNUSUAL_RATIO,
     dataset_end,
+    few_weeks_notes,
     judge,
     method_note,
     window,
@@ -179,3 +180,20 @@ def test_the_method_note_states_the_periods_weeks_and_thresholds() -> None:
 @pytest.mark.parametrize("flag", ["normal", "unusual_high", "unusual_low", "no_baseline"])
 def test_every_flag_is_explained_in_the_method_note(flag: str) -> None:
     assert flag in method_note([window("bgl", FIRST, LAST)], {"bgl": 30})
+
+
+def test_the_method_note_says_the_median_week_comes_from_outside_the_data_scope() -> None:
+    note = method_note([window("bgl", FIRST, LAST)], {"bgl": 0})
+
+    assert "whole weeks outside the Data Scope (bgl 0)" in note
+
+
+def test_too_few_weeks_outside_the_scope_get_a_note_that_points_to_trend() -> None:
+    whole = window("bgl", FIRST, LAST)
+    week = window("bgl", FIRST, LAST, datetime(2005, 11, 7), datetime(2005, 11, 14))
+
+    notes = few_weeks_notes([whole], {"bgl": 0})
+    assert len(notes) == 1
+    assert "fewer than 4 whole weeks outside the Data Scope" in notes[0]
+    assert "trend" in notes[0]
+    assert few_weeks_notes([week], {"bgl": 29}) == []

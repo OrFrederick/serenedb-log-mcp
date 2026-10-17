@@ -124,7 +124,8 @@ def test_baselines_flag_the_storm_week_and_leave_the_steady_lines_normal(corpus:
     assert steady["baseline_flag"] == "normal"
     assert rows["APPSEV"]["median_week"] == 1
     assert rows["APPSEV"]["baseline_flag"] == "normal"
-    assert any("median_week" in note and "7)" in note for note in result["notes"])
+    # The median week comes from the 6 whole weeks outside the Data Scope's week.
+    assert any("median_week" in note and "outside the Data Scope (bgl 6)" in note for note in result["notes"])
 
 
 def test_a_named_baseline_period_replaces_the_previous_period(corpus: str) -> None:
@@ -150,10 +151,19 @@ def test_without_a_time_range_there_is_no_previous_period(corpus: str) -> None:
 
     bgl, openstack = rows
     assert bgl["prev_period"] is None
-    assert bgl["median_week"] is not None
     # OpenStack spans under three days: no whole week, no previous period, so no baseline.
     assert openstack["median_week"] is None
     assert openstack["baseline_flag"] == "no_baseline"
+
+
+def test_a_whole_dataset_scope_flags_nothing_as_unusual(corpus: str) -> None:
+    # The scope covers every week, so no week is left to say what a normal week looks like.
+    result = call("count_by", role="manager", group_by="alert_category", dataset="bgl")
+
+    rows = row_dicts(result)
+    assert {r["baseline_flag"] for r in rows} == {"no_baseline"}
+    assert {r["median_week"] for r in rows} == {None}
+    assert any("outside the Data Scope" in note and "trend" in note for note in result["notes"])
 
 
 def test_a_full_text_query_counts_only_matching_log_entries(corpus: str) -> None:

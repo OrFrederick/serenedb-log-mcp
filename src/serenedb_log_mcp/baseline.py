@@ -5,10 +5,11 @@ A count means little without a reference. Next to every count, `count_by` and `t
 - `prev_period`: the same count in the period of equal length just before the Data Scope, or in
   the baseline period the caller named; null when that period is not inside the Dataset;
 - `median_week`: the median of the zero-filled weekly counts (Monday-start weeks, as SereneDB's
-  `time_bucket` lays them out) over the Dataset's whole weeks, with the same filters;
+  `time_bucket` lays them out) over the Dataset's whole weeks outside the Data Scope, with the same
+  filters, so a count is never judged against the weeks it is made of;
 - `expected`: what a normal period of the Data Scope's length holds: `median_week` scaled to the
-  Data Scope's length, or the previous period scaled to it when the Dataset has fewer than
-  `MIN_WEEKS` whole weeks (OpenStack spans under three days);
+  Data Scope's length, or the previous period scaled to it when fewer than `MIN_WEEKS` whole weeks
+  lie outside the Data Scope (OpenStack spans under three days; a whole-Dataset scope leaves none);
 - `baseline_flag`: `unusual_high`, `unusual_low`, `normal` or `no_baseline`, by a fixed ratio and a
   minimum absolute difference, so 9 Log Entries against an expected 0 is not "unusual".
 
@@ -32,6 +33,7 @@ __all__ = [
     "Flag",
     "Verdict",
     "dataset_end",
+    "few_weeks_notes",
     "judge",
     "method_note",
     "window",
@@ -191,10 +193,27 @@ def method_note(windows: Sequence[DatasetWindow], whole_weeks: Mapping[str, int]
         "Baselines, per row: prev_period is the count with the same filters in the period of equal "
         f"length just before the Data Scope, or in the named baseline period ({periods}). "
         "median_week is the median of the zero-filled weekly counts (Monday-start weeks) with the "
-        f"same filters over the Dataset's whole weeks ({weeks}). expected is median_week scaled to "
-        "the Data Scope's length, or prev_period scaled to it when the Dataset has fewer than "
-        f"{MIN_WEEKS} whole weeks. baseline_flag is unusual_high when the count is at least "
+        f"same filters over the Dataset's whole weeks outside the Data Scope ({weeks}). expected is "
+        "median_week scaled to "
+        "the Data Scope's length, or prev_period scaled to it when fewer than "
+        f"{MIN_WEEKS} such weeks exist. baseline_flag is unusual_high when the count is at least "
         f"{UNUSUAL_RATIO} times expected and at least {MIN_DIFFERENCE} Log Entries above it, unusual_low "
         f"when it is at most expected / {UNUSUAL_RATIO} and at least {MIN_DIFFERENCE} below it, "
         "normal otherwise, and no_baseline when neither baseline exists."
     )
+
+
+def few_weeks_notes(windows: Sequence[DatasetWindow], whole_weeks: Mapping[str, int]) -> list[str]:
+    """Say where the median week is missing because too few whole weeks lie outside the Data Scope.
+
+    A Data Scope that covers the whole Dataset leaves no week to compare with: judging it against
+    its own weeks would call every bursty group "unusual".
+    """
+    return [
+        f"{w.dataset} has fewer than {MIN_WEEKS} whole weeks outside the Data Scope "
+        f"({whole_weeks.get(w.dataset, 0)}), so median_week is null there and the flag falls back to "
+        "the previous period, or is no_baseline without one. To see which weeks stand out, call "
+        f"trend over {w.dataset}, or narrow the time range."
+        for w in windows
+        if whole_weeks.get(w.dataset, 0) < MIN_WEEKS
+    ]

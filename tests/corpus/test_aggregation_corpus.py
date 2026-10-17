@@ -97,6 +97,7 @@ def test_count_by_pattern_works_before_and_after_the_pattern_dictionary(slm_sche
     assigned = independent(slm_schema, "SELECT count(template_id) FROM {bgl}")[0][0]
     rows = row_dicts(result)
     assert sum(r["count"] for r in rows) == BGL_ROWS
+    assert not [r for r in rows if r["baseline_flag"].startswith("unusual")]
     if assigned == 0:
         assert [r["pattern"] for r in rows] == ["(no Pattern)"]
         assert any("No Pattern ids are assigned in bgl" in note for note in result["notes"])
@@ -127,5 +128,23 @@ def test_trend_by_alert_category_finds_the_kerndtlb_storm_day(slm_schema: str) -
     )[0]
     assert storm["count"] == KERNDTLB
     assert (storm["peak_bucket"], storm["peak_count"]) == (peak[0].date().isoformat(), peak[1])
-    assert storm["baseline_flag"] == "unusual_high"
+    # A whole-Dataset trend has no week outside its scope to compare with.
+    assert storm["baseline_flag"] == "no_baseline"
     within_timeout(result)
+
+
+def test_a_week_of_bgl_is_judged_against_the_weeks_outside_it(slm_schema: str) -> None:
+    result = call(
+        "count_by",
+        role="team_lead",
+        group_by="alert_category",
+        dataset="bgl",
+        time_from="2005-06-06",
+        time_to="2005-06-13",
+        top=100,
+    )
+
+    rows = {r["alert_category"]: r for r in row_dicts(result)}
+    weeks = result["summary"]["baseline"]["bgl"]["whole_weeks_outside_scope"]
+    assert weeks == 29  # 30 whole weeks in BGL, minus the one in the Data Scope
+    assert rows["(non-alert)"]["median_week"] is not None

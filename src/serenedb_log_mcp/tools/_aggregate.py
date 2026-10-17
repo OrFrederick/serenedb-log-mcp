@@ -32,7 +32,7 @@ from psycopg import sql
 from pydantic import Field
 
 from serenedb_log_mcp import fts
-from serenedb_log_mcp.baseline import MIN_WEEKS, DatasetWindow, judge, method_note, window
+from serenedb_log_mcp.baseline import MIN_WEEKS, DatasetWindow, few_weeks_notes, judge, method_note, window
 from serenedb_log_mcp.config import Role
 from serenedb_log_mcp.corpus.datasets import DATASET_NAMES, OWNERSHIP_NOTE, DatasetName, Relation, relation
 from serenedb_log_mcp.corpus.facts import DatasetFacts, dataset_facts
@@ -487,14 +487,18 @@ def stats_statement(
         "\n    UNION ALL\n    ",
         (
             q(
-                # Whole weeks only: the weeks after the first Log Entry's and before the last one's.
-                "SELECT {} AS dataset, unnest(generate_series("
+                # Whole weeks only (after the first Log Entry's week, before the last one's), and only
+                # those outside the Data Scope, so a count is never judged against its own weeks.
+                "SELECT {} AS dataset, week FROM (SELECT unnest(generate_series("
                 "time_bucket(INTERVAL '7 days', {}::TIMESTAMP) + INTERVAL '7 days', "
                 "time_bucket(INTERVAL '7 days', {}::TIMESTAMP) - INTERVAL '7 days', "
-                "INTERVAL '7 days')) AS week",
+                "INTERVAL '7 days')) AS week) AS whole "
+                "WHERE week + INTERVAL '7 days' <= {}::TIMESTAMP OR week >= {}::TIMESTAMP",
                 literal(p.dataset),
                 bound(p.window.first),
                 bound(p.window.dataset_end - timedelta(seconds=1)),
+                bound(p.window.start),
+                bound(p.window.end),
             )
             for p in used
         ),
@@ -682,14 +686,15 @@ def baseline_summary(parts: Sequence[Part], weeks: Mapping[str, int]) -> dict[st
             "days": round(span.days, 2),
             "previous_from": iso(span.previous[0]) if span.previous else None,
             "previous_to": iso(span.previous[1]) if span.previous else None,
-            "whole_weeks": weeks.get(p.dataset, 0),
+            "whole_weeks_outside_scope": weeks.get(p.dataset, 0),
         }
     return out
 
 
 def common_notes(prepared: Prepared, weeks: Mapping[str, int]) -> list[str]:
     """Notes every aggregation result carries: Log Entries not Incidents, and the baseline method."""
-    notes = [LOG_ENTRIES_NOTE, method_note([p.window for p in prepared.parts], weeks), *prepared.notes]
+    windows = [p.window for p in prepared.parts]
+    notes = [LOG_ENTRIES_NOTE, method_note(windows, weeks), *few_weeks_notes(windows, weeks), *prepared.notes]
     if prepared.group_by == "team":
         notes.append(OWNERSHIP_NOTE)
     return notes

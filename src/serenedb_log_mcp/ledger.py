@@ -18,7 +18,12 @@ A process killed during an append leaves an unterminated last line. Reads ignore
 the next append cuts it off, so one interrupted write does not make the ledger unreadable for ever.
 A last line that holds a whole record and only lacks its newline is not a fragment: it is read and
 kept, because dropping it would let the next append reuse its id. Any other unparseable line is
-still a `LedgerError`, because that means `LEDGER_PATH` points at the wrong file.
+still a `LedgerError`: such a file is not an Evidence Ledger this server wrote, or it was damaged
+after it was written.
+
+Records are separated by `"\\n"` alone, and the file is never split with `str.splitlines()`, which
+also breaks at U+2028, U+2029, U+0085 and five ASCII control characters that a Log Entry or a SQL
+string may legitimately contain (see `_lines`).
 
 `fcntl` is POSIX-only, which covers the supported platforms (macOS for development, Linux in CI).
 """
@@ -40,6 +45,11 @@ from serenedb_log_mcp.evidence import EVIDENCE_ID_PATTERN
 LedgerRecord = dict[str, Any]
 
 _ID_RE = re.compile(EVIDENCE_ID_PATTERN)
+
+_NOT_A_LEDGER_LINE = (
+    "Every line of an Evidence Ledger is one complete record, so this file was either not written "
+    "by this server, or damaged after it was written."
+)
 
 
 class LedgerError(RuntimeError):
@@ -136,19 +146,15 @@ class Ledger:
         for number, line in enumerate(_complete_lines(text), start=1):
             if not line.strip():
                 continue
-            where = f"{self.path}:{number}"
+            # The path can be exactly right and the file still damaged, so the message names the
+            # line that cannot be read and leaves both causes open.
+            where = f"{self.path} line {number}"
             try:
                 record = json.loads(line)
             except json.JSONDecodeError as exc:
-                raise LedgerError(
-                    f"{where} is not JSON ({exc.msg}). LEDGER_PATH must point at an Evidence "
-                    "Ledger written by this server, or at a path that does not exist yet."
-                ) from exc
+                raise LedgerError(f"{where} is not JSON ({exc.msg}). {_NOT_A_LEDGER_LINE}") from exc
             if not isinstance(record, dict) or not _ID_RE.fullmatch(str(record.get("evidence_id"))):
-                raise LedgerError(
-                    f"{where} has no valid evidence_id. LEDGER_PATH must point at an Evidence "
-                    "Ledger written by this server, or at a path that does not exist yet."
-                )
+                raise LedgerError(f"{where} has no valid evidence_id. {_NOT_A_LEDGER_LINE}")
             records.append(record)
         return records
 
@@ -168,15 +174,34 @@ def _is_a_record(line: str) -> bool:
     return isinstance(record, dict) and _ID_RE.fullmatch(str(record.get("evidence_id"))) is not None
 
 
+def _lines(text: str) -> list[str]:
+    """The ledger file split into lines on `"\\n"` alone, without the empty tail after the last one.
+
+    `str.splitlines()` must not be used here. It also breaks at U+2028, U+2029, U+0085, `\\x0b`,
+    `\\x0c`, `\\x1c`, `\\x1d` and `\\x1e`, and `json.dumps` writes the first three of those raw. One
+    Log Entry message or SQL string holding such a character then turned a stored record into
+    several apparent lines, which made the file unreadable for every later read and append, and cost
+    a whole record its id when it sat on an unterminated last line (#49). Splitting on `"\\n"` keeps
+    one record on one line whatever text it carries, and also recovers ledgers already written that
+    way. Reading translates CR and CRLF endings to `"\\n"` beforehand, and `json.dumps` escapes both,
+    so neither can appear inside a record.
+    """
+    lines = text.split("\n")
+    if lines[-1] == "":  # split always returns at least one element
+        lines.pop()
+    return lines
+
+
 def _complete_lines(text: str) -> list[str]:
     """The lines that hold a record, so a torn append does not break every later read.
 
     A process killed during an append leaves an unterminated last line. That line is dropped only
     when it is a fragment: dropping a whole record instead would let the next append reuse its id,
     and an answer citing it would silently resolve to different Evidence. Any unparseable line that
-    is not the last one still fails loudly: that means `LEDGER_PATH` points at the wrong file.
+    is not the last one still fails loudly: such a file is not a ledger this server wrote, or it was
+    damaged after it was written.
     """
-    lines = text.splitlines()
+    lines = _lines(text)
     if lines and not text.endswith("\n") and not _is_a_record(lines[-1]):
         return lines[:-1]
     return lines
@@ -193,7 +218,7 @@ def _drop_a_torn_tail(handle: IO[str], text: str) -> None:
     """
     if not text or text.endswith("\n"):
         return
-    if _is_a_record(text.splitlines()[-1]):
+    if _is_a_record(_lines(text)[-1]):
         handle.write("\n")
         handle.flush()
         return

@@ -1,0 +1,6483 @@
+{
+  "n": 4747963,
+  "start": "2005-06-03 15:42:50.363779",
+  "end": "2006-01-04 08:00:05.233639",
+  "alert_entries": 348460,
+  "levels": [
+    {
+      "key": "INFO",
+      "n": 3735823
+    },
+    {
+      "key": "FATAL",
+      "n": 855501
+    },
+    {
+      "key": "ERROR",
+      "n": 112355
+    },
+    {
+      "key": "WARNING",
+      "n": 23357
+    },
+    {
+      "key": "SEVERE",
+      "n": 19213
+    },
+    {
+      "key": "FAILURE",
+      "n": 1714
+    }
+  ],
+  "components": [
+    {
+      "key": "KERNEL",
+      "n": 4324967
+    },
+    {
+      "key": "APP",
+      "n": 228536
+    },
+    {
+      "key": "DISCOVERY",
+      "n": 97172
+    },
+    {
+      "key": "MMCS",
+      "n": 88930
+    },
+    {
+      "key": "HARDWARE",
+      "n": 5148
+    },
+    {
+      "key": "MONITOR",
+      "n": 1681
+    },
+    {
+      "key": "LINKCARD",
+      "n": 1170
+    },
+    {
+      "key": "CMCS",
+      "n": 211
+    },
+    {
+      "key": "BGLMASTER",
+      "n": 145
+    },
+    {
+      "key": "SERV_NET",
+      "n": 3
+    }
+  ],
+  "labels": [
+    {
+      "key": "-",
+      "n": 4399503
+    },
+    {
+      "key": "KERNDTLB",
+      "n": 152734
+    },
+    {
+      "key": "KERNSTOR",
+      "n": 63491
+    },
+    {
+      "key": "APPSEV",
+      "n": 49651
+    },
+    {
+      "key": "KERNMNTF",
+      "n": 31531
+    },
+    {
+      "key": "KERNTERM",
+      "n": 23338
+    },
+    {
+      "key": "KERNREC",
+      "n": 6145
+    },
+    {
+      "key": "APPREAD",
+      "n": 5983
+    },
+    {
+      "key": "KERNRTSP",
+      "n": 3983
+    },
+    {
+      "key": "APPRES",
+      "n": 2370
+    },
+    {
+      "key": "APPUNAV",
+      "n": 2048
+    },
+    {
+      "key": "APPTO",
+      "n": 1991
+    },
+    {
+      "key": "KERNMICRO",
+      "n": 1503
+    },
+    {
+      "key": "APPOUT",
+      "n": 816
+    },
+    {
+      "key": "KERNMNT",
+      "n": 720
+    },
+    {
+      "key": "APPBUSY",
+      "n": 512
+    },
+    {
+      "key": "KERNMC",
+      "n": 342
+    },
+    {
+      "key": "APPCHILD",
+      "n": 320
+    },
+    {
+      "key": "KERNSOCK",
+      "n": 209
+    },
+    {
+      "key": "KERNPOW",
+      "n": 192
+    },
+    {
+      "key": "LINKIAP",
+      "n": 166
+    },
+    {
+      "key": "APPALLOC",
+      "n": 144
+    },
+    {
+      "key": "KERNSERV",
+      "n": 94
+    },
+    {
+      "key": "MASABNORM",
+      "n": 37
+    },
+    {
+      "key": "LINKDISC",
+      "n": 24
+    },
+    {
+      "key": "KERNPAN",
+      "n": 18
+    },
+    {
+      "key": "KERNCON",
+      "n": 16
+    },
+    {
+      "key": "KERNNOETH",
+      "n": 14
+    },
+    {
+      "key": "LINKPAP",
+      "n": 14
+    },
+    {
+      "key": "MONPOW",
+      "n": 12
+    },
+    {
+      "key": "MASNORM",
+      "n": 10
+    },
+    {
+      "key": "APPTORUS",
+      "n": 10
+    },
+    {
+      "key": "KERNPROG",
+      "n": 5
+    },
+    {
+      "key": "KERNFLOAT",
+      "n": 3
+    },
+    {
+      "key": "KERNRTSA",
+      "n": 3
+    },
+    {
+      "key": "MMCS",
+      "n": 3
+    },
+    {
+      "key": "MONNULL",
+      "n": 2
+    },
+    {
+      "key": "LINKBLL",
+      "n": 2
+    },
+    {
+      "key": "KERNEXT",
+      "n": 1
+    },
+    {
+      "key": "KERNBIT",
+      "n": 1
+    },
+    {
+      "key": "MONILL",
+      "n": 1
+    },
+    {
+      "key": "KERNTLBE",
+      "n": 1
+    }
+  ],
+  "top_nodes": [
+    {
+      "key": "R30-M0-N9-C:J16-U01",
+      "n": 152329
+    },
+    {
+      "key": "NULL",
+      "n": 89296
+    },
+    {
+      "key": "R02-M1-N0-C:J12-U11",
+      "n": 64651
+    },
+    {
+      "key": "R37-M1-NC-C:J02-U11",
+      "n": 35288
+    },
+    {
+      "key": "UNKNOWN_LOCATION",
+      "n": 27039
+    },
+    {
+      "key": "R16-M1-N2-C:J17-U01",
+      "n": 16921
+    },
+    {
+      "key": "R26-M0-N0-I:J18-U11",
+      "n": 14876
+    },
+    {
+      "key": "R02-M0-N4-C:J04-U11",
+      "n": 14051
+    },
+    {
+      "key": "R06-M1-N6-C:J15-U01",
+      "n": 4763
+    },
+    {
+      "key": "R55-M0-N9-C:J06-U11",
+      "n": 4751
+    },
+    {
+      "key": "R26-M0-NB-C:J07-U01",
+      "n": 4720
+    },
+    {
+      "key": "R30-M0-N7-C:J09-U01",
+      "n": 4510
+    },
+    {
+      "key": "R23-M0-N8-C:J15-U11",
+      "n": 4344
+    },
+    {
+      "key": "R03-M0-NB-C:J10-U11",
+      "n": 4044
+    },
+    {
+      "key": "R63-M0-N3-C:J02-U11",
+      "n": 3855
+    },
+    {
+      "key": "R35-M0-N0-C:J07-U01",
+      "n": 3348
+    },
+    {
+      "key": "R01-M1-ND-C:J15-U11",
+      "n": 2713
+    },
+    {
+      "key": "R10-M0-N7-C:J17-U01",
+      "n": 2638
+    },
+    {
+      "key": "R00-M1-NF-C:J13-U11",
+      "n": 1840
+    },
+    {
+      "key": "R63-M1-NC-C:J06-U01",
+      "n": 1811
+    }
+  ],
+  "weekly": [
+    {
+      "key": "2005-07-04",
+      "n": 547370
+    },
+    {
+      "key": "2005-06-13",
+      "n": 470918
+    },
+    {
+      "key": "2005-07-11",
+      "n": 386165
+    },
+    {
+      "key": "2005-10-31",
+      "n": 372664
+    },
+    {
+      "key": "2005-06-27",
+      "n": 356500
+    },
+    {
+      "key": "2005-07-18",
+      "n": 344868
+    },
+    {
+      "key": "2005-11-28",
+      "n": 316295
+    },
+    {
+      "key": "2005-06-06",
+      "n": 259896
+    },
+    {
+      "key": "2005-06-20",
+      "n": 241306
+    },
+    {
+      "key": "2005-08-22",
+      "n": 218949
+    },
+    {
+      "key": "2005-07-25",
+      "n": 182929
+    },
+    {
+      "key": "2005-11-07",
+      "n": 146818
+    },
+    {
+      "key": "2005-05-30",
+      "n": 118846
+    },
+    {
+      "key": "2005-09-19",
+      "n": 117059
+    },
+    {
+      "key": "2005-08-01",
+      "n": 76947
+    },
+    {
+      "key": "2005-11-21",
+      "n": 66536
+    },
+    {
+      "key": "2005-08-08",
+      "n": 61685
+    },
+    {
+      "key": "2005-12-05",
+      "n": 56834
+    },
+    {
+      "key": "2005-10-17",
+      "n": 42415
+    },
+    {
+      "key": "2005-08-29",
+      "n": 40406
+    },
+    {
+      "key": "2005-12-26",
+      "n": 40024
+    },
+    {
+      "key": "2005-11-14",
+      "n": 39803
+    },
+    {
+      "key": "2005-10-10",
+      "n": 39007
+    },
+    {
+      "key": "2005-08-15",
+      "n": 31875
+    },
+    {
+      "key": "2005-09-05",
+      "n": 31422
+    },
+    {
+      "key": "2005-10-03",
+      "n": 30216
+    },
+    {
+      "key": "2005-09-26",
+      "n": 28675
+    },
+    {
+      "key": "2005-10-24",
+      "n": 28428
+    },
+    {
+      "key": "2005-12-12",
+      "n": 21806
+    },
+    {
+      "key": "2005-09-12",
+      "n": 20091
+    },
+    {
+      "key": "2005-12-19",
+      "n": 8807
+    },
+    {
+      "key": "2006-01-02",
+      "n": 2403
+    }
+  ],
+  "alert_weekly": [
+    {
+      "week": "2005-05-30",
+      "label": "APPREAD",
+      "n": 2040
+    },
+    {
+      "week": "2005-05-30",
+      "label": "KERNDTLB",
+      "n": 477
+    },
+    {
+      "week": "2005-05-30",
+      "label": "KERNMC",
+      "n": 1
+    },
+    {
+      "week": "2005-05-30",
+      "label": "KERNRTSP",
+      "n": 91
+    },
+    {
+      "week": "2005-06-06",
+      "label": "APPREAD",
+      "n": 124
+    },
+    {
+      "week": "2005-06-06",
+      "label": "KERNDTLB",
+      "n": 152182
+    },
+    {
+      "week": "2005-06-06",
+      "label": "KERNMC",
+      "n": 7
+    },
+    {
+      "week": "2005-06-06",
+      "label": "KERNRTSP",
+      "n": 36
+    },
+    {
+      "week": "2005-06-13",
+      "label": "APPREAD",
+      "n": 3057
+    },
+    {
+      "week": "2005-06-13",
+      "label": "KERNMC",
+      "n": 9
+    },
+    {
+      "week": "2005-06-13",
+      "label": "KERNRTSP",
+      "n": 2238
+    },
+    {
+      "week": "2005-06-13",
+      "label": "KERNSTOR",
+      "n": 63488
+    },
+    {
+      "week": "2005-06-20",
+      "label": "APPALLOC",
+      "n": 144
+    },
+    {
+      "week": "2005-06-20",
+      "label": "APPCHILD",
+      "n": 256
+    },
+    {
+      "week": "2005-06-20",
+      "label": "APPREAD",
+      "n": 762
+    },
+    {
+      "week": "2005-06-20",
+      "label": "KERNMC",
+      "n": 6
+    },
+    {
+      "week": "2005-06-20",
+      "label": "KERNRTSP",
+      "n": 4
+    },
+    {
+      "week": "2005-06-27",
+      "label": "KERNMC",
+      "n": 7
+    },
+    {
+      "week": "2005-06-27",
+      "label": "KERNNOETH",
+      "n": 5
+    },
+    {
+      "week": "2005-06-27",
+      "label": "KERNRTSP",
+      "n": 217
+    },
+    {
+      "week": "2005-06-27",
+      "label": "KERNSOCK",
+      "n": 6
+    },
+    {
+      "week": "2005-06-27",
+      "label": "KERNTERM",
+      "n": 512
+    },
+    {
+      "week": "2005-06-27",
+      "label": "LINKDISC",
+      "n": 24
+    },
+    {
+      "week": "2005-06-27",
+      "label": "MASNORM",
+      "n": 1
+    },
+    {
+      "week": "2005-07-04",
+      "label": "APPBUSY",
+      "n": 512
+    },
+    {
+      "week": "2005-07-04",
+      "label": "APPTORUS",
+      "n": 1
+    },
+    {
+      "week": "2005-07-04",
+      "label": "APPUNAV",
+      "n": 1024
+    },
+    {
+      "week": "2005-07-04",
+      "label": "KERNMC",
+      "n": 7
+    },
+    {
+      "week": "2005-07-04",
+      "label": "KERNPOW",
+      "n": 48
+    },
+    {
+      "week": "2005-07-04",
+      "label": "KERNPROG",
+      "n": 1
+    },
+    {
+      "week": "2005-07-04",
+      "label": "KERNRTSP",
+      "n": 3
+    },
+    {
+      "week": "2005-07-04",
+      "label": "KERNTERM",
+      "n": 649
+    },
+    {
+      "week": "2005-07-04",
+      "label": "LINKPAP",
+      "n": 6
+    },
+    {
+      "week": "2005-07-11",
+      "label": "KERNDTLB",
+      "n": 1
+    },
+    {
+      "week": "2005-07-11",
+      "label": "KERNMC",
+      "n": 5
+    },
+    {
+      "week": "2005-07-11",
+      "label": "KERNPOW",
+      "n": 32
+    },
+    {
+      "week": "2005-07-11",
+      "label": "KERNRTSP",
+      "n": 152
+    },
+    {
+      "week": "2005-07-11",
+      "label": "KERNSOCK",
+      "n": 5
+    },
+    {
+      "week": "2005-07-11",
+      "label": "KERNTERM",
+      "n": 1709
+    },
+    {
+      "week": "2005-07-11",
+      "label": "MASABNORM",
+      "n": 1
+    },
+    {
+      "week": "2005-07-18",
+      "label": "APPCHILD",
+      "n": 32
+    },
+    {
+      "week": "2005-07-18",
+      "label": "APPSEV",
+      "n": 6
+    },
+    {
+      "week": "2005-07-18",
+      "label": "APPTORUS",
+      "n": 1
+    },
+    {
+      "week": "2005-07-18",
+      "label": "KERNCON",
+      "n": 1
+    },
+    {
+      "week": "2005-07-18",
+      "label": "KERNDTLB",
+      "n": 30
+    },
+    {
+      "week": "2005-07-18",
+      "label": "KERNMC",
+      "n": 11
+    },
+    {
+      "week": "2005-07-18",
+      "label": "KERNPOW",
+      "n": 16
+    },
+    {
+      "week": "2005-07-18",
+      "label": "KERNRTSP",
+      "n": 41
+    },
+    {
+      "week": "2005-07-18",
+      "label": "KERNTERM",
+      "n": 1788
+    },
+    {
+      "week": "2005-07-25",
+      "label": "KERNMC",
+      "n": 6
+    },
+    {
+      "week": "2005-07-25",
+      "label": "KERNRTSP",
+      "n": 4
+    },
+    {
+      "week": "2005-07-25",
+      "label": "KERNTERM",
+      "n": 93
+    },
+    {
+      "week": "2005-07-25",
+      "label": "MASABNORM",
+      "n": 1
+    },
+    {
+      "week": "2005-07-25",
+      "label": "MONNULL",
+      "n": 1
+    },
+    {
+      "week": "2005-07-25",
+      "label": "MONPOW",
+      "n": 1
+    },
+    {
+      "week": "2005-08-01",
+      "label": "APPRES",
+      "n": 54
+    },
+    {
+      "week": "2005-08-01",
+      "label": "APPSEV",
+      "n": 523
+    },
+    {
+      "week": "2005-08-01",
+      "label": "KERNCON",
+      "n": 1
+    },
+    {
+      "week": "2005-08-01",
+      "label": "KERNMC",
+      "n": 23
+    },
+    {
+      "week": "2005-08-01",
+      "label": "KERNMICRO",
+      "n": 2
+    },
+    {
+      "week": "2005-08-01",
+      "label": "KERNMNT",
+      "n": 638
+    },
+    {
+      "week": "2005-08-01",
+      "label": "KERNMNTF",
+      "n": 8
+    },
+    {
+      "week": "2005-08-01",
+      "label": "KERNRTSP",
+      "n": 9
+    },
+    {
+      "week": "2005-08-01",
+      "label": "LINKPAP",
+      "n": 4
+    },
+    {
+      "week": "2005-08-01",
+      "label": "MASNORM",
+      "n": 4
+    },
+    {
+      "week": "2005-08-08",
+      "label": "APPRES",
+      "n": 40
+    },
+    {
+      "week": "2005-08-08",
+      "label": "APPSEV",
+      "n": 3072
+    },
+    {
+      "week": "2005-08-08",
+      "label": "KERNCON",
+      "n": 3
+    },
+    {
+      "week": "2005-08-08",
+      "label": "KERNMC",
+      "n": 19
+    },
+    {
+      "week": "2005-08-08",
+      "label": "KERNMICRO",
+      "n": 444
+    },
+    {
+      "week": "2005-08-08",
+      "label": "KERNNOETH",
+      "n": 2
+    },
+    {
+      "week": "2005-08-08",
+      "label": "KERNRTSP",
+      "n": 308
+    },
+    {
+      "week": "2005-08-08",
+      "label": "KERNTERM",
+      "n": 783
+    },
+    {
+      "week": "2005-08-08",
+      "label": "LINKIAP",
+      "n": 6
+    },
+    {
+      "week": "2005-08-08",
+      "label": "MASABNORM",
+      "n": 10
+    },
+    {
+      "week": "2005-08-08",
+      "label": "MASNORM",
+      "n": 2
+    },
+    {
+      "week": "2005-08-15",
+      "label": "APPSEV",
+      "n": 1060
+    },
+    {
+      "week": "2005-08-15",
+      "label": "APPUNAV",
+      "n": 1024
+    },
+    {
+      "week": "2005-08-15",
+      "label": "KERNDTLB",
+      "n": 29
+    },
+    {
+      "week": "2005-08-15",
+      "label": "KERNMC",
+      "n": 10
+    },
+    {
+      "week": "2005-08-15",
+      "label": "KERNMNT",
+      "n": 2
+    },
+    {
+      "week": "2005-08-15",
+      "label": "KERNMNTF",
+      "n": 24
+    },
+    {
+      "week": "2005-08-15",
+      "label": "KERNPAN",
+      "n": 5
+    },
+    {
+      "week": "2005-08-15",
+      "label": "KERNRTSP",
+      "n": 187
+    },
+    {
+      "week": "2005-08-15",
+      "label": "KERNSOCK",
+      "n": 75
+    },
+    {
+      "week": "2005-08-15",
+      "label": "KERNTERM",
+      "n": 7670
+    },
+    {
+      "week": "2005-08-15",
+      "label": "MASABNORM",
+      "n": 3
+    },
+    {
+      "week": "2005-08-15",
+      "label": "MASNORM",
+      "n": 2
+    },
+    {
+      "week": "2005-08-22",
+      "label": "APPRES",
+      "n": 15
+    },
+    {
+      "week": "2005-08-22",
+      "label": "APPSEV",
+      "n": 2556
+    },
+    {
+      "week": "2005-08-22",
+      "label": "KERNDTLB",
+      "n": 4
+    },
+    {
+      "week": "2005-08-22",
+      "label": "KERNMC",
+      "n": 11
+    },
+    {
+      "week": "2005-08-22",
+      "label": "KERNMNTF",
+      "n": 670
+    },
+    {
+      "week": "2005-08-22",
+      "label": "KERNPAN",
+      "n": 5
+    },
+    {
+      "week": "2005-08-22",
+      "label": "KERNRTSP",
+      "n": 72
+    },
+    {
+      "week": "2005-08-22",
+      "label": "KERNSOCK",
+      "n": 17
+    },
+    {
+      "week": "2005-08-22",
+      "label": "KERNTERM",
+      "n": 2896
+    },
+    {
+      "week": "2005-08-22",
+      "label": "MASABNORM",
+      "n": 2
+    },
+    {
+      "week": "2005-08-29",
+      "label": "APPSEV",
+      "n": 697
+    },
+    {
+      "week": "2005-08-29",
+      "label": "KERNCON",
+      "n": 1
+    },
+    {
+      "week": "2005-08-29",
+      "label": "KERNMC",
+      "n": 9
+    },
+    {
+      "week": "2005-08-29",
+      "label": "KERNMICRO",
+      "n": 1040
+    },
+    {
+      "week": "2005-08-29",
+      "label": "KERNMNT",
+      "n": 80
+    },
+    {
+      "week": "2005-08-29",
+      "label": "KERNMNTF",
+      "n": 14689
+    },
+    {
+      "week": "2005-08-29",
+      "label": "KERNRTSP",
+      "n": 439
+    },
+    {
+      "week": "2005-08-29",
+      "label": "KERNSOCK",
+      "n": 8
+    },
+    {
+      "week": "2005-08-29",
+      "label": "LINKIAP",
+      "n": 146
+    },
+    {
+      "week": "2005-08-29",
+      "label": "MASABNORM",
+      "n": 1
+    },
+    {
+      "week": "2005-09-05",
+      "label": "APPRES",
+      "n": 1
+    },
+    {
+      "week": "2005-09-05",
+      "label": "APPSEV",
+      "n": 1972
+    },
+    {
+      "week": "2005-09-05",
+      "label": "KERNCON",
+      "n": 2
+    },
+    {
+      "week": "2005-09-05",
+      "label": "KERNEXT",
+      "n": 1
+    },
+    {
+      "week": "2005-09-05",
+      "label": "KERNMC",
+      "n": 10
+    },
+    {
+      "week": "2005-09-05",
+      "label": "KERNMNTF",
+      "n": 8402
+    },
+    {
+      "week": "2005-09-05",
+      "label": "KERNPAN",
+      "n": 1
+    },
+    {
+      "week": "2005-09-05",
+      "label": "KERNPOW",
+      "n": 32
+    },
+    {
+      "week": "2005-09-05",
+      "label": "KERNRTSP",
+      "n": 15
+    },
+    {
+      "week": "2005-09-05",
+      "label": "KERNSOCK",
+      "n": 1
+    },
+    {
+      "week": "2005-09-05",
+      "label": "KERNTERM",
+      "n": 575
+    },
+    {
+      "week": "2005-09-05",
+      "label": "LINKIAP",
+      "n": 6
+    },
+    {
+      "week": "2005-09-12",
+      "label": "APPSEV",
+      "n": 2803
+    },
+    {
+      "week": "2005-09-12",
+      "label": "KERNMC",
+      "n": 7
+    },
+    {
+      "week": "2005-09-12",
+      "label": "KERNMNTF",
+      "n": 3631
+    },
+    {
+      "week": "2005-09-12",
+      "label": "KERNRTSP",
+      "n": 8
+    },
+    {
+      "week": "2005-09-12",
+      "label": "LINKPAP",
+      "n": 2
+    },
+    {
+      "week": "2005-09-19",
+      "label": "APPSEV",
+      "n": 16
+    },
+    {
+      "week": "2005-09-19",
+      "label": "KERNMC",
+      "n": 30
+    },
+    {
+      "week": "2005-09-19",
+      "label": "KERNNOETH",
+      "n": 1
+    },
+    {
+      "week": "2005-09-19",
+      "label": "KERNPOW",
+      "n": 16
+    },
+    {
+      "week": "2005-09-19",
+      "label": "KERNRTSP",
+      "n": 12
+    },
+    {
+      "week": "2005-09-19",
+      "label": "KERNSOCK",
+      "n": 3
+    },
+    {
+      "week": "2005-09-19",
+      "label": "KERNTERM",
+      "n": 512
+    },
+    {
+      "week": "2005-09-19",
+      "label": "MONNULL",
+      "n": 1
+    },
+    {
+      "week": "2005-09-19",
+      "label": "MONPOW",
+      "n": 2
+    },
+    {
+      "week": "2005-09-26",
+      "label": "APPRES",
+      "n": 4
+    },
+    {
+      "week": "2005-09-26",
+      "label": "APPSEV",
+      "n": 5044
+    },
+    {
+      "week": "2005-09-26",
+      "label": "KERNCON",
+      "n": 2
+    },
+    {
+      "week": "2005-09-26",
+      "label": "KERNFLOAT",
+      "n": 2
+    },
+    {
+      "week": "2005-09-26",
+      "label": "KERNMC",
+      "n": 16
+    },
+    {
+      "week": "2005-09-26",
+      "label": "KERNNOETH",
+      "n": 1
+    },
+    {
+      "week": "2005-09-26",
+      "label": "KERNPAN",
+      "n": 1
+    },
+    {
+      "week": "2005-09-26",
+      "label": "KERNPROG",
+      "n": 2
+    },
+    {
+      "week": "2005-09-26",
+      "label": "KERNRTSP",
+      "n": 15
+    },
+    {
+      "week": "2005-09-26",
+      "label": "KERNSOCK",
+      "n": 2
+    },
+    {
+      "week": "2005-10-03",
+      "label": "APPSEV",
+      "n": 1910
+    },
+    {
+      "week": "2005-10-03",
+      "label": "KERNCON",
+      "n": 1
+    },
+    {
+      "week": "2005-10-03",
+      "label": "KERNMC",
+      "n": 22
+    },
+    {
+      "week": "2005-10-03",
+      "label": "KERNMNTF",
+      "n": 128
+    },
+    {
+      "week": "2005-10-03",
+      "label": "KERNRTSP",
+      "n": 4
+    },
+    {
+      "week": "2005-10-03",
+      "label": "LINKPAP",
+      "n": 2
+    },
+    {
+      "week": "2005-10-10",
+      "label": "APPSEV",
+      "n": 1861
+    },
+    {
+      "week": "2005-10-10",
+      "label": "KERNCON",
+      "n": 1
+    },
+    {
+      "week": "2005-10-10",
+      "label": "KERNMC",
+      "n": 11
+    },
+    {
+      "week": "2005-10-10",
+      "label": "KERNMICRO",
+      "n": 16
+    },
+    {
+      "week": "2005-10-10",
+      "label": "KERNMNTF",
+      "n": 866
+    },
+    {
+      "week": "2005-10-10",
+      "label": "KERNNOETH",
+      "n": 1
+    },
+    {
+      "week": "2005-10-10",
+      "label": "KERNPOW",
+      "n": 48
+    },
+    {
+      "week": "2005-10-10",
+      "label": "KERNRTSP",
+      "n": 2
+    },
+    {
+      "week": "2005-10-10",
+      "label": "KERNSOCK",
+      "n": 2
+    },
+    {
+      "week": "2005-10-10",
+      "label": "KERNTERM",
+      "n": 7
+    },
+    {
+      "week": "2005-10-17",
+      "label": "APPSEV",
+      "n": 53
+    },
+    {
+      "week": "2005-10-17",
+      "label": "KERNBIT",
+      "n": 1
+    },
+    {
+      "week": "2005-10-17",
+      "label": "KERNMC",
+      "n": 12
+    },
+    {
+      "week": "2005-10-17",
+      "label": "KERNMICRO",
+      "n": 1
+    },
+    {
+      "week": "2005-10-17",
+      "label": "KERNNOETH",
+      "n": 2
+    },
+    {
+      "week": "2005-10-17",
+      "label": "KERNPAN",
+      "n": 2
+    },
+    {
+      "week": "2005-10-17",
+      "label": "KERNRTSA",
+      "n": 2
+    },
+    {
+      "week": "2005-10-17",
+      "label": "KERNRTSP",
+      "n": 23
+    },
+    {
+      "week": "2005-10-17",
+      "label": "MMCS",
+      "n": 1
+    },
+    {
+      "week": "2005-10-24",
+      "label": "KERNCON",
+      "n": 2
+    },
+    {
+      "week": "2005-10-24",
+      "label": "KERNMC",
+      "n": 12
+    },
+    {
+      "week": "2005-10-24",
+      "label": "KERNMNTF",
+      "n": 673
+    },
+    {
+      "week": "2005-10-24",
+      "label": "KERNPAN",
+      "n": 1
+    },
+    {
+      "week": "2005-10-24",
+      "label": "KERNPROG",
+      "n": 2
+    },
+    {
+      "week": "2005-10-24",
+      "label": "KERNREC",
+      "n": 1024
+    },
+    {
+      "week": "2005-10-24",
+      "label": "KERNRTSP",
+      "n": 8
+    },
+    {
+      "week": "2005-10-24",
+      "label": "KERNSOCK",
+      "n": 3
+    },
+    {
+      "week": "2005-10-24",
+      "label": "KERNTERM",
+      "n": 1024
+    },
+    {
+      "week": "2005-10-31",
+      "label": "KERNMC",
+      "n": 10
+    },
+    {
+      "week": "2005-10-31",
+      "label": "KERNNOETH",
+      "n": 1
+    },
+    {
+      "week": "2005-10-31",
+      "label": "KERNPAN",
+      "n": 2
+    },
+    {
+      "week": "2005-10-31",
+      "label": "KERNRTSP",
+      "n": 7
+    },
+    {
+      "week": "2005-10-31",
+      "label": "MASNORM",
+      "n": 1
+    },
+    {
+      "week": "2005-11-07",
+      "label": "KERNMC",
+      "n": 9
+    },
+    {
+      "week": "2005-11-07",
+      "label": "KERNPAN",
+      "n": 1
+    },
+    {
+      "week": "2005-11-07",
+      "label": "KERNREC",
+      "n": 2048
+    },
+    {
+      "week": "2005-11-07",
+      "label": "KERNRTSP",
+      "n": 8
+    },
+    {
+      "week": "2005-11-07",
+      "label": "KERNSTOR",
+      "n": 1
+    },
+    {
+      "week": "2005-11-07",
+      "label": "KERNTERM",
+      "n": 2048
+    },
+    {
+      "week": "2005-11-07",
+      "label": "MONPOW",
+      "n": 6
+    },
+    {
+      "week": "2005-11-14",
+      "label": "APPCHILD",
+      "n": 32
+    },
+    {
+      "week": "2005-11-14",
+      "label": "APPRES",
+      "n": 316
+    },
+    {
+      "week": "2005-11-14",
+      "label": "APPSEV",
+      "n": 1211
+    },
+    {
+      "week": "2005-11-14",
+      "label": "APPTORUS",
+      "n": 8
+    },
+    {
+      "week": "2005-11-14",
+      "label": "KERNFLOAT",
+      "n": 1
+    },
+    {
+      "week": "2005-11-14",
+      "label": "KERNMC",
+      "n": 12
+    },
+    {
+      "week": "2005-11-14",
+      "label": "KERNMNTF",
+      "n": 69
+    },
+    {
+      "week": "2005-11-14",
+      "label": "KERNNOETH",
+      "n": 1
+    },
+    {
+      "week": "2005-11-14",
+      "label": "KERNREC",
+      "n": 3072
+    },
+    {
+      "week": "2005-11-14",
+      "label": "KERNRTSP",
+      "n": 12
+    },
+    {
+      "week": "2005-11-14",
+      "label": "KERNSERV",
+      "n": 79
+    },
+    {
+      "week": "2005-11-14",
+      "label": "KERNSOCK",
+      "n": 47
+    },
+    {
+      "week": "2005-11-14",
+      "label": "KERNSTOR",
+      "n": 1
+    },
+    {
+      "week": "2005-11-14",
+      "label": "KERNTERM",
+      "n": 3072
+    },
+    {
+      "week": "2005-11-14",
+      "label": "MONILL",
+      "n": 1
+    },
+    {
+      "week": "2005-11-14",
+      "label": "MONPOW",
+      "n": 3
+    },
+    {
+      "week": "2005-11-21",
+      "label": "APPRES",
+      "n": 1940
+    },
+    {
+      "week": "2005-11-21",
+      "label": "APPSEV",
+      "n": 9881
+    },
+    {
+      "week": "2005-11-21",
+      "label": "APPTO",
+      "n": 1991
+    },
+    {
+      "week": "2005-11-21",
+      "label": "KERNCON",
+      "n": 1
+    },
+    {
+      "week": "2005-11-21",
+      "label": "KERNDTLB",
+      "n": 1
+    },
+    {
+      "week": "2005-11-21",
+      "label": "KERNMC",
+      "n": 9
+    },
+    {
+      "week": "2005-11-21",
+      "label": "KERNMNTF",
+      "n": 161
+    },
+    {
+      "week": "2005-11-21",
+      "label": "KERNRTSP",
+      "n": 11
+    },
+    {
+      "week": "2005-11-21",
+      "label": "KERNSOCK",
+      "n": 4
+    },
+    {
+      "week": "2005-11-21",
+      "label": "KERNSTOR",
+      "n": 1
+    },
+    {
+      "week": "2005-11-21",
+      "label": "MASABNORM",
+      "n": 1
+    },
+    {
+      "week": "2005-11-28",
+      "label": "APPSEV",
+      "n": 5624
+    },
+    {
+      "week": "2005-11-28",
+      "label": "KERNCON",
+      "n": 1
+    },
+    {
+      "week": "2005-11-28",
+      "label": "KERNDTLB",
+      "n": 10
+    },
+    {
+      "week": "2005-11-28",
+      "label": "KERNMC",
+      "n": 14
+    },
+    {
+      "week": "2005-11-28",
+      "label": "KERNMNTF",
+      "n": 889
+    },
+    {
+      "week": "2005-11-28",
+      "label": "KERNRTSP",
+      "n": 23
+    },
+    {
+      "week": "2005-11-28",
+      "label": "KERNSERV",
+      "n": 15
+    },
+    {
+      "week": "2005-11-28",
+      "label": "KERNSOCK",
+      "n": 23
+    },
+    {
+      "week": "2005-11-28",
+      "label": "KERNTLBE",
+      "n": 1
+    },
+    {
+      "week": "2005-11-28",
+      "label": "LINKBLL",
+      "n": 2
+    },
+    {
+      "week": "2005-11-28",
+      "label": "MASABNORM",
+      "n": 14
+    },
+    {
+      "week": "2005-11-28",
+      "label": "MMCS",
+      "n": 2
+    },
+    {
+      "week": "2005-12-05",
+      "label": "APPOUT",
+      "n": 816
+    },
+    {
+      "week": "2005-12-05",
+      "label": "APPSEV",
+      "n": 1127
+    },
+    {
+      "week": "2005-12-05",
+      "label": "KERNMC",
+      "n": 16
+    },
+    {
+      "week": "2005-12-05",
+      "label": "KERNMNTF",
+      "n": 116
+    },
+    {
+      "week": "2005-12-05",
+      "label": "KERNRTSP",
+      "n": 15
+    },
+    {
+      "week": "2005-12-05",
+      "label": "KERNSOCK",
+      "n": 5
+    },
+    {
+      "week": "2005-12-05",
+      "label": "LINKIAP",
+      "n": 8
+    },
+    {
+      "week": "2005-12-05",
+      "label": "MASABNORM",
+      "n": 4
+    },
+    {
+      "week": "2005-12-12",
+      "label": "APPSEV",
+      "n": 6849
+    },
+    {
+      "week": "2005-12-12",
+      "label": "KERNMC",
+      "n": 2
+    },
+    {
+      "week": "2005-12-12",
+      "label": "KERNMNTF",
+      "n": 872
+    },
+    {
+      "week": "2005-12-12",
+      "label": "KERNREC",
+      "n": 1
+    },
+    {
+      "week": "2005-12-12",
+      "label": "KERNRTSP",
+      "n": 2
+    },
+    {
+      "week": "2005-12-19",
+      "label": "APPSEV",
+      "n": 1162
+    },
+    {
+      "week": "2005-12-19",
+      "label": "KERNMC",
+      "n": 11
+    },
+    {
+      "week": "2005-12-19",
+      "label": "KERNRTSA",
+      "n": 1
+    },
+    {
+      "week": "2005-12-19",
+      "label": "KERNRTSP",
+      "n": 10
+    },
+    {
+      "week": "2005-12-26",
+      "label": "APPSEV",
+      "n": 2094
+    },
+    {
+      "week": "2005-12-26",
+      "label": "KERNMC",
+      "n": 7
+    },
+    {
+      "week": "2005-12-26",
+      "label": "KERNRTSP",
+      "n": 6
+    },
+    {
+      "week": "2006-01-02",
+      "label": "APPSEV",
+      "n": 130
+    },
+    {
+      "week": "2006-01-02",
+      "label": "KERNMC",
+      "n": 1
+    },
+    {
+      "week": "2006-01-02",
+      "label": "KERNMNTF",
+      "n": 333
+    },
+    {
+      "week": "2006-01-02",
+      "label": "KERNRTSP",
+      "n": 1
+    },
+    {
+      "week": "2006-01-02",
+      "label": "KERNSOCK",
+      "n": 8
+    }
+  ],
+  "published_reproduction_checks": {
+    "epoch_break_gt_5": {
+      "n": 1621,
+      "categories": [
+        {
+          "key": "KERNMC",
+          "n": 326
+        },
+        {
+          "key": "KERNRTSP",
+          "n": 289
+        },
+        {
+          "key": "KERNMNTF",
+          "n": 237
+        },
+        {
+          "key": "APPSEV",
+          "n": 223
+        },
+        {
+          "key": "KERNTERM",
+          "n": 99
+        },
+        {
+          "key": "LINKIAP",
+          "n": 83
+        },
+        {
+          "key": "KERNDTLB",
+          "n": 80
+        },
+        {
+          "key": "KERNSOCK",
+          "n": 39
+        },
+        {
+          "key": "MASABNORM",
+          "n": 35
+        },
+        {
+          "key": "APPREAD",
+          "n": 17
+        },
+        {
+          "key": "APPRES",
+          "n": 17
+        },
+        {
+          "key": "KERNCON",
+          "n": 16
+        },
+        {
+          "key": "KERNPAN",
+          "n": 15
+        },
+        {
+          "key": "KERNNOETH",
+          "n": 13
+        },
+        {
+          "key": "LINKDISC",
+          "n": 12
+        },
+        {
+          "key": "KERNPOW",
+          "n": 12
+        },
+        {
+          "key": "MONPOW",
+          "n": 12
+        },
+        {
+          "key": "MASNORM",
+          "n": 9
+        },
+        {
+          "key": "KERNMNT",
+          "n": 9
+        },
+        {
+          "key": "KERNREC",
+          "n": 9
+        },
+        {
+          "key": "KERNSTOR",
+          "n": 8
+        },
+        {
+          "key": "KERNMICRO",
+          "n": 8
+        },
+        {
+          "key": "LINKPAP",
+          "n": 7
+        },
+        {
+          "key": "KERNSERV",
+          "n": 6
+        },
+        {
+          "key": "KERNPROG",
+          "n": 5
+        },
+        {
+          "key": "APPTORUS",
+          "n": 5
+        },
+        {
+          "key": "APPTO",
+          "n": 5
+        },
+        {
+          "key": "APPCHILD",
+          "n": 3
+        },
+        {
+          "key": "APPUNAV",
+          "n": 3
+        },
+        {
+          "key": "APPOUT",
+          "n": 3
+        },
+        {
+          "key": "APPALLOC",
+          "n": 2
+        },
+        {
+          "key": "MONNULL",
+          "n": 2
+        },
+        {
+          "key": "KERNFLOAT",
+          "n": 2
+        },
+        {
+          "key": "KERNRTSA",
+          "n": 2
+        },
+        {
+          "key": "MMCS",
+          "n": 2
+        },
+        {
+          "key": "APPBUSY",
+          "n": 1
+        },
+        {
+          "key": "KERNEXT",
+          "n": 1
+        },
+        {
+          "key": "KERNBIT",
+          "n": 1
+        },
+        {
+          "key": "MONILL",
+          "n": 1
+        },
+        {
+          "key": "LINKBLL",
+          "n": 1
+        },
+        {
+          "key": "KERNTLBE",
+          "n": 1
+        }
+      ]
+    },
+    "epoch_break_gt_300": {
+      "n": 1202,
+      "categories": [
+        {
+          "key": "KERNMC",
+          "n": 291
+        },
+        {
+          "key": "KERNRTSP",
+          "n": 260
+        },
+        {
+          "key": "APPSEV",
+          "n": 136
+        },
+        {
+          "key": "KERNMNTF",
+          "n": 105
+        },
+        {
+          "key": "KERNTERM",
+          "n": 99
+        },
+        {
+          "key": "KERNSOCK",
+          "n": 39
+        },
+        {
+          "key": "KERNDTLB",
+          "n": 37
+        },
+        {
+          "key": "MASABNORM",
+          "n": 33
+        },
+        {
+          "key": "LINKIAP",
+          "n": 28
+        },
+        {
+          "key": "KERNCON",
+          "n": 16
+        },
+        {
+          "key": "KERNPAN",
+          "n": 14
+        },
+        {
+          "key": "APPRES",
+          "n": 13
+        },
+        {
+          "key": "APPREAD",
+          "n": 11
+        },
+        {
+          "key": "KERNNOETH",
+          "n": 10
+        },
+        {
+          "key": "KERNPOW",
+          "n": 10
+        },
+        {
+          "key": "MONPOW",
+          "n": 10
+        },
+        {
+          "key": "MASNORM",
+          "n": 9
+        },
+        {
+          "key": "KERNREC",
+          "n": 9
+        },
+        {
+          "key": "KERNSTOR",
+          "n": 8
+        },
+        {
+          "key": "KERNMNT",
+          "n": 7
+        },
+        {
+          "key": "LINKDISC",
+          "n": 6
+        },
+        {
+          "key": "KERNPROG",
+          "n": 5
+        },
+        {
+          "key": "LINKPAP",
+          "n": 5
+        },
+        {
+          "key": "KERNMICRO",
+          "n": 5
+        },
+        {
+          "key": "KERNSERV",
+          "n": 5
+        },
+        {
+          "key": "APPTORUS",
+          "n": 4
+        },
+        {
+          "key": "APPTO",
+          "n": 4
+        },
+        {
+          "key": "APPCHILD",
+          "n": 3
+        },
+        {
+          "key": "APPUNAV",
+          "n": 3
+        },
+        {
+          "key": "APPALLOC",
+          "n": 2
+        },
+        {
+          "key": "MONNULL",
+          "n": 2
+        },
+        {
+          "key": "KERNFLOAT",
+          "n": 2
+        },
+        {
+          "key": "KERNRTSA",
+          "n": 2
+        },
+        {
+          "key": "MMCS",
+          "n": 2
+        },
+        {
+          "key": "APPBUSY",
+          "n": 1
+        },
+        {
+          "key": "KERNEXT",
+          "n": 1
+        },
+        {
+          "key": "KERNBIT",
+          "n": 1
+        },
+        {
+          "key": "MONILL",
+          "n": 1
+        },
+        {
+          "key": "LINKBLL",
+          "n": 1
+        },
+        {
+          "key": "KERNTLBE",
+          "n": 1
+        },
+        {
+          "key": "APPOUT",
+          "n": 1
+        }
+      ]
+    },
+    "epoch_break_gte_5": {
+      "n": 1678,
+      "categories": [
+        {
+          "key": "KERNMC",
+          "n": 326
+        },
+        {
+          "key": "KERNRTSP",
+          "n": 293
+        },
+        {
+          "key": "KERNMNTF",
+          "n": 255
+        },
+        {
+          "key": "APPSEV",
+          "n": 232
+        },
+        {
+          "key": "KERNDTLB",
+          "n": 101
+        },
+        {
+          "key": "KERNTERM",
+          "n": 99
+        },
+        {
+          "key": "LINKIAP",
+          "n": 83
+        },
+        {
+          "key": "KERNSOCK",
+          "n": 39
+        },
+        {
+          "key": "MASABNORM",
+          "n": 36
+        },
+        {
+          "key": "APPRES",
+          "n": 18
+        },
+        {
+          "key": "APPREAD",
+          "n": 17
+        },
+        {
+          "key": "KERNCON",
+          "n": 16
+        },
+        {
+          "key": "KERNPAN",
+          "n": 15
+        },
+        {
+          "key": "KERNNOETH",
+          "n": 13
+        },
+        {
+          "key": "LINKDISC",
+          "n": 12
+        },
+        {
+          "key": "KERNPOW",
+          "n": 12
+        },
+        {
+          "key": "MONPOW",
+          "n": 12
+        },
+        {
+          "key": "MASNORM",
+          "n": 10
+        },
+        {
+          "key": "KERNMNT",
+          "n": 9
+        },
+        {
+          "key": "KERNREC",
+          "n": 9
+        },
+        {
+          "key": "KERNSTOR",
+          "n": 8
+        },
+        {
+          "key": "KERNMICRO",
+          "n": 8
+        },
+        {
+          "key": "LINKPAP",
+          "n": 7
+        },
+        {
+          "key": "KERNSERV",
+          "n": 6
+        },
+        {
+          "key": "APPTO",
+          "n": 6
+        },
+        {
+          "key": "KERNPROG",
+          "n": 5
+        },
+        {
+          "key": "APPTORUS",
+          "n": 5
+        },
+        {
+          "key": "APPOUT",
+          "n": 4
+        },
+        {
+          "key": "APPCHILD",
+          "n": 3
+        },
+        {
+          "key": "APPUNAV",
+          "n": 3
+        },
+        {
+          "key": "APPALLOC",
+          "n": 2
+        },
+        {
+          "key": "MONNULL",
+          "n": 2
+        },
+        {
+          "key": "KERNFLOAT",
+          "n": 2
+        },
+        {
+          "key": "KERNRTSA",
+          "n": 2
+        },
+        {
+          "key": "MMCS",
+          "n": 2
+        },
+        {
+          "key": "APPBUSY",
+          "n": 1
+        },
+        {
+          "key": "KERNEXT",
+          "n": 1
+        },
+        {
+          "key": "KERNBIT",
+          "n": 1
+        },
+        {
+          "key": "MONILL",
+          "n": 1
+        },
+        {
+          "key": "LINKBLL",
+          "n": 1
+        },
+        {
+          "key": "KERNTLBE",
+          "n": 1
+        }
+      ]
+    },
+    "epoch_break_gte_300": {
+      "n": 1202,
+      "categories": [
+        {
+          "key": "KERNMC",
+          "n": 291
+        },
+        {
+          "key": "KERNRTSP",
+          "n": 260
+        },
+        {
+          "key": "APPSEV",
+          "n": 136
+        },
+        {
+          "key": "KERNMNTF",
+          "n": 105
+        },
+        {
+          "key": "KERNTERM",
+          "n": 99
+        },
+        {
+          "key": "KERNSOCK",
+          "n": 39
+        },
+        {
+          "key": "KERNDTLB",
+          "n": 37
+        },
+        {
+          "key": "MASABNORM",
+          "n": 33
+        },
+        {
+          "key": "LINKIAP",
+          "n": 28
+        },
+        {
+          "key": "KERNCON",
+          "n": 16
+        },
+        {
+          "key": "KERNPAN",
+          "n": 14
+        },
+        {
+          "key": "APPRES",
+          "n": 13
+        },
+        {
+          "key": "APPREAD",
+          "n": 11
+        },
+        {
+          "key": "KERNNOETH",
+          "n": 10
+        },
+        {
+          "key": "KERNPOW",
+          "n": 10
+        },
+        {
+          "key": "MONPOW",
+          "n": 10
+        },
+        {
+          "key": "MASNORM",
+          "n": 9
+        },
+        {
+          "key": "KERNREC",
+          "n": 9
+        },
+        {
+          "key": "KERNSTOR",
+          "n": 8
+        },
+        {
+          "key": "KERNMNT",
+          "n": 7
+        },
+        {
+          "key": "LINKDISC",
+          "n": 6
+        },
+        {
+          "key": "KERNPROG",
+          "n": 5
+        },
+        {
+          "key": "LINKPAP",
+          "n": 5
+        },
+        {
+          "key": "KERNMICRO",
+          "n": 5
+        },
+        {
+          "key": "KERNSERV",
+          "n": 5
+        },
+        {
+          "key": "APPTORUS",
+          "n": 4
+        },
+        {
+          "key": "APPTO",
+          "n": 4
+        },
+        {
+          "key": "APPCHILD",
+          "n": 3
+        },
+        {
+          "key": "APPUNAV",
+          "n": 3
+        },
+        {
+          "key": "APPALLOC",
+          "n": 2
+        },
+        {
+          "key": "MONNULL",
+          "n": 2
+        },
+        {
+          "key": "KERNFLOAT",
+          "n": 2
+        },
+        {
+          "key": "KERNRTSA",
+          "n": 2
+        },
+        {
+          "key": "MMCS",
+          "n": 2
+        },
+        {
+          "key": "APPBUSY",
+          "n": 1
+        },
+        {
+          "key": "KERNEXT",
+          "n": 1
+        },
+        {
+          "key": "KERNBIT",
+          "n": 1
+        },
+        {
+          "key": "MONILL",
+          "n": 1
+        },
+        {
+          "key": "LINKBLL",
+          "n": 1
+        },
+        {
+          "key": "KERNTLBE",
+          "n": 1
+        },
+        {
+          "key": "APPOUT",
+          "n": 1
+        }
+      ]
+    },
+    "display_break_gt_5": {
+      "n": 1643,
+      "categories": [
+        {
+          "key": "KERNMC",
+          "n": 326
+        },
+        {
+          "key": "KERNRTSP",
+          "n": 290
+        },
+        {
+          "key": "KERNMNTF",
+          "n": 244
+        },
+        {
+          "key": "APPSEV",
+          "n": 227
+        },
+        {
+          "key": "KERNTERM",
+          "n": 99
+        },
+        {
+          "key": "KERNDTLB",
+          "n": 86
+        },
+        {
+          "key": "LINKIAP",
+          "n": 83
+        },
+        {
+          "key": "KERNSOCK",
+          "n": 39
+        },
+        {
+          "key": "MASABNORM",
+          "n": 36
+        },
+        {
+          "key": "APPRES",
+          "n": 18
+        },
+        {
+          "key": "APPREAD",
+          "n": 17
+        },
+        {
+          "key": "KERNCON",
+          "n": 16
+        },
+        {
+          "key": "KERNPAN",
+          "n": 15
+        },
+        {
+          "key": "KERNNOETH",
+          "n": 13
+        },
+        {
+          "key": "LINKDISC",
+          "n": 12
+        },
+        {
+          "key": "KERNPOW",
+          "n": 12
+        },
+        {
+          "key": "MONPOW",
+          "n": 12
+        },
+        {
+          "key": "MASNORM",
+          "n": 10
+        },
+        {
+          "key": "KERNMNT",
+          "n": 9
+        },
+        {
+          "key": "KERNREC",
+          "n": 9
+        },
+        {
+          "key": "KERNSTOR",
+          "n": 8
+        },
+        {
+          "key": "KERNMICRO",
+          "n": 8
+        },
+        {
+          "key": "LINKPAP",
+          "n": 7
+        },
+        {
+          "key": "KERNSERV",
+          "n": 6
+        },
+        {
+          "key": "KERNPROG",
+          "n": 5
+        },
+        {
+          "key": "APPTORUS",
+          "n": 5
+        },
+        {
+          "key": "APPTO",
+          "n": 5
+        },
+        {
+          "key": "APPOUT",
+          "n": 4
+        },
+        {
+          "key": "APPCHILD",
+          "n": 3
+        },
+        {
+          "key": "APPUNAV",
+          "n": 3
+        },
+        {
+          "key": "APPALLOC",
+          "n": 2
+        },
+        {
+          "key": "MONNULL",
+          "n": 2
+        },
+        {
+          "key": "KERNFLOAT",
+          "n": 2
+        },
+        {
+          "key": "KERNRTSA",
+          "n": 2
+        },
+        {
+          "key": "MMCS",
+          "n": 2
+        },
+        {
+          "key": "APPBUSY",
+          "n": 1
+        },
+        {
+          "key": "KERNEXT",
+          "n": 1
+        },
+        {
+          "key": "KERNBIT",
+          "n": 1
+        },
+        {
+          "key": "MONILL",
+          "n": 1
+        },
+        {
+          "key": "LINKBLL",
+          "n": 1
+        },
+        {
+          "key": "KERNTLBE",
+          "n": 1
+        }
+      ]
+    },
+    "display_break_gt_300": {
+      "n": 1202,
+      "categories": [
+        {
+          "key": "KERNMC",
+          "n": 291
+        },
+        {
+          "key": "KERNRTSP",
+          "n": 260
+        },
+        {
+          "key": "APPSEV",
+          "n": 136
+        },
+        {
+          "key": "KERNMNTF",
+          "n": 105
+        },
+        {
+          "key": "KERNTERM",
+          "n": 99
+        },
+        {
+          "key": "KERNSOCK",
+          "n": 39
+        },
+        {
+          "key": "KERNDTLB",
+          "n": 37
+        },
+        {
+          "key": "MASABNORM",
+          "n": 33
+        },
+        {
+          "key": "LINKIAP",
+          "n": 28
+        },
+        {
+          "key": "KERNCON",
+          "n": 16
+        },
+        {
+          "key": "KERNPAN",
+          "n": 14
+        },
+        {
+          "key": "APPRES",
+          "n": 13
+        },
+        {
+          "key": "APPREAD",
+          "n": 11
+        },
+        {
+          "key": "KERNNOETH",
+          "n": 10
+        },
+        {
+          "key": "KERNPOW",
+          "n": 10
+        },
+        {
+          "key": "MONPOW",
+          "n": 10
+        },
+        {
+          "key": "MASNORM",
+          "n": 9
+        },
+        {
+          "key": "KERNREC",
+          "n": 9
+        },
+        {
+          "key": "KERNSTOR",
+          "n": 8
+        },
+        {
+          "key": "KERNMNT",
+          "n": 7
+        },
+        {
+          "key": "LINKDISC",
+          "n": 6
+        },
+        {
+          "key": "KERNPROG",
+          "n": 5
+        },
+        {
+          "key": "LINKPAP",
+          "n": 5
+        },
+        {
+          "key": "KERNMICRO",
+          "n": 5
+        },
+        {
+          "key": "KERNSERV",
+          "n": 5
+        },
+        {
+          "key": "APPTORUS",
+          "n": 4
+        },
+        {
+          "key": "APPTO",
+          "n": 4
+        },
+        {
+          "key": "APPCHILD",
+          "n": 3
+        },
+        {
+          "key": "APPUNAV",
+          "n": 3
+        },
+        {
+          "key": "APPALLOC",
+          "n": 2
+        },
+        {
+          "key": "MONNULL",
+          "n": 2
+        },
+        {
+          "key": "KERNFLOAT",
+          "n": 2
+        },
+        {
+          "key": "KERNRTSA",
+          "n": 2
+        },
+        {
+          "key": "MMCS",
+          "n": 2
+        },
+        {
+          "key": "APPBUSY",
+          "n": 1
+        },
+        {
+          "key": "KERNEXT",
+          "n": 1
+        },
+        {
+          "key": "KERNBIT",
+          "n": 1
+        },
+        {
+          "key": "MONILL",
+          "n": 1
+        },
+        {
+          "key": "LINKBLL",
+          "n": 1
+        },
+        {
+          "key": "KERNTLBE",
+          "n": 1
+        },
+        {
+          "key": "APPOUT",
+          "n": 1
+        }
+      ]
+    },
+    "display_break_gte_5": {
+      "n": 1643,
+      "categories": [
+        {
+          "key": "KERNMC",
+          "n": 326
+        },
+        {
+          "key": "KERNRTSP",
+          "n": 290
+        },
+        {
+          "key": "KERNMNTF",
+          "n": 244
+        },
+        {
+          "key": "APPSEV",
+          "n": 227
+        },
+        {
+          "key": "KERNTERM",
+          "n": 99
+        },
+        {
+          "key": "KERNDTLB",
+          "n": 86
+        },
+        {
+          "key": "LINKIAP",
+          "n": 83
+        },
+        {
+          "key": "KERNSOCK",
+          "n": 39
+        },
+        {
+          "key": "MASABNORM",
+          "n": 36
+        },
+        {
+          "key": "APPRES",
+          "n": 18
+        },
+        {
+          "key": "APPREAD",
+          "n": 17
+        },
+        {
+          "key": "KERNCON",
+          "n": 16
+        },
+        {
+          "key": "KERNPAN",
+          "n": 15
+        },
+        {
+          "key": "KERNNOETH",
+          "n": 13
+        },
+        {
+          "key": "LINKDISC",
+          "n": 12
+        },
+        {
+          "key": "KERNPOW",
+          "n": 12
+        },
+        {
+          "key": "MONPOW",
+          "n": 12
+        },
+        {
+          "key": "MASNORM",
+          "n": 10
+        },
+        {
+          "key": "KERNMNT",
+          "n": 9
+        },
+        {
+          "key": "KERNREC",
+          "n": 9
+        },
+        {
+          "key": "KERNSTOR",
+          "n": 8
+        },
+        {
+          "key": "KERNMICRO",
+          "n": 8
+        },
+        {
+          "key": "LINKPAP",
+          "n": 7
+        },
+        {
+          "key": "KERNSERV",
+          "n": 6
+        },
+        {
+          "key": "KERNPROG",
+          "n": 5
+        },
+        {
+          "key": "APPTORUS",
+          "n": 5
+        },
+        {
+          "key": "APPTO",
+          "n": 5
+        },
+        {
+          "key": "APPOUT",
+          "n": 4
+        },
+        {
+          "key": "APPCHILD",
+          "n": 3
+        },
+        {
+          "key": "APPUNAV",
+          "n": 3
+        },
+        {
+          "key": "APPALLOC",
+          "n": 2
+        },
+        {
+          "key": "MONNULL",
+          "n": 2
+        },
+        {
+          "key": "KERNFLOAT",
+          "n": 2
+        },
+        {
+          "key": "KERNRTSA",
+          "n": 2
+        },
+        {
+          "key": "MMCS",
+          "n": 2
+        },
+        {
+          "key": "APPBUSY",
+          "n": 1
+        },
+        {
+          "key": "KERNEXT",
+          "n": 1
+        },
+        {
+          "key": "KERNBIT",
+          "n": 1
+        },
+        {
+          "key": "MONILL",
+          "n": 1
+        },
+        {
+          "key": "LINKBLL",
+          "n": 1
+        },
+        {
+          "key": "KERNTLBE",
+          "n": 1
+        }
+      ]
+    },
+    "display_break_gte_300": {
+      "n": 1202,
+      "categories": [
+        {
+          "key": "KERNMC",
+          "n": 291
+        },
+        {
+          "key": "KERNRTSP",
+          "n": 260
+        },
+        {
+          "key": "APPSEV",
+          "n": 136
+        },
+        {
+          "key": "KERNMNTF",
+          "n": 105
+        },
+        {
+          "key": "KERNTERM",
+          "n": 99
+        },
+        {
+          "key": "KERNSOCK",
+          "n": 39
+        },
+        {
+          "key": "KERNDTLB",
+          "n": 37
+        },
+        {
+          "key": "MASABNORM",
+          "n": 33
+        },
+        {
+          "key": "LINKIAP",
+          "n": 28
+        },
+        {
+          "key": "KERNCON",
+          "n": 16
+        },
+        {
+          "key": "KERNPAN",
+          "n": 14
+        },
+        {
+          "key": "APPRES",
+          "n": 13
+        },
+        {
+          "key": "APPREAD",
+          "n": 11
+        },
+        {
+          "key": "KERNNOETH",
+          "n": 10
+        },
+        {
+          "key": "KERNPOW",
+          "n": 10
+        },
+        {
+          "key": "MONPOW",
+          "n": 10
+        },
+        {
+          "key": "MASNORM",
+          "n": 9
+        },
+        {
+          "key": "KERNREC",
+          "n": 9
+        },
+        {
+          "key": "KERNSTOR",
+          "n": 8
+        },
+        {
+          "key": "KERNMNT",
+          "n": 7
+        },
+        {
+          "key": "LINKDISC",
+          "n": 6
+        },
+        {
+          "key": "KERNPROG",
+          "n": 5
+        },
+        {
+          "key": "LINKPAP",
+          "n": 5
+        },
+        {
+          "key": "KERNMICRO",
+          "n": 5
+        },
+        {
+          "key": "KERNSERV",
+          "n": 5
+        },
+        {
+          "key": "APPTORUS",
+          "n": 4
+        },
+        {
+          "key": "APPTO",
+          "n": 4
+        },
+        {
+          "key": "APPCHILD",
+          "n": 3
+        },
+        {
+          "key": "APPUNAV",
+          "n": 3
+        },
+        {
+          "key": "APPALLOC",
+          "n": 2
+        },
+        {
+          "key": "MONNULL",
+          "n": 2
+        },
+        {
+          "key": "KERNFLOAT",
+          "n": 2
+        },
+        {
+          "key": "KERNRTSA",
+          "n": 2
+        },
+        {
+          "key": "MMCS",
+          "n": 2
+        },
+        {
+          "key": "APPBUSY",
+          "n": 1
+        },
+        {
+          "key": "KERNEXT",
+          "n": 1
+        },
+        {
+          "key": "KERNBIT",
+          "n": 1
+        },
+        {
+          "key": "MONILL",
+          "n": 1
+        },
+        {
+          "key": "LINKBLL",
+          "n": 1
+        },
+        {
+          "key": "KERNTLBE",
+          "n": 1
+        },
+        {
+          "key": "APPOUT",
+          "n": 1
+        }
+      ]
+    }
+  },
+  "adjacent_category_transitions_300s": [
+    {
+      "before": "KERNTERM",
+      "after": "KERNREC",
+      "pairs": 6144
+    },
+    {
+      "before": "APPRES",
+      "after": "APPTO",
+      "pairs": 232
+    },
+    {
+      "before": "KERNMC",
+      "after": "KERNRTSP",
+      "pairs": 193
+    },
+    {
+      "before": "KERNDTLB",
+      "after": "KERNRTSP",
+      "pairs": 101
+    },
+    {
+      "before": "APPSEV",
+      "after": "KERNMNTF",
+      "pairs": 100
+    },
+    {
+      "before": "KERNDTLB",
+      "after": "KERNTERM",
+      "pairs": 64
+    },
+    {
+      "before": "KERNTERM",
+      "after": "KERNRTSP",
+      "pairs": 30
+    },
+    {
+      "before": "KERNRTSP",
+      "after": "KERNMC",
+      "pairs": 14
+    },
+    {
+      "before": "APPSEV",
+      "after": "APPTO",
+      "pairs": 5
+    },
+    {
+      "before": "MONPOW",
+      "after": "MONNULL",
+      "pairs": 2
+    },
+    {
+      "before": "KERNPROG",
+      "after": "KERNRTSP",
+      "pairs": 2
+    },
+    {
+      "before": "KERNFLOAT",
+      "after": "KERNRTSP",
+      "pairs": 2
+    },
+    {
+      "before": "KERNRTSA",
+      "after": "KERNRTSP",
+      "pairs": 2
+    },
+    {
+      "before": "KERNSTOR",
+      "after": "KERNRTSP",
+      "pairs": 2
+    },
+    {
+      "before": "KERNMC",
+      "after": "KERNDTLB",
+      "pairs": 1
+    },
+    {
+      "before": "KERNMC",
+      "after": "KERNPROG",
+      "pairs": 1
+    },
+    {
+      "before": "KERNEXT",
+      "after": "KERNRTSP",
+      "pairs": 1
+    },
+    {
+      "before": "KERNBIT",
+      "after": "KERNRTSP",
+      "pairs": 1
+    },
+    {
+      "before": "KERNMICRO",
+      "after": "KERNRTSA",
+      "pairs": 1
+    },
+    {
+      "before": "KERNSTOR",
+      "after": "KERNFLOAT",
+      "pairs": 1
+    }
+  ],
+  "gap_sensitivity": [
+    {
+      "gap_seconds": 1,
+      "category_groups": 2355,
+      "node_category_groups": 195900,
+      "by_category": [
+        {
+          "key": "APPSEV",
+          "n": 480
+        },
+        {
+          "key": "KERNMNTF",
+          "n": 439
+        },
+        {
+          "key": "KERNMC",
+          "n": 337
+        },
+        {
+          "key": "KERNRTSP",
+          "n": 307
+        },
+        {
+          "key": "KERNDTLB",
+          "n": 263
+        },
+        {
+          "key": "KERNTERM",
+          "n": 100
+        },
+        {
+          "key": "LINKIAP",
+          "n": 83
+        },
+        {
+          "key": "APPRES",
+          "n": 46
+        },
+        {
+          "key": "KERNSOCK",
+          "n": 39
+        },
+        {
+          "key": "MASABNORM",
+          "n": 36
+        },
+        {
+          "key": "APPUNAV",
+          "n": 20
+        },
+        {
+          "key": "APPREAD",
+          "n": 17
+        },
+        {
+          "key": "KERNCON",
+          "n": 16
+        },
+        {
+          "key": "KERNPAN",
+          "n": 15
+        },
+        {
+          "key": "KERNNOETH",
+          "n": 14
+        },
+        {
+          "key": "APPTO",
+          "n": 13
+        },
+        {
+          "key": "LINKDISC",
+          "n": 12
+        },
+        {
+          "key": "KERNPOW",
+          "n": 12
+        },
+        {
+          "key": "MONPOW",
+          "n": 12
+        },
+        {
+          "key": "MASNORM",
+          "n": 10
+        },
+        {
+          "key": "KERNMNT",
+          "n": 10
+        },
+        {
+          "key": "KERNREC",
+          "n": 10
+        },
+        {
+          "key": "KERNSTOR",
+          "n": 8
+        },
+        {
+          "key": "KERNMICRO",
+          "n": 8
+        },
+        {
+          "key": "LINKPAP",
+          "n": 7
+        },
+        {
+          "key": "KERNSERV",
+          "n": 6
+        },
+        {
+          "key": "APPOUT",
+          "n": 6
+        },
+        {
+          "key": "KERNPROG",
+          "n": 5
+        },
+        {
+          "key": "APPTORUS",
+          "n": 5
+        },
+        {
+          "key": "APPCHILD",
+          "n": 3
+        },
+        {
+          "key": "APPALLOC",
+          "n": 2
+        },
+        {
+          "key": "MONNULL",
+          "n": 2
+        },
+        {
+          "key": "KERNFLOAT",
+          "n": 2
+        },
+        {
+          "key": "KERNRTSA",
+          "n": 2
+        },
+        {
+          "key": "MMCS",
+          "n": 2
+        },
+        {
+          "key": "APPBUSY",
+          "n": 1
+        },
+        {
+          "key": "KERNEXT",
+          "n": 1
+        },
+        {
+          "key": "KERNBIT",
+          "n": 1
+        },
+        {
+          "key": "MONILL",
+          "n": 1
+        },
+        {
+          "key": "LINKBLL",
+          "n": 1
+        },
+        {
+          "key": "KERNTLBE",
+          "n": 1
+        }
+      ]
+    },
+    {
+      "gap_seconds": 5,
+      "category_groups": 1621,
+      "node_category_groups": 195892,
+      "by_category": [
+        {
+          "key": "KERNMC",
+          "n": 326
+        },
+        {
+          "key": "KERNRTSP",
+          "n": 289
+        },
+        {
+          "key": "KERNMNTF",
+          "n": 237
+        },
+        {
+          "key": "APPSEV",
+          "n": 223
+        },
+        {
+          "key": "KERNTERM",
+          "n": 99
+        },
+        {
+          "key": "LINKIAP",
+          "n": 83
+        },
+        {
+          "key": "KERNDTLB",
+          "n": 80
+        },
+        {
+          "key": "KERNSOCK",
+          "n": 39
+        },
+        {
+          "key": "MASABNORM",
+          "n": 35
+        },
+        {
+          "key": "APPREAD",
+          "n": 17
+        },
+        {
+          "key": "APPRES",
+          "n": 17
+        },
+        {
+          "key": "KERNCON",
+          "n": 16
+        },
+        {
+          "key": "KERNPAN",
+          "n": 15
+        },
+        {
+          "key": "KERNNOETH",
+          "n": 13
+        },
+        {
+          "key": "LINKDISC",
+          "n": 12
+        },
+        {
+          "key": "KERNPOW",
+          "n": 12
+        },
+        {
+          "key": "MONPOW",
+          "n": 12
+        },
+        {
+          "key": "MASNORM",
+          "n": 9
+        },
+        {
+          "key": "KERNMNT",
+          "n": 9
+        },
+        {
+          "key": "KERNREC",
+          "n": 9
+        },
+        {
+          "key": "KERNSTOR",
+          "n": 8
+        },
+        {
+          "key": "KERNMICRO",
+          "n": 8
+        },
+        {
+          "key": "LINKPAP",
+          "n": 7
+        },
+        {
+          "key": "KERNSERV",
+          "n": 6
+        },
+        {
+          "key": "KERNPROG",
+          "n": 5
+        },
+        {
+          "key": "APPTORUS",
+          "n": 5
+        },
+        {
+          "key": "APPTO",
+          "n": 5
+        },
+        {
+          "key": "APPCHILD",
+          "n": 3
+        },
+        {
+          "key": "APPUNAV",
+          "n": 3
+        },
+        {
+          "key": "APPOUT",
+          "n": 3
+        },
+        {
+          "key": "APPALLOC",
+          "n": 2
+        },
+        {
+          "key": "MONNULL",
+          "n": 2
+        },
+        {
+          "key": "KERNFLOAT",
+          "n": 2
+        },
+        {
+          "key": "KERNRTSA",
+          "n": 2
+        },
+        {
+          "key": "MMCS",
+          "n": 2
+        },
+        {
+          "key": "APPBUSY",
+          "n": 1
+        },
+        {
+          "key": "KERNEXT",
+          "n": 1
+        },
+        {
+          "key": "KERNBIT",
+          "n": 1
+        },
+        {
+          "key": "MONILL",
+          "n": 1
+        },
+        {
+          "key": "LINKBLL",
+          "n": 1
+        },
+        {
+          "key": "KERNTLBE",
+          "n": 1
+        }
+      ]
+    },
+    {
+      "gap_seconds": 30,
+      "category_groups": 1351,
+      "node_category_groups": 195861,
+      "by_category": [
+        {
+          "key": "KERNMC",
+          "n": 308
+        },
+        {
+          "key": "KERNRTSP",
+          "n": 277
+        },
+        {
+          "key": "APPSEV",
+          "n": 156
+        },
+        {
+          "key": "KERNMNTF",
+          "n": 120
+        },
+        {
+          "key": "KERNTERM",
+          "n": 99
+        },
+        {
+          "key": "LINKIAP",
+          "n": 83
+        },
+        {
+          "key": "KERNSOCK",
+          "n": 39
+        },
+        {
+          "key": "KERNDTLB",
+          "n": 37
+        },
+        {
+          "key": "MASABNORM",
+          "n": 33
+        },
+        {
+          "key": "APPREAD",
+          "n": 16
+        },
+        {
+          "key": "KERNCON",
+          "n": 16
+        },
+        {
+          "key": "APPRES",
+          "n": 15
+        },
+        {
+          "key": "KERNPAN",
+          "n": 14
+        },
+        {
+          "key": "KERNNOETH",
+          "n": 13
+        },
+        {
+          "key": "KERNPOW",
+          "n": 12
+        },
+        {
+          "key": "LINKDISC",
+          "n": 11
+        },
+        {
+          "key": "MONPOW",
+          "n": 11
+        },
+        {
+          "key": "MASNORM",
+          "n": 9
+        },
+        {
+          "key": "KERNMNT",
+          "n": 9
+        },
+        {
+          "key": "KERNREC",
+          "n": 9
+        },
+        {
+          "key": "KERNSTOR",
+          "n": 8
+        },
+        {
+          "key": "LINKPAP",
+          "n": 7
+        },
+        {
+          "key": "KERNMICRO",
+          "n": 7
+        },
+        {
+          "key": "KERNSERV",
+          "n": 6
+        },
+        {
+          "key": "KERNPROG",
+          "n": 5
+        },
+        {
+          "key": "APPTORUS",
+          "n": 4
+        },
+        {
+          "key": "APPTO",
+          "n": 4
+        },
+        {
+          "key": "APPCHILD",
+          "n": 3
+        },
+        {
+          "key": "APPUNAV",
+          "n": 3
+        },
+        {
+          "key": "APPALLOC",
+          "n": 2
+        },
+        {
+          "key": "MONNULL",
+          "n": 2
+        },
+        {
+          "key": "KERNFLOAT",
+          "n": 2
+        },
+        {
+          "key": "KERNRTSA",
+          "n": 2
+        },
+        {
+          "key": "MMCS",
+          "n": 2
+        },
+        {
+          "key": "APPBUSY",
+          "n": 1
+        },
+        {
+          "key": "KERNEXT",
+          "n": 1
+        },
+        {
+          "key": "KERNBIT",
+          "n": 1
+        },
+        {
+          "key": "MONILL",
+          "n": 1
+        },
+        {
+          "key": "LINKBLL",
+          "n": 1
+        },
+        {
+          "key": "KERNTLBE",
+          "n": 1
+        },
+        {
+          "key": "APPOUT",
+          "n": 1
+        }
+      ]
+    },
+    {
+      "gap_seconds": 60,
+      "category_groups": 1295,
+      "node_category_groups": 194486,
+      "by_category": [
+        {
+          "key": "KERNMC",
+          "n": 307
+        },
+        {
+          "key": "KERNRTSP",
+          "n": 277
+        },
+        {
+          "key": "APPSEV",
+          "n": 146
+        },
+        {
+          "key": "KERNMNTF",
+          "n": 117
+        },
+        {
+          "key": "KERNTERM",
+          "n": 99
+        },
+        {
+          "key": "LINKIAP",
+          "n": 49
+        },
+        {
+          "key": "KERNSOCK",
+          "n": 39
+        },
+        {
+          "key": "KERNDTLB",
+          "n": 37
+        },
+        {
+          "key": "MASABNORM",
+          "n": 33
+        },
+        {
+          "key": "KERNCON",
+          "n": 16
+        },
+        {
+          "key": "KERNPAN",
+          "n": 14
+        },
+        {
+          "key": "APPREAD",
+          "n": 13
+        },
+        {
+          "key": "KERNNOETH",
+          "n": 13
+        },
+        {
+          "key": "APPRES",
+          "n": 13
+        },
+        {
+          "key": "KERNPOW",
+          "n": 12
+        },
+        {
+          "key": "LINKDISC",
+          "n": 10
+        },
+        {
+          "key": "MONPOW",
+          "n": 10
+        },
+        {
+          "key": "MASNORM",
+          "n": 9
+        },
+        {
+          "key": "KERNMNT",
+          "n": 9
+        },
+        {
+          "key": "KERNREC",
+          "n": 9
+        },
+        {
+          "key": "KERNSTOR",
+          "n": 8
+        },
+        {
+          "key": "LINKPAP",
+          "n": 7
+        },
+        {
+          "key": "KERNMICRO",
+          "n": 6
+        },
+        {
+          "key": "KERNSERV",
+          "n": 6
+        },
+        {
+          "key": "KERNPROG",
+          "n": 5
+        },
+        {
+          "key": "APPTORUS",
+          "n": 4
+        },
+        {
+          "key": "APPTO",
+          "n": 4
+        },
+        {
+          "key": "APPCHILD",
+          "n": 3
+        },
+        {
+          "key": "APPUNAV",
+          "n": 3
+        },
+        {
+          "key": "APPALLOC",
+          "n": 2
+        },
+        {
+          "key": "MONNULL",
+          "n": 2
+        },
+        {
+          "key": "KERNFLOAT",
+          "n": 2
+        },
+        {
+          "key": "KERNRTSA",
+          "n": 2
+        },
+        {
+          "key": "MMCS",
+          "n": 2
+        },
+        {
+          "key": "APPBUSY",
+          "n": 1
+        },
+        {
+          "key": "KERNEXT",
+          "n": 1
+        },
+        {
+          "key": "KERNBIT",
+          "n": 1
+        },
+        {
+          "key": "MONILL",
+          "n": 1
+        },
+        {
+          "key": "LINKBLL",
+          "n": 1
+        },
+        {
+          "key": "KERNTLBE",
+          "n": 1
+        },
+        {
+          "key": "APPOUT",
+          "n": 1
+        }
+      ]
+    },
+    {
+      "gap_seconds": 300,
+      "category_groups": 1202,
+      "node_category_groups": 190287,
+      "by_category": [
+        {
+          "key": "KERNMC",
+          "n": 291
+        },
+        {
+          "key": "KERNRTSP",
+          "n": 260
+        },
+        {
+          "key": "APPSEV",
+          "n": 136
+        },
+        {
+          "key": "KERNMNTF",
+          "n": 105
+        },
+        {
+          "key": "KERNTERM",
+          "n": 99
+        },
+        {
+          "key": "KERNSOCK",
+          "n": 39
+        },
+        {
+          "key": "KERNDTLB",
+          "n": 37
+        },
+        {
+          "key": "MASABNORM",
+          "n": 33
+        },
+        {
+          "key": "LINKIAP",
+          "n": 28
+        },
+        {
+          "key": "KERNCON",
+          "n": 16
+        },
+        {
+          "key": "KERNPAN",
+          "n": 14
+        },
+        {
+          "key": "APPRES",
+          "n": 13
+        },
+        {
+          "key": "APPREAD",
+          "n": 11
+        },
+        {
+          "key": "KERNNOETH",
+          "n": 10
+        },
+        {
+          "key": "KERNPOW",
+          "n": 10
+        },
+        {
+          "key": "MONPOW",
+          "n": 10
+        },
+        {
+          "key": "MASNORM",
+          "n": 9
+        },
+        {
+          "key": "KERNREC",
+          "n": 9
+        },
+        {
+          "key": "KERNSTOR",
+          "n": 8
+        },
+        {
+          "key": "KERNMNT",
+          "n": 7
+        },
+        {
+          "key": "LINKDISC",
+          "n": 6
+        },
+        {
+          "key": "KERNPROG",
+          "n": 5
+        },
+        {
+          "key": "LINKPAP",
+          "n": 5
+        },
+        {
+          "key": "KERNMICRO",
+          "n": 5
+        },
+        {
+          "key": "KERNSERV",
+          "n": 5
+        },
+        {
+          "key": "APPTORUS",
+          "n": 4
+        },
+        {
+          "key": "APPTO",
+          "n": 4
+        },
+        {
+          "key": "APPCHILD",
+          "n": 3
+        },
+        {
+          "key": "APPUNAV",
+          "n": 3
+        },
+        {
+          "key": "APPALLOC",
+          "n": 2
+        },
+        {
+          "key": "MONNULL",
+          "n": 2
+        },
+        {
+          "key": "KERNFLOAT",
+          "n": 2
+        },
+        {
+          "key": "KERNRTSA",
+          "n": 2
+        },
+        {
+          "key": "MMCS",
+          "n": 2
+        },
+        {
+          "key": "APPBUSY",
+          "n": 1
+        },
+        {
+          "key": "KERNEXT",
+          "n": 1
+        },
+        {
+          "key": "KERNBIT",
+          "n": 1
+        },
+        {
+          "key": "MONILL",
+          "n": 1
+        },
+        {
+          "key": "LINKBLL",
+          "n": 1
+        },
+        {
+          "key": "KERNTLBE",
+          "n": 1
+        },
+        {
+          "key": "APPOUT",
+          "n": 1
+        }
+      ]
+    },
+    {
+      "gap_seconds": 900,
+      "category_groups": 1118,
+      "node_category_groups": 184815,
+      "by_category": [
+        {
+          "key": "KERNMC",
+          "n": 281
+        },
+        {
+          "key": "KERNRTSP",
+          "n": 245
+        },
+        {
+          "key": "APPSEV",
+          "n": 133
+        },
+        {
+          "key": "KERNTERM",
+          "n": 86
+        },
+        {
+          "key": "KERNMNTF",
+          "n": 84
+        },
+        {
+          "key": "KERNSOCK",
+          "n": 39
+        },
+        {
+          "key": "MASABNORM",
+          "n": 32
+        },
+        {
+          "key": "KERNDTLB",
+          "n": 31
+        },
+        {
+          "key": "LINKIAP",
+          "n": 24
+        },
+        {
+          "key": "KERNCON",
+          "n": 16
+        },
+        {
+          "key": "KERNPAN",
+          "n": 14
+        },
+        {
+          "key": "APPRES",
+          "n": 13
+        },
+        {
+          "key": "KERNPOW",
+          "n": 10
+        },
+        {
+          "key": "MASNORM",
+          "n": 9
+        },
+        {
+          "key": "KERNNOETH",
+          "n": 9
+        },
+        {
+          "key": "MONPOW",
+          "n": 9
+        },
+        {
+          "key": "KERNREC",
+          "n": 9
+        },
+        {
+          "key": "APPREAD",
+          "n": 7
+        },
+        {
+          "key": "KERNSTOR",
+          "n": 7
+        },
+        {
+          "key": "LINKDISC",
+          "n": 6
+        },
+        {
+          "key": "KERNMNT",
+          "n": 6
+        },
+        {
+          "key": "KERNPROG",
+          "n": 5
+        },
+        {
+          "key": "LINKPAP",
+          "n": 5
+        },
+        {
+          "key": "KERNMICRO",
+          "n": 5
+        },
+        {
+          "key": "APPTORUS",
+          "n": 4
+        },
+        {
+          "key": "KERNSERV",
+          "n": 4
+        },
+        {
+          "key": "APPCHILD",
+          "n": 3
+        },
+        {
+          "key": "APPTO",
+          "n": 3
+        },
+        {
+          "key": "APPALLOC",
+          "n": 2
+        },
+        {
+          "key": "APPUNAV",
+          "n": 2
+        },
+        {
+          "key": "MONNULL",
+          "n": 2
+        },
+        {
+          "key": "KERNFLOAT",
+          "n": 2
+        },
+        {
+          "key": "KERNRTSA",
+          "n": 2
+        },
+        {
+          "key": "MMCS",
+          "n": 2
+        },
+        {
+          "key": "APPBUSY",
+          "n": 1
+        },
+        {
+          "key": "KERNEXT",
+          "n": 1
+        },
+        {
+          "key": "KERNBIT",
+          "n": 1
+        },
+        {
+          "key": "MONILL",
+          "n": 1
+        },
+        {
+          "key": "LINKBLL",
+          "n": 1
+        },
+        {
+          "key": "KERNTLBE",
+          "n": 1
+        },
+        {
+          "key": "APPOUT",
+          "n": 1
+        }
+      ]
+    },
+    {
+      "gap_seconds": 3600,
+      "category_groups": 914,
+      "node_category_groups": 143004,
+      "by_category": [
+        {
+          "key": "KERNMC",
+          "n": 256
+        },
+        {
+          "key": "KERNRTSP",
+          "n": 217
+        },
+        {
+          "key": "APPSEV",
+          "n": 114
+        },
+        {
+          "key": "KERNMNTF",
+          "n": 50
+        },
+        {
+          "key": "KERNSOCK",
+          "n": 37
+        },
+        {
+          "key": "KERNTERM",
+          "n": 36
+        },
+        {
+          "key": "MASABNORM",
+          "n": 26
+        },
+        {
+          "key": "KERNDTLB",
+          "n": 16
+        },
+        {
+          "key": "KERNCON",
+          "n": 15
+        },
+        {
+          "key": "LINKIAP",
+          "n": 15
+        },
+        {
+          "key": "APPRES",
+          "n": 13
+        },
+        {
+          "key": "KERNPAN",
+          "n": 11
+        },
+        {
+          "key": "KERNPOW",
+          "n": 10
+        },
+        {
+          "key": "MASNORM",
+          "n": 8
+        },
+        {
+          "key": "KERNNOETH",
+          "n": 8
+        },
+        {
+          "key": "MONPOW",
+          "n": 8
+        },
+        {
+          "key": "KERNREC",
+          "n": 8
+        },
+        {
+          "key": "APPREAD",
+          "n": 7
+        },
+        {
+          "key": "KERNSTOR",
+          "n": 5
+        },
+        {
+          "key": "LINKPAP",
+          "n": 5
+        },
+        {
+          "key": "KERNMNT",
+          "n": 5
+        },
+        {
+          "key": "KERNMICRO",
+          "n": 5
+        },
+        {
+          "key": "LINKDISC",
+          "n": 4
+        },
+        {
+          "key": "KERNPROG",
+          "n": 4
+        },
+        {
+          "key": "APPTORUS",
+          "n": 4
+        },
+        {
+          "key": "APPCHILD",
+          "n": 3
+        },
+        {
+          "key": "APPTO",
+          "n": 3
+        },
+        {
+          "key": "APPALLOC",
+          "n": 2
+        },
+        {
+          "key": "APPUNAV",
+          "n": 2
+        },
+        {
+          "key": "MONNULL",
+          "n": 2
+        },
+        {
+          "key": "KERNFLOAT",
+          "n": 2
+        },
+        {
+          "key": "KERNRTSA",
+          "n": 2
+        },
+        {
+          "key": "MMCS",
+          "n": 2
+        },
+        {
+          "key": "KERNSERV",
+          "n": 2
+        },
+        {
+          "key": "APPBUSY",
+          "n": 1
+        },
+        {
+          "key": "KERNEXT",
+          "n": 1
+        },
+        {
+          "key": "KERNBIT",
+          "n": 1
+        },
+        {
+          "key": "MONILL",
+          "n": 1
+        },
+        {
+          "key": "LINKBLL",
+          "n": 1
+        },
+        {
+          "key": "KERNTLBE",
+          "n": 1
+        },
+        {
+          "key": "APPOUT",
+          "n": 1
+        }
+      ]
+    }
+  ],
+  "top_groups_gap_5": [
+    {
+      "label": "KERNDTLB",
+      "start_epoch": 1118535464,
+      "end_epoch": 1118558372,
+      "start": "2005-06-11 17:17:44.898186",
+      "end": "2005-06-11 23:39:32.877740",
+      "n": 152182,
+      "sample": "data TLB error interrupt",
+      "first_entry_id": 222716,
+      "distinct_nodes": 1,
+      "distinct_racks": 1,
+      "distinct_midplanes": 1,
+      "top_node": "R30-M0-N9-C:J16-U01",
+      "top_node_entries": 152182,
+      "top_node_share": 1.0,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 22908
+    },
+    {
+      "label": "KERNSTOR",
+      "start_epoch": 1118767675,
+      "end_epoch": 1118768209,
+      "start": "2005-06-14 09:47:55.878393",
+      "end": "2005-06-14 09:56:49.603436",
+      "n": 20480,
+      "sample": "data storage interrupt",
+      "first_entry_id": 485816,
+      "distinct_nodes": 20480,
+      "distinct_racks": 20,
+      "distinct_midplanes": 40,
+      "top_node": "R10-M0-N5-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 4.8828125e-05,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 534
+    },
+    {
+      "label": "KERNSTOR",
+      "start_epoch": 1118709380,
+      "end_epoch": 1118709886,
+      "start": "2005-06-13 17:36:20.973743",
+      "end": "2005-06-13 17:44:46.295359",
+      "n": 16384,
+      "sample": "data storage interrupt",
+      "first_entry_id": 382963,
+      "distinct_nodes": 16384,
+      "distinct_racks": 16,
+      "distinct_midplanes": 32,
+      "top_node": "R10-M0-N5-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 6.103515625e-05,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 506
+    },
+    {
+      "label": "KERNSTOR",
+      "start_epoch": 1118765123,
+      "end_epoch": 1118765643,
+      "start": "2005-06-14 09:05:23.409965",
+      "end": "2005-06-14 09:14:03.348198",
+      "n": 16384,
+      "sample": "data storage interrupt",
+      "first_entry_id": 428459,
+      "distinct_nodes": 16384,
+      "distinct_racks": 16,
+      "distinct_midplanes": 32,
+      "top_node": "R10-M0-N5-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 6.103515625e-05,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 520
+    },
+    {
+      "label": "KERNSTOR",
+      "start_epoch": 1118769310,
+      "end_epoch": 1118769449,
+      "start": "2005-06-14 10:15:10.378340",
+      "end": "2005-06-14 10:17:29.588619",
+      "n": 6144,
+      "sample": "data storage interrupt",
+      "first_entry_id": 522681,
+      "distinct_nodes": 6144,
+      "distinct_racks": 6,
+      "distinct_midplanes": 12,
+      "top_node": "R26-M0-NB-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.00016276041666666666,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 139
+    },
+    {
+      "label": "KERNSTOR",
+      "start_epoch": 1118766687,
+      "end_epoch": 1118766822,
+      "start": "2005-06-14 09:31:27.138607",
+      "end": "2005-06-14 09:33:42.344371",
+      "n": 4096,
+      "sample": "data storage interrupt",
+      "first_entry_id": 461231,
+      "distinct_nodes": 4096,
+      "distinct_racks": 4,
+      "distinct_midplanes": 8,
+      "top_node": "R25-M0-N3-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.000244140625,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 135
+    },
+    {
+      "label": "KERNRTSP",
+      "start_epoch": 1118772977,
+      "end_epoch": 1118773044,
+      "start": "2005-06-14 11:16:17.058052",
+      "end": "2005-06-14 11:17:24.131761",
+      "n": 2048,
+      "sample": "rts panic! - stopping execution",
+      "first_entry_id": 737105,
+      "distinct_nodes": 2048,
+      "distinct_racks": 2,
+      "distinct_midplanes": 4,
+      "top_node": "R26-M0-NB-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.00048828125,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 67
+    },
+    {
+      "label": "KERNTERM",
+      "start_epoch": 1132111089,
+      "end_epoch": 1132111231,
+      "start": "2005-11-15 19:18:09.938517",
+      "end": "2005-11-15 19:20:31.601140",
+      "n": 2048,
+      "sample": "rts: kernel terminated for reason 1004",
+      "first_entry_id": 4208382,
+      "distinct_nodes": 2048,
+      "distinct_racks": 2,
+      "distinct_midplanes": 4,
+      "top_node": "R56-M0-N5-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.00048828125,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 142
+    },
+    {
+      "label": "KERNREC",
+      "start_epoch": 1132111232,
+      "end_epoch": 1132111278,
+      "start": "2005-11-15 19:20:32.094527",
+      "end": "2005-11-15 19:21:18.603631",
+      "n": 2048,
+      "sample": "Error receiving packet on tree network, expecting type 57 instead of type 3 (softheader=009756d5 8bfa0003 00000002 00000000) PSR0=00001f01 PSR1=00000000 PRXF=00000002 PIXF=00000007",
+      "first_entry_id": 4210430,
+      "distinct_nodes": 2048,
+      "distinct_racks": 2,
+      "distinct_midplanes": 4,
+      "top_node": "R56-M0-N5-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.00048828125,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 46
+    },
+    {
+      "label": "APPUNAV",
+      "start_epoch": 1124131873,
+      "end_epoch": 1124132044,
+      "start": "2005-08-15 11:51:13.212876",
+      "end": "2005-08-15 11:54:04.748324",
+      "n": 1024,
+      "sample": "ciod: Error creating node map from file /home/auselton/bgl/mapfiles/bgl.128mps.f64.map: Resource temporarily unavailable",
+      "first_entry_id": 3049112,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R54-M1-N0-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 171
+    },
+    {
+      "label": "KERNTERM",
+      "start_epoch": 1130529570,
+      "end_epoch": 1130529606,
+      "start": "2005-10-28 12:59:30.209158",
+      "end": "2005-10-28 13:00:06.793455",
+      "n": 1024,
+      "sample": "rts: kernel terminated for reason 1004",
+      "first_entry_id": 3661660,
+      "distinct_nodes": 1024,
+      "distinct_racks": 2,
+      "distinct_midplanes": 2,
+      "top_node": "R63-M1-N7-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 36
+    },
+    {
+      "label": "KERNREC",
+      "start_epoch": 1130529607,
+      "end_epoch": 1130529627,
+      "start": "2005-10-28 13:00:07.036731",
+      "end": "2005-10-28 13:00:27.486848",
+      "n": 1024,
+      "sample": "Error receiving packet on tree network, expecting type 57 instead of type 3 (softheader=0064588e 8aff0003 00000002 00000000) PSR0=00001f01 PSR1=00000000 PRXF=00000002 PIXF=00000007",
+      "first_entry_id": 3662684,
+      "distinct_nodes": 1024,
+      "distinct_racks": 2,
+      "distinct_midplanes": 2,
+      "top_node": "R63-M1-N7-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 20
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1134496338,
+      "end_epoch": 1134496528,
+      "start": "2005-12-13 09:52:18.572838",
+      "end": "2005-12-13 09:55:28.788311",
+      "n": 1024,
+      "sample": "ciod: Error reading message prefix on CioStream socket to 172.16.96.116:56134, Link has been severed",
+      "first_entry_id": 4678895,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R77-M0-N0-I:J18-U01",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 190
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1134573342,
+      "end_epoch": 1134573545,
+      "start": "2005-12-14 07:15:42.567303",
+      "end": "2005-12-14 07:19:05.268963",
+      "n": 1024,
+      "sample": "ciod: Error reading message prefix on CioStream socket to 172.16.96.116:46375, Link has been severed",
+      "first_entry_id": 4680803,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R77-M0-N0-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 203
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1134937859,
+      "end_epoch": 1134938055,
+      "start": "2005-12-18 12:30:59.803976",
+      "end": "2005-12-18 12:34:15.773406",
+      "n": 1024,
+      "sample": "ciod: Error reading message prefix on CioStream socket to 172.16.96.116:45866, Link has been severed",
+      "first_entry_id": 4694413,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R77-M0-NC-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 196
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1126351060,
+      "end_epoch": 1126351161,
+      "start": "2005-09-10 04:17:40.834655",
+      "end": "2005-09-10 04:19:21.198844",
+      "n": 1023,
+      "sample": "ciod: Error reading message prefix after LOGIN_MESSAGE on CioStream socket to 172.16.96.116:43005: Link has been severed",
+      "first_entry_id": 3363234,
+      "distinct_nodes": 1023,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R77-M0-N0-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009775171065493646,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 101
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1132898752,
+      "end_epoch": 1132898925,
+      "start": "2005-11-24 22:05:52.785950",
+      "end": "2005-11-24 22:08:45.733644",
+      "n": 1023,
+      "sample": "ciod: Error reading message prefix on CioStream socket to 172.16.96.116:54721, Link has been severed",
+      "first_entry_id": 4279578,
+      "distinct_nodes": 1023,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R77-M0-N0-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009775171065493646,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 173
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1132912056,
+      "end_epoch": 1132912234,
+      "start": "2005-11-25 01:47:36.214095",
+      "end": "2005-11-25 01:50:34.383734",
+      "n": 1022,
+      "sample": "ciod: Error reading message prefix on CioStream socket to 172.16.96.116:54528, Link has been severed",
+      "first_entry_id": 4282420,
+      "distinct_nodes": 1022,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R51-M0-N4-I:J18-U01",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009784735812133072,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 178
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1134403732,
+      "end_epoch": 1134403947,
+      "start": "2005-12-12 08:08:52.485419",
+      "end": "2005-12-12 08:12:27.305697",
+      "n": 1022,
+      "sample": "ciod: Error reading message prefix on CioStream socket to 172.16.96.116:58275, Link has been severed",
+      "first_entry_id": 4675331,
+      "distinct_nodes": 1022,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R77-M1-N4-I:J18-U01",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009784735812133072,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 215
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1128641281,
+      "end_epoch": 1128641402,
+      "start": "2005-10-06 16:28:01.093276",
+      "end": "2005-10-06 16:30:02.328239",
+      "n": 1021,
+      "sample": "ciod: Error reading message prefix after LOGIN_MESSAGE on CioStream socket to 172.16.96.116:39821: Link has been severed",
+      "first_entry_id": 3556636,
+      "distinct_nodes": 1021,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R77-M0-N0-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009794319294809011,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 121
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1132940616,
+      "end_epoch": 1132940789,
+      "start": "2005-11-25 09:43:36.312711",
+      "end": "2005-11-25 09:46:29.793374",
+      "n": 1020,
+      "sample": "ciod: Error reading message prefix on CioStream socket to 172.16.96.116:40334, Link has been severed",
+      "first_entry_id": 4284501,
+      "distinct_nodes": 1020,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R54-M1-N4-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.000980392156862745,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 173
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1127988224,
+      "end_epoch": 1127988341,
+      "start": "2005-09-29 03:03:44.378563",
+      "end": "2005-09-29 03:05:41.318800",
+      "n": 1017,
+      "sample": "ciod: Error reading message prefix after LOAD_MESSAGE on CioStream socket to 172.16.96.116:34101: Link has been severed",
+      "first_entry_id": 3519570,
+      "distinct_nodes": 1017,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R53-M1-N4-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009832841691248771,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 117
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1123916212,
+      "end_epoch": 1123916314,
+      "start": "2005-08-12 23:56:52.832453",
+      "end": "2005-08-12 23:58:34.316259",
+      "n": 1016,
+      "sample": "ciod: Error reading message prefix after VERSION_MESSAGE on CioStream socket to 172.16.96.116:56016: Link has been severed",
+      "first_entry_id": 3039101,
+      "distinct_nodes": 1016,
+      "distinct_racks": 64,
+      "distinct_midplanes": 127,
+      "top_node": "R31-M0-N4-I:J18-U01",
+      "top_node_entries": 1,
+      "top_node_share": 0.000984251968503937,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 102
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1128970694,
+      "end_epoch": 1128970811,
+      "start": "2005-10-10 11:58:14.864390",
+      "end": "2005-10-10 12:00:11.901303",
+      "n": 1013,
+      "sample": "ciod: Error reading message prefix after LOAD_MESSAGE on CioStream socket to 172.16.96.116:57941: Link has been severed",
+      "first_entry_id": 3569493,
+      "distinct_nodes": 1013,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R15-M0-N0-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009871668311944718,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 117
+    },
+    {
+      "label": "KERNMNTF",
+      "start_epoch": 1125552522,
+      "end_epoch": 1125552708,
+      "start": "2005-08-31 22:28:42.643528",
+      "end": "2005-08-31 22:31:48.711362",
+      "n": 1008,
+      "sample": "Lustre mount FAILED : bglio139 : point /p/gb1",
+      "first_entry_id": 3309478,
+      "distinct_nodes": 1008,
+      "distinct_racks": 64,
+      "distinct_midplanes": 126,
+      "top_node": "R10-M0-NC-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.000992063492063492,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 186
+    },
+    {
+      "label": "KERNMNTF",
+      "start_epoch": 1125945577,
+      "end_epoch": 1125945663,
+      "start": "2005-09-05 11:39:37.596936",
+      "end": "2005-09-05 11:41:03.383084",
+      "n": 999,
+      "sample": "Lustre mount FAILED : bglio811 : point /p/gb1",
+      "first_entry_id": 3338868,
+      "distinct_nodes": 999,
+      "distinct_racks": 64,
+      "distinct_midplanes": 127,
+      "top_node": "R62-M0-NC-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.001001001001001001,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 86
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1134630962,
+      "end_epoch": 1134631165,
+      "start": "2005-12-14 23:16:02.140926",
+      "end": "2005-12-14 23:19:25.562806",
+      "n": 997,
+      "sample": "ciod: Error reading message prefix on CioStream socket to 172.16.96.116:50683, Link has been severed",
+      "first_entry_id": 4685692,
+      "distinct_nodes": 997,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R77-M0-N0-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0010030090270812437,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 203
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1126610596,
+      "end_epoch": 1126610695,
+      "start": "2005-09-13 04:23:16.432131",
+      "end": "2005-09-13 04:24:55.912323",
+      "n": 987,
+      "sample": "ciod: Error reading message prefix after LOAD_MESSAGE on CioStream socket to 172.16.96.116:56619: Link has been severed",
+      "first_entry_id": 3373492,
+      "distinct_nodes": 987,
+      "distinct_racks": 64,
+      "distinct_midplanes": 124,
+      "top_node": "R77-M0-N0-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0010131712259371835,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 99
+    },
+    {
+      "label": "KERNMNTF",
+      "start_epoch": 1126051518,
+      "end_epoch": 1126051599,
+      "start": "2005-09-06 17:05:18.809199",
+      "end": "2005-09-06 17:06:39.341021",
+      "n": 976,
+      "sample": "Lustre mount FAILED : bglio827 : point /p/gb1",
+      "first_entry_id": 3343576,
+      "distinct_nodes": 976,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R63-M0-NC-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0010245901639344263,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 81
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1127987987,
+      "end_epoch": 1127988109,
+      "start": "2005-09-29 02:59:47.481390",
+      "end": "2005-09-29 03:01:49.111922",
+      "n": 963,
+      "sample": "ciod: Error reading message prefix after LOGIN_MESSAGE on CioStream socket to 172.16.96.116:59571: Link has been severed",
+      "first_entry_id": 3518600,
+      "distinct_nodes": 963,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R60-M1-NC-I:J18-U01",
+      "top_node_entries": 1,
+      "top_node_share": 0.0010384215991692627,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 122
+    }
+  ],
+  "top_spread_gap_5": [
+    {
+      "label": "KERNSTOR",
+      "start_epoch": 1118767675,
+      "end_epoch": 1118768209,
+      "start": "2005-06-14 09:47:55.878393",
+      "end": "2005-06-14 09:56:49.603436",
+      "n": 20480,
+      "sample": "data storage interrupt",
+      "first_entry_id": 485816,
+      "distinct_nodes": 20480,
+      "distinct_racks": 20,
+      "distinct_midplanes": 40,
+      "top_node": "R10-M0-N5-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 4.8828125e-05,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 534
+    },
+    {
+      "label": "KERNSTOR",
+      "start_epoch": 1118709380,
+      "end_epoch": 1118709886,
+      "start": "2005-06-13 17:36:20.973743",
+      "end": "2005-06-13 17:44:46.295359",
+      "n": 16384,
+      "sample": "data storage interrupt",
+      "first_entry_id": 382963,
+      "distinct_nodes": 16384,
+      "distinct_racks": 16,
+      "distinct_midplanes": 32,
+      "top_node": "R10-M0-N5-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 6.103515625e-05,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 506
+    },
+    {
+      "label": "KERNSTOR",
+      "start_epoch": 1118765123,
+      "end_epoch": 1118765643,
+      "start": "2005-06-14 09:05:23.409965",
+      "end": "2005-06-14 09:14:03.348198",
+      "n": 16384,
+      "sample": "data storage interrupt",
+      "first_entry_id": 428459,
+      "distinct_nodes": 16384,
+      "distinct_racks": 16,
+      "distinct_midplanes": 32,
+      "top_node": "R10-M0-N5-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 6.103515625e-05,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 520
+    },
+    {
+      "label": "KERNSTOR",
+      "start_epoch": 1118769310,
+      "end_epoch": 1118769449,
+      "start": "2005-06-14 10:15:10.378340",
+      "end": "2005-06-14 10:17:29.588619",
+      "n": 6144,
+      "sample": "data storage interrupt",
+      "first_entry_id": 522681,
+      "distinct_nodes": 6144,
+      "distinct_racks": 6,
+      "distinct_midplanes": 12,
+      "top_node": "R26-M0-NB-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.00016276041666666666,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 139
+    },
+    {
+      "label": "KERNSTOR",
+      "start_epoch": 1118766687,
+      "end_epoch": 1118766822,
+      "start": "2005-06-14 09:31:27.138607",
+      "end": "2005-06-14 09:33:42.344371",
+      "n": 4096,
+      "sample": "data storage interrupt",
+      "first_entry_id": 461231,
+      "distinct_nodes": 4096,
+      "distinct_racks": 4,
+      "distinct_midplanes": 8,
+      "top_node": "R25-M0-N3-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.000244140625,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 135
+    },
+    {
+      "label": "KERNRTSP",
+      "start_epoch": 1118772977,
+      "end_epoch": 1118773044,
+      "start": "2005-06-14 11:16:17.058052",
+      "end": "2005-06-14 11:17:24.131761",
+      "n": 2048,
+      "sample": "rts panic! - stopping execution",
+      "first_entry_id": 737105,
+      "distinct_nodes": 2048,
+      "distinct_racks": 2,
+      "distinct_midplanes": 4,
+      "top_node": "R26-M0-NB-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.00048828125,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 67
+    },
+    {
+      "label": "KERNTERM",
+      "start_epoch": 1132111089,
+      "end_epoch": 1132111231,
+      "start": "2005-11-15 19:18:09.938517",
+      "end": "2005-11-15 19:20:31.601140",
+      "n": 2048,
+      "sample": "rts: kernel terminated for reason 1004",
+      "first_entry_id": 4208382,
+      "distinct_nodes": 2048,
+      "distinct_racks": 2,
+      "distinct_midplanes": 4,
+      "top_node": "R56-M0-N5-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.00048828125,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 142
+    },
+    {
+      "label": "KERNREC",
+      "start_epoch": 1132111232,
+      "end_epoch": 1132111278,
+      "start": "2005-11-15 19:20:32.094527",
+      "end": "2005-11-15 19:21:18.603631",
+      "n": 2048,
+      "sample": "Error receiving packet on tree network, expecting type 57 instead of type 3 (softheader=009756d5 8bfa0003 00000002 00000000) PSR0=00001f01 PSR1=00000000 PRXF=00000002 PIXF=00000007",
+      "first_entry_id": 4210430,
+      "distinct_nodes": 2048,
+      "distinct_racks": 2,
+      "distinct_midplanes": 4,
+      "top_node": "R56-M0-N5-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.00048828125,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 46
+    },
+    {
+      "label": "APPUNAV",
+      "start_epoch": 1124131873,
+      "end_epoch": 1124132044,
+      "start": "2005-08-15 11:51:13.212876",
+      "end": "2005-08-15 11:54:04.748324",
+      "n": 1024,
+      "sample": "ciod: Error creating node map from file /home/auselton/bgl/mapfiles/bgl.128mps.f64.map: Resource temporarily unavailable",
+      "first_entry_id": 3049112,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R54-M1-N0-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 171
+    },
+    {
+      "label": "KERNTERM",
+      "start_epoch": 1130529570,
+      "end_epoch": 1130529606,
+      "start": "2005-10-28 12:59:30.209158",
+      "end": "2005-10-28 13:00:06.793455",
+      "n": 1024,
+      "sample": "rts: kernel terminated for reason 1004",
+      "first_entry_id": 3661660,
+      "distinct_nodes": 1024,
+      "distinct_racks": 2,
+      "distinct_midplanes": 2,
+      "top_node": "R63-M1-N7-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 36
+    },
+    {
+      "label": "KERNREC",
+      "start_epoch": 1130529607,
+      "end_epoch": 1130529627,
+      "start": "2005-10-28 13:00:07.036731",
+      "end": "2005-10-28 13:00:27.486848",
+      "n": 1024,
+      "sample": "Error receiving packet on tree network, expecting type 57 instead of type 3 (softheader=0064588e 8aff0003 00000002 00000000) PSR0=00001f01 PSR1=00000000 PRXF=00000002 PIXF=00000007",
+      "first_entry_id": 3662684,
+      "distinct_nodes": 1024,
+      "distinct_racks": 2,
+      "distinct_midplanes": 2,
+      "top_node": "R63-M1-N7-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 20
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1134496338,
+      "end_epoch": 1134496528,
+      "start": "2005-12-13 09:52:18.572838",
+      "end": "2005-12-13 09:55:28.788311",
+      "n": 1024,
+      "sample": "ciod: Error reading message prefix on CioStream socket to 172.16.96.116:56134, Link has been severed",
+      "first_entry_id": 4678895,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R77-M0-N0-I:J18-U01",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 190
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1134573342,
+      "end_epoch": 1134573545,
+      "start": "2005-12-14 07:15:42.567303",
+      "end": "2005-12-14 07:19:05.268963",
+      "n": 1024,
+      "sample": "ciod: Error reading message prefix on CioStream socket to 172.16.96.116:46375, Link has been severed",
+      "first_entry_id": 4680803,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R77-M0-N0-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 203
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1134937859,
+      "end_epoch": 1134938055,
+      "start": "2005-12-18 12:30:59.803976",
+      "end": "2005-12-18 12:34:15.773406",
+      "n": 1024,
+      "sample": "ciod: Error reading message prefix on CioStream socket to 172.16.96.116:45866, Link has been severed",
+      "first_entry_id": 4694413,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R77-M0-NC-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 196
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1126351060,
+      "end_epoch": 1126351161,
+      "start": "2005-09-10 04:17:40.834655",
+      "end": "2005-09-10 04:19:21.198844",
+      "n": 1023,
+      "sample": "ciod: Error reading message prefix after LOGIN_MESSAGE on CioStream socket to 172.16.96.116:43005: Link has been severed",
+      "first_entry_id": 3363234,
+      "distinct_nodes": 1023,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R77-M0-N0-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009775171065493646,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 101
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1132898752,
+      "end_epoch": 1132898925,
+      "start": "2005-11-24 22:05:52.785950",
+      "end": "2005-11-24 22:08:45.733644",
+      "n": 1023,
+      "sample": "ciod: Error reading message prefix on CioStream socket to 172.16.96.116:54721, Link has been severed",
+      "first_entry_id": 4279578,
+      "distinct_nodes": 1023,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R77-M0-N0-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009775171065493646,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 173
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1132912056,
+      "end_epoch": 1132912234,
+      "start": "2005-11-25 01:47:36.214095",
+      "end": "2005-11-25 01:50:34.383734",
+      "n": 1022,
+      "sample": "ciod: Error reading message prefix on CioStream socket to 172.16.96.116:54528, Link has been severed",
+      "first_entry_id": 4282420,
+      "distinct_nodes": 1022,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R51-M0-N4-I:J18-U01",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009784735812133072,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 178
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1134403732,
+      "end_epoch": 1134403947,
+      "start": "2005-12-12 08:08:52.485419",
+      "end": "2005-12-12 08:12:27.305697",
+      "n": 1022,
+      "sample": "ciod: Error reading message prefix on CioStream socket to 172.16.96.116:58275, Link has been severed",
+      "first_entry_id": 4675331,
+      "distinct_nodes": 1022,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R77-M1-N4-I:J18-U01",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009784735812133072,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 215
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1128641281,
+      "end_epoch": 1128641402,
+      "start": "2005-10-06 16:28:01.093276",
+      "end": "2005-10-06 16:30:02.328239",
+      "n": 1021,
+      "sample": "ciod: Error reading message prefix after LOGIN_MESSAGE on CioStream socket to 172.16.96.116:39821: Link has been severed",
+      "first_entry_id": 3556636,
+      "distinct_nodes": 1021,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R77-M0-N0-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009794319294809011,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 121
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1132940616,
+      "end_epoch": 1132940789,
+      "start": "2005-11-25 09:43:36.312711",
+      "end": "2005-11-25 09:46:29.793374",
+      "n": 1020,
+      "sample": "ciod: Error reading message prefix on CioStream socket to 172.16.96.116:40334, Link has been severed",
+      "first_entry_id": 4284501,
+      "distinct_nodes": 1020,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R54-M1-N4-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.000980392156862745,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 173
+    }
+  ],
+  "top_groups_gap_300": [
+    {
+      "label": "KERNDTLB",
+      "start_epoch": 1118535464,
+      "end_epoch": 1118558372,
+      "start": "2005-06-11 17:17:44.898186",
+      "end": "2005-06-11 23:39:32.877740",
+      "n": 152182,
+      "sample": "data TLB error interrupt",
+      "first_entry_id": 222716,
+      "distinct_nodes": 1,
+      "distinct_racks": 1,
+      "distinct_midplanes": 1,
+      "top_node": "R30-M0-N9-C:J16-U01",
+      "top_node_entries": 152182,
+      "top_node_share": 1.0,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 22908
+    },
+    {
+      "label": "KERNSTOR",
+      "start_epoch": 1118767675,
+      "end_epoch": 1118768209,
+      "start": "2005-06-14 09:47:55.878393",
+      "end": "2005-06-14 09:56:49.603436",
+      "n": 20480,
+      "sample": "data storage interrupt",
+      "first_entry_id": 485816,
+      "distinct_nodes": 20480,
+      "distinct_racks": 20,
+      "distinct_midplanes": 40,
+      "top_node": "R10-M0-N5-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 4.8828125e-05,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 534
+    },
+    {
+      "label": "KERNSTOR",
+      "start_epoch": 1118709380,
+      "end_epoch": 1118709886,
+      "start": "2005-06-13 17:36:20.973743",
+      "end": "2005-06-13 17:44:46.295359",
+      "n": 16384,
+      "sample": "data storage interrupt",
+      "first_entry_id": 382963,
+      "distinct_nodes": 16384,
+      "distinct_racks": 16,
+      "distinct_midplanes": 32,
+      "top_node": "R10-M0-N5-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 6.103515625e-05,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 506
+    },
+    {
+      "label": "KERNSTOR",
+      "start_epoch": 1118765123,
+      "end_epoch": 1118765643,
+      "start": "2005-06-14 09:05:23.409965",
+      "end": "2005-06-14 09:14:03.348198",
+      "n": 16384,
+      "sample": "data storage interrupt",
+      "first_entry_id": 428459,
+      "distinct_nodes": 16384,
+      "distinct_racks": 16,
+      "distinct_midplanes": 32,
+      "top_node": "R10-M0-N5-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 6.103515625e-05,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 520
+    },
+    {
+      "label": "KERNSTOR",
+      "start_epoch": 1118769310,
+      "end_epoch": 1118769449,
+      "start": "2005-06-14 10:15:10.378340",
+      "end": "2005-06-14 10:17:29.588619",
+      "n": 6144,
+      "sample": "data storage interrupt",
+      "first_entry_id": 522681,
+      "distinct_nodes": 6144,
+      "distinct_racks": 6,
+      "distinct_midplanes": 12,
+      "top_node": "R26-M0-NB-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.00016276041666666666,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 139
+    },
+    {
+      "label": "KERNSTOR",
+      "start_epoch": 1118766687,
+      "end_epoch": 1118766822,
+      "start": "2005-06-14 09:31:27.138607",
+      "end": "2005-06-14 09:33:42.344371",
+      "n": 4096,
+      "sample": "data storage interrupt",
+      "first_entry_id": 461231,
+      "distinct_nodes": 4096,
+      "distinct_racks": 4,
+      "distinct_midplanes": 8,
+      "top_node": "R25-M0-N3-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.000244140625,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 135
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1123915721,
+      "end_epoch": 1123916322,
+      "start": "2005-08-12 23:48:41.890299",
+      "end": "2005-08-12 23:58:42.791034",
+      "n": 2096,
+      "sample": "ciod: Error reading message prefix after VERSION_MESSAGE on CioStream socket to 172.16.96.116:53788: Link has been severed",
+      "first_entry_id": 3034573,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R00-M0-NC-I:J18-U11",
+      "top_node_entries": 8,
+      "top_node_share": 0.003816793893129771,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 601
+    },
+    {
+      "label": "KERNRTSP",
+      "start_epoch": 1118772977,
+      "end_epoch": 1118773044,
+      "start": "2005-06-14 11:16:17.058052",
+      "end": "2005-06-14 11:17:24.131761",
+      "n": 2048,
+      "sample": "rts panic! - stopping execution",
+      "first_entry_id": 737105,
+      "distinct_nodes": 2048,
+      "distinct_racks": 2,
+      "distinct_midplanes": 4,
+      "top_node": "R26-M0-NB-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.00048828125,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 67
+    },
+    {
+      "label": "KERNTERM",
+      "start_epoch": 1132111089,
+      "end_epoch": 1132111231,
+      "start": "2005-11-15 19:18:09.938517",
+      "end": "2005-11-15 19:20:31.601140",
+      "n": 2048,
+      "sample": "rts: kernel terminated for reason 1004",
+      "first_entry_id": 4208382,
+      "distinct_nodes": 2048,
+      "distinct_racks": 2,
+      "distinct_midplanes": 4,
+      "top_node": "R56-M0-N5-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.00048828125,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 142
+    },
+    {
+      "label": "KERNREC",
+      "start_epoch": 1132111232,
+      "end_epoch": 1132111278,
+      "start": "2005-11-15 19:20:32.094527",
+      "end": "2005-11-15 19:21:18.603631",
+      "n": 2048,
+      "sample": "Error receiving packet on tree network, expecting type 57 instead of type 3 (softheader=009756d5 8bfa0003 00000002 00000000) PSR0=00001f01 PSR1=00000000 PRXF=00000002 PIXF=00000007",
+      "first_entry_id": 4210430,
+      "distinct_nodes": 2048,
+      "distinct_racks": 2,
+      "distinct_midplanes": 4,
+      "top_node": "R56-M0-N5-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.00048828125,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 46
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1127986916,
+      "end_epoch": 1127988341,
+      "start": "2005-09-29 02:41:56.556351",
+      "end": "2005-09-29 03:05:41.318800",
+      "n": 2041,
+      "sample": "ciod: Error reading message prefix after LOGIN_MESSAGE on CioStream socket to 172.16.96.116:59838: Link has been severed",
+      "first_entry_id": 3518539,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R41-M0-N4-I:J18-U11",
+      "top_node_entries": 2,
+      "top_node_share": 0.0009799118079372856,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 1425
+    },
+    {
+      "label": "APPREAD",
+      "start_epoch": 1118958636,
+      "end_epoch": 1118958912,
+      "start": "2005-06-16 14:50:36.324561",
+      "end": "2005-06-16 14:55:12.321175",
+      "n": 1530,
+      "sample": "ciod: failed to read message prefix on control stream (CioStream socket to 172.16.96.116:50197",
+      "first_entry_id": 826075,
+      "distinct_nodes": 510,
+      "distinct_racks": 32,
+      "distinct_midplanes": 64,
+      "top_node": "R37-M0-N0-I:J18-U11",
+      "top_node_entries": 3,
+      "top_node_share": 0.00196078431372549,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 276
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1124721470,
+      "end_epoch": 1124722129,
+      "start": "2005-08-22 07:37:50.064905",
+      "end": "2005-08-22 07:48:49.938945",
+      "n": 1219,
+      "sample": "ciod: Error reading message prefix after LOGIN_MESSAGE on CioStream socket to 172.16.96.116:52929: Link has been severed",
+      "first_entry_id": 3080907,
+      "distinct_nodes": 277,
+      "distinct_racks": 62,
+      "distinct_midplanes": 112,
+      "top_node": "R77-M0-NC-I:J18-U11",
+      "top_node_entries": 5,
+      "top_node_share": 0.004101722723543888,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 659
+    },
+    {
+      "label": "KERNMICRO",
+      "start_epoch": 1125326676,
+      "end_epoch": 1125326980,
+      "start": "2005-08-29 07:44:36.269500",
+      "end": "2005-08-29 07:49:40.128285",
+      "n": 1040,
+      "sample": "Microloader Assertion",
+      "first_entry_id": 3298547,
+      "distinct_nodes": 520,
+      "distinct_racks": 1,
+      "distinct_midplanes": 1,
+      "top_node": "R51-M1-N0-I:J18-U11",
+      "top_node_entries": 2,
+      "top_node_share": 0.0019230769230769232,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 304
+    },
+    {
+      "label": "APPUNAV",
+      "start_epoch": 1124131873,
+      "end_epoch": 1124132044,
+      "start": "2005-08-15 11:51:13.212876",
+      "end": "2005-08-15 11:54:04.748324",
+      "n": 1024,
+      "sample": "ciod: Error creating node map from file /home/auselton/bgl/mapfiles/bgl.128mps.f64.map: Resource temporarily unavailable",
+      "first_entry_id": 3049112,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R54-M1-N0-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 171
+    },
+    {
+      "label": "KERNMNTF",
+      "start_epoch": 1125552513,
+      "end_epoch": 1125552717,
+      "start": "2005-08-31 22:28:33.179297",
+      "end": "2005-08-31 22:31:57.085442",
+      "n": 1024,
+      "sample": "Lustre mount FAILED : bglio11 : point /p/gb1",
+      "first_entry_id": 3309470,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R00-M0-NC-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 204
+    },
+    {
+      "label": "KERNMNTF",
+      "start_epoch": 1125575310,
+      "end_epoch": 1125575456,
+      "start": "2005-09-01 04:48:30.769579",
+      "end": "2005-09-01 04:50:56.263298",
+      "n": 1024,
+      "sample": "Lustre mount FAILED : bglio143 : point /p/gb1",
+      "first_entry_id": 3312706,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R10-M1-NC-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 146
+    },
+    {
+      "label": "KERNMNTF",
+      "start_epoch": 1125689941,
+      "end_epoch": 1125690087,
+      "start": "2005-09-02 12:39:01.763282",
+      "end": "2005-09-02 12:41:27.158967",
+      "n": 1024,
+      "sample": "Lustre mount FAILED : bglio315 : point /p/gb1",
+      "first_entry_id": 3321167,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R23-M0-NC-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 146
+    },
+    {
+      "label": "KERNMNTF",
+      "start_epoch": 1125692498,
+      "end_epoch": 1125692642,
+      "start": "2005-09-02 13:21:38.149303",
+      "end": "2005-09-02 13:24:02.893789",
+      "n": 1024,
+      "sample": "Lustre mount FAILED : bglio383 : point /p/gb1",
+      "first_entry_id": 3322382,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R27-M1-NC-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 144
+    },
+    {
+      "label": "KERNMNTF",
+      "start_epoch": 1126190692,
+      "end_epoch": 1126190836,
+      "start": "2005-09-08 07:44:52.346619",
+      "end": "2005-09-08 07:47:16.509127",
+      "n": 1024,
+      "sample": "Lustre mount FAILED : bglio399 : point /p/gb1",
+      "first_entry_id": 3351736,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R30-M1-NC-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 144
+    },
+    {
+      "label": "KERNMNTF",
+      "start_epoch": 1126192063,
+      "end_epoch": 1126192207,
+      "start": "2005-09-08 08:07:43.167725",
+      "end": "2005-09-08 08:10:07.361557",
+      "n": 1024,
+      "sample": "Lustre mount FAILED : bglio975 : point /p/gb1",
+      "first_entry_id": 3352774,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R74-M1-NC-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 144
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1126351008,
+      "end_epoch": 1126351161,
+      "start": "2005-09-10 04:16:48.782196",
+      "end": "2005-09-10 04:19:21.198844",
+      "n": 1024,
+      "sample": "ciod: Error reading message prefix after LOGIN_MESSAGE on CioStream socket to 172.16.96.116:42832: Link has been severed",
+      "first_entry_id": 3363233,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R22-M1-NC-I:J18-U01",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 153
+    },
+    {
+      "label": "KERNMNTF",
+      "start_epoch": 1126626480,
+      "end_epoch": 1126626625,
+      "start": "2005-09-13 08:48:00.488551",
+      "end": "2005-09-13 08:50:25.229282",
+      "n": 1024,
+      "sample": "Lustre mount FAILED : bglio299 : point /p/gb1",
+      "first_entry_id": 3374902,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R22-M0-NC-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 145
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1128641281,
+      "end_epoch": 1128641411,
+      "start": "2005-10-06 16:28:01.093276",
+      "end": "2005-10-06 16:30:11.557274",
+      "n": 1024,
+      "sample": "ciod: Error reading message prefix after LOGIN_MESSAGE on CioStream socket to 172.16.96.116:39821: Link has been severed",
+      "first_entry_id": 3556636,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R77-M0-N0-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 130
+    },
+    {
+      "label": "KERNTERM",
+      "start_epoch": 1130529570,
+      "end_epoch": 1130529606,
+      "start": "2005-10-28 12:59:30.209158",
+      "end": "2005-10-28 13:00:06.793455",
+      "n": 1024,
+      "sample": "rts: kernel terminated for reason 1004",
+      "first_entry_id": 3661660,
+      "distinct_nodes": 1024,
+      "distinct_racks": 2,
+      "distinct_midplanes": 2,
+      "top_node": "R63-M1-N7-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 36
+    },
+    {
+      "label": "KERNREC",
+      "start_epoch": 1130529607,
+      "end_epoch": 1130529627,
+      "start": "2005-10-28 13:00:07.036731",
+      "end": "2005-10-28 13:00:27.486848",
+      "n": 1024,
+      "sample": "Error receiving packet on tree network, expecting type 57 instead of type 3 (softheader=0064588e 8aff0003 00000002 00000000) PSR0=00001f01 PSR1=00000000 PRXF=00000002 PIXF=00000007",
+      "first_entry_id": 3662684,
+      "distinct_nodes": 1024,
+      "distinct_racks": 2,
+      "distinct_midplanes": 2,
+      "top_node": "R63-M1-N7-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 20
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1132583704,
+      "end_epoch": 1132584024,
+      "start": "2005-11-21 06:35:04.487420",
+      "end": "2005-11-21 06:40:24.713892",
+      "n": 1024,
+      "sample": "ciod: Error reading message prefix after LOAD_MESSAGE on CioStream socket to 172.16.96.116:44014: Link has been severed",
+      "first_entry_id": 4237998,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R56-M0-N0-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 320
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1134496338,
+      "end_epoch": 1134496528,
+      "start": "2005-12-13 09:52:18.572838",
+      "end": "2005-12-13 09:55:28.788311",
+      "n": 1024,
+      "sample": "ciod: Error reading message prefix on CioStream socket to 172.16.96.116:56134, Link has been severed",
+      "first_entry_id": 4678895,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R77-M0-N0-I:J18-U01",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 190
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1134573342,
+      "end_epoch": 1134573545,
+      "start": "2005-12-14 07:15:42.567303",
+      "end": "2005-12-14 07:19:05.268963",
+      "n": 1024,
+      "sample": "ciod: Error reading message prefix on CioStream socket to 172.16.96.116:46375, Link has been severed",
+      "first_entry_id": 4680803,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R77-M0-N0-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 203
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1134937859,
+      "end_epoch": 1134938055,
+      "start": "2005-12-18 12:30:59.803976",
+      "end": "2005-12-18 12:34:15.773406",
+      "n": 1024,
+      "sample": "ciod: Error reading message prefix on CioStream socket to 172.16.96.116:45866, Link has been severed",
+      "first_entry_id": 4694413,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R77-M0-NC-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 196
+    }
+  ],
+  "top_spread_gap_300": [
+    {
+      "label": "KERNSTOR",
+      "start_epoch": 1118767675,
+      "end_epoch": 1118768209,
+      "start": "2005-06-14 09:47:55.878393",
+      "end": "2005-06-14 09:56:49.603436",
+      "n": 20480,
+      "sample": "data storage interrupt",
+      "first_entry_id": 485816,
+      "distinct_nodes": 20480,
+      "distinct_racks": 20,
+      "distinct_midplanes": 40,
+      "top_node": "R10-M0-N5-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 4.8828125e-05,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 534
+    },
+    {
+      "label": "KERNSTOR",
+      "start_epoch": 1118709380,
+      "end_epoch": 1118709886,
+      "start": "2005-06-13 17:36:20.973743",
+      "end": "2005-06-13 17:44:46.295359",
+      "n": 16384,
+      "sample": "data storage interrupt",
+      "first_entry_id": 382963,
+      "distinct_nodes": 16384,
+      "distinct_racks": 16,
+      "distinct_midplanes": 32,
+      "top_node": "R10-M0-N5-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 6.103515625e-05,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 506
+    },
+    {
+      "label": "KERNSTOR",
+      "start_epoch": 1118765123,
+      "end_epoch": 1118765643,
+      "start": "2005-06-14 09:05:23.409965",
+      "end": "2005-06-14 09:14:03.348198",
+      "n": 16384,
+      "sample": "data storage interrupt",
+      "first_entry_id": 428459,
+      "distinct_nodes": 16384,
+      "distinct_racks": 16,
+      "distinct_midplanes": 32,
+      "top_node": "R10-M0-N5-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 6.103515625e-05,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 520
+    },
+    {
+      "label": "KERNSTOR",
+      "start_epoch": 1118769310,
+      "end_epoch": 1118769449,
+      "start": "2005-06-14 10:15:10.378340",
+      "end": "2005-06-14 10:17:29.588619",
+      "n": 6144,
+      "sample": "data storage interrupt",
+      "first_entry_id": 522681,
+      "distinct_nodes": 6144,
+      "distinct_racks": 6,
+      "distinct_midplanes": 12,
+      "top_node": "R26-M0-NB-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.00016276041666666666,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 139
+    },
+    {
+      "label": "KERNSTOR",
+      "start_epoch": 1118766687,
+      "end_epoch": 1118766822,
+      "start": "2005-06-14 09:31:27.138607",
+      "end": "2005-06-14 09:33:42.344371",
+      "n": 4096,
+      "sample": "data storage interrupt",
+      "first_entry_id": 461231,
+      "distinct_nodes": 4096,
+      "distinct_racks": 4,
+      "distinct_midplanes": 8,
+      "top_node": "R25-M0-N3-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.000244140625,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 135
+    },
+    {
+      "label": "KERNRTSP",
+      "start_epoch": 1118772977,
+      "end_epoch": 1118773044,
+      "start": "2005-06-14 11:16:17.058052",
+      "end": "2005-06-14 11:17:24.131761",
+      "n": 2048,
+      "sample": "rts panic! - stopping execution",
+      "first_entry_id": 737105,
+      "distinct_nodes": 2048,
+      "distinct_racks": 2,
+      "distinct_midplanes": 4,
+      "top_node": "R26-M0-NB-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.00048828125,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 67
+    },
+    {
+      "label": "KERNTERM",
+      "start_epoch": 1132111089,
+      "end_epoch": 1132111231,
+      "start": "2005-11-15 19:18:09.938517",
+      "end": "2005-11-15 19:20:31.601140",
+      "n": 2048,
+      "sample": "rts: kernel terminated for reason 1004",
+      "first_entry_id": 4208382,
+      "distinct_nodes": 2048,
+      "distinct_racks": 2,
+      "distinct_midplanes": 4,
+      "top_node": "R56-M0-N5-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.00048828125,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 142
+    },
+    {
+      "label": "KERNREC",
+      "start_epoch": 1132111232,
+      "end_epoch": 1132111278,
+      "start": "2005-11-15 19:20:32.094527",
+      "end": "2005-11-15 19:21:18.603631",
+      "n": 2048,
+      "sample": "Error receiving packet on tree network, expecting type 57 instead of type 3 (softheader=009756d5 8bfa0003 00000002 00000000) PSR0=00001f01 PSR1=00000000 PRXF=00000002 PIXF=00000007",
+      "first_entry_id": 4210430,
+      "distinct_nodes": 2048,
+      "distinct_racks": 2,
+      "distinct_midplanes": 4,
+      "top_node": "R56-M0-N5-C:J09-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.00048828125,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 46
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1123915721,
+      "end_epoch": 1123916322,
+      "start": "2005-08-12 23:48:41.890299",
+      "end": "2005-08-12 23:58:42.791034",
+      "n": 2096,
+      "sample": "ciod: Error reading message prefix after VERSION_MESSAGE on CioStream socket to 172.16.96.116:53788: Link has been severed",
+      "first_entry_id": 3034573,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R00-M0-NC-I:J18-U11",
+      "top_node_entries": 8,
+      "top_node_share": 0.003816793893129771,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 601
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1127986916,
+      "end_epoch": 1127988341,
+      "start": "2005-09-29 02:41:56.556351",
+      "end": "2005-09-29 03:05:41.318800",
+      "n": 2041,
+      "sample": "ciod: Error reading message prefix after LOGIN_MESSAGE on CioStream socket to 172.16.96.116:59838: Link has been severed",
+      "first_entry_id": 3518539,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R41-M0-N4-I:J18-U11",
+      "top_node_entries": 2,
+      "top_node_share": 0.0009799118079372856,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 1425
+    },
+    {
+      "label": "APPUNAV",
+      "start_epoch": 1124131873,
+      "end_epoch": 1124132044,
+      "start": "2005-08-15 11:51:13.212876",
+      "end": "2005-08-15 11:54:04.748324",
+      "n": 1024,
+      "sample": "ciod: Error creating node map from file /home/auselton/bgl/mapfiles/bgl.128mps.f64.map: Resource temporarily unavailable",
+      "first_entry_id": 3049112,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R54-M1-N0-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 171
+    },
+    {
+      "label": "KERNMNTF",
+      "start_epoch": 1125552513,
+      "end_epoch": 1125552717,
+      "start": "2005-08-31 22:28:33.179297",
+      "end": "2005-08-31 22:31:57.085442",
+      "n": 1024,
+      "sample": "Lustre mount FAILED : bglio11 : point /p/gb1",
+      "first_entry_id": 3309470,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R00-M0-NC-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 204
+    },
+    {
+      "label": "KERNMNTF",
+      "start_epoch": 1125575310,
+      "end_epoch": 1125575456,
+      "start": "2005-09-01 04:48:30.769579",
+      "end": "2005-09-01 04:50:56.263298",
+      "n": 1024,
+      "sample": "Lustre mount FAILED : bglio143 : point /p/gb1",
+      "first_entry_id": 3312706,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R10-M1-NC-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 146
+    },
+    {
+      "label": "KERNMNTF",
+      "start_epoch": 1125689941,
+      "end_epoch": 1125690087,
+      "start": "2005-09-02 12:39:01.763282",
+      "end": "2005-09-02 12:41:27.158967",
+      "n": 1024,
+      "sample": "Lustre mount FAILED : bglio315 : point /p/gb1",
+      "first_entry_id": 3321167,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R23-M0-NC-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 146
+    },
+    {
+      "label": "KERNMNTF",
+      "start_epoch": 1125692498,
+      "end_epoch": 1125692642,
+      "start": "2005-09-02 13:21:38.149303",
+      "end": "2005-09-02 13:24:02.893789",
+      "n": 1024,
+      "sample": "Lustre mount FAILED : bglio383 : point /p/gb1",
+      "first_entry_id": 3322382,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R27-M1-NC-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 144
+    },
+    {
+      "label": "KERNMNTF",
+      "start_epoch": 1126190692,
+      "end_epoch": 1126190836,
+      "start": "2005-09-08 07:44:52.346619",
+      "end": "2005-09-08 07:47:16.509127",
+      "n": 1024,
+      "sample": "Lustre mount FAILED : bglio399 : point /p/gb1",
+      "first_entry_id": 3351736,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R30-M1-NC-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 144
+    },
+    {
+      "label": "KERNMNTF",
+      "start_epoch": 1126192063,
+      "end_epoch": 1126192207,
+      "start": "2005-09-08 08:07:43.167725",
+      "end": "2005-09-08 08:10:07.361557",
+      "n": 1024,
+      "sample": "Lustre mount FAILED : bglio975 : point /p/gb1",
+      "first_entry_id": 3352774,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R74-M1-NC-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 144
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1126351008,
+      "end_epoch": 1126351161,
+      "start": "2005-09-10 04:16:48.782196",
+      "end": "2005-09-10 04:19:21.198844",
+      "n": 1024,
+      "sample": "ciod: Error reading message prefix after LOGIN_MESSAGE on CioStream socket to 172.16.96.116:42832: Link has been severed",
+      "first_entry_id": 3363233,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R22-M1-NC-I:J18-U01",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 153
+    },
+    {
+      "label": "KERNMNTF",
+      "start_epoch": 1126626480,
+      "end_epoch": 1126626625,
+      "start": "2005-09-13 08:48:00.488551",
+      "end": "2005-09-13 08:50:25.229282",
+      "n": 1024,
+      "sample": "Lustre mount FAILED : bglio299 : point /p/gb1",
+      "first_entry_id": 3374902,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R22-M0-NC-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "KERNEL"
+      ],
+      "duration_seconds": 145
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1128641281,
+      "end_epoch": 1128641411,
+      "start": "2005-10-06 16:28:01.093276",
+      "end": "2005-10-06 16:30:11.557274",
+      "n": 1024,
+      "sample": "ciod: Error reading message prefix after LOGIN_MESSAGE on CioStream socket to 172.16.96.116:39821: Link has been severed",
+      "first_entry_id": 3556636,
+      "distinct_nodes": 1024,
+      "distinct_racks": 64,
+      "distinct_midplanes": 128,
+      "top_node": "R77-M0-N0-I:J18-U11",
+      "top_node_entries": 1,
+      "top_node_share": 0.0009765625,
+      "components": [
+        "APP"
+      ],
+      "duration_seconds": 130
+    }
+  ],
+  "top_group_minute_profiles": [
+    {
+      "label": "KERNDTLB",
+      "start_epoch": 1118535464,
+      "entries": 152182,
+      "nonempty_minute_bins": 383,
+      "peak_minute_entries": 430,
+      "peak_minute_share": 0.002825564127163528,
+      "mean_entries_per_nonempty_minute": 397.3420365535248
+    },
+    {
+      "label": "KERNSTOR",
+      "start_epoch": 1118767675,
+      "entries": 20480,
+      "nonempty_minute_bins": 10,
+      "peak_minute_entries": 4105,
+      "peak_minute_share": 0.200439453125,
+      "mean_entries_per_nonempty_minute": 2048.0
+    },
+    {
+      "label": "KERNSTOR",
+      "start_epoch": 1118709380,
+      "entries": 16384,
+      "nonempty_minute_bins": 9,
+      "peak_minute_entries": 1961,
+      "peak_minute_share": 0.11968994140625,
+      "mean_entries_per_nonempty_minute": 1820.4444444444443
+    },
+    {
+      "label": "KERNSTOR",
+      "start_epoch": 1118765123,
+      "entries": 16384,
+      "nonempty_minute_bins": 10,
+      "peak_minute_entries": 1920,
+      "peak_minute_share": 0.1171875,
+      "mean_entries_per_nonempty_minute": 1638.4
+    },
+    {
+      "label": "KERNSTOR",
+      "start_epoch": 1118769310,
+      "entries": 6144,
+      "nonempty_minute_bins": 3,
+      "peak_minute_entries": 2967,
+      "peak_minute_share": 0.48291015625,
+      "mean_entries_per_nonempty_minute": 2048.0
+    },
+    {
+      "label": "KERNSTOR",
+      "start_epoch": 1118766687,
+      "entries": 4096,
+      "nonempty_minute_bins": 3,
+      "peak_minute_entries": 1823,
+      "peak_minute_share": 0.445068359375,
+      "mean_entries_per_nonempty_minute": 1365.3333333333333
+    },
+    {
+      "label": "APPSEV",
+      "start_epoch": 1123915721,
+      "entries": 2096,
+      "nonempty_minute_bins": 10,
+      "peak_minute_entries": 609,
+      "peak_minute_share": 0.2905534351145038,
+      "mean_entries_per_nonempty_minute": 209.6
+    },
+    {
+      "label": "KERNRTSP",
+      "start_epoch": 1118772977,
+      "entries": 2048,
+      "nonempty_minute_bins": 2,
+      "peak_minute_entries": 1291,
+      "peak_minute_share": 0.63037109375,
+      "mean_entries_per_nonempty_minute": 1024.0
+    },
+    {
+      "label": "KERNTERM",
+      "start_epoch": 1132111089,
+      "entries": 2048,
+      "nonempty_minute_bins": 3,
+      "peak_minute_entries": 877,
+      "peak_minute_share": 0.42822265625,
+      "mean_entries_per_nonempty_minute": 682.6666666666666
+    },
+    {
+      "label": "KERNREC",
+      "start_epoch": 1132111232,
+      "entries": 2048,
+      "nonempty_minute_bins": 2,
+      "peak_minute_entries": 1234,
+      "peak_minute_share": 0.6025390625,
+      "mean_entries_per_nonempty_minute": 1024.0
+    }
+  ]
+}

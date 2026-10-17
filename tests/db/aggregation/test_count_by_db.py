@@ -239,6 +239,9 @@ def test_the_evidence_holds_the_statements_and_says_counts_are_log_entries(corpu
     assert any("never round" in note for note in result["notes"])
     assert result["arguments"]["group_by"] == "component"
     assert result["summary"]["group_by"] == "component"
+    # The Data Scope records the filters applied; group_by and top are call parameters.
+    assert "group_by" not in result["data_scope"]["filters"]
+    assert "top" not in result["data_scope"]["filters"]
 
 
 def test_relative_time_resolves_against_the_dataset_end(corpus: str) -> None:

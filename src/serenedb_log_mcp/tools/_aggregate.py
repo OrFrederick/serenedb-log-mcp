@@ -328,7 +328,6 @@ def prepare(
     baseline_from: str | None = None,
     baseline_to: str | None = None,
     notes: Sequence[str] = (),
-    **extra: Any,
 ) -> Prepared:
     """Validate the inputs against the Datasets' facts and build the Data Scope and the Parts."""
     known = {name: dataset_facts(name, role) for name in datasets}
@@ -356,13 +355,11 @@ def prepare(
         known_datasets=DATASET_NAMES,
         pattern_ids=pattern_ids,
         family_id=family_id,
-        group_by=group_by,
         query=text,
         components=components_,
         levels=levels_,
         sources=sources_,
         alert_categories=alerts_,
-        **extra,
     )
     start, end = time_bounds(scope)
     baseline = _baseline(baseline_from, baseline_to)

@@ -130,7 +130,6 @@ def register(server: MCPServer) -> None:
             baseline_from=baseline_from,
             baseline_to=baseline_to,
             notes=notes,
-            top=top,
         )
         return _count(prepared, top)
 

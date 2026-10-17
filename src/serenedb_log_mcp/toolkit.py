@@ -169,8 +169,19 @@ def apply_role_hook(evidence: Evidence, role: Role) -> Evidence:
 
     `role` is the Role of this call, which is not always `evidence.role`: Evidence is handed
     between Roles by its id, and `get_evidence` must shape a stored record for whoever asks now.
+
+    The shaped record is validated again, because `model_copy(update=...)` skips validation: a hook
+    that lowers `returned` and leaves `truncated` alone would otherwise only fail in the SDK's own
+    output validation, as a bare `UnexpectedToolError` with no text for the model to act on.
     """
-    return _role_hook(evidence, role)
+    shaped = _role_hook(evidence, role)
+    try:
+        return Evidence.model_validate(shaped.model_dump())
+    except ValidationError as exc:
+        raise ToolContractError(
+            f"the Role shaping for role {role.value!r} returned an Evidence that breaks the "
+            f"contract: {_detail(exc)}"
+        ) from exc
 
 
 def role_tool(

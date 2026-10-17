@@ -201,6 +201,39 @@ def test_the_role_hook_shapes_the_answer_but_never_the_stored_evidence(server: M
     assert get_ledger().get("E1")["rows"] == SAMPLE_ROWS
 
 
+def test_a_role_hook_that_breaks_the_contract_is_an_actionable_error(server: MCPServer) -> None:
+    # model_copy(update=...) skips validation, so a T7 hook that lowers `returned` and leaves
+    # `truncated` alone used to fail the SDK's own output validation as a bare UnexpectedToolError
+    # with no text at all ("Error executing tool sample_count").
+    def drop_the_count(evidence: Evidence, role: Role) -> Evidence:
+        return evidence.model_copy(update={"returned": 0})
+
+    set_role_hook(drop_the_count)
+
+    with pytest.raises(ToolError) as raised:
+        sample_count(server)
+
+    message = str(raised.value)
+    assert "Role shaping" in message
+    assert "truncated" in message
+    assert "returned=0" in message
+    assert "bug in this server" in message
+
+
+def test_a_role_hook_that_keeps_the_contract_is_passed_through(server: MCPServer) -> None:
+    def withhold_rows(evidence: Evidence, role: Role) -> Evidence:
+        return evidence.model_copy(update={"rows": [], "returned": 0, "truncated": True})
+
+    set_role_hook(withhold_rows)
+    data = envelope(sample_count(server))
+
+    assert data["rows"] == []
+    assert data["returned"] == 0
+    assert data["truncated"] is True
+    # The stored record is untouched, as always.
+    assert get_ledger().get("E1")["returned"] == len(SAMPLE_ROWS)
+
+
 def test_a_role_other_than_the_pin_is_rejected_before_the_query_runs(server: MCPServer) -> None:
     set_settings(load_settings({}, role="manager"))
 

@@ -12,6 +12,7 @@ from serenedb_log_mcp.scope import ScopeError
 from serenedb_log_mcp.server import create_server
 from serenedb_log_mcp.toolkit import ALWAYS_LOAD_META
 from serenedb_log_mcp.tools.latency_stats import (
+    _WHAT,
     MAX_GROUPS,
     View,
     canonical_endpoint,
@@ -135,6 +136,26 @@ def test_baseline_period_needs_bucketed_latency() -> None:
 
 
 def test_a_relative_baseline_is_refused() -> None:
-    message = call_error(role="engineer", metric="api", group_by="bucket", baseline_from="last 2h")
+    message = call_error(
+        role="engineer",
+        metric="api",
+        group_by="bucket",
+        baseline_from="last 2h",
+        baseline_to="2017-05-16T06:00:00",
+    )
 
-    assert "baseline_from" in message
+    assert "baseline_from='last 2h' is relative" in message
+
+
+@pytest.mark.parametrize(
+    "one_end", [{"baseline_from": "2017-05-16T00:00:00"}, {"baseline_to": "2017-05-16T06:00:00"}]
+)
+def test_a_one_sided_iso_baseline_is_refused(one_end: dict[str, str]) -> None:
+    message = call_error(role="engineer", metric="api", group_by="bucket", **one_end)
+
+    assert "Give both baseline_from and baseline_to" in message
+    assert "relative" not in message
+
+
+def test_api_notes_describe_latency_without_a_stray_colon() -> None:
+    assert _WHAT["api"] == "the time of each nova-api request Log Entry (latency_s), in seconds"

@@ -330,6 +330,7 @@ GENUINE_PATTERN_TEXT = {
     ("pattern_dict", "message"),
     ("pattern_dict", "template_text"),
     ("pattern", "template_text"),
+    ("pattern", "display_text"),
 }
 
 
@@ -372,9 +373,11 @@ def test_the_genuine_bgl_text_is_kept(database_url: str, derived_sample: Schemas
 
 
 def test_no_label_relation_or_file_name_column_exists(database_url: str, derived_sample: Schemas) -> None:
-    # os_instance: the OpenStack instance phases (T11), computed from timing only.
+    # os_instance: the OpenStack instance phases (T11), computed from timing only. incident: the
+    # default Incident table (T10), built from the Pattern key and the UTC gaps only.
     assert relations(database_url, derived_sample.slm) == [
         "bgl_entry",
+        "incident",
         "os_entry",
         "os_instance",
         "ownership",
@@ -456,6 +459,15 @@ def test_the_report_says_the_teams_come_from_the_stub(database_url: str, derived
 
     assert "Ownership Table team_source: stub 22" in lines
     assert f"NOTE: {OWNERSHIP_NOTE}" in lines
+
+
+def test_the_report_counts_the_os_instance_rows(database_url: str, derived_sample: Schemas) -> None:
+    (instances,) = one(database_url, q("SELECT count(*) FROM {t}", derived_sample, t="slm.os_instance"))
+    with psycopg.connect(database_url, autocommit=True) as conn:
+        lines = derive.report(conn, derived_sample.slm)
+
+    assert instances > 0
+    assert f"{derived_sample.slm}.os_instance: {instances:,} rows" in lines
 
 
 # ----------------------------------------------------------------- inverted indexes

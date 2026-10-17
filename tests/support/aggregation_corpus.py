@@ -6,6 +6,11 @@ inverted indexes with the real derive step (`sql/derive/90_indexes.sql`), so `qu
 Unlike the Loghub 2k samples, these rows carry Pattern ids and Pattern Families (as T9 will fill
 them), span seven whole weeks, and include a Component the Ownership Table does not map.
 
+BGL's ts is US Pacific local time, as in the Base Corpus, and its epoch_utc is that time in UTC
+(7 hours later in summer), whatever the zone of the machine that builds the corpus; OpenStack's ts
+is UTC. The tools compute on UTC (#65), so the times below are local, and every BGL Log Entry lands
+on the same day in UTC.
+
 BGL, 2005-06-01 (Wednesday) to 2005-07-31 12:00 (Sunday); whole Monday weeks 2005-06-06 to
 2005-07-18 (7 weeks):
 - STEADY: 2 KERNEL INFO lines every day at 10:00 and 14:00 on NODE_A; Pattern T_OLD before
@@ -26,8 +31,9 @@ OpenStack, 2017-05-14 20:00 to 2017-05-16 20:00:05:
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
+from zoneinfo import ZoneInfo
 
 import psycopg
 from psycopg import sql
@@ -44,6 +50,8 @@ F_DRIFT = "f0f0f0f0f0f0f0f0"
 F_TLB = "f1f1f1f1f1f1f1f1"
 U1 = "11111111-1111-1111-1111-111111111111"
 U2 = "22222222-2222-2222-2222-222222222222"
+PACIFIC = ZoneInfo("America/Los_Angeles")
+"""The zone BGL's ts is logged in (`Dataset.ts_zone`)."""
 
 BGL_FIRST = datetime(2005, 6, 1, 9, 0)
 BGL_LAST = datetime(2005, 7, 31, 14, 0)
@@ -132,7 +140,7 @@ def _bgl(
     rack, midplane, nodecard = _topology(node)
     return {
         "ts": ts,
-        "epoch_utc": ts.timestamp(),
+        "epoch_utc": ts.replace(tzinfo=PACIFIC).timestamp(),
         "node": node,
         "rack": rack,
         "midplane": midplane,
@@ -208,7 +216,7 @@ def bgl_rows() -> list[dict[str, Any]]:
 def _os(ts: datetime, component: str, level: str, instance: str | None, message: str) -> dict[str, Any]:
     return {
         "ts": ts,
-        "epoch_utc": ts.timestamp(),
+        "epoch_utc": ts.replace(tzinfo=UTC).timestamp(),
         "source_id": "src1",
         "log_file": "nova-compute.log",
         "pid": 2931,
@@ -288,12 +296,21 @@ def _create(conn: psycopg.Connection[Any], schema: str, table: str, columns: tup
     conn.execute(sql.SQL("INSERT INTO {} VALUES {}").format(target, values))
 
 
-def build(database_url: str, schema: str) -> None:
-    """Create the synthetic canonical tables, the Ownership Table and the indexes in `schema`."""
+def build(
+    database_url: str,
+    schema: str,
+    *,
+    bgl: list[dict[str, Any]] | None = None,
+    openstack: list[dict[str, Any]] | None = None,
+) -> None:
+    """Create the synthetic canonical tables, the Ownership Table and the indexes in `schema`.
+
+    `bgl` and `openstack` replace the rows above, for test corpora that build on this one.
+    """
     with psycopg.connect(database_url, autocommit=True) as conn:
         conn.execute(sql.SQL("CREATE SCHEMA {}").format(sql.Identifier(schema)))
-        _create(conn, schema, "bgl_entry", BGL_COLUMNS, bgl_rows())
-        _create(conn, schema, "os_entry", OS_COLUMNS, os_rows())
+        _create(conn, schema, "bgl_entry", BGL_COLUMNS, bgl_rows() if bgl is None else bgl)
+        _create(conn, schema, "os_entry", OS_COLUMNS, os_rows() if openstack is None else openstack)
         owners = [{"dataset": d, "component": c, "team": t} for d, c, t in OWNERSHIP]
         _create(
             conn,

@@ -54,12 +54,16 @@ check: lint typecheck test ## Run lint, typecheck and the pure tests
 run: ## Start the MCP server over stdio
 	$(UV) run serenedb-log-mcp --transport stdio
 
-db-up: ## Start a local SereneDB container on port 7890 (trust auth) and wait until it answers
-	docker run -d --platform $(SERENEDB_PLATFORM) --name $(SERENEDB_CONTAINER) -p $(SERENEDB_PORT):7890 \
-		-e SERENEDB_HOST_AUTH_METHOD=trust $(SERENEDB_IMAGE)
+db-up: ## Start a local SereneDB container on SERENEDB_PORT (trust auth) and wait until it answers
+	@docker run -d --platform $(SERENEDB_PLATFORM) --name $(SERENEDB_CONTAINER) -p $(SERENEDB_PORT):7890 \
+		-e SERENEDB_HOST_AUTH_METHOD=trust $(SERENEDB_IMAGE) \
+		|| { echo "make db-up: docker run failed. If the port is taken, something already listens on SERENEDB_PORT=$(SERENEDB_PORT): run 'make db-up SERENEDB_PORT=<free port>' and point DATABASE_URL at that port. If the name is taken, the old container is SERENEDB_CONTAINER=$(SERENEDB_CONTAINER): remove it with 'make db-down'." >&2; \
+		   docker rm $(SERENEDB_CONTAINER) >/dev/null 2>&1 || true; exit 1; }
 	@$(UV) run python scripts/wait_for_db.py --timeout $(SERENEDB_WAIT_S) \
 		--dsn "host=localhost port=$(SERENEDB_PORT) dbname=postgres user=postgres" \
-		|| { docker logs --tail 20 $(SERENEDB_CONTAINER); exit 1; }
+		|| { docker logs --tail 20 $(SERENEDB_CONTAINER); \
+		     echo "make db-up: no answer within SERENEDB_WAIT_S=$(SERENEDB_WAIT_S) s; removing $(SERENEDB_CONTAINER) so the next 'make db-up' is not refused for a name already in use." >&2; \
+		     docker rm -f $(SERENEDB_CONTAINER) >/dev/null; exit 1; }
 
 db-down: ## Stop and remove the local SereneDB container
 	docker rm -f $(SERENEDB_CONTAINER)

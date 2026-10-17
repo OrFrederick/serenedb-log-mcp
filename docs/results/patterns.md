@@ -35,10 +35,13 @@ SLM_REQUIRE_DB=1 make test-corpus      # golden numbers below (tests/corpus/test
 Loghub-2.0 line, in SQL, and compares the chosen EventId with the gold one. A labelled line that no
 template matches counts as a disagreement.
 
-| Dataset | Labelled lines | Agreeing | Agreement | Tier 1 coverage | Agreement on Tier 1 lines |
+| Dataset | Labelled lines | Agreeing | Agreement | Tier 1 coverage of labelled lines | Agreement on Tier 1 lines |
 |---|---:|---:|---:|---:|---:|
 | bgl | 4,631,261 | 4,631,257 | 99.99991% | 99.99991% | 100% |
 | openstack | 207,632 | 207,632 | 100% | 100% | 100% |
+
+Tier 1 coverage here is the share of the labelled Loghub-2.0 lines that the chain gives any
+template, not a share of the corpus; the coverage of the Log Entries is in the next section.
 
 Gate: at least 99.99% on both Datasets: **pass**. The target of 99.9999% (#6, Python RE2 matcher) is
 met too. The script prints shares rounded down to four decimals (99.9999% for BGL).
@@ -74,6 +77,11 @@ lines (E5, E6, E9). The raw versions of the E278, E5, E6 and E9 lines get Tier 2
 BGL: 465 Patterns over 4,747,963 Log Entries. OpenStack: 73 Patterns over 207,820 Log Entries.
 4 of the 320 BGL templates match no raw message: E278, E5, E6 and E9 (see above).
 
+Two Tier 2 BGL Patterns have uninformative template texts: `<*>` (1,140 distinct messages over
+15,193 Log Entries) and `<*>:ffffffff <*>` (535 over 4,149). Both are register and memory dumps
+that the g10 masks reduce to placeholders, not a condition of their own, so read them through
+their example Log Entries before treating them as a problem.
+
 With `SLM_PATTERN_TIER1=0` (CI, or if the Loghub-2.0 files may not be used), the same corpus gets
 647 BGL and 72 OpenStack g10 Patterns, plus one `empty` Pattern each.
 
@@ -108,6 +116,45 @@ rows instead of 1.7 s, and other sessions on the shared instance stalled meanwhi
 therefore writes only Log Entries whose Pattern changes, so a re-run is cheap. To fill Patterns
 into a schema that is indexed but has none yet, run the full `make derive` (14 s) rather than
 `--only 20_patterns`.
+
+## The catalogue and its search index (T14)
+
+The `pattern` table is the catalogue behind `list_patterns`. The Pattern step also builds
+`pattern_idx`, an inverted index over `pattern.template_text` (dictionary `pattern_text`: lower-case
+words with English Snowball stemming, `frequency` and `norm` for BM25) and `dataset`, which
+`search_patterns` reads. It lives in this step rather than in `90_indexes`, because
+`CREATE OR REPLACE TABLE pattern` drops it, and `--only 20_patterns` must leave a searchable
+catalogue. The step's legacy dictionary form for servers before 26.10.1 (`stemming = true`) is
+untested, like the one of `log_text`.
+
+Size of the catalogue as `list_patterns` returns it (Evidence JSON per page, counted on 2026-10-17
+with `claude -p` and a fixed system prompt; Opus, Sonnet and Haiku 5.5 gave the same counts):
+
+| Dataset | Patterns | Pages | Tokens per page | Tokens in total |
+|---|---:|---:|---|---:|
+| bgl | 465 | 8 | 3,968 to 8,453 (KERNEL alone fills pages 4 to 7) | 52,872 |
+| openstack | 73 | 1 | 8,075 | 8,075 |
+
+The #7 estimate of about 6.6k tokens for BGL counted 320 Loghub EventIds with their text only; a
+`list_patterns` row adds the 16-hex `template_id`, the Log Entry count and first and last seen, at
+about 2 characters per token. Reading BGL therefore goes by Component (`component='KERNEL'`, four
+pages) or starts from `search_patterns`.
+
+## Hand-offs to rankings (#64)
+
+- **Time across Datasets.** `pattern.first_seen` and `last_seen` are `ts` as logged: US Pacific
+  local time with daylight saving for BGL, UTC for OpenStack. `pattern.first_epoch` and
+  `last_epoch` are the same moments as `epoch_utc` seconds, so anything that compares or ranks
+  Patterns by recency across both Datasets (`top_patterns`, T28) reads those.
+- **The empty Pattern.** NULL and blank messages form one Pattern per Dataset whose template text
+  is `''`; in BGL it covers 34,470 Log Entries, rank 18 by Log Entries. It is labelled, not
+  excluded: `pattern.display_text` is `(no message)` for it and the template text for every other
+  Pattern, and a ranking shows `display_text`. `list_patterns` shows the same `(no message)`.
+  `template_text` stays `''`, so `search_patterns` never matches it on the words "no message".
+- **The search index.** `pattern_idx` (see the T14 section above) is the index on `pattern` that
+  `search_patterns` reads.
+- **`--only 90_indexes`** no longer needs the Loghub-2.0 files: `derive.py` reads them only when a
+  step of the run uses the Tier 1 placeholder, which only `20_patterns` does.
 
 ## SereneDB versions
 

@@ -9,6 +9,7 @@ import pytest
 
 import derive
 from gen_pattern_sql import TEMPLATE_FILES, Template
+from serenedb_log_mcp.tools._catalogue import NO_MESSAGE
 
 ROOT = Path(__file__).parents[2]
 PATTERNS_SQL = ROOT / "sql/derive/20_patterns.sql"
@@ -146,6 +147,33 @@ def test_tier1_reads_the_template_files_before_connecting(
     assert "Pattern Tier 1 on: Loghub-2.0 templates, 1 for bgl, 1 for openstack" in out
 
 
+def test_only_steps_without_the_tier1_placeholder_do_not_need_the_files(
+    env: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    # Tier 1 is on and the Loghub-2.0 files are missing, but 90_indexes never uses them (#64).
+    assert derive.main(["--schema", "slm_never_created", "--only", "90_indexes"]) == 1
+
+    captured = capsys.readouterr()
+    assert "fetch-data" not in captured.err
+    assert "Pattern Tier 1" not in captured.out
+
+
+def test_only_the_pattern_step_still_needs_the_files(env: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    assert derive.main(["--schema", "slm_never_created", "--only", "20_patterns"]) == 2
+
+    assert "make fetch-data" in capsys.readouterr().err
+
+
+def test_needs_tier1_is_true_only_for_steps_with_the_placeholder(tmp_path: Path) -> None:
+    with_it, without = tmp_path / "20_x.sql", tmp_path / "90_y.sql"
+    with_it.write_text("SELECT 1;\n${pattern_tier1};\n")
+    without.write_text("SELECT ${slm};\n")
+
+    assert derive.needs_tier1([with_it, without])
+    assert not derive.needs_tier1([without])
+    assert not derive.needs_tier1([])
+
+
 # ----------------------------------------------------------------- --only
 
 
@@ -206,3 +234,91 @@ def test_the_updates_touch_only_log_entries_whose_pattern_changes() -> None:
         assert "e.template_id IS DISTINCT FROM d.template_id" in update
         assert "e.family_id IS DISTINCT FROM d.family_id" in update
         assert "e.pattern_key IS NULL" in update
+
+
+# ----------------------------------------------------------------- the Pattern search index (T14)
+
+
+@pytest.mark.parametrize("version", [(26, 10, 1), (26, 11), (27, 0, 0)])
+def test_the_pattern_text_dictionary_lowercases_and_stems_english_on_26_10_1(
+    version: tuple[int, ...],
+) -> None:
+    ddl = derive.pattern_dictionary_ddl('"slm".pattern_text', version)
+
+    assert ddl == (
+        "CREATE TEXT SEARCH DICTIONARY \"slm\".pattern_text AS split_text(case := 'lower') "
+        "| stem_words('en_US.UTF-8') WITH (frequency, norm)"
+    )
+
+
+@pytest.mark.parametrize("version", [(26, 9, 1, 3), (26, 10, 0)])
+def test_older_servers_get_the_legacy_stemming_dictionary(version: tuple[int, ...]) -> None:
+    ddl = derive.pattern_dictionary_ddl('"slm".pattern_text', version)
+
+    assert ddl.startswith("CREATE TEXT SEARCH DICTIONARY \"slm\".pattern_text (TEMPLATE = 'text'")
+    for option in ("locale = 'en_US.UTF-8'", "\"case\" = 'lower'", "stemming = true", "frequency = true",
+                   "norm = true"):  # fmt: skip
+        assert option in ddl
+    assert " AS " not in ddl
+
+
+def test_variables_carry_the_pattern_text_dictionary() -> None:
+    values = derive.variables("slm_t14", "public", (26, 10, 1))
+
+    assert values["create_pattern_text_dictionary"].startswith(
+        'CREATE TEXT SEARCH DICTIONARY "slm_t14".pattern_text AS'
+    )
+
+
+def test_the_pattern_step_indexes_the_catalogue_after_building_it() -> None:
+    # In 20_patterns, not 90_indexes: `derive.py --only 20_patterns` rebuilds the pattern table with
+    # CREATE OR REPLACE, which drops its index, so the step must build the index again itself.
+    values = derive.variables("slm", "public", (26, 10, 1))
+    statements = derive.split_statements(derive.render(PATTERNS_SQL.read_text(), values))
+
+    def position(prefix: str) -> int:
+        found = [i for i, s in enumerate(statements) if s.startswith(prefix)]
+        assert len(found) == 1, prefix
+        return found[0]
+
+    table = position('CREATE OR REPLACE TABLE "slm".pattern AS')
+    drop_index = position('DROP INDEX IF EXISTS "slm".pattern_idx')
+    drop_dictionary = position('DROP TEXT SEARCH DICTIONARY IF EXISTS "slm".pattern_text')
+    dictionary = position('CREATE TEXT SEARCH DICTIONARY "slm".pattern_text')
+    index = position('CREATE INDEX pattern_idx ON "slm".pattern USING inverted')
+    refresh = position('VACUUM (REFRESH_TABLE) "slm".pattern')
+    # An index that uses the dictionary blocks DROP TEXT SEARCH DICTIONARY.
+    assert table < drop_index < drop_dictionary < dictionary < index < refresh
+    assert 'template_text "slm".pattern_text' in statements[index]
+    assert "dataset" in statements[index]
+
+
+def test_a_derived_schema_without_the_pattern_index_is_not_usable() -> None:
+    assert "pattern_idx" in derive.REQUIRED_INDEXES
+
+
+# ----------------------------------------------------------------- hand-offs for rankings (#64)
+
+
+def _pattern_table_statement() -> str:
+    values = derive.variables("slm", "public", (26, 10, 1))
+    statements = derive.split_statements(derive.render(PATTERNS_SQL.read_text(), values))
+    (table,) = [s for s in statements if s.startswith('CREATE OR REPLACE TABLE "slm".pattern AS')]
+    return table
+
+
+def test_the_catalogue_carries_first_and_last_seen_on_the_utc_clock() -> None:
+    table = _pattern_table_statement()
+
+    assert "min(epoch_utc) AS first_epoch" in table
+    assert "max(epoch_utc) AS last_epoch" in table
+    assert "n.first_epoch" in table
+    assert "n.last_epoch" in table
+
+
+def test_the_empty_pattern_shows_the_text_list_patterns_shows() -> None:
+    table = _pattern_table_statement()
+
+    assert f"WHEN t.template_source = 'empty' THEN '{NO_MESSAGE}'" in table
+    assert "ELSE t.template_text" in table
+    assert "END AS display_text" in table

@@ -6,11 +6,12 @@ Evidence tool is written once here:
 
 - `role` is required on every tool (#4), and a server started with `--role` rejects every other Role;
 - the tool is registered with a title, the read-only annotations and `_meta["anthropic/alwaysLoad"]`,
-  so Claude Code loads it without ToolSearch;
+  so Claude Code loads it without ToolSearch, plus `_meta.ui` when it has an MCP Apps visual;
 - the Evidence envelope goes out as `structuredContent`, with the same JSON in one text block;
 - the finished envelope is appended to the Evidence Ledger before it is returned, so every cited
   `[E<n>]` exists;
-- the Role hook shapes what the asking Role receives, never what the ledger stores (T7 replaces it);
+- the Role hook shapes what the asking Role receives, never what the ledger stores (by default the
+  Role shaping of `roles.shape_for_role`, T7);
 - when a statement read an agent index (T19) instead of a Dataset's full index, the Data Scope
   (`agent_indexes`) and the notes say so, without any change in the tool;
 - every exception becomes a `ToolError`, because on an error only `content[0].text` reaches the
@@ -38,6 +39,8 @@ from serenedb_log_mcp.config import get_settings
 from serenedb_log_mcp.corpus.agent_indexes import AgentIndex, capture_use
 from serenedb_log_mcp.evidence import DataScope, Evidence, Role
 from serenedb_log_mcp.ledger import LedgerError, get_ledger
+from serenedb_log_mcp.roles import shape_for_role
+from serenedb_log_mcp.visuals import ui_meta
 
 READ_ONLY = ToolAnnotations(
     read_only_hint=True, destructive_hint=False, idempotent_hint=True, open_world_hint=False
@@ -151,11 +154,15 @@ ToolFunction = Callable[..., ToolOutcome]
 
 
 def identity_role_hook(evidence: Evidence, role: Role) -> Evidence:
-    """The default Role hook. T7 replaces it with the Role shaping (plan section 2.3)."""
+    """A Role hook that shapes nothing: tests of the Evidence contract install it for isolation."""
     return evidence
 
 
-_role_hook: RoleHook = identity_role_hook
+DEFAULT_ROLE_HOOK: RoleHook = shape_for_role
+"""The Role shaping (T7): the answer frame, the Manager's not_measured list, no raw Log Entries for
+the Manager and at most three samples for the Team Lead (`roles.shaping`)."""
+
+_role_hook: RoleHook = DEFAULT_ROLE_HOOK
 
 
 def set_role_hook(hook: RoleHook) -> None:
@@ -170,9 +177,9 @@ def get_role_hook() -> RoleHook:
 
 
 def reset_role_hook() -> None:
-    """Go back to the identity Role hook."""
+    """Go back to the default Role hook, the Role shaping."""
     global _role_hook
-    _role_hook = identity_role_hook
+    _role_hook = DEFAULT_ROLE_HOOK
 
 
 def apply_role_hook(evidence: Evidence, role: Role) -> Evidence:
@@ -247,9 +254,9 @@ def role_tool(
         tool.__signature__ = signature.replace(  # type: ignore[attr-defined]
             return_annotation=Annotated[CallToolResult, output_model]
         )
-        server.add_tool(
-            tool, name=tool_name, title=title, annotations=annotations, meta=dict(ALWAYS_LOAD_META)
-        )
+        # A tool with an MCP Apps visual also links its `ui://` resource (visuals, T23).
+        meta = {**ALWAYS_LOAD_META, **(ui_meta(tool_name) or {})}
+        server.add_tool(tool, name=tool_name, title=title, annotations=annotations, meta=meta)
         return tool
 
     return register
@@ -394,6 +401,8 @@ def _store(tool: str, role: Role, arguments: dict[str, Any], outcome: ToolOutcom
     _check_columns(tool, columns, rows)
     returned = len(rows)
     total = source.total if outcome.total_matches is None else outcome.total_matches
+    # The truncation note comes first: the Role shaping replaces it when it lowers the row count
+    # (roles.shaping._replace_rows), because it counts the stored rows.
     notes = [
         *_truncation_notes(returned, total, outcome.truncation_note),
         *source.notes,

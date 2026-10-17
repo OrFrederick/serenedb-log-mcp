@@ -160,7 +160,9 @@ def test_before_and_after_are_capped_at_50(corpus: str) -> None:
 
 def test_the_window_follows_utc_time_through_the_daylight_saving_fall_back(corpus: str) -> None:
     # Two lines share one ts but lie an hour apart: a window on ts would mix them.
-    anchor = int(independent(corpus, "SELECT entry_id FROM {bgl} WHERE message = %s", [DST_MESSAGES[0]])[0][0])
+    anchor = int(
+        independent(corpus, "SELECT entry_id FROM {bgl} WHERE message = %s", [DST_MESSAGES[0]])[0][0]
+    )
 
     window = call("get_context", role="engineer", dataset="bgl", entry_id=anchor, scope="window", window_s=60)
     node = call("get_context", role="engineer", dataset="bgl", entry_id=anchor)

@@ -146,7 +146,13 @@ class Context:
         if self.window_s is not None:
             epoch, centre = self.col("epoch"), self.anchor.epoch
             found.append(
-                q("{} >= {} AND {} < {}", epoch, bound(centre - self.window_s), epoch, bound(centre + self.window_s))
+                q(
+                    "{} >= {} AND {} < {}",
+                    epoch,
+                    bound(centre - self.window_s),
+                    epoch,
+                    bound(centre + self.window_s),
+                )
             )
         if not found:
             raise ValueError("a context needs a source scope or a time window")

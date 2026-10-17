@@ -58,7 +58,9 @@ def test_the_highlight_covers_the_whole_message() -> None:
 
 def test_a_fully_highlighted_short_message_is_returned_as_it_is() -> None:
     message = "[instance: 7bcc] During sync_power_state the instance has a pending task (spawning). Skip."
-    highlighted = "[instance: 7bcc] During sync_power_state the instance has a pending task (spawning). **Skip**."
+    highlighted = (
+        "[instance: 7bcc] During sync_power_state the instance has a pending task (spawning). **Skip**."
+    )
 
     assert shape_message(message, highlighted) == highlighted
 
@@ -98,4 +100,3 @@ def test_a_match_near_the_start_of_a_long_message_keeps_the_start() -> None:
     assert text is not None
     assert text.startswith(f"ciod {MARK}failed{MARK}")
     assert text.endswith(ELLIPSIS)
-

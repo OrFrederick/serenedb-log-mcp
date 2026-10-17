@@ -699,14 +699,14 @@ def run_bgl(output: Path) -> str:
         ]
         top = conn.execute(
             sql.SQL(
-                "SELECT entries, nodes, top_node, CAST(t0 AS DATE) FROM {} "
+                "SELECT entries, nodes, top_node, CAST(t0 AS DATE) FROM {} WHERE dataset = 'bgl' "
                 "ORDER BY entries DESC, pattern_key LIMIT 1"
             ).format(bgl.incidents_table)
         ).fetchone()
         if top is None:
             raise GroundTruthError("the Incident table is empty; run `make derive`")
         (table_incidents,) = conn.execute(
-            sql.SQL("SELECT count(*) FROM {}").format(bgl.incidents_table)
+            sql.SQL("SELECT count(*) FROM {} WHERE dataset = 'bgl'").format(bgl.incidents_table)
         ).fetchone() or (0,)
         seconds = incident_seconds(conn, settings.slm_schema)
         row = conn.execute("SELECT version()").fetchone()

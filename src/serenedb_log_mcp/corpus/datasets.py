@@ -110,7 +110,15 @@ INCIDENT_COLUMNS = (
     "top_node_share",
     "shape",
 )
-# The Shape labels of the Glossary; exactly one per Incident.
+# The parameters the default Incident table is built with (#1): a gap of 300 s, chains merged
+# across every source. list_incidents reads the table for these and chains at query time otherwise.
+DEFAULT_GAP_S = 300
+DEFAULT_MERGE_SCOPE = "all"
+# The pattern_key of the OpenStack lifecycle Request Failures (T27): one Incident per instance
+# whose build or teardown started and never completed (sql/derive/35_os_incidents.sql).
+LIFECYCLE_KEY = "lifecycle-incomplete"
+# The Shape labels of the Glossary; exactly one per BGL Incident. OpenStack Incidents carry none,
+# because the labels are defined on BGL topology (35_os_incidents.sql).
 SHAPES = (
     "single-node storm",
     "single-node isolated",

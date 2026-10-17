@@ -246,9 +246,9 @@ def test_the_gb1_mount_failure_wave_is_the_worked_investigations_numbers(
 
 
 def test_every_row_records_the_default_parameters(database_url: str, slm_schema: str) -> None:
-    assert fetch(database_url, slm_schema, "SELECT DISTINCT dataset, gap_s, merge_scope FROM {inc}") == [
-        ("bgl", GAP_S, MERGE_SCOPE)
-    ]
+    assert fetch(
+        database_url, slm_schema, "SELECT DISTINCT dataset, gap_s, merge_scope FROM {inc} ORDER BY 1"
+    ) == [("bgl", GAP_S, MERGE_SCOPE), ("openstack", GAP_S, MERGE_SCOPE)]
 
 
 def test_the_table_covers_every_log_entry_that_has_a_pattern(database_url: str, slm_schema: str) -> None:
@@ -257,7 +257,8 @@ def test_the_table_covers_every_log_entry_that_has_a_pattern(database_url: str, 
     in_incidents, keyed, unkeyed, alert_keyed = one(
         database_url,
         slm_schema,
-        "SELECT (SELECT sum(entries) FROM {inc}), (SELECT count(pattern_key) FROM {bgl}), "
+        "SELECT (SELECT sum(entries) FROM {inc} WHERE dataset = 'bgl'), "
+        "(SELECT count(pattern_key) FROM {bgl}), "
         "(SELECT count(*) FILTER (WHERE pattern_key IS NULL) FROM {bgl}), "
         "(SELECT count(*) FROM {bgl} WHERE pattern_key = alert_tag)",
     )
@@ -291,7 +292,7 @@ def test_the_precomputed_table_equals_the_same_chaining_at_query_time(
         "SELECT pattern_key, epoch_utc, entry_id, "
         "lag(epoch_utc) OVER (PARTITION BY pattern_key ORDER BY epoch_utc, entry_id) AS previous "
         "FROM {bgl} WHERE pattern_key IS NOT NULL) g) n GROUP BY pattern_key, incident_id) recomputed "
-        "FULL OUTER JOIN {inc} i USING (pattern_key, incident_id) "
+        "FULL OUTER JOIN (SELECT * FROM {inc} WHERE dataset = 'bgl') i USING (pattern_key, incident_id) "
         "WHERE (recomputed.entries, recomputed.t0_utc, recomputed.t1_utc) "
         "IS DISTINCT FROM (i.entries, i.t0_utc, i.t1_utc)",
         [GAP_S],
@@ -358,8 +359,8 @@ def test_every_shape_label_comes_from_the_glossary_list(database_url: str, slm_s
     (unknown,) = one(
         database_url,
         slm_schema,
-        "SELECT count(*) FROM {inc} WHERE shape IS NULL OR shape NOT IN "
-        "('single-node storm', 'single-node isolated', 'one midplane', 'multi-midplane', 'machine-wide')",
+        "SELECT count(*) FROM {inc} WHERE dataset = 'bgl' AND (shape IS NULL OR shape NOT IN "
+        "('single-node storm', 'single-node isolated', 'one midplane', 'multi-midplane', 'machine-wide'))",
     )
 
     assert {str(shape) for shape, _ in counted} <= set(SHAPES)
@@ -416,9 +417,19 @@ def test_a_machine_wide_incident_really_spans_half_the_machine(database_url: str
     assert top == [("APPSEV", 51), ("KERNMNTF", 40), ("KERNTERM", 25)]
 
 
-def test_openstack_has_no_incidents_until_t27(database_url: str, slm_schema: str) -> None:
-    # T10 is BGL only. OpenStack Request Failure Incidents are a separate class (#1) and come in
-    # T27, so no row of the table claims to be OpenStack's.
-    datasets = fetch(database_url, slm_schema, "SELECT DISTINCT dataset FROM {inc}")
+def test_openstack_request_failures_carry_sources_and_no_shape(database_url: str, slm_schema: str) -> None:
+    """T27 adds the OpenStack Request Failure Incidents (sql/derive/35_os_incidents.sql). Their Spread
+    is sources (instances, or hosts), so the BGL topology columns and the Shape stay NULL."""
+    (topology, shaped, lifecycle, bad_share) = one(
+        database_url,
+        slm_schema,
+        "SELECT count(*) FILTER (WHERE nodecards IS NOT NULL OR midplanes IS NOT NULL OR racks IS NOT NULL), "
+        "count(*) FILTER (WHERE shape IS NOT NULL), "
+        "count(*) FILTER (WHERE pattern_key = 'lifecycle-incomplete'), "
+        "count(*) FILTER (WHERE top_node_share <= 0 OR top_node_share > 1 OR nodes < 1) "
+        "FROM {inc} WHERE dataset = 'openstack'",
+    )
 
-    assert datasets == [("bgl",)]
+    assert (topology, shaped, bad_share) == (0, 0, 0)
+    # One instance of the Base Corpus starts its build and never finishes it.
+    assert lifecycle == 1

@@ -73,8 +73,82 @@ def test_existing_tables_are_kept_unless_replace_is_given(
     assert dev_loader.main(["--sample", "--schema", scratch_schema]) == 0
 
     assert dev_loader.main(["--sample", "--schema", scratch_schema]) == 2
-    assert "--replace" in capsys.readouterr().err
+    err = capsys.readouterr().err
+    assert "--schema scratch_<name>" in err
+    assert "--replace" in err
     assert count(database_url, scratch_schema, "bgl") == SAMPLE_ROWS
 
     assert dev_loader.main(["--sample", "--schema", scratch_schema, "--replace"]) == 0
     assert count(database_url, scratch_schema, "bgl") == SAMPLE_ROWS
+
+
+def execute(database_url: str, *statements: sql.Composable) -> None:
+    with psycopg.connect(database_url, autocommit=True) as conn:
+        for statement in statements:
+            conn.execute(statement)
+
+
+def table_names(database_url: str, schema: str) -> list[str]:
+    with psycopg.connect(database_url, autocommit=True) as conn:
+        rows = conn.execute(
+            "SELECT table_name FROM information_schema.tables WHERE table_schema = %s ORDER BY 1", [schema]
+        ).fetchall()
+    return [r[0] for r in rows]
+
+
+@pytest.mark.usefixtures("samples_present")
+def test_sample_mode_never_replaces_a_table_with_more_than_2k_rows(
+    database_url: str, scratch_schema: str, capsys: pytest.CaptureFixture[str]
+) -> None:
+    # Stands in for public.bgl on the shared instance: --sample --replace must not touch it.
+    execute(
+        database_url,
+        sql.SQL("CREATE SCHEMA {}").format(sql.Identifier(scratch_schema)),
+        sql.SQL("CREATE TABLE {} AS SELECT g AS line_no FROM generate_series(1, 2001) AS s(g)").format(
+            sql.Identifier(scratch_schema, "bgl")
+        ),
+    )
+
+    assert dev_loader.main(["--sample", "--schema", scratch_schema, "--replace"]) == 2
+
+    err = capsys.readouterr().err
+    assert "2,001 rows" in err
+    assert "--schema scratch_<name>" in err
+    assert count(database_url, scratch_schema, "bgl") == 2001
+    assert table_names(database_url, scratch_schema) == ["bgl"]
+
+
+def test_failed_replace_keeps_the_old_table(database_url: str, scratch_schema: str) -> None:
+    execute(
+        database_url,
+        sql.SQL("CREATE SCHEMA {}").format(sql.Identifier(scratch_schema)),
+        sql.SQL("CREATE TABLE {} AS SELECT g AS line_no FROM generate_series(1, 7) AS s(g)").format(
+            sql.Identifier(scratch_schema, "bgl")
+        ),
+    )
+
+    def rows_then_crash() -> Iterator[tuple[object, ...]]:
+        yield dev_loader.parse_bgl_line(1, "- 1117838570 2005.06.03 R02-M1-N0-C:J12-U11")
+        raise RuntimeError("input broke halfway")
+
+    source = dev_loader.Source("bgl", (), rows_then_crash)
+    with pytest.raises(RuntimeError, match="halfway"):
+        dev_loader.load(database_url, scratch_schema, [source], replace=True)
+
+    assert count(database_url, scratch_schema, "bgl") == 7
+
+
+def test_leftover_staging_table_is_dropped_before_loading(database_url: str, scratch_schema: str) -> None:
+    execute(
+        database_url,
+        sql.SQL("CREATE SCHEMA {}").format(sql.Identifier(scratch_schema)),
+        sql.SQL("CREATE TABLE {} (junk VARCHAR)").format(sql.Identifier(scratch_schema, "bgl__load")),
+    )
+    source = dev_loader.Source(
+        "bgl", (), lambda: [dev_loader.parse_bgl_line(1, "- 1117838570 2005.06.03 R02-M1-N0-C:J12-U11")]
+    )
+
+    dev_loader.load(database_url, scratch_schema, [source], replace=False)
+
+    assert table_names(database_url, scratch_schema) == ["bgl"]
+    assert count(database_url, scratch_schema, "bgl") == 1

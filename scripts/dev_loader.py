@@ -11,8 +11,14 @@ Usage (see `make help`):
     uv run python scripts/dev_loader.py --sample [--schema S] [--replace]      # Loghub 2k samples
 
 Environment: DATABASE_URL (target SereneDB), SLM_DATA_DIR (input files, default ./data) and
-SLM_RAW_SCHEMA (default schema, default public). Existing tables are never dropped unless
---replace is given, because the shared dev instance holds the Base Corpus other people use.
+SLM_RAW_SCHEMA (default schema, default public).
+
+Safety, because the shared dev instance holds the Base Corpus other people use:
+- An existing table is only replaced with --replace.
+- --sample never replaces a table with more than 2,000 rows, with or without --replace; load the
+  sample into its own schema with --schema scratch_<name>.
+- Each table is copied into <table>__load and swapped in with DROP and RENAME in one transaction,
+  so a failed load keeps the old table. A leftover <table>__load is dropped on the next run.
 
 Input files under SLM_DATA_DIR:
     raw/BGL.log                                    BGL (Zenodo 8196385)
@@ -187,6 +193,9 @@ COLUMNS: dict[str, list[tuple[str, str]]] = {
     ],
 }
 TABLES = tuple(COLUMNS)
+STAGING_SUFFIX = "__load"
+# The Loghub 2k samples have 2,000 lines each; --sample never replaces a bigger table.
+SAMPLE_MAX_ROWS = 2_000
 OPENSTACK_FILES = ("openstack_normal1.log", "openstack_normal2.log", "openstack_abnormal.log")
 
 
@@ -305,12 +314,15 @@ def _table_exists(conn: psycopg.Connection[Any], schema: str, table: str) -> boo
 
 
 def copy_rows(
-    conn: psycopg.Connection[Any], schema: str, table: str, rows: Iterable[Row], batch: int = 200_000
+    conn: psycopg.Connection[Any],
+    target: sql.Identifier,
+    columns: Sequence[str],
+    rows: Iterable[Row],
+    batch: int = 200_000,
 ) -> int:
-    """COPY `rows` into schema.table in batches; return the row count."""
-    target = sql.Identifier(schema, table)
-    columns = sql.SQL(", ").join(sql.Identifier(name) for name, _ in COLUMNS[table])
-    statement = sql.SQL("COPY {} ({}) FROM STDIN").format(target, columns)
+    """COPY `rows` into `target` in batches; return the row count."""
+    column_list = sql.SQL(", ").join(sql.Identifier(name) for name in columns)
+    statement = sql.SQL("COPY {} ({}) FROM STDIN").format(target, column_list)
     count = 0
     buffer: list[Row] = []
 
@@ -331,27 +343,62 @@ def copy_rows(
     return count
 
 
-def load(dsn: str, schema: str, sources: Sequence[Source], replace: bool) -> None:
+def _row_count(conn: psycopg.Connection[Any], schema: str, table: str) -> int:
+    row = conn.execute(sql.SQL("SELECT count(*) FROM {}").format(sql.Identifier(schema, table))).fetchone()
+    return int(row[0]) if row else 0
+
+
+def load(dsn: str, schema: str, sources: Sequence[Source], replace: bool, *, sample: bool = False) -> None:
+    """Load every source into schema.<table>.
+
+    Each table is copied into <table>__load first and swapped in with DROP and RENAME in one
+    transaction, so a failed load leaves the old table as it was. In sample mode a table with more
+    than SAMPLE_MAX_ROWS rows is never replaced, whatever `replace` says.
+    """
     with psycopg.connect(dsn, autocommit=False) as conn:
         existing = [s.table for s in sources if _table_exists(conn, schema, s.table)]
+        if sample:
+            for table in existing:
+                rows = _row_count(conn, schema, table)
+                if rows > SAMPLE_MAX_ROWS:
+                    raise LoaderError(
+                        f"{schema}.{table} has {rows:,} rows, more than a {SAMPLE_MAX_ROWS:,}-line sample, "
+                        "so --sample never replaces it, not even with --replace. "
+                        "Load the sample into its own schema: use `--schema scratch_<name>`."
+                    )
         if existing and not replace:
             names = ", ".join(f"{schema}.{t}" for t in existing)
-            raise LoaderError(f"{names} already exist(s); pass --replace to drop and reload them")
+            hint = (
+                "use `--schema scratch_<name>` for a fresh sample, or pass --replace to reload this one"
+                if sample
+                else "pass --replace to drop and reload them"
+            )
+            raise LoaderError(f"{names} already exist(s); {hint}")
+        conn.rollback()
         if schema != "public":
             conn.execute(sql.SQL("CREATE SCHEMA IF NOT EXISTS {}").format(sql.Identifier(schema)))
             conn.commit()
         for source in sources:
-            target = sql.Identifier(schema, source.table)
-            columns = sql.SQL(", ").join(
-                sql.SQL("{} {}").format(sql.Identifier(name), sql.SQL(kind))
-                for name, kind in COLUMNS[source.table]
-            )
-            conn.execute(sql.SQL("DROP TABLE IF EXISTS {}").format(target))
-            conn.execute(sql.SQL("CREATE TABLE {} ({})").format(target, columns))
-            conn.commit()
-            started = time.monotonic()
-            count = copy_rows(conn, schema, source.table, source.rows())
-            print(f"{schema}.{source.table}: {count} rows in {time.monotonic() - started:.1f}s", flush=True)
+            _load_table(conn, schema, source)
+
+
+def _load_table(conn: psycopg.Connection[Any], schema: str, source: Source) -> None:
+    target = sql.Identifier(schema, source.table)
+    staging_name = f"{source.table}{STAGING_SUFFIX}"
+    staging = sql.Identifier(schema, staging_name)
+    columns = sql.SQL(", ").join(
+        sql.SQL("{} {}").format(sql.Identifier(name), sql.SQL(kind)) for name, kind in COLUMNS[source.table]
+    )
+    conn.execute(sql.SQL("DROP TABLE IF EXISTS {}").format(staging))
+    conn.execute(sql.SQL("CREATE TABLE {} ({})").format(staging, columns))
+    conn.commit()
+    started = time.monotonic()
+    count = copy_rows(conn, staging, [name for name, _ in COLUMNS[source.table]], source.rows())
+    # Schema changes are transactional on SereneDB 26.10.1: the swap commits as one unit.
+    conn.execute(sql.SQL("DROP TABLE IF EXISTS {}").format(target))
+    conn.execute(sql.SQL("ALTER TABLE {} RENAME TO {}").format(staging, sql.Identifier(source.table)))
+    conn.commit()
+    print(f"{schema}.{source.table}: {count} rows in {time.monotonic() - started:.1f}s", flush=True)
 
 
 # ----------------------------------------------------------------- command line
@@ -392,7 +439,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "missing input files (set SLM_DATA_DIR or fetch the data first):\n  "
                     + "\n  ".join(missing)
                 )
-        load(settings.database_url, schema, sources, args.replace)
+        load(settings.database_url, schema, sources, args.replace, sample=args.sample)
     except (LoaderError, ConfigError) as exc:
         print(f"dev_loader: {exc}", file=sys.stderr)
         return 2

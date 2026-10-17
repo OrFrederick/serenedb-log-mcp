@@ -61,7 +61,8 @@ def test_it_returns_the_rendered_markdown_and_its_size(fixture_ledger: Path) -> 
     assert not result.is_error, result.content
     out = result.structured_content
     assert out is not None
-    expected = render_investigation(Role.ENGINEER, TITLE, answers(), records(), incident_tools=False)
+    # The product server offers list_incidents and top_patterns (T27, T28), so the side-by-side check runs.
+    expected = render_investigation(Role.ENGINEER, TITLE, answers(), records(), incident_tools=True)
     assert out["markdown"] == expected.markdown
     assert out["size_chars"] == len(expected.markdown)
     assert out["size_bytes"] == len(expected.markdown.encode("utf-8"))

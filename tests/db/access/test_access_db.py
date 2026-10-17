@@ -243,6 +243,12 @@ TOOL_CALLS: dict[str, CallSpec] = {
     "search_patterns": lambda role, granted: {"dataset": "bgl", "query": "error"},
     "top_patterns": lambda role, granted: {"dataset": "bgl"},
     "verify_answer": lambda role, granted: {"draft": "## Observed Facts\n- No number here."},
+    "export_investigation": lambda role, granted: {
+        "title": "Access check",
+        "answers": [
+            {"role": role.value, "question": "What is there?", "answer": "## Observed Facts\n- Nothing."}
+        ],
+    },
 }
 """One call per registered tool, run as every Role. A new tool must add its call here, so it is
 checked through each Role's login and views."""

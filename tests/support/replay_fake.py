@@ -10,7 +10,7 @@ a datetime comes back as its ISO string). The key "boom" makes the statement fai
 from __future__ import annotations
 
 import copy
-from collections.abc import Iterator, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from contextlib import contextmanager
 from datetime import datetime
 from typing import Any
@@ -51,7 +51,13 @@ class FakeConnection:
             return FakeCursor([(key, DATA[key])] if key in DATA else [])
         return FakeCursor([])
 
-    def cancel_safe(self) -> None:
+    def cancel_safe(self, *, timeout: float = 30.0) -> None:
+        pass
+
+    def add_notice_handler(self, callback: Callable[[Any], None]) -> None:
+        pass
+
+    def remove_notice_handler(self, callback: Callable[[Any], None]) -> None:
         pass
 
     def close(self) -> None:

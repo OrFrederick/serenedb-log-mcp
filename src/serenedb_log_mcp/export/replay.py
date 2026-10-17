@@ -43,7 +43,7 @@ from pydantic_core import to_jsonable_python
 
 from serenedb_log_mcp import config, db, ledger
 from serenedb_log_mcp.corpus import facts
-from serenedb_log_mcp.db import ConnectionLike, Connector, CursorLike
+from serenedb_log_mcp.db import ConnectionLike, Connector, CursorLike, NoticeHandler
 from serenedb_log_mcp.export.answers import Investigation
 from serenedb_log_mcp.verify import INCIDENT_TOOLS, check_answer
 
@@ -175,8 +175,14 @@ class _StoredParamsConnection:
     def execute(self, query: str, params: Sequence[Any] | None = None) -> CursorLike:
         return self._conn.execute(query, self._statements.bind(query, params))
 
-    def cancel_safe(self) -> None:
-        self._conn.cancel_safe()
+    def cancel_safe(self, *, timeout: float = 30.0) -> None:
+        self._conn.cancel_safe(timeout=timeout)
+
+    def add_notice_handler(self, callback: NoticeHandler) -> None:
+        self._conn.add_notice_handler(callback)
+
+    def remove_notice_handler(self, callback: NoticeHandler) -> None:
+        self._conn.remove_notice_handler(callback)
 
     def close(self) -> None:
         self._conn.close()

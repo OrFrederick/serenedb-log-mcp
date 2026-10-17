@@ -112,7 +112,14 @@ class QueryResultLike(Protocol):
 
 @dataclass(frozen=True)
 class ToolOutcome:
-    """What a tool function returns: the query result plus what only the tool knows."""
+    """What a tool function returns: the query result plus what only the tool knows.
+
+    `result` is one `QueryResult`, so a tool that runs several statements, for example `count_by`
+    with a baseline period or `describe_corpus`, passes a combined one: T2 adds
+    `QueryResult.combine(*results)`, which concatenates `sql`, `params` and `notes` and sums
+    `query_ms`. The envelope then holds every statement that ran, in order, and `sql[i]` still
+    lines up with `params[i]`.
+    """
 
     result: QueryResultLike
     scope: DataScope

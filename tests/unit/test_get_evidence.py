@@ -11,7 +11,7 @@ from mcp.server.mcpserver.exceptions import ToolError
 from mcp_types import CallToolResult
 from sample_tool import SAMPLE_ROWS, register_sample_tools
 
-from serenedb_log_mcp.evidence import Evidence
+from serenedb_log_mcp.evidence import Evidence, Role
 from serenedb_log_mcp.ledger import Ledger, get_ledger
 from serenedb_log_mcp.server import create_server
 from serenedb_log_mcp.toolkit import ALWAYS_LOAD_META, set_role_hook
@@ -79,12 +79,32 @@ def test_the_record_comes_back_through_the_role_hook(server: MCPServer) -> None:
     call(server, "sample_count", role="team_lead")
 
     # T7 installs the real shaping; here it stands for "the Manager gets no raw rows".
-    set_role_hook(lambda evidence: evidence.model_copy(update={"rows": []}))
+    set_role_hook(lambda evidence, role: evidence.model_copy(update={"rows": []}))
     data = envelope(call(server, "get_evidence", role="manager", evidence_id="E1"))
 
     assert data["rows"] == []
     assert data["total_matches"] == len(SAMPLE_ROWS)
     assert get_ledger().get("E1")["rows"] == SAMPLE_ROWS
+
+
+def test_the_hook_shapes_for_the_asking_role_not_the_one_that_ran_the_query(
+    server: MCPServer,
+) -> None:
+    # Evidence is handed between Roles by its id, so a Manager must not receive the Engineer's
+    # shaping just because the Engineer ran the query.
+    call(server, "sample_count", role="engineer")
+    seen: list[tuple[Role, Role]] = []
+
+    def hook(evidence: Evidence, role: Role) -> Evidence:
+        seen.append((evidence.role, role))
+        return evidence.model_copy(update={"rows": []}) if role is Role.MANAGER else evidence
+
+    set_role_hook(hook)
+    data = envelope(call(server, "get_evidence", role="manager", evidence_id="E1"))
+
+    assert seen == [(Role.ENGINEER, Role.MANAGER)]
+    assert data["rows"] == []
+    assert any("engineer" in note for note in data["notes"])
 
 
 def test_evidence_from_an_earlier_session_stays_addressable(server: MCPServer, ledger_path: Path) -> None:

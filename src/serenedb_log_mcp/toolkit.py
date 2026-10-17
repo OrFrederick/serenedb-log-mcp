@@ -10,7 +10,7 @@ Evidence tool is written once here:
 - the Evidence envelope goes out as `structuredContent`, with the same JSON in one text block;
 - the finished envelope is appended to the Evidence Ledger before it is returned, so every cited
   `[E<n>]` exists;
-- the Role hook shapes what the caller receives, never what the ledger stores (T7 replaces it);
+- the Role hook shapes what the asking Role receives, never what the ledger stores (T7 replaces it);
 - every exception becomes a `ToolError`, because on an error only `content[0].text` reaches the
   model and in `mcp` 2.x only `ToolError` text survives.
 """
@@ -107,11 +107,11 @@ class ToolOutcome:
     Entries, and then carries the entry count in `summary['entries_total']`."""
 
 
-RoleHook = Callable[[Evidence], Evidence]
+RoleHook = Callable[[Evidence, Role], Evidence]
 ToolFunction = Callable[..., ToolOutcome]
 
 
-def identity_role_hook(evidence: Evidence) -> Evidence:
+def identity_role_hook(evidence: Evidence, role: Role) -> Evidence:
     """The default Role hook. T7 replaces it with the Role shaping (plan section 2.3)."""
     return evidence
 
@@ -120,7 +120,7 @@ _role_hook: RoleHook = identity_role_hook
 
 
 def set_role_hook(hook: RoleHook) -> None:
-    """Install the Role shaping. It shapes what the caller receives, never what the ledger holds."""
+    """Install the Role shaping. It shapes what the asking Role receives, never what is stored."""
     global _role_hook
     _role_hook = hook
 
@@ -136,9 +136,13 @@ def reset_role_hook() -> None:
     _role_hook = identity_role_hook
 
 
-def apply_role_hook(evidence: Evidence) -> Evidence:
-    """Shape one Evidence record for its Role."""
-    return _role_hook(evidence)
+def apply_role_hook(evidence: Evidence, role: Role) -> Evidence:
+    """Shape one Evidence record for the Role that is asking for it.
+
+    `role` is the Role of this call, which is not always `evidence.role`: Evidence is handed
+    between Roles by its id, and `get_evidence` must shape a stored record for whoever asks now.
+    """
+    return _role_hook(evidence, role)
 
 
 def role_tool(
@@ -213,7 +217,7 @@ def evidence_tool(
         @functools.wraps(function)
         def produce_evidence(*args: Any, **kwargs: Any) -> Evidence:
             role = _role_of(signature, tool_name, args, kwargs)
-            return apply_role_hook(_store(tool_name, role, function(*args, **kwargs)))
+            return apply_role_hook(_store(tool_name, role, function(*args, **kwargs)), role)
 
         return role_tool(server, title=title, output_model=Evidence, name=tool_name, annotations=annotations)(
             produce_evidence

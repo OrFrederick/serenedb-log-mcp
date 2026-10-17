@@ -130,7 +130,8 @@ def test_the_ledger_file_is_shared_with_later_sessions(server: MCPServer, ledger
 
 
 def test_the_role_hook_shapes_the_answer_but_never_the_stored_evidence(server: MCPServer) -> None:
-    def withhold_rows(evidence: Evidence) -> Evidence:
+    def withhold_rows(evidence: Evidence, role: Role) -> Evidence:
+        assert role is Role.TEAM_LEAD
         return evidence.model_copy(update={"rows": [], "not_measured": ["financial loss"]})
 
     set_role_hook(withhold_rows)

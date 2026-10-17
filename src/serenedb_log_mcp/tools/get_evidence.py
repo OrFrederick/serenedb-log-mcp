@@ -8,7 +8,7 @@ from mcp.server.mcpserver import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
 from pydantic import Field, ValidationError
 
-from serenedb_log_mcp.evidence import Evidence, RoleParam
+from serenedb_log_mcp.evidence import Evidence, Role, RoleParam
 from serenedb_log_mcp.ledger import get_ledger
 from serenedb_log_mcp.toolkit import apply_role_hook, role_tool
 
@@ -53,7 +53,18 @@ def register(server: MCPServer) -> None:
                 "was probably written by another version of this server. Run the query again "
                 "instead of citing it."
             ) from exc
-        return apply_role_hook(stored)
+        return apply_role_hook(_handover_note(stored, role), role)
+
+
+def _handover_note(stored: Evidence, role: Role) -> Evidence:
+    """Say so when one Role picks up Evidence another Role produced (differentiator 6)."""
+    if stored.role is role:
+        return stored
+    note = (
+        f"This Evidence was produced for role {stored.role.value!r} and is returned to role "
+        f"{role.value!r}; it is shaped for {role.value!r}."
+    )
+    return stored.model_copy(update={"notes": [*stored.notes, note]})
 
 
 def _normalise(evidence_id: str) -> str:

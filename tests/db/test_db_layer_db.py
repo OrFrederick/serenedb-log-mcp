@@ -163,6 +163,20 @@ def test_numeric_results_come_back_as_int_or_float(layer: Database, scratch: str
     assert type(window.rows[0][0]) is int
 
 
+def test_binary_numeric_results_come_back_as_int_or_float(database_url: str) -> None:
+    """The layer reads text format, but a connection from open_connection converts binary too."""
+    with db.open_connection(database_url, client_binding=False) as conn:
+        row = conn.execute(
+            "SELECT 5050::numeric, 1.5::numeric, sum(i), 12345678901234567890::HUGEINT "
+            "FROM generate_series(1, 100) g(i)",
+            binary=True,
+        ).fetchone()
+
+    assert row is not None
+    assert row == (5050, 1.5, 5050, 12345678901234567890)
+    assert [type(value) for value in row] == [int, float, int, int]
+
+
 # Timeout ----------------------------------------------------------------------------------------------
 
 

@@ -17,8 +17,8 @@ What is true for every statement is written once here:
   so in `QueryResult.notes`;
 - parameters are always bound, never formatted into the SQL;
 - `numeric` results (for example `sum()` and SereneDB's `HUGEINT`) come back as `int` when they are
-  integral and as `float` otherwise, never as `Decimal`, so the Evidence envelope serialises them
-  as JSON numbers.
+  integral and as `float` otherwise, never as `Decimal`, in text and in binary format, so the
+  Evidence envelope serialises them as JSON numbers.
 
 The layer never builds an `Evidence`; tools hand its `QueryResult` to `toolkit.evidence_tool`.
 """
@@ -36,9 +36,11 @@ from typing import TYPE_CHECKING, Any, Protocol, TypeVar
 
 import psycopg
 from mcp.server.mcpserver.exceptions import ToolError
-from psycopg.abc import Buffer
+from psycopg.abc import AdaptContext, Buffer
 from psycopg.adapt import Loader
 from psycopg.conninfo import conninfo_to_dict
+from psycopg.pq import Format
+from psycopg.types.numeric import NumericBinaryLoader
 
 from serenedb_log_mcp.config import (
     DEFAULT_MAX_IDLE_CONNECTIONS,
@@ -57,6 +59,7 @@ __all__ = [
     "DatabaseMisconfigured",
     "DatabaseRestarted",
     "DatabaseUnavailable",
+    "IntOrFloatNumericBinaryLoader",
     "IntOrFloatNumericLoader",
     "QueryFailed",
     "QueryResult",
@@ -159,6 +162,24 @@ class IntOrFloatNumericLoader(Loader):
         return int_or_float(Decimal(bytes(data).decode()))
 
 
+class IntOrFloatNumericBinaryLoader(Loader):
+    """Loads `numeric` in binary format as `int` or `float`, like `IntOrFloatNumericLoader`.
+
+    The layer reads text format, but a cursor that asks for binary (`binary=True`) on a connection
+    from `open_connection` must not bring `Decimal` back either. psycopg's own binary loader decodes
+    the value to a `Decimal` first.
+    """
+
+    format = Format.BINARY
+
+    def __init__(self, oid: int, context: AdaptContext | None = None) -> None:
+        super().__init__(oid, context)
+        self._decimal = NumericBinaryLoader(oid, context)
+
+    def load(self, data: Buffer) -> int | float:
+        return int_or_float(self._decimal.load(data))
+
+
 # Errors ---------------------------------------------------------------------------------------------
 
 
@@ -225,7 +246,8 @@ def open_connection(dsn: str, *, client_binding: bool) -> psycopg.Connection[tup
     Autocommit, because the layer issues `BEGIN READ ONLY` and `ROLLBACK` itself and starts the
     timeout only after the transaction began. Server-side binding by default, `ClientCursor` when
     `client_binding` (`SLM_CLIENT_BINDING=1`); both bind every value. No automatic prepared
-    statements, which is the path the #2 measurements took. `numeric` loads as int or float.
+    statements, which is the path the #2 measurements took. `numeric` loads as int or float, in
+    text and in binary format.
     """
     conn = psycopg.connect(
         dsn,
@@ -235,6 +257,7 @@ def open_connection(dsn: str, *, client_binding: bool) -> psycopg.Connection[tup
         cursor_factory=psycopg.ClientCursor if client_binding else psycopg.Cursor,
     )
     conn.adapters.register_loader("numeric", IntOrFloatNumericLoader)
+    conn.adapters.register_loader("numeric", IntOrFloatNumericBinaryLoader)
     return conn
 
 

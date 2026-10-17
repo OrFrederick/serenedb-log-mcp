@@ -73,7 +73,7 @@ _Avoid_: Recommendation (when unscoped), fix
 
 ## Proposed terms (overnight, unconfirmed by humans)
 
-Proposed by the overnight Claudes from issue #1 (Incident model, consensus) and issue #6 (template mining, not yet consensus). They are used in `docs/plan.md`. The humans must confirm them before they move into the sections above.
+Proposed by the overnight Claudes from issue #1 (Incident model, consensus of both Claudes) and issue #6 (template mining, decided by the leader alone). They are used in `docs/plan.md`. The humans must confirm them before they move into the sections above.
 
 **Pattern**:
 The message shape that Log Entries share once variable parts (ids, numbers, addresses) are masked. For BGL alert lines it is the alert category; otherwise it is the template id assigned in the database. Its text is the template text.

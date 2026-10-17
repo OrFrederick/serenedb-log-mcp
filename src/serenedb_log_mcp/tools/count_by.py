@@ -11,6 +11,7 @@ from serenedb_log_mcp.baseline import DatasetWindow
 from serenedb_log_mcp.evidence import RoleParam
 from serenedb_log_mcp.toolkit import ToolOutcome, evidence_tool
 from serenedb_log_mcp.tools._aggregate import (
+    LOG_ENTRIES_NOTE,
     NO_MATCH_NOTE,
     OTHER,
     SOURCES_NOTE,
@@ -149,7 +150,7 @@ def _count(prepared: Prepared, top: int) -> ToolOutcome:
             scope=prepared.scope,
             columns=columns,
             summary=_summary(group_by, 0, 0, 0, 0, 0),
-            notes=[*common_notes(prepared, {}), NO_MATCH_NOTE],
+            notes=[LOG_ENTRIES_NOTE, *prepared.notes, NO_MATCH_NOTE],  # no count, so no baseline
             rows=[],
             total_matches=0,
         )

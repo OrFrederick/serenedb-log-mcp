@@ -228,6 +228,7 @@ def test_no_match_is_a_result_with_a_hint_not_an_error(corpus: str) -> None:
     assert result["summary"]["total"] == 0
     assert result["total_matches"] == 0
     assert any("No Log Entries matched" in note for note in result["notes"])
+    assert not any("median_week" in note for note in result["notes"])
 
 
 def test_the_evidence_holds_the_statements_and_says_counts_are_log_entries(corpus: str) -> None:

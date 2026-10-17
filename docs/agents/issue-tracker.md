@@ -1,23 +1,24 @@
-# Issue tracker: Local Markdown
+# Issue tracker: GitHub
 
-Issues and PRDs for this repo live as markdown files in `.scratch/`.
+Issues and PRDs for this repo live as GitHub issues in `OrFrederick/serenedb-log-mcp`. Use the `gh` CLI for all operations.
+
+This clone has two remotes (`origin` = `OrFrederick/serenedb-log-mcp`, `fork` = `NoNaim95/serenedb-log-mcp`). Always pass `-R OrFrederick/serenedb-log-mcp` so `gh` never picks the fork.
 
 ## Conventions
 
-- One feature per directory: `.scratch/<feature-slug>/`
-- The PRD is `.scratch/<feature-slug>/PRD.md`
-- Implementation issues are `.scratch/<feature-slug>/issues/<NN>-<slug>.md`, numbered from `01`
-- Triage state is recorded as a `Status:` line near the top of each issue file (see `triage-labels.md` for the role strings)
-- Comments and conversation history append to the bottom of the file under a `## Comments` heading
+- **Create an issue**: `gh issue create -R OrFrederick/serenedb-log-mcp --title "..." --body "..."`. Use a heredoc for multi-line bodies.
+- **Read an issue**: `gh issue view <number> -R OrFrederick/serenedb-log-mcp --comments`, filtering comments by `jq` and also fetching labels and assignees.
+- **List issues**: `gh issue list -R OrFrederick/serenedb-log-mcp --state open --json number,title,body,labels,assignees,comments --jq '[.[] | {number, title, body, labels: [.labels[].name], assignees: [.assignees[].login], comments: [.comments[].body]}]'` with appropriate `--label` and `--state` filters.
+- **Comment on an issue**: `gh issue comment <number> -R OrFrederick/serenedb-log-mcp --body "..."`
+- **Apply / remove labels**: `gh issue edit <number> -R OrFrederick/serenedb-log-mcp --add-label "..."` / `--remove-label "..."`
+- **Close**: `gh issue close <number> -R OrFrederick/serenedb-log-mcp --comment "..."`
+
+Before starting work on an issue, check its comments and assignee, so you don't duplicate parallel work (see `CLAUDE.md`).
 
 ## When a skill says "publish to the issue tracker"
 
-Create a new file under `.scratch/<feature-slug>/` (creating the directory if needed).
+Create a GitHub issue.
 
 ## When a skill says "fetch the relevant ticket"
 
-Read the file at the referenced path. The user will normally pass the path or the issue number directly.
-
-## Relation to GitHub issues
-
-Team tickets and research issues still live in GitHub Issues (`OrFrederick/serenedb-log-mcp`), as `CLAUDE.md` says. `.scratch/` holds only the PRDs and issues that the engineering skills (`to-prd`, `to-issues`, `triage`, `qa`) produce. When a skill-generated issue becomes team work, copy it to GitHub by hand.
+Run `gh issue view <number> -R OrFrederick/serenedb-log-mcp --comments`.

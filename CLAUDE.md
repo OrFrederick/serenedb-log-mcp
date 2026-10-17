@@ -15,7 +15,7 @@ Use the SereneDB docs MCP (`serenedb-docs`) for SQL syntax. Don't guess SereneDB
 
 ### Issue tracker
 
-Skill-generated PRDs and issues live as local markdown under `.scratch/<feature>/`. Team tickets stay in GitHub Issues. See `docs/agents/issue-tracker.md`.
+All issues and PRDs live in GitHub Issues (`OrFrederick/serenedb-log-mcp`, via `gh`). See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 

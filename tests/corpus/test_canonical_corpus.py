@@ -112,6 +112,23 @@ def test_alert_categories_chain_into_1202_incidents_at_300_s_on_utc(
     assert incidents == 1_202
 
 
+def test_only_utc_gaps_split_the_fall_back_hour(database_url: str, slm_schema: str) -> None:
+    # The full-corpus check that fails if a gap is ever computed on local ts: chaining every BGL
+    # Log Entry at 300 s gives 8,149 chains on epoch_utc but 8,148 on ts, because on local time
+    # the 3,718.57 s gap before 2005-10-30 01:20:02.690798 (PST) looks like 118.57 s.
+    utc_chains, local_chains = one(
+        database_url,
+        slm_schema,
+        "SELECT count(*) FILTER (WHERE utc_prev IS NULL OR epoch_utc - utc_prev > 300), "
+        "count(*) FILTER (WHERE local_prev IS NULL OR epoch_us(ts) / 1e6 - local_prev > 300) FROM ("
+        "SELECT epoch_utc, ts, lag(epoch_utc) OVER (ORDER BY epoch_utc, entry_id) AS utc_prev, "
+        "lag(epoch_us(ts) / 1e6) OVER (ORDER BY epoch_us(ts), entry_id) AS local_prev FROM {bgl}) x",
+    )
+
+    assert utc_chains == 8_149
+    assert local_chains == 8_148
+
+
 # ----------------------------------------------------------------- topology
 
 

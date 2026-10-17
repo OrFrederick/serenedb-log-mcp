@@ -3,8 +3,9 @@
 The names come from the registry, so a table added there is checked here automatically. Names
 with an underscore (bgl_entry, os_entry_idx, pattern_dict, ...) are flagged anywhere in a tool
 module. The plain words pattern, incident and ownership are also ordinary English and enum values
-(count_by(group_by='pattern')), so they are flagged only where SQL names a relation: after FROM,
-JOIN, INTO, UPDATE or TABLE, optionally schema-qualified.
+(count_by(group_by='pattern')), so they are flagged only where code names a relation: after FROM,
+JOIN, INTO, UPDATE or TABLE (optionally schema-qualified), as a string argument of Identifier(),
+or assigned to a name that contains "table" or "index".
 """
 
 from __future__ import annotations
@@ -20,16 +21,22 @@ TOOLS_DIR = Path(__file__).parents[2] / "src" / "serenedb_log_mcp" / "tools"
 
 _NAMES = sorted(CANONICAL_TABLES | CANONICAL_INDEXES, key=len, reverse=True)
 _ANYWHERE = re.compile(r"\b(" + "|".join(re.escape(n) for n in _NAMES if "_" in n) + r")\b")
+_PLAIN = "|".join(re.escape(n) for n in _NAMES if "_" not in n)
 _AFTER_SQL_KEYWORD = re.compile(
-    r"(?i:\b(?:FROM|JOIN|INTO|UPDATE|TABLE))\s+"
-    r"(?:[\\\"\w{}$]+\.)?[\\\"]*(" + "|".join(re.escape(n) for n in _NAMES if "_" not in n) + r")\b"
+    r"(?i:\b(?:FROM|JOIN|INTO|UPDATE|TABLE))\s+(?:[\\\"\w{}$]+\.)?[\\\"]*(" + _PLAIN + r")\b"
 )
+# sql.Identifier(schema, "incident"): the form a tool author would copy from datasets.py.
+_IDENTIFIER_ARGUMENT = re.compile(r"\bIdentifier\([^)]*?[\"'](" + _PLAIN + r")[\"']")
+# INCIDENTS_TABLE = "incident", ownership_table: str = "ownership"
+_ASSIGNED_TO_A_TABLE_NAME = re.compile(
+    r"(?i:\b\w*(?:table|index)\w*)\s*(?::\s*[\w\[\]| ]+)?=\s*[\"'](" + _PLAIN + r")[\"']"
+)
+_PATTERNS = (_ANYWHERE, _AFTER_SQL_KEYWORD, _IDENTIFIER_ARGUMENT, _ASSIGNED_TO_A_TABLE_NAME)
 
 
 def canonical_names_in(source: str) -> list[str]:
     """The canonical table and index names that `source` mentions, in order of appearance."""
-    hits = [(m.start(1), m.group(1)) for m in _ANYWHERE.finditer(source)]
-    hits += [(m.start(1), m.group(1)) for m in _AFTER_SQL_KEYWORD.finditer(source)]
+    hits = {(m.start(1), m.group(1)) for pattern in _PATTERNS for m in pattern.finditer(source)}
     return [name for _, name in sorted(hits)]
 
 
@@ -45,6 +52,11 @@ def canonical_names_in(source: str) -> list[str]:
         ('"SELECT * FROM \\"slm\\".\\"pattern\\""', ["pattern"]),
         ('"FROM pattern_dict d JOIN pattern p USING (template_id)"', ["pattern_dict", "pattern"]),
         ('f"SELECT * FROM {schema}.os_instance"', ["os_instance"]),
+        ('sql.SQL("SELECT * FROM {t}").format(t=sql.Identifier(schema, "incident"))', ["incident"]),
+        ('sql.Identifier("slm", "ownership")', ["ownership"]),
+        ("sql.Identifier(settings.slm_schema, 'pattern')", ["pattern"]),
+        ('INCIDENTS_TABLE = "incident"', ["incident"]),
+        ('ownership_table: str = "ownership"', ["ownership"]),
     ],
 )
 def test_the_scanner_finds_canonical_names(source: str, expected: list[str]) -> None:
@@ -71,8 +83,10 @@ def tool_modules() -> list[Path]:
     return sorted(TOOLS_DIR.rglob("*.py"))
 
 
-def test_the_tools_package_exists() -> None:
+def test_the_tools_package_exists_and_is_scanned() -> None:
+    # If tools/ moved, the parametrized test below would silently become a skip.
     assert (TOOLS_DIR / "__init__.py").is_file()
+    assert tool_modules()
 
 
 @pytest.mark.parametrize("module", tool_modules(), ids=lambda p: str(p.relative_to(TOOLS_DIR)))

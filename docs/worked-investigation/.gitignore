@@ -1,0 +1,4 @@
+# Raw stream-json of each claude -p session: large and full of local paths. run.json keeps the
+# model, cost, turns, tool calls and checks per Role.
+*.stream.jsonl
+*.mcp.json

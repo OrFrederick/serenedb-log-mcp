@@ -71,6 +71,26 @@ def test_the_summary_carries_the_spread_totals_of_the_log_entries(lab: str) -> N
     assert summary["incidents_by_shape"] == {"single-node storm": 1, "multi-midplane": 1}
 
 
+@pytest.mark.parametrize("narrowed", [False, True], ids=["precomputed", "chained"])
+def test_the_summary_counts_incident_days_and_the_incidents_at_the_widest_spread(
+    lab: str, narrowed: bool
+) -> None:
+    """T18: "83 Incidents on 12 days, 7 of them on all 1,024 I/O nodes" must be quotable from one
+    result, so the summary counts the distinct days the Incidents start on (t0 as listed) and how
+    many Incidents reach widest_incident_nodes. The storm starts on 2005-07-20 and the two-node wave
+    on 2005-06-15, so two days, and one Incident at the widest Spread of 2 nodes."""
+    filters: dict[str, Any] = {"time_from": "2005-01-01"} if narrowed else {}
+    result = call("list_incidents", role="team_lead", dataset="bgl", pattern_key="KERNDTLB", **filters)
+
+    summary = result["summary"]
+    assert summary["computed"] == ("chained at query time" if narrowed else "precomputed table")
+    assert (summary["incident_days"], summary["widest_incident_nodes"], summary["widest_incidents"]) == (
+        2,
+        2,
+        1,
+    )
+
+
 def test_a_wave_on_two_nodes_has_one_burst_per_node(lab: str) -> None:
     result = call("list_incidents", role="engineer", dataset="bgl", pattern_key="KERNDTLB", sort="time")
 

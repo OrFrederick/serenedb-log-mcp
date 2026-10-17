@@ -292,9 +292,13 @@ A server started with the same environment connects each Role through its own lo
 
 ## Worked investigation
 
-<!-- TODO(#30): replace this placeholder once T18 merges. -->
+[docs/worked-investigation.md](docs/worked-investigation.md) answers "Start-up path failures" for all three Roles, exported by `export_investigation` from the Evidence Ledger in `docs/worked-investigation/`. Every number in it cites its Evidence, and `tests/golden/test_worked_investigation.py` pins them with independent SQL. The headline findings, as the report states them:
 
-**Pending (#30).** The required worked investigation, "Start-up path failures" (the BGL `/p/gb1` KERNMNTF mount-failure wave, the OpenStack slow spawns found by timing, and the KERNDTLB single-node storm as the Manager's trap), will be in [docs/worked-investigation.md](docs/worked-investigation.md). It is generated from a real Claude session by `export_investigation`, and golden SQL pins its numbers.
+- **BGL `/p/gb1` mount failures (KERNMNTF):** 26,426 Log Entries in 83 Incidents (gap 300 s), starting on 12 distinct days; 7 Incidents reached all 1,024 I/O nodes.
+- **OpenStack slow spawns:** nova's spawn timing finds all four benchmark-labelled instances (the four slowest of 2,066, all on host os-3), while full-text search for errors on them returns 0 Log Entries.
+- **The Manager's trap:** the largest KERNDTLB Incident has 152,182 Log Entries on 1 node, yet the category has 37 Incidents and ranks outside the priority band.
+
+`make worked-investigation-export` re-renders the report without a model, `make worked-investigation-replay` re-runs every stored statement, and `make worked-investigation` runs the three Roles again through `claude -p`.
 
 ## Results
 
@@ -358,7 +362,8 @@ What we measured on SereneDB 26.10.1 (and 26.09.1.3 where noted) and how the ser
 ## Limitations
 
 - **The organisers' loader, schema and Ownership Table have not arrived** (T25, #37). Loading uses our dev loader, and Teams come from a stub Ownership Table with fictional Teams (`team_source = 'stub'` on every row); `describe_corpus` and every count grouped by Team carry a note that says so.
-- **The worked investigation is still being written** (#30), and **no eval run with a real model is recorded yet** ([docs/results/eval.md](docs/results/eval.md)).
+- **The worked investigation's Manager answer was drafted from Evidence.** The Engineer and Team Lead answers in [`docs/worked-investigation.md`](docs/worked-investigation.md) are the final messages of real `claude -p` sessions; the Manager session was stopped after its tool calls, so its answer was drafted from its own Evidence (E25 to E28) and checked with `verify_answer`. `make worked-investigation` runs all three Roles again.
+- **No eval run with a real model is recorded yet** ([docs/results/eval.md](docs/results/eval.md)).
 - **The Incident timeline has not been seen rendering by a human** (#35). Claude Code does not render MCP Apps; it always falls back to text.
 - **Incidents are a model, not a ground truth.** The 300 s gap reproduces the published BGL total because it was fitted on it; the per-category counts are the independent check. Precursors (`find_precursors`) and Cascades are always Hypotheses.
 - **Time zones.** BGL `ts` is shown as logged, in US Pacific local time; every gap, window, bucket and time filter uses UTC (`epoch_utc`), and a time input with an offset is converted to UTC. OpenStack timestamps carry no zone and are taken as UTC.

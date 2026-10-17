@@ -6,6 +6,13 @@ matched) and the facets over every match. The SereneDB syntax was checked agains
 26.10.1 dev instance: `websearch_to_tsquery`, `phraseto_tsquery`, a bare string (OR),
 `ts_levenshtein`, `ts_highlight(e.message, ...)`, `BM25(e.tableoid)` and `::score(NULL)` filters
 (`ts_any`, `ts_ge`, `ts_lt`), in both binding modes.
+
+Time runs on UTC like count_by and trend (clock.py, #73): time inputs are read as UTC, and the time
+range filters `epoch_utc` for a Dataset whose ts is local time (BGL) and `ts` for one that logs UTC.
+`epoch_utc @@ ts_ge(%s::DOUBLE)::score(NULL)` was measured on 26.10.1 in both binding modes: on the
+Base Corpus it matches the same Log Entries as count_by's UTC range and leaves every BM25 score
+unchanged (578 'ciod failed' matches in July 2005 UTC), while a plain `epoch_utc >= %s` adds 2.0.
+first_seen and last_seen are UTC; the rows keep ts as logged, and a note says how it relates to UTC.
 """
 
 from __future__ import annotations
@@ -20,6 +27,16 @@ from psycopg import sql
 from pydantic import Field
 
 from serenedb_log_mcp import fts
+from serenedb_log_mcp.clock import (
+    UTC_ZONE,
+    clock_note,
+    time_column,
+    time_columns,
+    utc_bound,
+    utc_input,
+    utc_range,
+    utc_time,
+)
 from serenedb_log_mcp.config import Role
 from serenedb_log_mcp.corpus.datasets import DATASET_NAMES, Relation, relation
 from serenedb_log_mcp.corpus.facts import dataset_facts
@@ -35,8 +52,8 @@ from serenedb_log_mcp.tools._aggregate import (
     PatternIdsParam,
     Q,
     SourcesParam,
-    TimeFromParam,
-    TimeToParam,
+    UtcTimeFromParam,
+    UtcTimeToParam,
     iso,
     joined,
     q,
@@ -72,7 +89,9 @@ class Search:
     text: str | None = None
     mode: fts.QueryMode = "all_words"
     start: datetime | None = None
+    """Start of the time range in UTC, inclusive (clock.py); None for the first Log Entry."""
     end: datetime | None = None
+    """End of the time range in UTC, exclusive; None for after the last Log Entry."""
     components: tuple[str, ...] = ()
     levels: tuple[str, ...] = ()
     sources: tuple[str, ...] = ()
@@ -89,6 +108,11 @@ class Search:
         return q("{} AS e", self.rel.index)
 
     @property
+    def clock(self) -> sql.Composable:
+        """The column the time range filters: epoch_utc where ts is local time, else ts (clock.py)."""
+        return self.col(time_column(self.rel.dataset))
+
+    @property
     def columns(self) -> list[str]:
         """The output columns of a row, in order."""
         return [
@@ -103,9 +127,9 @@ class Search:
         if self.text:
             found.append(_q(fts.text_match(self.col("message"), self.text, self.mode)))
         if self.start is not None:
-            found.append(_q(fts.filter_at_or_after(self.col("time"), self.start)))
+            found.append(_q(fts.filter_at_or_after(self.clock, utc_bound(self.rel.dataset, self.start))))
         if self.end is not None:
-            found.append(_q(fts.filter_before(self.col("time"), self.end)))
+            found.append(_q(fts.filter_before(self.clock, utc_bound(self.rel.dataset, self.end))))
         for concept, values in (
             ("component", self.components),
             ("level", self.levels),
@@ -152,7 +176,7 @@ class Search:
         return sql.SQL("{}{}, {}{}").format(self.col("epoch"), direction, self.col("entry_id"), direction)
 
     def facets_statement(self) -> Q:
-        """Over every match: distinct sources and racks, first and last seen, Components, levels."""
+        """Over every match: distinct sources and racks, first and last seen (UTC), Components, levels."""
         rack = self.col("rack") if "rack" in self.rel.columns else sql.SQL("CAST(NULL AS VARCHAR)")
         return q(
             """WITH m AS (
@@ -168,7 +192,7 @@ SELECT 'level', level, count(*), NULL, NULL, NULL, NULL FROM m GROUP BY level"""
             self.col("level"),
             self.col("source"),
             rack,
-            self.col("time"),
+            utc_time(self.rel),
             self.source,
             self.where(),
         )
@@ -194,6 +218,13 @@ RELEVANCE_NOTE = (
     "Sorted by BM25 relevance, highest score first. Log Entries with equal scores come in no fixed "
     "order, so another call can show other entries with the same score; total_matches does not change."
 )
+SEARCH_CLOCK_LEAD = (
+    "time_from, time_to, first_seen and last_seen are UTC, and time inputs are read as UTC (an input "
+    "with an offset is converted), as in count_by and trend; the rows show ts as logged."
+)
+"""The first sentence of search_logs' clock note (`clock.clock_note`)."""
+SEARCH_ON_EPOCH = "time range and the time order of the rows"
+"""What search_logs computes on epoch_utc for a Dataset whose ts is local time."""
 SOURCE_NOTES = {
     "bgl": "distinct_sources counts BGL nodes, distinct_racks their racks.",
     "openstack": (
@@ -262,8 +293,8 @@ def register(server: MCPServer) -> None:
         mode: ModeParam = "all_words",
         pattern_ids: PatternIdsParam = None,
         family_id: FamilyIdParam = None,
-        time_from: TimeFromParam = None,
-        time_to: TimeToParam = None,
+        time_from: UtcTimeFromParam = None,
+        time_to: UtcTimeToParam = None,
         components: ComponentsParam = None,
         levels: LevelsParam = None,
         sources: SourcesParam = None,
@@ -277,16 +308,19 @@ def register(server: MCPServer) -> None:
         the rows are only a sample, so use count_by or trend for frequency and change over time, and
         get_context(entry_id) for what happened just before and after one entry.
         Inputs: role, dataset, and query (mode all_words, phrase, any_words or fuzzy) or a Pattern
-        filter (pattern_ids, family_id, alert_categories), plus optional time_from, time_to,
-        components, levels, sources, sort (time, newest, relevance) and limit (default 20, at most 50).
-        Outputs: the Evidence envelope, whose rows hold entry_id, ts, the node (BGL) or request_id and
-        instance_ref (OpenStack), component, level, alert_tag (BGL), template_id, message (at most 240
-        characters, matched words marked **like this**) and, with sort='relevance', score; summary
-        holds entries_total and facets over every match: distinct_sources, distinct_racks,
-        first_seen, last_seen, top_components and top_levels.
+        filter (pattern_ids, family_id, alert_categories), plus optional time_from and time_to (UTC
+        for every Dataset, as in count_by and trend: BGL's ts is US Pacific local time, so its time
+        range runs on epoch_utc, see data_scope.time_columns), components, levels, sources, sort
+        (time, newest, relevance) and limit (default 20, at most 50).
+        Outputs: the Evidence envelope, whose rows hold entry_id, ts (as logged), the node (BGL) or
+        request_id and instance_ref (OpenStack), component, level, alert_tag (BGL), template_id,
+        message (at most 240 characters, matched words marked **like this**) and, with
+        sort='relevance', score; summary holds entries_total and facets over every match:
+        distinct_sources, distinct_racks, first_seen and last_seen (UTC), top_components and
+        top_levels.
         No match returns a hint in notes, not an error.
         """
-        search, scope = prepare(
+        search, scope, notes = prepare(
             role,
             dataset,
             query=query,
@@ -301,7 +335,7 @@ def register(server: MCPServer) -> None:
             alert_categories=alert_categories,
             sort=sort,
         )
-        return run(search, scope, limit, role)
+        return run(search, scope, limit, role, notes)
 
 
 def prepare(
@@ -319,8 +353,18 @@ def prepare(
     sources: Sequence[str] | None,
     alert_categories: Sequence[str] | None,
     sort: Sort,
-) -> tuple[Search, DataScope]:
-    """Validate the inputs against the Dataset's facts; return the search and its Data Scope."""
+) -> tuple[Search, DataScope, list[str]]:
+    """Validate the inputs against the Dataset's facts; return the search, its Data Scope and the
+    notes on its clock.
+
+    Every time is UTC (clock.py): the time inputs (an input with an offset is converted, with a
+    note), the Dataset's range and so the corpus end a relative time resolves against.
+    """
+    notes: list[str] = []
+    time_from, converted = utc_input("time_from", time_from)
+    notes.extend([converted] if converted else [])
+    time_to, converted = utc_input("time_to", time_to)
+    notes.extend([converted] if converted else [])
     text = fts.normalise_query(query)
     if alert_categories and dataset != "bgl":
         raise ScopeError(
@@ -339,11 +383,12 @@ def prepare(
             "sort='time' or sort='newest' for a Pattern filter alone."
         )
     found = dataset_facts(dataset, role)
-    if found.last is None:
+    if found.first is None or found.last is None:
         raise ScopeError(
             f"{dataset} has no Log Entries in this database. Call describe_corpus for the Datasets "
             "that are loaded."
         )
+    first, last = utc_range(dataset, found.first, found.last)
     components_ = validate_choices("components", components, found.components)
     levels_ = validate_choices("levels", levels, found.levels)
     alerts_ = validate_choices("alert_categories", alert_categories, found.alert_categories)
@@ -352,7 +397,7 @@ def prepare(
         dataset,
         time_from=time_from,
         time_to=time_to,
-        corpus_end={dataset: found.last},
+        corpus_end={dataset: last},
         known_datasets=DATASET_NAMES,
         pattern_ids=pattern_ids,
         family_id=family_id,
@@ -363,6 +408,8 @@ def prepare(
         sources=sources_,
         alert_categories=alerts_,
     )
+    scope = scope.model_copy(update={"time_zone": UTC_ZONE, "time_columns": time_columns(scope.datasets)})
+    notes.append(clock_note({dataset: (first, last)}, lead=SEARCH_CLOCK_LEAD, on_epoch=SEARCH_ON_EPOCH))
     start, end = time_bounds(scope)
     search = Search(
         relation(dataset, role, scope),
@@ -379,10 +426,12 @@ def prepare(
         sort=sort,
     )
     search.where()  # a fuzzy query with too many words fails here, before any statement runs
-    return search, scope
+    return search, scope, notes
 
 
-def run(search: Search, scope: DataScope, limit: int, role: Role) -> ToolOutcome:
+def run(
+    search: Search, scope: DataScope, limit: int, role: Role, clock_notes: Sequence[str] = ()
+) -> ToolOutcome:
     """Count, fetch the rows and, when anything matched, the facets."""
     count, rows = search.count_statement(), search.rows_statement()
     found = fetch_limited(count.text, rows.text, count.params, limit, role=role)
@@ -401,6 +450,7 @@ def run(search: Search, scope: DataScope, limit: int, role: Role) -> ToolOutcome
             notes.append(RELEVANCE_NOTE)
     else:
         notes.append(no_match_hint(search))
+    notes.extend(clock_notes)
     shaped = [shape_row(search, row) for row in found.rows]
     return ToolOutcome(
         result=QueryResult.combine(*results, total=found.total, rows=shaped),

@@ -6,7 +6,7 @@ so the tool cannot pass by agreeing with itself.
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 import pytest
 from aggregation_corpus import (
@@ -15,17 +15,29 @@ from aggregation_corpus import (
     MMCS,
     NEWCOMP,
     NODE_B,
+    PACIFIC,
     STEADY,
     STORM,
     STORM_START,
     T_TLB,
     U1,
 )
-from aggregation_tools import call, call_error, independent, row_dicts
+from aggregation_tools import call, call_error, independent, replay, row_dicts
+from retrieval_corpus import DST_MESSAGES, DST_TS
 
 pytestmark = pytest.mark.db
 
 STORM_END = STORM_START + timedelta(seconds=30 * (STORM - 1))
+
+
+def utc(logged: datetime) -> datetime:
+    """A logged BGL ts (US Pacific) in UTC, the clock of search_logs' time inputs and facets (#73)."""
+    return logged.replace(tzinfo=PACIFIC).astimezone(UTC).replace(tzinfo=None)
+
+
+def epoch(at: datetime) -> float:
+    """A UTC time as an epoch_utc value."""
+    return at.replace(tzinfo=UTC).timestamp()
 
 
 def test_all_words_finds_every_matching_entry_with_an_exact_total_and_a_sample_of_rows(corpus: str) -> None:
@@ -61,8 +73,8 @@ def test_the_facets_describe_every_match_not_only_the_returned_rows(corpus: str)
     assert summary["entries_total"] == STORM
     assert summary["distinct_sources"] == 1
     assert summary["distinct_racks"] == 1
-    assert summary["first_seen"] == STORM_START.isoformat()
-    assert summary["last_seen"] == STORM_END.isoformat()
+    assert summary["first_seen"] == utc(STORM_START).isoformat() == "2005-07-20T17:00:00"
+    assert summary["last_seen"] == utc(STORM_END).isoformat()
     assert summary["top_components"] == {"KERNEL": STORM}
     assert summary["top_levels"] == {"FATAL": STORM}
 
@@ -141,10 +153,12 @@ def test_component_level_and_time_filters_narrow_the_matches(corpus: str) -> Non
 
     (july_sql,) = independent(
         corpus,
-        "SELECT count(*) FROM {bgl} WHERE message LIKE 'steady%%' AND ts >= %s AND ts < %s",
-        [datetime(2005, 7, 1), datetime(2005, 8, 1)],
+        "SELECT count(*) FROM {bgl} WHERE message LIKE 'steady%%' AND epoch_utc >= %s AND epoch_utc < %s",
+        [epoch(datetime(2005, 7, 1)), epoch(datetime(2005, 8, 1))],
     )[0]
     assert july["total_matches"] == july_sql == 62
+    assert july["data_scope"]["time_zone"] == "UTC"
+    assert july["data_scope"]["time_columns"] == {"bgl": "epoch_utc"}
     assert app["total_matches"] == APPSEV
     assert app["data_scope"]["filters"]["levels"] == ["FATAL"]
     assert kernel["total_matches"] == 0
@@ -155,8 +169,33 @@ def test_a_relative_time_resolves_against_the_corpus_end(corpus: str) -> None:
 
     scope = result["data_scope"]
     assert scope["time_input"] == "last 7d"
-    assert scope["resolved_against"].startswith("bgl corpus end 2005-07-31")
+    # The corpus end in UTC: the last Log Entry is 2005-07-31 14:00 PDT.
+    assert scope["resolved_against"] == "bgl corpus end 2005-07-31T21:00:00"
+    assert scope["time_to"] == "2005-07-31T21:00:01"
     assert result["total_matches"] == 14
+
+
+def test_a_logged_ts_that_repeats_is_two_utc_times_an_hour_apart(corpus: str) -> None:
+    # The two DST lines share one logged ts but lie an hour apart in epoch_utc; a UTC range of
+    # the first hour after the logged time selects the first line only.
+    first = utc(DST_TS)
+    one = call(
+        "search_logs",
+        role="engineer",
+        dataset="bgl",
+        query="fall back",
+        time_from=first.isoformat(),
+        time_to=(first + timedelta(hours=1)).isoformat(),
+    )
+    both = call("search_logs", role="engineer", dataset="bgl", query="fall back")
+
+    assert [row["ts"] for row in row_dicts(one)] == [DST_TS.isoformat()]
+    assert "before" in row_dicts(one)[0]["message"]
+    assert both["total_matches"] == len(DST_MESSAGES)
+    assert (both["summary"]["first_seen"], both["summary"]["last_seen"]) == (
+        first.isoformat(),
+        (first + timedelta(hours=1)).isoformat(),
+    )
 
 
 def test_openstack_sources_are_instances(corpus: str) -> None:
@@ -215,3 +254,34 @@ def test_the_evidence_holds_the_count_rows_and_facets_statements_on_the_index(co
     assert result["sql"][0].startswith("SELECT count(*) FROM")
     assert all("bgl_entry_idx" in statement for statement in result["sql"])
     assert result["params"][1][-1] == 20  # the LIMIT
+
+
+@pytest.mark.parametrize("client_binding", [False, True])
+@pytest.mark.parametrize(
+    ("dataset", "query", "time_from", "time_to"),
+    [
+        # BGL's range is a range of epoch_utc (DOUBLE), OpenStack's a range of ts (TIMESTAMP).
+        ("bgl", "steady", "2005-07-01", "2005-08-01"),
+        ("openstack", "instance", "2017-05-15", "2017-05-16T12:00:00"),
+    ],
+)
+def test_a_time_filtered_search_replays_from_the_evidence_ledger_as_stored(
+    corpus: str, dataset: str, query: str, time_from: str, time_to: str, client_binding: bool
+) -> None:
+    # #71: the ledger stores parameters as JSON, so an uncast ts_lt(%s) got an ISO string and failed.
+    result = call(
+        "search_logs",
+        role="engineer",
+        dataset=dataset,
+        query=query,
+        time_from=time_from,
+        time_to=time_to,
+        limit=5,
+    )
+
+    count, rows, facets = replay(result, client_binding=client_binding)
+
+    assert result["total_matches"] > result["returned"] == 5
+    assert count == [(result["total_matches"],)]
+    assert [row[0] for row in rows] == [row[0] for row in result["rows"]]
+    assert [row[2] for row in facets if row[0] == "all"] == [result["total_matches"]]

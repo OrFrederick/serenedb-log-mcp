@@ -1,9 +1,11 @@
-"""`trend` and `count_by` on one clock, UTC, across BGL's daylight-saving fall-back (#65).
+"""`trend`, `count_by` and `search_logs` on one clock, UTC, across BGL's daylight-saving fall-back
+(#65, #73).
 
-The corpus here is the fall-back alone, in its own throwaway schema: one Log Entry every 10 minutes
-from 2005-10-30 06:00 to 09:50 UTC in both Datasets. For BGL that is 23:00 PDT on 2005-10-29 to
-01:50 PST, so its ts runs through the hour from 01:00 twice: 12 Log Entries carry a local ts in
-01:00-01:59, while every UTC hour holds 6. OpenStack logs the same instants in UTC.
+The corpus here is the fall-back alone, in its own throwaway schema with the real inverted indexes:
+one Log Entry every 10 minutes from 2005-10-30 06:00 to 09:50 UTC in both Datasets. For BGL that is
+23:00 PDT on 2005-10-29 to 01:50 PST, so its ts runs through the hour from 01:00 twice: 12 Log
+Entries carry a local ts in 01:00-01:59, while every UTC hour holds 6. OpenStack logs the same
+instants in UTC.
 """
 
 from __future__ import annotations
@@ -15,10 +17,8 @@ from typing import Any
 from zoneinfo import ZoneInfo
 
 import aggregation_corpus
-import psycopg
 import pytest
 from aggregation_tools import call, independent, row_dicts
-from psycopg import sql
 
 from serenedb_log_mcp import config, ledger, toolkit
 from serenedb_log_mcp.config import load_settings
@@ -75,14 +75,10 @@ def numbered(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
 def fallback_schema(database_url: str) -> Iterator[str]:
     schema = f"scratch_65_{uuid.uuid4().hex[:8]}"
     try:
-        with psycopg.connect(database_url, autocommit=True) as conn:
-            conn.execute(sql.SQL("CREATE SCHEMA {}").format(sql.Identifier(schema)))
-            create = aggregation_corpus._create
-            create(conn, schema, "bgl_entry", aggregation_corpus.BGL_COLUMNS, numbered(bgl_rows()))
-            create(conn, schema, "os_entry", aggregation_corpus.OS_COLUMNS, numbered(os_rows()))
-            owners = [{"dataset": "bgl", "component": "KERNEL", "team": "Kernel Team"}]
-            columns = (("dataset", "VARCHAR"), ("component", "VARCHAR"), ("team", "VARCHAR"))
-            create(conn, schema, "ownership", columns, owners)
+        # With the derive step's inverted indexes: search_logs reads only the index (#73).
+        aggregation_corpus.build(
+            database_url, schema, bgl=numbered(bgl_rows()), openstack=numbered(os_rows())
+        )
         yield schema
     finally:
         aggregation_corpus.drop(database_url, schema)
@@ -198,3 +194,86 @@ def test_the_dataset_range_holds_the_last_log_entry_after_the_repeated_hour(fall
 
     assert result["data_scope"]["time_to"] == "2005-10-30T09:50:01"
     assert row_dicts(result)[0]["count"] == PER_HOUR
+
+
+# search_logs (#73) ----------------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("time_from", "time_to", "expected"),
+    [
+        # Across the fall-back: 01:30 PDT to 01:30 PST, a range no local ts range can name.
+        ("2005-10-30T08:30", "2005-10-30T09:30", PER_HOUR),
+        # The first and the second copy of the repeated hour, named by their offsets.
+        ("2005-10-30T01:00:00-07:00", "2005-10-30T01:00:00-08:00", PER_HOUR),
+        ("2005-10-30T01:00:00-08:00", "2005-10-30T02:00:00-08:00", PER_HOUR),
+        ("2005-10-30T06:00", "2005-10-30T10:00", STEPS),
+    ],
+)
+def test_search_logs_matches_as_many_log_entries_as_count_by_in_the_same_utc_range(
+    fallback: str, time_from: str, time_to: str, expected: int
+) -> None:
+    window = {"dataset": "bgl", "query": "clock", "time_from": time_from, "time_to": time_to}
+
+    searched = call("search_logs", role="engineer", **window)
+    counted = call("count_by", role="engineer", group_by="dataset", **window)
+
+    assert searched["total_matches"] == row_dicts(counted)[0]["count"] == expected
+    assert searched["data_scope"]["time_from"] == counted["data_scope"]["time_from"]
+    assert searched["data_scope"]["time_to"] == counted["data_scope"]["time_to"]
+    assert searched["data_scope"]["time_zone"] == "UTC"
+    assert searched["data_scope"]["time_columns"] == {"bgl": "epoch_utc"}
+
+
+def test_search_logs_reports_first_and_last_seen_in_utc_and_rows_as_logged(fallback: str) -> None:
+    result = call(
+        "search_logs",
+        role="engineer",
+        dataset="bgl",
+        query="clock",
+        time_from="2005-10-30T09:00",
+        time_to="2005-10-30T10:00",
+    )
+
+    summary = result["summary"]
+    assert (summary["first_seen"], summary["last_seen"]) == ("2005-10-30T09:00:00", "2005-10-30T09:50:00")
+    # The rows keep ts as logged: 09:00 UTC is the second 01:00, in PST.
+    assert [row["ts"] for row in row_dicts(result)] == [f"2005-10-30T01:{m}0:00" for m in range(PER_HOUR)]
+    notes = " ".join(result["notes"])
+    assert "ts as logged" in notes
+    assert "UTC = ts + 7 h until 2005-10-30T09:00 UTC" in notes
+    assert "then ts + 8 h" in notes
+
+
+def test_search_logs_converts_an_input_with_an_offset_and_says_so(fallback: str) -> None:
+    result = call(
+        "search_logs", role="engineer", dataset="bgl", query="clock", time_from="2005-10-30T01:00:00-08:00"
+    )
+
+    assert result["data_scope"]["time_from"] == "2005-10-30T09:00:00"
+    assert result["total_matches"] == PER_HOUR
+    assert any("converted to UTC" in note for note in result["notes"])
+
+
+def test_search_logs_resolves_a_relative_range_against_the_utc_corpus_end(fallback: str) -> None:
+    # The last Log Entry is 01:50 PST; read as 01:50 PDT, the range would end an hour early.
+    result = call("search_logs", role="engineer", dataset="bgl", query="clock", time_from="last 1h")
+
+    assert result["data_scope"]["time_to"] == "2005-10-30T09:50:01"
+    assert result["data_scope"]["resolved_against"] == "bgl corpus end 2005-10-30T09:50:00"
+    assert result["total_matches"] == PER_HOUR
+
+
+def test_search_logs_on_openstack_filters_its_utc_ts(fallback: str) -> None:
+    result = call(
+        "search_logs",
+        role="engineer",
+        dataset="openstack",
+        query="clock",
+        time_from="2005-10-30T08:00",
+        time_to="2005-10-30T09:00",
+    )
+
+    assert result["total_matches"] == PER_HOUR
+    assert result["data_scope"]["time_columns"] == {"openstack": "ts"}
+    assert result["summary"]["first_seen"] == "2005-10-30T08:00:00"

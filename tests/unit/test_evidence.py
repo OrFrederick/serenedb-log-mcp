@@ -129,6 +129,20 @@ def test_the_role_layer_fields_default_to_empty() -> None:
     assert record.not_measured == []
 
 
+def test_the_summary_holds_facets_as_well_as_scalars() -> None:
+    # T5 returns facets (the top Components, the levels, the distinct sources) in the summary, so
+    # the field is not scalars only and its description says so.
+    facets = {"components": [["KERNEL", 152_734], ["APP", 49_651]], "levels": {"FATAL": 42}}
+    record = evidence(summary={"entries_total": 265_876, **facets})
+
+    assert record.summary["components"] == facets["components"]
+    assert record.summary["levels"] == facets["levels"]
+    assert Evidence.model_validate(record.model_dump(mode="json")) == record
+
+    described = Evidence.model_json_schema()["properties"]["summary"]["description"]
+    assert "small lists and maps such as facets" in described
+
+
 def test_the_envelope_round_trips_through_json() -> None:
     record = evidence(
         summary={"entries_total": 265_876, "share_pct": 57.4},

@@ -171,9 +171,10 @@ class Evidence(BaseModel):
     )
     summary: dict[str, Any] = Field(
         default_factory=dict,
-        description="Scalars SereneDB computed for this result, so they never have to be added up "
-        "by hand, for example entries_total, groups_total, share_pct, top_n_sum, other_count, "
-        "incidents_total.",
+        description="Values SereneDB computed for this result, so they never have to be added up "
+        "by hand: usually scalars, or small lists and maps such as facets, for example "
+        "entries_total, groups_total, share_pct, top_n_sum, other_count, incidents_total and the "
+        "top Components or levels of a search.",
     )
     notes: list[str] = Field(
         default_factory=list,

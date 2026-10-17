@@ -36,8 +36,8 @@ def register(server: MCPServer) -> None:
         another Role started.
         Inputs: role (who is asking), evidence_id (for example 'E3').
         Outputs: the Evidence envelope that was stored, shaped for the Role: evidence_id, tool,
-        role, sql, params, data_scope, total_matches, returned, truncated, query_ms, columns, rows,
-        summary, notes, answer_frame and not_measured.
+        role, arguments, sql, params, data_scope, total_matches, returned, truncated, query_ms,
+        columns, rows, summary, notes, answer_frame and not_measured.
         """
         wanted = _normalise(evidence_id)
         ledger = get_ledger()

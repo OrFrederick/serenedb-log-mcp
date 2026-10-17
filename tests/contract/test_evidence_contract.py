@@ -127,3 +127,6 @@ def test_an_investigation_can_be_replayed_from_the_ledger_in_one_session() -> No
     assert any("1 of 3" in note for note in first["notes"])
     assert again["evidence_id"] == "E1"
     assert again["rows"] == first["rows"]
+    # The call that produced each record travels with it, so T13 can render the tool calls.
+    assert first["arguments"] == {"groups": 1, "fail": False}
+    assert again["arguments"] == first["arguments"]

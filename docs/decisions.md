@@ -59,7 +59,7 @@ The five former Open research items (template mining, incident model, MCP tool s
 - Remote Parquet: `read_parquet('https://...')` works. Pass a list of URLs, because HTTPS globs are unlikely to work. `EXPLAIN ANALYZE` reports rows and wall time but not bytes scanned. An inverted index over a view of external data is a snapshot, and you refresh it with `REINDEX`.
 - `text_bench`: 52 files of about 1B rows each, about 2 TB in total. `otel_demo/`: logs (91.6M rows), traces (216.7M rows) and metrics.
 - Loghub-2.0 (Zenodo 8275861) ships full template annotations: BGL has 4,631,261 lines and 320 templates, OpenStack has 207,632 lines and 48 templates. Its Content field holds only the message, and its line counts differ from the raw corpus.
-- OpenStack anomalies: reportedly about 4 instance UUIDs with injected faults, visible in timing data but not in message text. Not yet verified.
+- OpenStack anomalies: 4 instance UUIDs with injected faults, visible in timing data but not in message text. Verified by T11 (#23, PR #57): `latency_stats(metric='spawn', group_by='instance')` ranks all 4 first, and none of their Log Entries is above INFO. See [`docs/results/ground-truth.md`](results/ground-truth.md), which also states that the default min_z was chosen with the labels in view.
 
 ## Known facts (verified while fixing the T1 nits, #44, 2026-10-17)
 - A **connection** failure on SereneDB 26.09.1.3 carries **no SQLSTATE**: `exc.sqlstate` and `exc.diag.sqlstate` are both `None`, and the class is always `psycopg.OperationalError`. The libpq message is the only thing that tells the causes apart. A statement refused after connecting does carry one (`42501` for `permission denied for schema …`).

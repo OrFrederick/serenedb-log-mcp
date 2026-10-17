@@ -14,16 +14,31 @@ import math
 import os
 import re
 from collections.abc import Mapping
+from enum import StrEnum
 from pathlib import Path
 from types import MappingProxyType
-from typing import Any, Literal, get_args
+from typing import Any
 
 import psycopg
 from psycopg.conninfo import conninfo_to_dict
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_serializer, field_validator
 
-RoleName = Literal["engineer", "team_lead", "manager"]
-ROLES: tuple[RoleName, ...] = get_args(RoleName)
+
+class Role(StrEnum):
+    """Who is asking. The Role selects the connection, the defaults and the output shape (#4).
+
+    This is the one definition of the Role names in the tree; `evidence.Role` re-exports it. It is a
+    StrEnum, so a member equals and hashes like its value and works wherever a name string is
+    expected (argparse choices, environment variable suffixes, JSON keys).
+    """
+
+    ENGINEER = "engineer"
+    TEAM_LEAD = "team_lead"
+    MANAGER = "manager"
+
+
+RoleName = Role
+ROLES: tuple[Role, ...] = tuple(Role)
 
 DEFAULT_DATABASE_URL = "host=localhost port=7890 dbname=postgres user=postgres"
 SCHEMA_RE = re.compile(r"^[a-z_][a-z0-9_]*$")

@@ -9,6 +9,7 @@ from pydantic import ValidationError
 
 from serenedb_log_mcp import __version__
 from serenedb_log_mcp.config import ROLES, ConfigError, load_settings, set_settings
+from serenedb_log_mcp.ledger import LedgerError, get_ledger
 from serenedb_log_mcp.server import create_server
 
 
@@ -48,6 +49,13 @@ def main(argv: Sequence[str] | None = None) -> None:
     except (ConfigError, ValidationError) as exc:
         parser.error(str(exc))
     set_settings(settings)
+    # The Evidence Ledger is loaded here, so a broken LEDGER_PATH is a usage error now instead of a
+    # ToolError in the middle of an investigation. A path that is a directory or that this process
+    # may not read raises OSError rather than LedgerError, and is just as much a usage error.
+    try:
+        get_ledger()
+    except (LedgerError, OSError) as exc:
+        parser.error(f"LEDGER_PATH: {exc}")
     server = create_server()
     if args.transport == "stdio":
         server.run("stdio")

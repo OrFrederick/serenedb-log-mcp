@@ -5,7 +5,13 @@ What is true for every statement is written once here:
 - it runs inside `BEGIN READ ONLY`, because SereneDB does not enforce
   `default_transaction_read_only`;
 - a `threading.Timer` calls `conn.cancel_safe()` after `SLM_QUERY_TIMEOUT_S`, because SereneDB
-  accepts `statement_timeout` but does not enforce it;
+  accepts `statement_timeout` but does not enforce it. The cancel is not always honoured: on
+  26.09.1.3 a bound parameter inside a table function such as `generate_series` makes SereneDB
+  ignore it (measured in the #47 review), while 26.10.1 honoured every cancel, bound or literal, in
+  both binding modes (33 of 33 runs). So every result is also checked against the limit, and a
+  call that ran past it says so in `QueryResult.notes`;
+- only a closed or broken connection counts as lost: SereneDB reports ordinary IO errors (a
+  missing `read_csv` file, an unreachable HTTP source) as SQLSTATE `08000` on a healthy session;
 - on a lost connection (SereneDB 26.10.1 SIGSEGVs intermittently and restarts in a few seconds) the
   layer waits until `SELECT 1` answers on a new connection, retries the statements once and says
   so in `QueryResult.notes`;

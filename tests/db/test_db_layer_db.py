@@ -166,7 +166,18 @@ def test_numeric_results_come_back_as_int_or_float(layer: Database, scratch: str
 # Timeout ----------------------------------------------------------------------------------------------
 
 
+def _slow_sql(database_url: str) -> str:
+    """`sleep_ms` where the server has it; otherwise a scan of 2e10 generated rows, cancelled too."""
+    with psycopg.connect(database_url, autocommit=True) as conn:
+        try:
+            conn.execute("SELECT sleep_ms(1)")
+        except psycopg.Error:
+            return "SELECT sum(i * i) FROM generate_series(1, 20000000000) g(i)"
+    return "SELECT sleep_ms(30000)"
+
+
 def test_a_slow_query_is_cancelled_and_the_next_query_succeeds(database_url: str) -> None:
+    slow = _slow_sql(database_url)
     layer = Database(database_url, timeout_s=0.5)
     try:
         # BEGIN, the statement and ROLLBACK cost three round trips; the tunnel to the shared dev
@@ -177,7 +188,7 @@ def test_a_slow_query_is_cancelled_and_the_next_query_succeeds(database_url: str
 
         started = time.monotonic()
         with pytest.raises(QueryTimeout):
-            layer.fetch_all("SELECT sleep_ms(30000)")
+            layer.fetch_all(slow)
         elapsed = time.monotonic() - started
 
         assert elapsed < trivial + 2.0

@@ -1,5 +1,6 @@
 """The Evidence contract: Role, Data Scope and the Evidence envelope (plan section 2.3)."""
 
+from decimal import Decimal
 from typing import Any
 
 import pytest
@@ -154,6 +155,38 @@ def test_the_envelope_round_trips_through_json() -> None:
     again = Evidence.model_validate(record.model_dump(mode="json"))
 
     assert again == record
+
+
+def test_a_decimal_is_serialised_as_a_json_string_so_the_db_layer_must_not_return_one() -> None:
+    """Tripwire for T2's numeric loader (plan section 2.4, PR #43 review item 5).
+
+    `model_dump(mode="json")` has no lossless JSON form for `Decimal`, so it writes a string.
+    `sum(bigint)` and `round(numeric, 2)` come back as `Decimal` from psycopg by default, so
+    without a numeric loader in `db.py` a measured `share_pct` would reach the model as "12.34"
+    and a `top_n_sum` as "265876". T2 registers a loader that returns int and float instead; this
+    test records why, and fails if the envelope ever starts papering over it with a serialiser of
+    its own.
+    """
+    record = evidence(
+        columns=["alert_tag", "share_pct"],
+        rows=[["KERNDTLB", Decimal("57.40")]],
+        summary={"top_n_sum": Decimal("265876"), "share_pct": Decimal("12.34")},
+    )
+
+    dumped = record.model_dump(mode="json")
+
+    assert dumped["rows"] == [["KERNDTLB", "57.40"]]
+    assert dumped["summary"] == {"top_n_sum": "265876", "share_pct": "12.34"}
+
+    # What T2's loader must deliver instead: int and float stay numbers through the same dump.
+    loaded = evidence(
+        columns=["alert_tag", "share_pct"],
+        rows=[["KERNDTLB", 57.4]],
+        summary={"top_n_sum": 265_876, "share_pct": 12.34},
+    ).model_dump(mode="json")
+
+    assert loaded["rows"] == [["KERNDTLB", 57.4]]
+    assert loaded["summary"] == {"top_n_sum": 265_876, "share_pct": 12.34}
 
 
 def test_the_envelope_is_frozen_so_the_stored_record_cannot_be_edited_in_place() -> None:

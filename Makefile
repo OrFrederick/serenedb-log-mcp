@@ -69,3 +69,6 @@ load-dev: ## Load the full Base Corpus with the throwaway dev loader (SLM_DATA_D
 
 load-sample: ## Load the Loghub 2k BGL and OpenStack samples (downloads them on first use)
 	$(UV) run python scripts/dev_loader.py --sample $(LOAD_ARGS)
+
+# Area targets live in mk/<area>.mk (plan section 3); `make help` lists them through $(MAKEFILE_LIST).
+-include mk/*.mk

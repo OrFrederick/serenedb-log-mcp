@@ -1,12 +1,13 @@
 """Settings come from the environment variables in plan section 2.5."""
 
+import logging
 from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
 
 from serenedb_log_mcp import config
-from serenedb_log_mcp.config import ConfigError, Settings, load_settings
+from serenedb_log_mcp.config import ConfigError, Settings, error_detail, load_settings, safe_dsn
 
 
 def test_defaults_when_environment_is_empty() -> None:
@@ -17,10 +18,12 @@ def test_defaults_when_environment_is_empty() -> None:
     assert s.raw_schema == "public"
     assert s.data_dir == Path("data")
     assert s.query_timeout_s == 15.0
-    assert s.client_binding is False
+    assert s.client_binding is None  # the database layer chooses by server version
     assert s.ledger_path is None
     assert s.export_dir == Path("exports")
     assert s.pattern_tier1 is True
+    assert s.reconnect_wait_s == 30.0
+    assert s.max_idle_connections == 4
     assert s.role is None
 
 
@@ -38,6 +41,8 @@ def test_reads_every_variable_from_the_environment() -> None:
         "LEDGER_PATH": "/tmp/ledger.jsonl",
         "SLM_EXPORT_DIR": "/tmp/exports",
         "SLM_PATTERN_TIER1": "0",
+        "SLM_RECONNECT_WAIT_S": "45",
+        "SLM_MAX_IDLE_CONNECTIONS": "2",
     }
 
     s = load_settings(env)
@@ -54,6 +59,8 @@ def test_reads_every_variable_from_the_environment() -> None:
     assert s.ledger_path == Path("/tmp/ledger.jsonl")
     assert s.export_dir == Path("/tmp/exports")
     assert s.pattern_tier1 is False
+    assert s.reconnect_wait_s == 45.0
+    assert s.max_idle_connections == 2
 
 
 def test_role_database_url_falls_back_to_database_url() -> None:
@@ -82,6 +89,12 @@ def test_falsy_flags(value: str) -> None:
     assert load_settings({"SLM_PATTERN_TIER1": value}).pattern_tier1 is False
 
 
+def test_an_explicit_slm_client_binding_0_is_kept_apart_from_unset() -> None:
+    """0 forces server-side binding even on SereneDB older than 26.10; unset lets the layer choose."""
+    assert load_settings({"SLM_CLIENT_BINDING": "0"}).client_binding is False
+    assert load_settings({"SLM_CLIENT_BINDING": ""}).client_binding is None
+
+
 @pytest.mark.parametrize("value", ["maybe", "2"])
 def test_invalid_flag_names_the_variable(value: str) -> None:
     with pytest.raises(ConfigError, match="SLM_CLIENT_BINDING"):
@@ -99,6 +112,22 @@ def test_schemas_must_be_plain_lowercase_identifiers(variable: str, value: str) 
 def test_query_timeout_must_be_a_positive_number(value: str) -> None:
     with pytest.raises(ConfigError, match="SLM_QUERY_TIMEOUT_S"):
         load_settings({"SLM_QUERY_TIMEOUT_S": value})
+
+
+@pytest.mark.parametrize("value", ["abc", "0", "-1", "nan", "inf"])
+def test_reconnect_wait_must_be_a_finite_positive_number(value: str) -> None:
+    with pytest.raises(ConfigError, match="SLM_RECONNECT_WAIT_S"):
+        load_settings({"SLM_RECONNECT_WAIT_S": value})
+
+
+def test_zero_idle_connections_turns_the_pool_off() -> None:
+    assert load_settings({"SLM_MAX_IDLE_CONNECTIONS": "0"}).max_idle_connections == 0
+
+
+@pytest.mark.parametrize("value", ["abc", "-1", "2.5", "1e3"])
+def test_max_idle_connections_must_be_a_whole_number_of_at_least_zero(value: str) -> None:
+    with pytest.raises(ConfigError, match="SLM_MAX_IDLE_CONNECTIONS"):
+        load_settings({"SLM_MAX_IDLE_CONNECTIONS": value})
 
 
 def test_role_pin_is_an_override_not_an_environment_variable() -> None:
@@ -153,6 +182,9 @@ def test_unknown_settings_fields_are_rejected() -> None:
         {"query_timeout_s": 0},
         {"query_timeout_s": float("nan")},
         {"query_timeout_s": float("inf")},
+        {"reconnect_wait_s": 0},
+        {"reconnect_wait_s": float("nan")},
+        {"max_idle_connections": -1},
     ],
 )
 def test_settings_validate_fields_however_they_are_built(fields: dict[str, object]) -> None:
@@ -215,3 +247,99 @@ def test_database_url_error_never_echoes_the_value() -> None:
 
 def test_uri_database_url_is_accepted() -> None:
     assert load_settings({"DATABASE_URL": "postgresql://postgres@localhost:7890/postgres"}).database_url
+
+
+@pytest.mark.parametrize(
+    ("dsn", "secret"),
+    [
+        ("host=h dbname=d password=hunter2", "hunter2"),
+        ("host=h dbname=d sslpassword=keysecret", "keysecret"),
+        ("postgresql://bob:hunter2@db.example:7890/postgres", "hunter2"),
+        # libpq refuses this one and quotes the offending fragment, which is the password itself.
+        ("postgres://bob:hun ter2@h/d", "hun ter2"),
+    ],
+)
+def test_safe_dsn_never_shows_a_secret(dsn: str, secret: str) -> None:
+    assert secret not in safe_dsn(dsn)
+
+
+def test_safe_dsn_keeps_the_connection_target() -> None:
+    out = safe_dsn("host=db.example port=7890 dbname=postgres user=bob password=hunter2")
+
+    assert "host=db.example" in out
+    assert "port=7890" in out
+    assert "dbname=postgres" in out
+    assert "user=bob" in out
+    assert "password" not in out
+
+
+def test_safe_dsn_reports_the_parse_error_without_the_value() -> None:
+    out = safe_dsn("host=h nonsensetoken")
+
+    assert "nonsensetoken" not in out
+    assert out.startswith("<unparseable DSN:")
+    assert "connection info string" in out
+
+
+def test_safe_dsn_drops_the_parse_error_when_a_secret_could_still_show() -> None:
+    # The password is a single character, so redacting the quoted fragments is not enough: any
+    # English word in the libpq message contains an "a". The helper then reports the class only.
+    assert safe_dsn("password=a nonsensetoken") == "<unparseable DSN: ProgrammingError>"
+
+
+def test_safe_dsn_of_an_empty_dsn_says_so() -> None:
+    assert safe_dsn("") == "<empty DSN>"
+
+
+def test_error_detail_is_the_first_line_or_the_class_name() -> None:
+    assert error_detail(ValueError("one\ntwo")) == "one"
+    assert error_detail(ValueError("")) == "ValueError"
+
+
+WARN_LOGGER = "serenedb_log_mcp.config"
+
+
+def test_an_unknown_database_url_variable_is_warned_about(caplog: pytest.LogCaptureFixture) -> None:
+    # A misspelled DATABASE_URL_LEAD was silently ignored before, which hides an access-scoping
+    # mistake: the Role keeps using the shared DATABASE_URL.
+    with caplog.at_level(logging.WARNING, logger=WARN_LOGGER):
+        settings = load_settings({"DATABASE_URL_LEAD": "host=h dbname=d"})
+
+    assert dict(settings.role_database_urls) == {}
+    assert "DATABASE_URL_LEAD" in caplog.text
+    assert "DATABASE_URL_ENGINEER" in caplog.text
+
+
+def test_a_role_variable_in_the_wrong_case_is_warned_about(caplog: pytest.LogCaptureFixture) -> None:
+    # Only the upper-case spelling is read, so the lower-case one is ignored just like a typo.
+    with caplog.at_level(logging.WARNING, logger=WARN_LOGGER):
+        settings = load_settings({"DATABASE_URL_engineer": "host=h dbname=d"})
+
+    assert dict(settings.role_database_urls) == {}
+    assert "DATABASE_URL_engineer" in caplog.text
+
+
+def test_the_known_variables_are_not_warned_about(caplog: pytest.LogCaptureFixture) -> None:
+    with caplog.at_level(logging.WARNING, logger=WARN_LOGGER):
+        settings = load_settings(
+            {"DATABASE_URL": "host=a dbname=d", "DATABASE_URL_MANAGER": "host=b dbname=d"}
+        )
+
+    assert settings.database_url_for("manager") == "host=b dbname=d"
+    assert caplog.text == ""
+
+
+def test_the_unknown_variable_warning_never_echoes_the_dsn(caplog: pytest.LogCaptureFixture) -> None:
+    with caplog.at_level(logging.WARNING, logger=WARN_LOGGER):
+        load_settings({"DATABASE_URL_LEAD": "host=h dbname=d password=hunter2"})
+
+    assert "hunter2" not in caplog.text
+    assert "host=h" not in caplog.text
+
+
+def test_an_empty_unknown_variable_is_not_warned_about(caplog: pytest.LogCaptureFixture) -> None:
+    # An unset variable arrives as the empty string in some shells; that is not a misconfiguration.
+    with caplog.at_level(logging.WARNING, logger=WARN_LOGGER):
+        load_settings({"DATABASE_URL_LEAD": "  "})
+
+    assert caplog.text == ""

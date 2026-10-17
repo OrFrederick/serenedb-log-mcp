@@ -160,13 +160,14 @@ def test_query_time_chaining_at_the_defaults_gives_the_table(lab: str) -> None:
 def test_a_time_range_chains_only_the_log_entries_inside_it(lab: str) -> None:
     result = call(
         "list_incidents", role="team_lead", dataset="bgl", pattern_key="KERNDTLB",
-        time_from="2005-07-20T10:00:00", time_to="2005-07-20T10:10:00",
+        time_from="2005-07-20T17:00:00", time_to="2005-07-20T17:10:00",
     )  # fmt: skip
 
-    # 10 minutes of a storm with one Log Entry every 30 s.
+    # 10 minutes of a storm with one Log Entry every 30 s, logged from 10:00 US Pacific (PDT), so
+    # 17:00 on the UTC clock that time inputs use since #74.
     assert result["summary"]["entries_total"] == 20
     assert result["summary"]["incidents_total"] == 1
-    assert result["data_scope"]["time_from"] == "2005-07-20T10:00:00"
+    assert result["data_scope"]["time_from"] == "2005-07-20T17:00:00"
 
 
 def test_alert_categories_narrow_a_non_default_call(lab: str) -> None:

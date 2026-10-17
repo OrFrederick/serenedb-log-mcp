@@ -460,6 +460,15 @@ def test_the_report_says_the_teams_come_from_the_stub(database_url: str, derived
     assert f"NOTE: {OWNERSHIP_NOTE}" in lines
 
 
+def test_the_report_counts_the_os_instance_rows(database_url: str, derived_sample: Schemas) -> None:
+    (instances,) = one(database_url, q("SELECT count(*) FROM {t}", derived_sample, t="slm.os_instance"))
+    with psycopg.connect(database_url, autocommit=True) as conn:
+        lines = derive.report(conn, derived_sample.slm)
+
+    assert instances > 0
+    assert f"{derived_sample.slm}.os_instance: {instances:,} rows" in lines
+
+
 # ----------------------------------------------------------------- inverted indexes
 
 

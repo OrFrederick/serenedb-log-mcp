@@ -129,3 +129,64 @@ def test_a_crashing_server_reports_its_stderr() -> None:
 
     with pytest.raises(pytest.fail.Exception, match=r"(?s)code 3.*boom: bad config"):
         peer.response(1)
+
+
+def initialize(server: StdioPeer) -> dict[str, Any]:
+    server.send(
+        {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "initialize",
+            "params": {
+                "protocolVersion": PROTOCOL_VERSION,
+                "capabilities": {},
+                "clientInfo": {"name": "pytest", "version": "0"},
+            },
+        }
+    )
+    init = server.response(1)
+    assert "error" not in init, init
+    server.send({"jsonrpc": "2.0", "method": "notifications/initialized"})
+    return init["result"]
+
+
+def test_role_prompts_tools_and_instructions_over_stdio(server: StdioPeer) -> None:
+    # The smoke run of T7: what Claude Code sees when it starts the server.
+    result = initialize(server)
+    assert "prompts" in result["capabilities"]
+    assert "get_role_brief" in result["instructions"]
+    assert len(result["instructions"]) <= 4096
+
+    server.send({"jsonrpc": "2.0", "id": 2, "method": "prompts/list"})
+    prompts = server.response(2)["result"]["prompts"]
+    assert sorted(prompt["name"] for prompt in prompts) == ["engineer", "manager", "team_lead"]
+
+    server.send({"jsonrpc": "2.0", "id": 3, "method": "tools/list"})
+    tools = {tool["name"]: tool for tool in server.response(3)["result"]["tools"]}
+    for name in ("describe_corpus", "search_logs", "get_context", "count_by", "trend", "get_evidence"):
+        assert name in tools, name
+    assert tools["get_role_brief"]["_meta"] == {"anthropic/alwaysLoad": True}
+
+    server.send(
+        {
+            "jsonrpc": "2.0",
+            "id": 4,
+            "method": "prompts/get",
+            "params": {"name": "manager", "arguments": {"dataset": "bgl", "period": "30d"}},
+        }
+    )
+    (message,) = server.response(4)["result"]["messages"]
+    assert message["role"] == "user"
+    assert "not measurable from these logs" in message["content"]["text"]
+
+    server.send(
+        {
+            "jsonrpc": "2.0",
+            "id": 5,
+            "method": "tools/call",
+            "params": {"name": "get_role_brief", "arguments": {"role": "manager"}},
+        }
+    )
+    brief = server.response(5)["result"]
+    assert brief["isError"] is False
+    assert brief["structuredContent"]["brief"] in message["content"]["text"]

@@ -8,6 +8,8 @@ Every tool takes a required `role` (`engineer`, `team_lead` or `manager`), which
 
 | Tool | Title | Output |
 |---|---|---|
+| [`create_index`](#create_index) | Build an agent index over one time slice | [Evidence](#output-evidence) |
+| [`drop_index`](#drop_index) | Drop an agent index | [Evidence](#output-evidence) |
 | [`count_by`](#count_by) | Count Log Entries by one dimension, with baselines | [Evidence](#output-evidence) |
 | [`describe_corpus`](#describe_corpus) | Describe the Datasets: size, time range, Components, Teams | [Evidence](#output-evidence) |
 | [`export_investigation`](#export_investigation) | Export the investigation as a Markdown report | InvestigationExport |
@@ -23,6 +25,89 @@ Every tool takes a required `role` (`engineer`, `team_lead` or `manager`), which
 | [`top_patterns`](#top_patterns) | Rank Patterns by Log Entries, Incidents, sources, recency or priority | [Evidence](#output-evidence) |
 | [`trend`](#trend) | Trend of Log Entries per time bucket, with baselines | [Evidence](#output-evidence) |
 | [`verify_answer`](#verify_answer) | Check a draft answer against the Evidence | VerifyResult |
+
+## `create_index`
+
+**Build an agent index over one time slice**
+
+Annotations: not read-only, idempotent, closed world, `anthropic/alwaysLoad` (Claude Code loads it without ToolSearch).
+
+Description, as the agent reads it:
+
+```text
+Build an agent index: an inverted index over one time slice of one Dataset, so the
+full-text calls that follow on that slice do less work.
+
+Purpose: before several count_by, trend or search_logs calls with a query over the same
+period, for example while drilling into one failure wave. It costs build_ms once, which grows
+with the Log Entries in the slice; every later call whose Data Scope lies inside the slice
+reads it automatically and names it in its notes and data_scope.agent_indexes. The counts
+are the same as from the Dataset's full index; only the time changes, so it does not pay off
+for one or two queries. It pays off fastest for full-text counts grouped by node, Component
+or Pattern over a small slice of a large Dataset, and not for fetching example Log Entries.
+Not read-only: it adds an index to the database. At most one agent
+index per Dataset and at most 1,000,000 Log Entries per slice; asking for the same slice
+again reuses the index. Call drop_index when you are done with the slice.
+Inputs: role, dataset, time_from, and optional time_to.
+Outputs: the Evidence envelope. rows: one row with columns index (the name to pass to
+drop_index), dataset, time_from, time_to, rows (Log Entries in the slice), build_ms
+(create_ms plus refresh_ms: until the index is usable), create_ms, refresh_ms and status
+(built or reused). summary: the same values plus qualified_name (schema.index) and
+max_rows. sql: every statement that ran, including the CREATE INDEX.
+```
+
+### Inputs
+
+| Name | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `role` | one of `engineer`, `team_lead`, `manager` | yes |  | Who is asking: 'engineer' investigates one failure and needs example Log Entries and nearby events; 'team_lead' needs recurring problems with counts and trends per Component and Team, and receives at most 3 sample Log Entries from a search; 'manager' needs measured frequency and affected Components only, and receives no raw Log Entries (totals and facets, no rows). Every result carries the answer_frame for this Role; get_role_brief(role) has the full playbook. |
+| `dataset` | one of `bgl`, `openstack` | yes |  | 'bgl' or 'openstack': the Dataset to index. |
+| `time_from` | string | yes |  | Start of the slice, inclusive, in UTC like every Data Scope: ISO-8601 such as '2005-08-22', or with an offset, which is converted to UTC (a logged BGL ts is US Pacific time); or a relative range such as 'last 7d', which ends at the Dataset's last Log Entry. |
+| `time_to` | string or null | no | `null` | End of the slice, exclusive, in UTC like time_from. Omit it to end after the Dataset's last Log Entry, and always omit it with a relative time_from. |
+
+### Limits
+
+- `time_from`: at most 64 characters
+- `time_to`: at most 64 characters
+
+### Output
+
+`structuredContent` is the [Evidence](#output-evidence) object; the description says what its rows and summary hold for this tool.
+
+## `drop_index`
+
+**Drop an agent index**
+
+Annotations: not read-only, destructive, idempotent, closed world, `anthropic/alwaysLoad` (Claude Code loads it without ToolSearch).
+
+Description, as the agent reads it:
+
+```text
+Drop an agent index that create_index built.
+
+Purpose: clean up when you are done with a slice; calls on that slice then read the
+Dataset's full index again, with the same counts. Not read-only. It refuses every index
+that create_index did not build, including the Datasets' full indexes.
+Inputs: role, name.
+Outputs: the Evidence envelope. rows: one row with columns index, dataset, time_from,
+time_to, rows (Log Entries the index held), drop_ms and status ('dropped'). summary: the
+same values plus qualified_name.
+```
+
+### Inputs
+
+| Name | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `role` | one of `engineer`, `team_lead`, `manager` | yes |  | Who is asking: 'engineer' investigates one failure and needs example Log Entries and nearby events; 'team_lead' needs recurring problems with counts and trends per Component and Team, and receives at most 3 sample Log Entries from a search; 'manager' needs measured frequency and affected Components only, and receives no raw Log Entries (totals and facets, no rows). Every result carries the answer_frame for this Role; get_role_brief(role) has the full playbook. |
+| `name` | string | yes |  | The agent index to drop, exactly as create_index returned it, for example 'agent_idx_bgl_0a1b2c3d' (a schema prefix such as 'slm.' is allowed). |
+
+### Limits
+
+- `name`: at most 200 characters
+
+### Output
+
+`structuredContent` is the [Evidence](#output-evidence) object; the description says what its rows and summary hold for this tool.
 
 ## `count_by`
 
@@ -900,7 +985,7 @@ number checked, with its status and the Evidence ids that hold it), cited_eviden
 
 ## Output: Evidence
 
-Returned by `count_by`, `describe_corpus`, `find_precursors`, `get_context`, `get_evidence`, `latency_stats`, `list_incidents`, `list_patterns`, `search_logs`, `search_patterns`, `top_patterns`, `trend`.
+Returned by `create_index`, `drop_index`, `count_by`, `describe_corpus`, `find_precursors`, `get_context`, `get_evidence`, `latency_stats`, `list_incidents`, `list_patterns`, `search_logs`, `search_patterns`, `top_patterns`, `trend`.
 
 The result of one executed tool call: its query, parameters, Data Scope, counts and rows. Cite it as `[E<n>]` next to every number taken from it. `total_matches` and `truncated` say whether the rows are the whole answer or a sample; a sample is never a frequency.
 
@@ -923,6 +1008,7 @@ The result of one executed tool call: its query, parameters, Data Scope, counts 
 | `data_scope.filters` | object | no | The filters the calculation applied, including the shared pattern_ids and family_id. |
 | `data_scope.filters.pattern_ids` | list of string or null | no | Pattern ids the calculation was restricted to (16-hex template ids from list_patterns); null when no Pattern filter was applied. |
 | `data_scope.filters.family_id` | string or null | no | Pattern family the calculation was restricted to; null when no family filter was applied. |
+| `data_scope.agent_indexes` | object or null | no | Per Dataset, the agent index that answered the full-text matching instead of the Dataset's full index, for example {'bgl': 'slm.agent_idx_bgl_0a1b2c3d'}: create_index built it over a time slice that contains this Data Scope, so the counts are the same. null when every Dataset used its full index. |
 | `total_matches` | integer | yes | Exact number of units that matched in the Data Scope, counted by SereneDB: Log Entries for a search, groups for count_by, buckets for trend, Incidents for list_incidents. It is the frequency; the returned rows are not. |
 | `returned` | integer | yes | How many of the matching units this result returned. Lower than total_matches means you are looking at a sample. |
 | `truncated` | boolean | yes | True when returned &lt; total_matches, so matching units exist that this result does not show. Never read a truncated row count as a frequency; use count_by or trend. |

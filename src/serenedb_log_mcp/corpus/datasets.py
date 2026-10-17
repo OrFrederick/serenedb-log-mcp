@@ -4,7 +4,8 @@ Every tool gets its table and index names, and the names of its columns, from `r
 builds SQL with the returned `psycopg.sql` identifiers. No module under `tools/` may contain a
 canonical table or index name; tests/contract/test_resolver_contract.py enforces that. The
 award-track tickets change only this module: T19 routes a Data Scope inside an agent index's
-slice to that index, T20 adds remote Datasets, and T22 returns per-Role views.
+slice to that index (`corpus/agent_indexes.py`), T20 adds remote Datasets, and T22 returns
+per-Role views.
 
 The canonical tables are built by `make derive` (sql/adapters/*.sql, sql/derive/*.sql) in the
 schema named by SLM_SCHEMA.
@@ -25,6 +26,7 @@ from __future__ import annotations
 import difflib
 from collections.abc import Mapping
 from dataclasses import dataclass, field
+from datetime import datetime
 from types import MappingProxyType
 from typing import Literal, get_args
 
@@ -32,6 +34,8 @@ from mcp.server.mcpserver.exceptions import ToolError
 from psycopg import sql
 
 from serenedb_log_mcp.config import ROLES, RoleName, Settings, get_settings
+from serenedb_log_mcp.corpus import agent_indexes
+from serenedb_log_mcp.corpus.agent_indexes import AgentIndex
 
 DatasetName = Literal["bgl", "openstack"]
 DATASET_NAMES: tuple[DatasetName, ...] = get_args(DatasetName)
@@ -51,6 +55,8 @@ CANONICAL_TABLES = frozenset(
     {*ENTRY_TABLES.values(), OWNERSHIP, PATTERN_DICT, PATTERNS, INCIDENTS, INSTANCES}
 )
 CANONICAL_INDEXES = frozenset({*ENTRY_INDEXES.values(), PATTERN_INDEX})
+TEXT_DICTIONARY = "log_text"
+"""The text search dictionary of the `message` column (sql/derive/90_indexes.sql); agent indexes reuse it."""
 
 OWNERSHIP_IS_STUB = True
 OWNERSHIP_NOTE = (
@@ -255,6 +261,8 @@ class Relation:
     schema: str
     table_ident: str = field(repr=False)
     index_ident: str = field(repr=False)
+    agent_index: AgentIndex | None = None
+    """The agent index (T19) `index` routes to, when the Data Scope lies inside its slice."""
     views_for: RoleName | None = None
     """The Role whose views (T22) `schema` holds; None for the canonical tables."""
 
@@ -288,10 +296,19 @@ class Relation:
         """The inverted index over that table, for @@, BM25 and ts_* predicates.
 
         RoleAccessError for a Role whose views hold no message: its login has no full-text index.
+        Otherwise it is the agent index when the Data Scope lies inside an agent index's slice; reading
+        it then records the use, so the Evidence says which index answered (`toolkit.evidence_tool`).
         """
         if self.views_for is not None and "message" in self.withheld:
             raise RoleAccessError(_no_text_message(self.dataset.name, self.views_for))
+        if self.agent_index is not None:
+            agent_indexes.record_use(self.agent_index)
         return sql.Identifier(self.schema, self.index_ident)
+
+    @property
+    def text_dictionary(self) -> sql.Identifier:
+        """The text search dictionary of the indexed `message` column, for building agent indexes."""
+        return sql.Identifier(self.schema, TEXT_DICTIONARY)
 
     @property
     def table_name(self) -> str:
@@ -378,8 +395,14 @@ def relation(
 
     A Role whose `DATABASE_URL_<ROLE>` is set connects as its own LOGIN role, which may read only
     its views, so it gets the relations of `role_schema(SLM_SCHEMA, role)` (T22); every other call
-    gets the canonical tables in SLM_SCHEMA. `scope` is accepted so every tool passes it from the
-    start; it does not change the result yet (T19 returns the agent index that covers it).
+    gets the canonical tables in SLM_SCHEMA.
+
+    `scope` is the Data Scope the statements read (a `DataScope`, or anything with ISO-8601
+    `time_from` and `time_to`). When its whole time range lies inside the slice of the Dataset's
+    agent index (T19), `index` is that agent index; otherwise, and without a scope, it is the
+    Dataset's full index. Pass no scope for statements that read beyond the Data Scope, such as the
+    whole-Dataset baselines. A Role reading its own views always gets its own index: agent indexes
+    live in SLM_SCHEMA, which its login may not read.
     """
     if role is not None and role not in ROLES:
         raise ValueError(f"unknown Role {role!r}; valid: {', '.join(ROLES)}")
@@ -388,7 +411,28 @@ def relation(
     schema = settings.slm_schema
     views_for = RoleName(role) if role is not None and role in settings.role_database_urls else None
     if views_for is not None:
-        schema = role_schema(schema, views_for)
+        return Relation(
+            dataset=entry,
+            schema=role_schema(schema, views_for),
+            table_ident=entry.table,
+            index_ident=entry.index,
+            views_for=views_for,
+        )
+    agent = agent_indexes.covering(schema, entry.name, *_time_range(scope))
     return Relation(
-        dataset=entry, schema=schema, table_ident=entry.table, index_ident=entry.index, views_for=views_for
+        dataset=entry,
+        schema=schema,
+        table_ident=entry.table,
+        index_ident=entry.index if agent is None else agent.name,
+        agent_index=agent,
     )
+
+
+def _time_range(scope: object | None) -> tuple[datetime | None, datetime | None]:
+    """The scope's time range as datetimes; None for an open side or a scope without one."""
+
+    def bound(name: str) -> datetime | None:
+        value = getattr(scope, name, None)
+        return datetime.fromisoformat(value) if isinstance(value, str) else None
+
+    return bound("time_from"), bound("time_to")

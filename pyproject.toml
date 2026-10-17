@@ -34,7 +34,7 @@ build-backend = "uv_build"
 [tool.ruff]
 line-length = 110
 target-version = "py312"
-src = ["src", "scripts", "eval", "tests"]
+src = ["src", "scripts", "bench", "eval", "tests"]
 # overnight/ is the unattended-run harness, not part of the product.
 extend-exclude = ["overnight"]
 
@@ -45,7 +45,7 @@ select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF", "PT"]
 python_version = "3.12"
 strict = true
 plugins = ["pydantic.mypy"]
-files = ["src", "scripts", "eval"]
+files = ["src", "scripts", "bench", "eval"]
 mypy_path = ["src", "eval"]
 
 [tool.pydantic-mypy]
@@ -55,7 +55,7 @@ warn_required_dynamic_aliases = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["scripts", "eval", "tests/support", "tests/golden"]
+pythonpath = ["scripts", "bench", "eval", "tests/support", "tests/golden"]
 # The db and corpus markers are defined in tests/conftest.py.
 # importlib mode lets two test files share a name in different directories.
 addopts = ["-ra", "--strict-markers", "--import-mode=importlib", "-p", "pytester"]

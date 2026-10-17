@@ -22,7 +22,7 @@ import re
 import anyio
 import jsonschema
 import pytest
-from contract_calls import CORE_TOOLS, SERVER_PREFIX, TOOL_NAME_LIMIT, representative_calls
+from contract_calls import CORE_TOOLS, SERVER_PREFIX, TOOL_NAME_LIMIT, WRITING_TOOLS, representative_calls
 from mcp import Client
 from mcp_types import Tool
 from tool_contract import CHECKS, ROLES
@@ -73,6 +73,11 @@ def test_every_tool_keeps_every_contract_rule(name: str, rule: str) -> None:
 def test_representative_inputs_exist_and_validate_against_the_input_schema(name: str) -> None:
     schema = listing()[name].input_schema
     calls = representative_calls(name, schema)
+    if not calls and name in WRITING_TOOLS:
+        pytest.skip(
+            f"{name} writes to the database (drop_index needs the random name create_index returned), so "
+            "the db contract suites leave it out; tests/db/test_agent_index_db.py drives both end to end"
+        )
 
     assert calls, (
         f"{name} has a required parameter whose value cannot be derived from its schema; add its "

@@ -10,7 +10,9 @@ Statements (each a read-only `db.fetch_all`; the Evidence holds all of them, in 
 - `rank_statement`: the groups in the Data Scope ranked by count, plus one roll-up row per Dataset
   with its total and its number of groups;
 - `stats_statement`: per shown group, and per Dataset for the `(other)` row, the count, distinct
-  sources, first and last seen, the previous-period count and the median week;
+  sources, first and last seen, the previous-period count and the median week. It reads the whole
+  Dataset, so it uses `Part.whole_source`, resolved without the Data Scope: an agent index (T19)
+  answers only the statements that stay inside its slice;
 - `bucket_statement` (trend): zero-filled counts per time bucket and series, with `time_bucket` and
   `generate_series`;
 - `family_statement` (trend by Pattern): the Patterns that share a Pattern Family with a series.
@@ -226,6 +228,10 @@ class Part:
     window: DatasetWindow
     group_by: str | None
     filters: EntryFilters
+    whole: Relation | None = None
+    """The relation for statements that read beyond the Data Scope (the baselines), resolved without
+    it; None means `rel`. An agent index (T19) holds only its time slice, so it can answer the Data
+    Scope but not the weeks around it."""
 
     @property
     def dataset(self) -> str:
@@ -255,7 +261,15 @@ class Part:
     @property
     def source(self) -> Q:
         """FROM: the index relation when there is a full-text query, else the table; plus Ownership."""
-        entries = self.rel.index if self.filters.query else self.rel.table
+        return self._source(self.rel)
+
+    @property
+    def whole_source(self) -> Q:
+        """`source` for statements that read the whole Dataset, not only the Data Scope."""
+        return self._source(self.whole or self.rel)
+
+    def _source(self, rel: Relation) -> Q:
+        entries = rel.index if self.filters.query else rel.table
         if self.group_by != "team":
             return q("{} AS e", entries)
         # One Team per (dataset, component): a repeated Ownership row would otherwise count a Log
@@ -264,7 +278,7 @@ class Part:
             "{} AS e LEFT JOIN (SELECT dataset, component, min(team) AS team FROM {} "
             "GROUP BY dataset, component) AS o ON o.dataset = {} AND o.component = {}",
             entries,
-            self.rel.ownership_table,
+            rel.ownership_table,
             literal(self.dataset),
             self.col("component"),
         )
@@ -416,7 +430,7 @@ def prepare(
     parts = []
     for name in scope.datasets:
         span = window(name, *ranges[name], start, end, baseline)
-        parts.append(Part(relation(name, role, scope), span, group_by, filters))
+        parts.append(Part(relation(name, role, scope), span, group_by, filters, whole=relation(name, role)))
     return Prepared(role, scope, tuple(parts), tuple(notes))
 
 
@@ -518,7 +532,7 @@ def stats_statement(
                 p.clock,
                 p.between(p.window.start, p.window.end),
                 q("({})", p.between(*p.window.previous)) if p.window.previous else Q(sql.SQL("FALSE")),
-                p.source,
+                p.whole_source,
                 p.conditions(in_window=False),
             )
             for p in used

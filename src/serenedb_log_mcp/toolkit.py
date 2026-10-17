@@ -12,6 +12,8 @@ Evidence tool is written once here:
   `[E<n>]` exists;
 - the Role hook shapes what the asking Role receives, never what the ledger stores (by default the
   Role shaping of `roles.shape_for_role`, T7);
+- when a statement read an agent index (T19) instead of a Dataset's full index, the Data Scope
+  (`agent_indexes`) and the notes say so, without any change in the tool;
 - every exception becomes a `ToolError`, because on an error only `content[0].text` reaches the
   model and in `mcp` 2.x only `ToolError` text survives.
 """
@@ -24,7 +26,7 @@ import json
 import logging
 import textwrap
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Annotated, Any, Protocol, get_args, get_origin, runtime_checkable
 
 from mcp.server.mcpserver import MCPServer
@@ -34,6 +36,7 @@ from mcp_types import CallToolResult, TextContent, ToolAnnotations
 from pydantic import BaseModel, ValidationError
 
 from serenedb_log_mcp.config import get_settings
+from serenedb_log_mcp.corpus.agent_indexes import AgentIndex, capture_use
 from serenedb_log_mcp.evidence import DataScope, Evidence, Role
 from serenedb_log_mcp.ledger import LedgerError, get_ledger
 from serenedb_log_mcp.roles import shape_for_role
@@ -284,7 +287,9 @@ def evidence_tool(
             bound = _bind(signature, tool_name, args, kwargs)
             role = _role_of(bound)
             arguments = _recorded_arguments(bound, injected)
-            outcome = function(*args, **kwargs)
+            with capture_use() as agent_indexes:
+                outcome = function(*args, **kwargs)
+            outcome = _with_agent_indexes(outcome, agent_indexes)
             return apply_role_hook(_store(tool_name, role, arguments, outcome), role)
 
         return role_tool(server, title=title, output_model=Evidence, name=tool_name, annotations=annotations)(
@@ -292,6 +297,20 @@ def evidence_tool(
         )
 
     return register
+
+
+def _with_agent_indexes(outcome: ToolOutcome, used: Sequence[AgentIndex]) -> ToolOutcome:
+    """The outcome with the agent indexes its statements read named in the Data Scope and the notes.
+
+    `corpus.datasets.Relation.index` records an agent index when a statement reads it, so a tool
+    that only read base tables never claims one, and no tool has to report it itself.
+    """
+    if not used:
+        return outcome
+    scope = outcome.scope.model_copy(
+        update={"agent_indexes": {index.dataset: index.qualified_name for index in used}}
+    )
+    return replace(outcome, scope=scope, notes=[*outcome.notes, *(index.routing_note() for index in used)])
 
 
 def _tool_signature(function: Callable[..., Any]) -> inspect.Signature:

@@ -194,8 +194,10 @@ def test_a_time_filtered_search_replays_as_stored(
         role="engineer",
         dataset="bgl",
         query="ciod failed",
-        time_from="2005-07-01",
-        time_to="2005-08-01",
+        # Wide enough to match in the Loghub 2k sample as well as in the full Base Corpus: with no
+        # match the facet statements do not run, and the replay would check one statement, not three.
+        time_from="2005-06-01",
+        time_to="2006-01-01",
         limit=5,
     )
 

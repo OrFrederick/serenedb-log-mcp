@@ -32,15 +32,15 @@ from __future__ import annotations
 
 import functools
 import os
+import re
 from pathlib import Path
 
 import psycopg
 import pytest
 from optional_data import LOGHUB2_TABLES
 from psycopg import sql
-from psycopg.conninfo import conninfo_to_dict
 
-from serenedb_log_mcp.config import load_settings
+from serenedb_log_mcp.config import load_settings, safe_dsn
 
 # The corpus gate only checks that the raw tables exist and are clearly the full corpus, not a
 # 2k sample. The exact golden numbers (4,747,963 and 207,820 rows) live in the corpus tests, so a
@@ -86,11 +86,15 @@ def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
 
 
 def pytest_runtest_setup(item: pytest.Item) -> None:
-    problem = None
-    if item.get_closest_marker("corpus") is not None:
-        problem = _db_problem() or _corpus_problem()
-    elif item.get_closest_marker("db") is not None:
-        problem = _db_problem()
+    corpus = item.get_closest_marker("corpus") is not None
+    if not corpus and item.get_closest_marker("db") is None:
+        return
+    # Resolved here, so the verdicts below are cached per DSN and schema rather than once per
+    # session: a test that changes DATABASE_URL or SLM_RAW_SCHEMA gets a fresh verdict.
+    settings = load_settings()
+    problem = _db_problem(settings.database_url)
+    if problem is None and corpus:
+        problem = _corpus_problem(settings.database_url, settings.raw_schema)
     if problem is not None:
         if _require_db():
             pytest.fail(f"SLM_REQUIRE_DB is set, so this does not skip: {problem}", pytrace=False)
@@ -98,10 +102,7 @@ def pytest_runtest_setup(item: pytest.Item) -> None:
     tables = {t for marker in item.iter_markers("loghub2") for t in (marker.args or LOGHUB2_TABLES)}
     if not tables:
         return
-    settings = load_settings()
-    optional = _db_problem() or _loghub2_problem(
-        settings.database_url, settings.raw_schema, tuple(sorted(tables))
-    )
+    optional = _loghub2_problem(settings.database_url, settings.raw_schema, tuple(sorted(tables)))
     if optional is not None:
         # An optional download, so a skip even under SLM_REQUIRE_DB.
         pytest.skip(optional)
@@ -117,35 +118,78 @@ def database_url() -> str:
     return load_settings().database_url
 
 
-def _safe_dsn(dsn: str) -> str:
-    """The DSN without its password, for skip reasons and logs."""
-    try:
-        parts = conninfo_to_dict(dsn)
-    except psycopg.ProgrammingError:
-        return "<unparseable DATABASE_URL>"
-    return " ".join(f"{key}={value}" for key, value in parts.items() if key != "password")
+# Why a connection failed, in the order the patterns are tried: a privilege refusal mentions the
+# database too, so it has to be matched before the wrong-name case. Measured against SereneDB
+# 26.09.1.3: every one of these arrives as a psycopg.OperationalError with no sqlstate at all, so
+# the libpq text is the only thing that tells them apart. `_connect_problem` keeps the sqlstate
+# whenever there is one, which is the case for a statement that is refused after connecting.
+_CONNECT_PROBLEMS: tuple[tuple[re.Pattern[str], str, str], ...] = (
+    (
+        re.compile(r"permission denied for database|CONNECT privilege", re.IGNORECASE),
+        "SereneDB at {dsn} refused the connection for lack of privileges",
+        "The role needs CONNECT on that database; grant it, or name another role in DATABASE_URL.",
+    ),
+    (
+        re.compile(r'database ".*" (?:does not exist|is not accessible)', re.IGNORECASE),
+        "SereneDB at {dsn} has no database of that name",
+        "Check `dbname` in DATABASE_URL; `make db-up` serves `postgres`.",
+    ),
+    (
+        re.compile(
+            r'password authentication failed|no password supplied|role ".*" does not exist'
+            r"|pg_hba\.conf|authentication method",
+            re.IGNORECASE,
+        ),
+        "SereneDB at {dsn} refused the credentials",
+        "Check `user` and `password` in DATABASE_URL (or DATABASE_URL_<ROLE>); "
+        "`make db-up` starts a server with trust auth.",
+    ),
+    (
+        re.compile(
+            r"connection refused|could not connect to server|no route to host|not known"
+            r"|nodename nor servname|timeout expired|operation timed out",
+            re.IGNORECASE,
+        ),
+        "SereneDB not reachable at {dsn}: nothing is listening there",
+        "Start one with `make db-up` or point DATABASE_URL at a running instance.",
+    ),
+)
+
+
+def _connect_problem(dsn: str, exc: psycopg.Error) -> str:
+    """One skip reason that says which of the usual causes it was, with the sqlstate if there is one.
+
+    The whole libpq message is kept on one line, because the cause is sometimes only in the DETAIL
+    line (a missing CONNECT privilege says so there). It never carries the password: libpq names
+    the host, the port and the user, and `safe_dsn` redacts the DSN itself.
+    """
+    message = " ".join(str(exc).split()) or type(exc).__name__
+    detail = f"{message} sqlstate={exc.sqlstate}" if exc.sqlstate else message
+    target = safe_dsn(dsn)
+    for pattern, headline, hint in _CONNECT_PROBLEMS:
+        if pattern.search(message):
+            return f"{headline.format(dsn=target)} ({detail}). {hint}"
+    return (
+        f"SereneDB not reachable at {target} ({detail}). "
+        "Start one with `make db-up` or point DATABASE_URL at a running instance."
+    )
 
 
 @functools.cache
-def _db_problem() -> str | None:
-    dsn = load_settings().database_url
+def _db_problem(dsn: str) -> str | None:
+    """Can we connect to `dsn` and run `SELECT 1`? Cached per DSN, so a changed DSN is retried."""
     try:
         with psycopg.connect(dsn, connect_timeout=CONNECT_TIMEOUT_S, autocommit=True) as conn:
             conn.execute("SELECT 1")
     except psycopg.Error as exc:
-        detail = str(exc).strip().splitlines()[0] if str(exc).strip() else type(exc).__name__
-        return (
-            f"SereneDB not reachable at {_safe_dsn(dsn)} ({detail}). "
-            "Start one with `make db-up` or point DATABASE_URL at a running instance."
-        )
+        return _connect_problem(dsn, exc)
     return None
 
 
 @functools.cache
-def _corpus_problem() -> str | None:
-    settings = load_settings()
-    schema = settings.raw_schema
-    with psycopg.connect(settings.database_url, connect_timeout=CONNECT_TIMEOUT_S, autocommit=True) as conn:
+def _corpus_problem(dsn: str, schema: str) -> str | None:
+    """Is the full Base Corpus in `schema`? Cached per DSN and schema, not once per session."""
+    with psycopg.connect(dsn, connect_timeout=CONNECT_TIMEOUT_S, autocommit=True) as conn:
         for table, floor in BASE_CORPUS_FLOOR.items():
             exists = conn.execute(
                 "SELECT count(*) FROM information_schema.tables WHERE table_schema = %s AND table_name = %s",

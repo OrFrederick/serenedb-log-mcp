@@ -1,5 +1,6 @@
 """The serenedb-log-mcp command line: --transport stdio|http, --port, --role."""
 
+import logging
 import subprocess
 import sys
 from dataclasses import dataclass, field
@@ -177,3 +178,47 @@ def test_a_usable_ledger_path_is_loaded_before_the_server_runs(
     assert ledger._active.loaded == 1
     # Loaded, so the numbering continues where the file ends.
     assert ledger._active.last_id == "E7"
+
+
+def test_startup_logs_where_it_connected_and_which_schemas(
+    fake_server: FakeServer, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    # "Which instance answered?" has to be answerable from the log of an evidence product.
+    monkeypatch.setenv("DATABASE_URL", "host=db.example port=7890 dbname=logs user=bob password=hunter2")
+    monkeypatch.setenv("SLM_RAW_SCHEMA", "raw_x")
+
+    with caplog.at_level(logging.INFO, logger="serenedb_log_mcp.cli"):
+        cli.main([])
+
+    lines = [record.getMessage() for record in caplog.records if "db.example" in record.getMessage()]
+    assert len(lines) == 1, caplog.text
+    assert "dbname=logs" in lines[0]
+    assert "user=bob" in lines[0]
+    assert "raw_x" in lines[0]
+    assert "slm" in lines[0]
+    assert "hunter2" not in caplog.text
+
+
+def test_startup_logs_the_dsn_of_a_pinned_role(
+    fake_server: FakeServer, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    monkeypatch.setenv("DATABASE_URL", "host=shared.example dbname=logs user=bob")
+    monkeypatch.setenv("DATABASE_URL_MANAGER", "host=manager.example dbname=logs user=mgr")
+
+    with caplog.at_level(logging.INFO, logger="serenedb_log_mcp.cli"):
+        cli.main(["--role", "manager"])
+
+    assert "host=manager.example" in caplog.text
+    assert "shared.example" not in caplog.text
+
+
+def test_an_unknown_role_dsn_variable_is_reported_at_startup(
+    fake_server: FakeServer, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    monkeypatch.setenv("DATABASE_URL_LEAD", "host=lead.example dbname=logs user=lead")
+
+    with caplog.at_level(logging.WARNING, logger="serenedb_log_mcp.config"):
+        cli.main([])
+
+    assert "DATABASE_URL_LEAD" in caplog.text
+    assert "lead.example" not in caplog.text

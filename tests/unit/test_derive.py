@@ -164,9 +164,16 @@ def test_the_repository_steps_start_with_the_dev_adapter_and_end_with_the_indexe
     assert steps[-1].name.endswith("_indexes.sql")
 
 
+def derive_sql_files() -> list[Path]:
+    """Every SQL file the derive step runs. sql/access/ is not one: scripts/access.py renders it with
+    its own placeholders after a derive, and its per-Role views are the point of T22
+    (tests/unit/test_access.py)."""
+    return sorted(path for path in (ROOT / "sql").rglob("*.sql") if path.parent.name != "access")
+
+
 def test_every_repository_sql_file_renders_and_splits() -> None:
     values = derive.variables("slm", "public", (26, 10, 1))
-    for path in sorted((ROOT / "sql").rglob("*.sql")):
+    for path in derive_sql_files():
         statements = derive.split_statements(derive.render(path.read_text(), values))
         if path.name == "official.sql":
             assert statements == [], "official.sql stays a comment-only stub until T25"
@@ -275,7 +282,7 @@ def test_the_dev_adapter_creates_only_temporary_tables() -> None:
 
 
 def test_no_sql_file_creates_a_view() -> None:
-    for path in (ROOT / "sql").rglob("*.sql"):
+    for path in derive_sql_files():
         text = derive.render(path.read_text(), derive.variables("slm", "public", (26, 10, 1)))
         for statement in derive.split_statements(text):
             for _, kind, name in CREATE_RE.findall(statement):
@@ -377,3 +384,40 @@ def test_a_contract_break_after_the_run_began_says_the_schema_is_half_built() ->
 
     assert code == 2
     assert "half-built" in message
+
+
+class FakeConnection:
+    """Records statements; answers the schema lookup with the schemas that exist."""
+
+    def __init__(self, existing: set[str]) -> None:
+        self.existing = existing
+        self.executed: list[str] = []
+
+    def execute(self, query: str, params: list[object] | None = None) -> FakeConnection:
+        self.executed.append(query)
+        self._row = (1 if params and params[0] in self.existing else 0,)
+        return self
+
+    def fetchone(self) -> tuple[int]:
+        return self._row
+
+
+def test_derive_drops_the_per_role_views_that_depend_on_its_tables() -> None:
+    # T22: a view blocks CREATE OR REPLACE TABLE on its source, and the indexes over the views are
+    # snapshots, so derive drops them; `make access` re-creates them.
+    conn = FakeConnection({"slm_engineer", "slm_manager"})
+
+    dropped = derive.drop_role_views(conn, "slm")  # type: ignore[arg-type]
+
+    assert dropped == ["slm_engineer", "slm_manager"]
+    assert 'DROP SCHEMA "slm_engineer" CASCADE' in conn.executed
+    assert 'DROP SCHEMA "slm_manager" CASCADE' in conn.executed
+    assert not any("slm_team_lead" in q and q.startswith("DROP") for q in conn.executed)
+    assert not any('DROP SCHEMA "slm"' in q for q in conn.executed)
+
+
+def test_derive_drops_nothing_without_per_role_views() -> None:
+    conn = FakeConnection(set())
+
+    assert derive.drop_role_views(conn, "scratch_x") == []  # type: ignore[arg-type]
+    assert not any(q.startswith("DROP") for q in conn.executed)

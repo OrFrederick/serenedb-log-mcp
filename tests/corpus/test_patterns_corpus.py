@@ -1,8 +1,10 @@
 """Golden facts about the Patterns that `make derive` (T9) builds from the full Base Corpus.
 
-They read SLM_SCHEMA (default slm) and the Loghub-2.0 labels in SLM_RAW_SCHEMA (lh2_bgl,
-lh2_openstack), and need a derive with Pattern Tier 1 on. T25 re-pins the numbers if the
-organisers' loader differs.
+They read SLM_SCHEMA (default slm) and need a derive with Pattern Tier 1 on; the scorer test also
+reads the Loghub-2.0 labels in SLM_RAW_SCHEMA (lh2_bgl, lh2_openstack). Loghub-2.0 is an optional
+download (Zenodo 8275861), so without Tier 1 Patterns and the template files to derive them, or
+without the label tables, the tests skip with the reason, also under SLM_REQUIRE_DB (#66). T25
+re-pins the numbers if the organisers' loader differs.
 """
 
 from __future__ import annotations
@@ -10,6 +12,7 @@ from __future__ import annotations
 import os
 from typing import Any
 
+import optional_data
 import psycopg
 import pytest
 from psycopg import sql
@@ -30,7 +33,8 @@ OVER_N_SECONDS_PAIRS = (
 
 @pytest.fixture(scope="session")
 def pattern_schema(database_url: str, slm_schema: str) -> str:
-    """SLM_SCHEMA once the Pattern step has built pattern_dict and pattern there; skips otherwise."""
+    """SLM_SCHEMA once the Pattern step has built pattern_dict and pattern there with Tier 1; skips
+    otherwise."""
     with psycopg.connect(database_url, autocommit=True) as conn:
         row = conn.execute(
             "SELECT count(*) FROM information_schema.tables WHERE table_schema = %s "
@@ -42,6 +46,8 @@ def pattern_schema(database_url: str, slm_schema: str) -> str:
         if os.environ.get("SLM_REQUIRE_DB", "").strip().lower() in {"1", "true", "yes", "on"}:
             pytest.fail(f"SLM_REQUIRE_DB is set, so this does not skip: {problem}", pytrace=False)
         pytest.skip(problem)
+    if (optional := optional_data.tier1_patterns_problem(database_url, slm_schema)) is not None:
+        pytest.skip(optional)
     return slm_schema
 
 
@@ -130,6 +136,7 @@ def test_the_six_over_n_seconds_template_pairs_are_one_pattern_family_each(
     assert len(families) == len(OVER_N_SECONDS_PAIRS)
 
 
+@pytest.mark.loghub2("lh2_bgl", "lh2_openstack")
 def test_tier1_meets_the_merge_gate_and_only_the_truncated_e7_lines_disagree(
     database_url: str, pattern_schema: str
 ) -> None:
@@ -144,3 +151,50 @@ def test_tier1_meets_the_merge_gate_and_only_the_truncated_e7_lines_disagree(
     assert (scores["openstack"].lines, scores["openstack"].agreeing) == (207_632, 207_632)
     assert [(d.gold, d.chosen, d.lines) for d in scores["bgl"].disagreements] == [("E7", None, 4)]
     assert score_patterns.gate_problems(list(scores.values()), score_patterns.DEFAULT_MIN_AGREEMENT) == []
+
+
+# ----------------------------------------------------------------- hand-offs for rankings (#64)
+
+
+def test_the_empty_pattern_ranks_18th_by_entries_and_shows_as_no_message(
+    database_url: str, pattern_schema: str
+) -> None:
+    ranked = fetch(
+        database_url,
+        pattern_schema,
+        "SELECT template_source, display_text, entries FROM {pattern} WHERE dataset = 'bgl' "
+        "ORDER BY entries DESC, template_id",
+    )
+
+    rank = next(i for i, row in enumerate(ranked, start=1) if row[0] == "empty")
+    assert (rank, ranked[rank - 1][1:]) == (18, ("(no message)", 34_470))
+    assert all(row[1] for row in ranked)
+
+
+def test_the_register_dump_patterns_have_uninformative_texts(database_url: str, pattern_schema: str) -> None:
+    result = fetch(
+        database_url,
+        pattern_schema,
+        "SELECT p.template_text, count(d.message), min(p.entries) FROM {pattern} p "
+        "JOIN {dict} d ON d.dataset = p.dataset AND d.template_id = p.template_id "
+        "WHERE p.dataset = 'bgl' AND p.template_text IN ('<*>', '<*>:ffffffff <*>') "
+        "GROUP BY 1 ORDER BY 1",
+    )
+
+    assert result == [("<*>", 1_140, 15_193), ("<*>:ffffffff <*>", 535, 4_149)]
+
+
+def test_first_and_last_epoch_put_both_datasets_on_one_clock(database_url: str, pattern_schema: str) -> None:
+    # BGL ts is US Pacific local time: its epochs are 7 or 8 hours after ts read as UTC.
+    result = fetch(
+        database_url,
+        pattern_schema,
+        "SELECT dataset, count(*) FILTER (WHERE first_epoch IS NULL OR last_epoch < first_epoch), "
+        "min(first_epoch - epoch(first_seen)), max(first_epoch - epoch(first_seen)) "
+        "FROM {pattern} GROUP BY 1 ORDER BY 1",
+    )
+
+    assert [(d, bad) for d, bad, _, _ in result] == [("bgl", 0), ("openstack", 0)]
+    (_, _, bgl_low, bgl_high), (_, _, os_low, os_high) = result
+    assert 7 * 3600 <= round(bgl_low) <= round(bgl_high) <= 8 * 3600
+    assert (round(os_low), round(os_high)) == (0, 0)
